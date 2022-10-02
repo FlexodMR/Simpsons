@@ -1,0 +1,340 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTTP::Response - Class encapsulating HTTP Responses
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_r_new_HTTP_Response_rc_">$r = new HTTP::Response ($rc, [$msg, [$header, [$content]]])</A>
+		<LI><A HREF="#_r_code_code_">$r->code([$code])</A>
+		<LI><A HREF="#_r_message_message_">$r->message([$message])</A>
+		<LI><A HREF="#_r_request_request_">$r->request([$request])</A>
+		<LI><A HREF="#_r_previous_previousResponse_">$r->previous([$previousResponse])</A>
+		<LI><A HREF="#_r_base">$r->base</A>
+		<LI><A HREF="#_r_as_string_">$r->as_string()</A>
+		<LI><A HREF="#_r_is_info">$r->is_info</A>
+		<LI><A HREF="#_r_is_success">$r->is_success</A>
+		<LI><A HREF="#_r_is_redirect">$r->is_redirect</A>
+		<LI><A HREF="#_r_is_error">$r->is_error</A>
+		<LI><A HREF="#_r_error_as_HTML_">$r->error_as_HTML()</A>
+		<LI><A HREF="#_r_current_age">$r->current_age</A>
+		<LI><A HREF="#_r_freshness_lifetime">$r->freshness_lifetime</A>
+		<LI><A HREF="#_r_is_fresh">$r->is_fresh</A>
+		<LI><A HREF="#_r_fresh_until">$r->fresh_until</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTTP::Response - Class encapsulating 
+<FONT SIZE=-1>HTTP</FONT> Responses
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require <A HREF="HTTP::Response">HTTP::Response</A>;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>HTTP::Response</CODE> class encapsulate 
+<FONT SIZE=-1>HTTP</FONT> style responses. 
+<FONT SIZE=-1>A</FONT> response consist of a response line, some headers, and a (potential empty) content. Note that the 
+<FONT SIZE=-1>LWP</FONT> library will use 
+<FONT SIZE=-1>HTTP</FONT> style responses also for non-HTTP protocol schemes.
+
+
+
+<P>
+
+Instances of this class are usually created and returned by the
+<CODE>request()</CODE> method of an <CODE>LWP::UserAgent</CODE> object:
+
+
+<P>
+
+<PRE> ...
+ $response = $ua-&gt;request($request)
+ if ($response-&gt;is_success) {
+     print $response-&gt;content;
+ } else {
+     print $response-&gt;error_as_HTML;
+ }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<CODE>HTTP::Response</CODE> is a subclass of <CODE>HTTP::Message</CODE> and therefore inherits its methods. The inherited methods are
+<CODE>header(),</CODE> <CODE>push_header(),</CODE>
+<CODE>remove_header(),</CODE> <CODE>headers_as_string(),</CODE> and
+<CODE>content().</CODE> The header convenience methods are also available.
+See
+<A HREF="/n|/perl/html/./lib/site/HTTP/Message.html">Message</A> for details.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_new_HTTP_Response_rc_">$r = new HTTP::Response ($rc, [$msg, [$header, [$content]]])
+
+</A></H2>
+Constructs a new <CODE>HTTP::Response</CODE> object describing a response with response code <CODE>$rc</CODE> and optional message <A HREF="#item__msg">$msg</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_code_code_">$r->code([$code])
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_r_message_message_">$r->message([$message])
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_r_request_request_">$r->request([$request])
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_r_previous_previousResponse_">$r->previous([$previousResponse])
+
+</A></H2>
+These methods provide public access to the member variables. The first two
+containing respectively the response code and the message of the response.
+
+
+<P>
+
+The request attribute is a reference the request that gave this response.
+It does not have to be the same request as passed to the $ua-&gt;request()
+method, because there might have been redirects and authorization retries
+in between.
+
+
+<P>
+
+The previous attribute is used to link together chains of responses. You
+get chains of responses if the first response is redirect or unauthorized.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_base">$r->base
+
+</A></H2>
+Returns the base 
+<FONT SIZE=-1>URL</FONT> for this response. The return value will be a reference to a 
+<FONT SIZE=-1>URI::URL</FONT> object.
+
+
+
+<P>
+
+The base 
+<FONT SIZE=-1>URL</FONT> is obtained from one the following sources (in
+priority order):
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+Embedded in the document content, for instance 
+<FONT SIZE=-1>&lt;BASE</FONT> 
+<FONT SIZE=-1>HREF=``...''&gt;</FONT> in 
+<FONT SIZE=-1>HTML</FONT> documents.
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+
+<FONT SIZE=-1>A</FONT> ``Content-Base:'' or a ``Content-Location:'' header
+in the response.
+
+
+<P>
+
+For backwards compatability with older 
+<FONT SIZE=-1>HTTP</FONT> implementations we will also look for the
+``Base:'' header.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The 
+<FONT SIZE=-1>URL</FONT> used to request this response. This might not be the original 
+<FONT SIZE=-1>URL</FONT> that was passed to $ua-&gt;request() method, because we might have received some redirect responses first.
+
+
+
+<P>
+
+</OL>
+When the 
+<FONT SIZE=-1>LWP</FONT> protocol modules produce the HTTP::Response object, then any base 
+<FONT SIZE=-1>URL</FONT> embedded in the document (step 1) will already have initialized the ``Content-Base:'' header. This means that this method only perform the last 2 steps (the content is not always available either).
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_as_string_">$r->as_string()
+
+</A></H2>
+Method returning a textual representation of the request. Mainly useful for
+debugging purposes. It takes no arguments.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_is_info">$r->is_info
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_r_is_success">$r->is_success
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_r_is_redirect">$r->is_redirect
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_r_is_error">$r->is_error
+
+</A></H2>
+These methods indicate if the response was informational, sucessful, a
+redirection, or an error.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_error_as_HTML_">$r->error_as_HTML()
+
+</A></H2>
+Return a string containing a complete 
+<FONT SIZE=-1>HTML</FONT> document indicating what error occurred. This method should only be called when $r-&gt;is_error is 
+<FONT SIZE=-1>TRUE.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_current_age">$r->current_age
+
+</A></H2>
+This function will calculate the ``current age'' of the response as
+specified by &lt;draft-ietf-http-v11-spec-07&gt; section 13.2.3. The age of a response is
+the time since it was sent by the origin server. The returned value is a
+number representing the age in seconds.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_freshness_lifetime">$r->freshness_lifetime
+
+</A></H2>
+This function will calculate the ``freshness lifetime'' of the response as
+specified by &lt;draft-ietf-http-v11-spec-07&gt; section 13.2.4. The ``freshness lifetime''
+is the length of time between the generation of a response and its
+expiration time. The returned value is a number representing the freshness
+lifetime in seconds.
+
+
+<P>
+
+If the response does not contain an ``Expires'' or a ``Cache-Control''
+header, then this function will apply some simple heuristic based on
+'Last-Modified' to determine a suitable lifetime.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_is_fresh">$r->is_fresh
+
+</A></H2>
+Returns 
+<FONT SIZE=-1>TRUE</FONT> if the response is fresh, based on the values of
+<CODE>freshness_lifetime()</CODE> and <CODE>current_age().</CODE> If the
+response is not longer fresh, then it has to be refetched or revalidated by
+the origin server.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_fresh_until">$r->fresh_until
+
+</A></H2>
+Returns the time when this entiy is no longer fresh.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

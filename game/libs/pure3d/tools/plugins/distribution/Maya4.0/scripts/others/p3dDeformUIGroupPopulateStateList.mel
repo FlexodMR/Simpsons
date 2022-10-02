@@ -1,0 +1,224 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformUIGroupPopulateStateList.mel
+// Author: Senta Kaiser
+//
+// Description: Deformation tool utility function for populating UI group lists
+//
+
+global proc p3dDeformUIGroupPopulateStateList(string $arg_column_form)
+{
+   
+   // names of all the groups
+   string $groups[] = `ls -type p3dDeformExpressionGroup`;
+
+   // number of groups
+   int $group_count = size($groups);
+
+   // flags to indicate existence of groups
+   int $group_flags[];
+   $group_flags[$group_count] = 0;
+
+   // determine the number of layouts in the given column form
+   string $group_panels[] = `columnLayout -q -ca $arg_column_form`;
+   int $group_panel_count = size($group_panels);
+
+   int $i, $j;
+
+   string $P3D_PREFIX = "p3dDeformExpressionGroup_Panel_";
+   int $P3D_PREFIX_LENGTH = size($P3D_PREFIX);
+   int $P3D_PREFIX_LENGTH_PLUS_ONE = $P3D_PREFIX_LENGTH + 1;
+
+   for($i = 0; $i < $group_panel_count; $i++)
+   {
+      // reset j so that the "found group" check fails
+      $j = $group_count;
+
+      // extract (what should be) the prefix
+      string $group_prefix = `substring $group_panels[$i] 1 $P3D_PREFIX_LENGTH`;
+
+      // verify prefix
+      if($group_prefix == $P3D_PREFIX)
+      {
+         // extract the associated group
+         int $group_panels_i_size = size($group_panels[$i]);
+         string $group_name = `substring $group_panels[$i] $P3D_PREFIX_LENGTH_PLUS_ONE $group_panels_i_size`;
+
+         // find the actual group
+         for($j = 0; $j < $group_count; $j++)
+         {
+            if($group_name == $groups[$j])
+            {
+               break;
+            }
+         }
+      }
+
+      // found the group, so update the flags to
+      // reflect that a control for it already exists
+      if( ($j < $group_count) && ($group_flags[$j] == 0) )
+      {
+         $group_flags[$j] = 1;
+      }
+      // a group by that name doesn't exist, so delete the child UI item
+      else
+      {
+         deleteUI -layout $group_panels[$i];
+      }
+   }
+
+   // setup the UI
+   for($i = 0; $i < $group_count; $i++)
+   {
+      if($group_flags[$i] == 0)
+      {
+         // group UI hasn't been created yet, so create it
+         
+         setParent $arg_column_form;
+
+         // create a form
+         string $form_name = $P3D_PREFIX + $groups[$i];
+         
+         formLayout $form_name;
+
+         // create a frame to put in the form
+         string $frame_name = `frameLayout   -collapsable true
+                                             -collapse true
+                                             -bv true
+                                             -bs out
+                                             -l $groups[$i]`;         
+         // place the frame in the form
+         formLayout -edit
+                    -af $frame_name "left" 0
+                    -af $frame_name "top" 0
+                    -af $frame_name "right" 0
+                    -af $frame_name "bottom" 0
+                    $form_name;
+
+         string $sub_form_name = `formLayout`;
+
+         // get list of the form's children
+         string $group_list[] = `formLayout -q -childArray $sub_form_name`;
+         int $group_list_size = size($group_list);
+
+         // At this point there is a form in a frame in a form which sits in the scrollColumnLayout
+
+         string $group_form_layout = `formLayout`;
+
+            string $group_scroll_column_layout = `columnLayout -columnAttach "both" 0
+                                                               -adj true`;                                                        
+            setParent ..;
+         setParent ..;
+
+         string $group_button_form = `formLayout`;
+
+         
+         // create "Key All" button
+         string $key_all_cmd = "p3dDeformExpressionUIKeyAllCallback " + $groups[$i];
+         string $key_all_btn = `button -l "Key All"
+                                       -annotation ("Key all expressions in " + $groups[$i])
+                                       -c $key_all_cmd`;
+
+         // create "Zero All" button
+         string $zero_all_cmd = "p3dDeformExpressionUIZeroAllCallback " + $groups[$i];
+         string $zero_all_btn = `button -l "Zero All"
+                                        -annotation ("Zero all expressions in " + $groups[$i])
+                                        -c $zero_all_cmd`;
+
+         string $sel_all_cmd = "p3dDeformExpressionSelectAll " + $groups[$i];
+         string $sel_all_btn = `button -l "Select All" 
+                                       -ann ("Select all expressions in " + $groups[$i])
+                                       -c $sel_all_cmd`;
+
+         string $sel_none_cmd = "p3dDeformExpressionSelectNone " + $groups[$i];
+         string $sel_none_btn = `button -l "Select None" 
+                                       -ann ("Deselect all expressions in " + $groups[$i])
+                                       -c $sel_none_cmd`;
+         
+                                       
+       
+         string $copy_all_cmd = "p3dDeformExpressionCopyAll" + " " + $groups[$i];
+         string $copy_all_btn = `button -l "Copy All"
+                                        -annotation ("Copy all expressions in " + $groups[$i])
+                                        -c $copy_all_cmd`;
+       
+         string $paste_all_cmd = "p3dDeformExpressionPasteAll" + " " + $groups[$i];
+         string $paste_all_btn = `button -l "Paste All"
+                                        -annotation ("Paste all expressions in " + $groups[$i])
+                                        -c $paste_all_cmd`;
+       
+         setParent ..;
+
+         if($group_list_size > 0)
+         {
+            string $last_group = $group_list[$group_list_size - 1];
+
+            formLayout -edit
+                       -ac $key_all_btn "top" 3 $last_group
+                       -ac $zero_all_btn "top" 3 $last_group
+                       -ac $sel_all_btn "top" 3 $last_group
+                       -ac $sel_none_btn top 3 $last_group
+                       -ac $copy_all_btn "top" 3 $last_group
+                       -ac $paste_all_btn "top" 3 $last_group
+                       $group_button_form;
+         }
+         else
+         {
+            formLayout -edit
+                       -af $key_all_btn "top" 3
+                       -af $zero_all_btn "top" 3
+                       -af $sel_all_btn top 3
+                       -af $sel_none_btn top 3
+                       -af $copy_all_btn "top" 3
+                       -af $paste_all_btn "top" 3
+                       $group_button_form;
+         }
+
+         formLayout -edit
+                    -af $key_all_btn "left" 3
+                    -ac $key_all_btn "right" 3 $zero_all_btn
+                    
+                    -an $zero_all_btn left
+                    -ac $zero_all_btn right 3 $sel_all_btn
+                    
+                    -an $sel_all_btn left
+                    -ac $sel_all_btn right 3 $sel_none_btn
+
+                    -an $sel_none_btn left
+                    -ac $sel_none_btn right 3 $copy_all_btn
+
+                    -an $copy_all_btn left
+                    -ac $copy_all_btn right 3 $paste_all_btn
+                    
+                    -an $paste_all_btn left
+                    -ap $paste_all_btn right 3 95
+
+
+                    
+                    $group_button_form;
+   
+         setParent ..;
+
+         formLayout -edit
+
+              -af $group_button_form left 0
+              -af $group_button_form right 0
+              -af $group_button_form bottom 5
+
+              -af $group_form_layout top 0
+              -ac $group_form_layout bottom 5 $group_button_form
+              
+              -af $group_form_layout left 0
+              -af $group_form_layout right 0
+
+              $sub_form_name;
+
+         // Create the expression in the group if some already exist
+         // For example, when you close and open the deformer window
+         p3dDeformExpressionUIPopulate($group_scroll_column_layout);
+      }
+   }
+}
+
+
+// End of file.

@@ -1,0 +1,139 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>guess_media_type - guess media type for a file or a URL.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#FUNCTIONS">FUNCTIONS</A>
+	<UL>
+
+		<LI><A HREF="#guess_media_type_filename_or_ur">guess_media_type($filename_or_url, [$header_to_modify])</A>
+		<LI><A HREF="#media_suffix_type_">media_suffix($type,...)</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+guess_media_type - guess media type for a file or a 
+<FONT SIZE=-1>URL.</FONT>
+
+
+<P>
+
+media_suffix - returns file extentions for a media type
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use LWP::MediaTypes qw(guess_media_type);
+ $type = guess_media_type(&quot;/tmp/foo.gif&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provides functions for handling of media (also known as 
+<FONT SIZE=-1>MIME)</FONT> types and encodings. The mapping from file
+extentions to media types is defined by the <EM>media.types</EM> file. If the <EM>~/.media.types</EM>
+file exist it is used as a replacement.
+
+
+<P>
+
+For backwards compatability we will also look for <EM>~/.mime.types</EM>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="FUNCTIONS">FUNCTIONS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="guess_media_type_filename_or_ur">guess_media_type($filename_or_url, [$header_to_modify])
+
+</A></H2>
+This function tries to guess media type and encoding for given file. In
+scalar context it returns only the content-type. In array context it
+returns an array consisting of content-type followed by any
+content-encodings applied.
+
+
+<P>
+
+The guess_media_type function also accepts a 
+<FONT SIZE=-1>URI::URL</FONT> object as argument.
+
+
+<P>
+
+If the type can not be deduced from looking at the file name only, then
+<CODE>guess_media_type()</CODE> will take a look at the actual file using
+the
+<A HREF="#item__T">-T</A> perl operator in order to determine if this is a text file (text/plain). If
+this does not work it will return
+<EM>application/octet-stream</EM> as the type.
+
+
+<P>
+
+The optional second argument should be a reference to a HTTP::Headers
+object (or some HTTP::Message object). When present this function will set
+the value of the 'Content-Type' and 'Content-Encoding' for this header.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="media_suffix_type_">media_suffix($type,...)
+
+</A></H2>
+This function will return all suffixes that can be used to denote the
+specified media <CODE>type(s).</CODE> Wildcard types can be used. In scalar
+context it will return the first suffix found.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>  @suffixes = media_suffix('image/*', 'audio/basic');
+  $suffix = media_suffix('text/html');
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

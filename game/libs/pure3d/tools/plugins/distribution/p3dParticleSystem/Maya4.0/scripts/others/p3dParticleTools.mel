@@ -1,0 +1,439 @@
+proc string P3DFixName(string $name)
+{
+   string $newName;
+   string $buffer[];
+   tokenize($name, $buffer);
+   int $i;
+   $newName = $buffer[0];
+   for ($i=1; $i < size($buffer); $i++)
+   {
+      $newName = $newName + "_" + $buffer[$i];
+   }
+   return $newName;
+}
+
+proc string P3DGetNewName(string $title, string $message)
+{
+   do {
+      string $result = `promptDialog -title $title 
+                                  -message ($message + "Enter new name:")
+                                  -messageAlign center
+                                  -button "OK" 
+                                  -button "Cancel"
+                                  -defaultButton "OK" 
+                                  -cancelButton "Cancel"
+                                  -dismissString "Cancel"`;
+      if (`strcmp $result "OK"`==0)
+      {
+         $newName = `promptDialog -query -text`;
+         if ($newName=="")
+         {
+            $title = "ERROR!";
+            $message = "No name was entered.\n";
+         }
+         else if (size(`ls $newName`)!=0)
+         {
+            $title = "ERROR!";
+            $message = "This name is already used.\n";
+         }
+         else 
+         {
+            return $newName;
+         }
+      }
+      else
+      {
+         return "";
+      }
+   } while (1);
+}
+
+global proc P3DCreateParticleSystem()
+{
+   $newName = P3DGetNewName("Create New Particle System","");
+   $particleSystemName = P3DFixName($newName);
+   if ($particleSystemName!="")
+   {
+      string $shape = `createNode p3dPartSystemShape`;
+      string $transform[] = `p3dGetParticleTransformNodeCmd -o $shape`;
+      if ($transform[0]!="")
+      {
+         rename $transform $particleSystemName;
+         select $particleSystemName;
+         setAttr -lock true ($particleSystemName+".sx");
+         setAttr -lock true ($particleSystemName+".sy");
+         setAttr -lock true ($particleSystemName+".sz");
+      }
+   }
+}
+
+global proc P3DAddEmitter()
+{
+   string $selectedPartSys[] = `p3dGetSelectedParticleSystemCmd`;
+   
+   if (size($selectedPartSys)==0)
+   {
+      confirmDialog -title "WARNING!" -message "no particle system was selected to add an emitter to!";
+      return;
+   }
+  
+   $newName = P3DGetNewName("Add Emitter To "+$selectedPartSys[0],"");
+   $emitterName = P3DFixName($newName);
+   if ($emitterName!="")
+   {
+      string $shape = `createNode p3dEmitterShape`;
+      string $transform[] = `p3dGetParticleTransformNodeCmd -o $shape`;
+      if ($transform[0]!="")
+      {              
+         connectAttr ($transform[0]+".sx") ($shape+".width");
+         connectAttr ($transform[0]+".sy") ($shape+".height");
+         connectAttr ($transform[0]+".sz") ($shape+".length");
+         rename $transform[0] $emitterName;
+         select $emitterName;
+         $transform = `p3dGetParticleTransformNodeCmd -o $selectedPartSys[0]`;
+         parent $emitterName $transform[0];
+         setAttr ($emitterName+".tx") 0;
+         setAttr ($emitterName+".ty") 0;
+         setAttr ($emitterName+".tz") 0;
+         setAttr ($emitterName+".rx") 0;
+         setAttr ($emitterName+".ry") 0;
+         setAttr ($emitterName+".rz") 0;
+      }
+   }
+}
+ 
+global proc P3DConnectEmitterBlendState(string $parentBlendState, string $childBlendState)
+{
+   connectAttr ($childBlendState + ".parent") ($parentBlendState + ".parent");      
+   connectAttr ($parentBlendState + ".generatorType") ($childBlendState + ".generatorType");
+   setAttr -lock true ($childBlendState + ".generatorType");
+   connectAttr ($parentBlendState + ".particleType") ($childBlendState + ".particleType");
+   setAttr -lock true ($childBlendState + ".particleType");
+   connectAttr ($parentBlendState + ".particleAngleType") ($childBlendState + ".particleAngleType");      
+   setAttr -lock true ($childBlendState + ".particleAngleType");
+   connectAttr ($parentBlendState + ".infiniteLife") ($childBlendState + ".infiniteLife");      
+   setAttr -lock true ($childBlendState + ".infiniteLife");
+}
+
+global proc P3DDisConnectEmitterBlendState(string $parentBlendState, string $childBlendState)
+{
+   disconnectAttr ($childBlendState + ".parent") ($parentBlendState + ".parent");      
+   setAttr -lock false ($childBlendState + ".generatorType");
+   disconnectAttr ($parentBlendState + ".generatorType") ($childBlendState + ".generatorType");
+   setAttr -lock false ($childBlendState + ".particleType");
+   disconnectAttr ($parentBlendState + ".particleType") ($childBlendState + ".particleType");
+   setAttr -lock false ($childBlendState + ".particleAngleType");
+   disconnectAttr ($parentBlendState + ".particleAngleType") ($childBlendState + ".particleAngleType");      
+   setAttr -lock false ($childBlendState + ".infiniteLife");
+   disconnectAttr ($parentBlendState + ".infiniteLife") ($childBlendState + ".infiniteLife");      
+}
+
+global proc P3DDisplayBlendStateEditor()
+{
+   if (`window -query -exists EmitterBlendStateEditor`!=1)
+   {
+      window -width 600 -height 200 -sizeable true -title "Pure 3D Particle Emitter Blend State Editor" EmitterBlendStateEditor;
+      formLayout EmitterBlendStateFormLayout;
+         formLayout EmitterBlendStateDisplayLayout;
+            text -label "Current Emitter :" -align left CurrentEmitterLabel;
+            textField -editable false CurrentEmitterName;
+            textScrollList -allowMultiSelection false -selectCommand P3DSelectBlendState EmitterBlendStateList;
+
+            formLayout -edit -attachForm CurrentEmitterLabel top 5
+                             -attachNone CurrentEmitterLabel bottom 
+                             -attachForm CurrentEmitterLabel left 5
+                             -attachNone CurrentEmitterLabel right
+
+                             -attachForm CurrentEmitterName top 3
+                             -attachNone CurrentEmitterName bottom 
+                             -attachControl CurrentEmitterName left 1 CurrentEmitterLabel
+                             -attachForm CurrentEmitterName right 5
+
+                             -attachControl EmitterBlendStateList top 5 CurrentEmitterLabel
+                             -attachForm EmitterBlendStateList bottom 5
+                             -attachForm EmitterBlendStateList left 5
+                             -attachForm EmitterBlendStateList right 5
+                             EmitterBlendStateDisplayLayout;
+         setParent ..;
+
+         formLayout EmitterBlendStateButtonLayout;
+            button -label "Add Blend State" -align "center" -command P3DAddBlendState AddEmitterBlendStateButton;
+            button -label "Copy Blend State" -align "center" -command P3DCopyBlendState CopyEmitterBlendStateButton;
+            button -label "Delete Blend State" -align "center" -command P3DDeleteBlendState DeleteEmitterBlendStateButton;
+            button -label "Move Blend State Up" -align "center" -command P3DMoveUpBlendState MoveUpEmitterBlendStateButton;
+            button -label "Move Blend State Down" -align "center" -command P3DMoveDownBlendState MoveDownEmitterBlendStateButton;
+
+            formLayout -edit -attachForm AddEmitterBlendStateButton top 5
+                             -attachPosition AddEmitterBlendStateButton bottom 1 23 
+                             -attachForm AddEmitterBlendStateButton left 5
+                             -attachForm AddEmitterBlendStateButton right 5
+
+                             -attachPosition CopyEmitterBlendStateButton top 1 23
+                             -attachPosition CopyEmitterBlendStateButton bottom 1 41 
+                             -attachForm CopyEmitterBlendStateButton left 5
+                             -attachForm CopyEmitterBlendStateButton right 5
+
+                             -attachPosition DeleteEmitterBlendStateButton top 1 41
+                             -attachPosition DeleteEmitterBlendStateButton bottom 1 59 
+                             -attachForm DeleteEmitterBlendStateButton left 5
+                             -attachForm DeleteEmitterBlendStateButton right 5
+
+                             -attachPosition MoveUpEmitterBlendStateButton top 1 59
+                             -attachPosition MoveUpEmitterBlendStateButton bottom 1 77 
+                             -attachForm MoveUpEmitterBlendStateButton left 5
+                             -attachForm MoveUpEmitterBlendStateButton right 5
+
+                             -attachPosition MoveDownEmitterBlendStateButton top 1 77
+                             -attachForm MoveDownEmitterBlendStateButton bottom 5 
+                             -attachForm MoveDownEmitterBlendStateButton left 5
+                             -attachForm MoveDownEmitterBlendStateButton right 5
+                             EmitterBlendStateButtonLayout;
+         setParent ..;
+
+         formLayout -edit -attachForm EmitterBlendStateDisplayLayout top 0
+                          -attachForm EmitterBlendStateDisplayLayout bottom 0
+                          -attachForm EmitterBlendStateDisplayLayout left 0
+                          -attachPosition EmitterBlendStateDisplayLayout right 0 70
+
+                          -attachForm EmitterBlendStateButtonLayout top 0
+                          -attachForm EmitterBlendStateButtonLayout bottom 0
+                          -attachPosition EmitterBlendStateButtonLayout left 0 70
+                          -attachForm EmitterBlendStateButtonLayout right 0
+                          EmitterBlendStateFormLayout;         
+      setParent ..;      
+
+      showWindow EmitterBlendStateEditor;
+
+      P3DUpdateBlendStateEditor(1);
+
+      scriptJob -parent EmitterBlendStateEditor -event SelectionChanged "P3DUpdateBlendStateEditor(0)";
+   }
+}
+
+global proc P3DUpdateBlendStateEditor(int $force)
+{
+   if (`window -query -exists EmitterBlendStateEditor`==1)
+   {       
+      string $currentEmitter = `textField -query -text CurrentEmitterName`;
+      string $selectedEmitter[] = `p3dGetSelectedParticleEmitterCmd`;
+      string $emitterShape[] = `p3dGetParticleShapeNodeCmd -o $selectedEmitter[0]`;
+
+      if (($force!=0)||($currentEmitter != $emitterShape[0]))
+      {         
+         textField -edit -text $emitterShape[0] CurrentEmitterName;
+         textScrollList -edit -removeAll EmitterBlendStateList;
+
+         if (size($emitterShape)>0)
+         {
+            string $blendStates[] = `listConnections -d false -t p3dEmitterBlendStateNode ($emitterShape[0]+".parent")`;
+            while (size($blendStates)>0)
+            {
+               string $current = $blendStates[0];
+               textScrollList -edit -append $current EmitterBlendStateList;
+               clear $blendStates;
+               $blendStates = `listConnections -d false -t p3dEmitterBlendStateNode ($current+".parent")`;
+            }
+         }
+      }
+   }
+}
+
+global proc P3DSelectBlendState()
+{
+   if (`window -query -exists EmitterBlendStateEditor`==1)
+   {    
+      string $currentEmitter = `textField -query -text CurrentEmitterName`;
+      string $currentBlendState[] = `textScrollList -query -selectItem EmitterBlendStateList`;
+
+      if (($currentEmitter!="")&&($currentBlendState[0]!=""))
+      {
+         select $currentBlendState[0];
+         P3DUpdateBlendStateEditor(1);
+         textScrollList -edit -selectItem $currentBlendState[0] EmitterBlendStateList;
+      }
+   }
+}
+
+global proc P3DAddBlendState()
+{
+   if (`window -query -exists EmitterBlendStateEditor`==1)
+   {    
+      string $currentEmitter = `textField -query -text CurrentEmitterName`;
+      string $currentBlendState[] = `textScrollList -query -selectItem EmitterBlendStateList`;
+      string $blendStates[] = `textScrollList -query -allItems EmitterBlendStateList`;
+      int $numBlendStates = size($blendStates);
+      int $currentBlendStateNum[] = `textScrollList -query -selectIndexedItem EmitterBlendStateList`;
+
+      if ($currentEmitter!="")
+      {
+         $newName = P3DGetNewName("Add Blend State To "+$currentEmitter,"");
+         $blendStateName = P3DFixName($newName);
+ 
+         if ($blendStateName!="")
+         {
+            string $parent = $currentEmitter;
+            int $child = 0;
+            if ($currentBlendState[0]!="")
+            {
+                $parent = $currentBlendState[0];
+                $child = $currentBlendStateNum[0]; 
+            }
+            else if ($numBlendStates>0)
+            {
+                $parent = $blendStates[$numBlendStates-1];
+                $child = $numBlendStates;
+            }
+
+            if ($child<$numBlendStates)
+            {
+               P3DDisConnectEmitterBlendState($parent,$blendStates[$child]);
+            }
+
+            string $blendState = `createNode p3dEmitterBlendStateNode`;
+            rename $blendState $blendStateName;
+ 
+            P3DConnectEmitterBlendState($parent,$blendStateName);
+
+            if ($child<$numBlendStates)
+            {
+               P3DConnectEmitterBlendState($blendStateName,$blendStates[$child]);
+            } 
+
+            select $blendStateName;
+            P3DUpdateBlendStateEditor(1);
+            textScrollList -edit -selectItem $blendStateName EmitterBlendStateList;
+         }
+      }
+   }
+}
+
+global proc P3DCopyBlendState()
+{
+   if (`window -query -exists EmitterBlendStateEditor`==1)
+   {    
+      string $currentEmitter = `textField -query -text CurrentEmitterName`;
+      string $currentBlendState[] = `textScrollList -query -selectItem EmitterBlendStateList`;
+
+      if (($currentEmitter!="")&&($currentBlendState[0]!=""))
+      {
+         $newName = P3DGetNewName("Copy Blend State "+$currentBlendState[0],"");
+         $blendStateName = P3DFixName($newName);
+
+         if ($blendStateName!="")
+         {
+            string $prevBlendState[] = `listConnections -s false ($currentBlendState[0]+".parent")`;
+            string $nextBlendState[] = `listConnections -d false ($currentBlendState[0]+".parent")`;
+            if (size($prevBlendState)>0)
+            {
+               P3DDisConnectEmitterBlendState($prevBlendState[0],$currentBlendState[0]);
+               if (size($nextBlendState)>0)
+               {
+                  P3DDisConnectEmitterBlendState($currentBlendState[0],$nextBlendState[0]);
+               }
+
+               string $blendState[] = `duplicate -un $currentBlendState[0]`;
+               rename $blendState[0] $blendStateName;
+
+               P3DConnectEmitterBlendState($prevBlendState[0],$currentBlendState[0]);
+               P3DConnectEmitterBlendState($currentBlendState[0],$blendStateName);
+
+               if (size($nextBlendState)>0)
+               {
+                  P3DConnectEmitterBlendState($blendStateName,$nextBlendState[0]);
+               } 
+
+               select $blendStateName;
+               P3DUpdateBlendStateEditor(1);
+               textScrollList -edit -selectItem $blendStateName EmitterBlendStateList;
+            }
+         }
+      }
+   }
+}
+
+global proc P3DDeleteBlendState()
+{
+   if (`window -query -exists EmitterBlendStateEditor`==1)
+   {    
+      string $currentEmitter = `textField -query -text CurrentEmitterName`;
+      string $currentBlendState[] = `textScrollList -query -selectItem EmitterBlendStateList`;
+
+      if (($currentEmitter!="")&&($currentBlendState[0]!=""))
+      {
+         string $prevBlendState[] = `listConnections -s false ($currentBlendState[0]+".parent")`;
+         string $nextBlendState[] = `listConnections -d false ($currentBlendState[0]+".parent")`;
+         if (size($prevBlendState)>0)
+         {
+            P3DDisConnectEmitterBlendState($prevBlendState[0],$currentBlendState[0]);
+            if (size($nextBlendState)>0)
+            {
+               P3DDisConnectEmitterBlendState($currentBlendState[0],$nextBlendState[0]);
+               P3DConnectEmitterBlendState($prevBlendState[0],$nextBlendState[0]);
+            }
+         }
+         delete $currentBlendState[0];
+         select $currentEmitter;
+         P3DUpdateBlendStateEditor(1);
+      }
+   }
+}
+
+global proc P3DMoveUpBlendState()
+{
+   if (`window -query -exists EmitterBlendStateEditor`==1)
+   {    
+      string $currentEmitter = `textField -query -text CurrentEmitterName`;
+      string $currentBlendState[] = `textScrollList -query -selectItem EmitterBlendStateList`;
+      int $currentBlendStateNum[] = `textScrollList -query -selectIndexedItem EmitterBlendStateList`;
+
+      if (($currentEmitter!="")&&($currentBlendState[0]!="")&&($currentBlendStateNum[0]>1))
+      {
+         string $prevBlendState[] = `listConnections -s false ($currentBlendState[0]+".parent")`;
+         string $prevPrevBlendState[] = `listConnections -s false ($prevBlendState[0]+".parent")`;
+         string $nextBlendState[] = `listConnections -d false ($currentBlendState[0]+".parent")`;
+
+         P3DDisConnectEmitterBlendState($prevPrevBlendState[0],$prevBlendState[0]);
+         P3DDisConnectEmitterBlendState($prevBlendState[0],$currentBlendState[0]);
+         P3DConnectEmitterBlendState($prevPrevBlendState[0],$currentBlendState[0]);
+         if (size($nextBlendState)>0)
+         {
+            P3DDisConnectEmitterBlendState($currentBlendState[0],$nextBlendState[0]);
+            P3DConnectEmitterBlendState($prevBlendState[0],$nextBlendState[0]);
+         }
+         P3DConnectEmitterBlendState($currentBlendState[0],$prevBlendState[0]);
+         P3DUpdateBlendStateEditor(1);
+         textScrollList -edit -selectItem $currentBlendState[0] EmitterBlendStateList;
+      }
+   }
+}
+
+global proc P3DMoveDownBlendState()
+{
+   if (`window -query -exists EmitterBlendStateEditor`==1)
+   {    
+      string $currentEmitter = `textField -query -text CurrentEmitterName`;
+      string $currentBlendState[] = `textScrollList -query -selectItem EmitterBlendStateList`;
+      int $currentBlendStateNum[] = `textScrollList -query -selectIndexedItem EmitterBlendStateList`;
+      int $numBlendStates = `textScrollList -query -numberOfItems EmitterBlendStateList`;
+
+      if (($currentEmitter!="")&&($currentBlendState[0]!="")&&($currentBlendStateNum[0]<$numBlendStates))
+      {
+         string $prevBlendState[] = `listConnections -s false ($currentBlendState[0]+".parent")`;
+         string $nextBlendState[] = `listConnections -d false ($currentBlendState[0]+".parent")`;
+         string $nextNextBlendState[] = `listConnections -d false ($nextBlendState[0]+".parent")`;
+
+         P3DDisConnectEmitterBlendState($prevBlendState[0],$currentBlendState[0]);
+         P3DDisConnectEmitterBlendState($currentBlendState[0],$nextBlendState[0]);
+         P3DConnectEmitterBlendState($prevBlendState[0],$nextBlendState[0]);
+         if (size($nextNextBlendState)>0)
+         {
+            P3DDisConnectEmitterBlendState($nextBlendState[0],$nextNextBlendState[0]);
+            P3DConnectEmitterBlendState($currentBlendState[0],$nextNextBlendState[0]);
+         }
+         P3DConnectEmitterBlendState($nextBlendState[0],$currentBlendState[0]);
+         P3DUpdateBlendStateEditor(1);
+         textScrollList -edit -selectItem $currentBlendState[0] EmitterBlendStateList;
+      }
+   }
+}
+

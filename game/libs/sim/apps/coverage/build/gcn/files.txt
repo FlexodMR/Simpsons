@@ -1,0 +1,92 @@
+##########################################################################
+#
+#  Files specific: This files specified location of the generated library/
+#		   executable file and where to gather source & header files  
+#		   for compilation.
+##########################################################################
+
+####################
+# General defines
+####################
+
+PLATFORM=GCN
+
+#ROOT = ../../../../..
+ROOTDIR = ../../../../..
+
+CONSTANTS = $(ROOTDIR)/pure3d/constants
+CORE = $(ROOTDIR)/pure3d/p3d
+ANIM = $(ROOTDIR)/pure3d/p3d/anim
+EFFECT = $(ROOTDIR)/pure3d/p3d/effects
+P3DLIBDIR = $(ROOTDIR)/pure3d/build/lib
+P3DDIR = $(ROOTDIR)/pure3d/build/gamecube/Pure3D
+#PDDIGAMECUBEDIR = $(ROOTDIR)/pure3d/build/gamecube/pddi
+RADMATHDIR = $(ROOTDIR)/radmath
+#PNGDIR = $(ROOTDIR)/pure3d/build/gamecube/png
+#ZLIBDIR = $(ROOTDIR)/pure3d/build/gamecube/zlib
+SIMDIR = $(ROOTDIR)/sim/lib
+RADCOREDIR = $(ROOTDIR)/radcore
+POSERDIR = $(ROOTDIR)/poser
+
+BINDIR        = ../../bin
+LIBRARYDIR    = ../../lib
+SOURCEDIR     = ../../Src
+INCLUDEDIR    += \
+	../../src \
+	$(ROOTDIR)/pure3d \
+	$(ROOTDIR)/pure3d/pddi \
+	$(RADMATHDIR) \
+	$(ROOTDIR)/sim \
+	$(RADCOREDIR)/inc \
+	$(POSERDIR)/inc \
+	$(CONSTANTS) \
+	$(CORE) \
+	$(CORE)/platform/gamecube \
+	$(COVERDIR) \
+	$(INCDIR) \
+	$(ROOTDIR)
+			
+TARGET        = $(BINDIR)/coverage
+
+TARGETTYPE    = EXECUTABLE
+
+DEFINES += GCN P3D_GAMECUBE PDDI_GAMECUBE
+
+ifeq ($(CONFIG), DEBUG)
+LIBEXT = d
+endif
+
+ifeq ($(CONFIG), RELEASE)
+LIBEXT = r
+endif
+
+ifeq ($(CONFIG), TUNE)
+LIBEXT = t
+endif
+
+LIBS += \
+	$(P3DLIBDIR)/pure3dg$(LIBEXT).a \
+	$(P3DLIBDIR)/pddig$(LIBEXT).a \
+	$(P3DLIBDIR)/pngg$(LIBEXT).a \
+	$(P3DLIBDIR)/zlibg$(LIBEXT).a \
+	$(RADMATHDIR)/lib/radmathg$(LIBEXT).a \
+	$(RADCOREDIR)/lib/radcoreg$(LIBEXT).a \
+	$(SIMDIR)/simg$(LIBEXT).a \
+	$(POSERDIR)/lib/poserg$(LIBEXT).a
+
+#####################################
+# source files included in project
+#####################################
+
+SOURCEFILES += \
+	gamecube \
+	coverapp \
+	coverage \
+	harness \
+	userobject \
+	benchmark \
+	benchmarkparameter \
+	benchmarkresults \
+	configparam \
+	grid \
+	viewercamera

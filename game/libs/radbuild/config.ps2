@@ -1,0 +1,357 @@
+##########################################################################
+#
+#  Platform Specific Configuration : PS2 Configuation files
+#
+##########################################################################
+#
+# Input Variables:
+#
+#	CONFIG		: build define
+#	TARGET		: output target file name (ie: radcore)
+#	TARGETTYPE	: file extension define (library or executable)
+#	
+##########################################################################
+
+########################################################################
+#
+# Setup build type 
+#
+########################################################################
+
+ifeq ($(CONFIG), DEBUG)
+EXT = pd
+DEFINES	+= RAD_DEBUG _DEBUG
+	ifeq ($(BUILDPAL), TRUE)
+		OBJDIR = PALDebug
+	else
+		ifeq ($(BUILDE3), TRUE)
+			OBJDIR = E3Debug
+		else
+			OBJDIR = Debug
+		endif
+	endif
+endif
+
+ifeq ($(CONFIG), RELEASE)
+EXT = pr
+DEFINES	+= NRAD_DEBUG RAD_RELEASE
+	ifeq ($(BUILDPAL), TRUE)
+		OBJDIR = PALRelease
+	else
+		ifeq ($(BUILDE3), TRUE)
+			OBJDIR = E3Release
+		else
+			OBJDIR = Release
+		endif
+	endif
+endif
+
+ifeq ($(CONFIG), TUNE)
+EXT = pt
+DEFINES += NRAD_DEBUG RAD_TUNE
+	ifeq ($(BUILDPAL), TRUE)
+		OBJDIR = PALTune
+	else
+		ifeq ($(BUILDE3), TRUE)
+			OBJDIR = E3Tune
+		else
+			OBJDIR = Tune
+		endif
+	endif
+endif
+
+########################################################################
+#
+# Setup cross compiler for target platform.
+#
+########################################################################
+
+# path to libraries and includes
+SCE	= $(CURRENTDRIVE)/usr/local/sce
+SONY	= $(SCE)/$(PREFIX)
+PREFIX  = ee
+
+PLATFORM = PS2EE
+
+DEFINES  += RAD_PS2 PLAT_PS2 RAD_CONSOLE
+
+########################################################################
+#
+# Setup file extension name
+#
+########################################################################
+
+ifeq ($(TARGETTYPE),LIBRARY)
+PLAT_EXT  = a
+else
+PLAT_EXT  = elf
+endif
+
+
+########################################################################
+#
+# Compiler Tools
+#
+########################################################################
+
+# PREFIX	platform prefix 
+# AS CC LD AR 	command line tools
+# DVPASM	
+# OBJDUMP
+# RUN
+# RANLIB
+# ARFLAGS
+#
+
+AS      = $(SONY)/gcc/bin/$(PREFIX)-as
+CC      = $(SONY)/gcc/bin/$(PREFIX)-gcc2953
+DP      = $(ROOTDIR)/radbuild/GlobalTools/makedepend.exe
+LD      = $(SONY)/gcc/bin/$(PREFIX)-gcc2953
+EEGCC   = $(SONY)/gcc/bin/$(PREFIX)-gcc2953
+DVPASM  = $(SONY)/gcc/bin/$(PREFIX)-dvp-as
+OBJDUMP = $(SONY)/gcc/bin/$(PREFIX)-objdump
+PERL    = $(ROOTDIR)/radbuild/GlobalTools/Perl
+FIXDEP 	= $(ROOTDIR)/radbuild/fixdep.pl
+VCL	    = $(ROOTDIR)/pure3d/pddi/ps2/vcl/vcl
+RUN     = dsedb -r run
+AR	    = $(SONY)/gcc/bin/$(PREFIX)-ar
+RANLIB	= $(SONY)/gcc/bin/$(PREFIX)-ranlib
+ARFLAGS	= cr
+CRTFILE = $(SONY)/lib/crt0.s
+
+ifeq ($(PS2LINKER), SNLINKER)
+LD      = $(SONY)/gcc/bin/ps2ld
+endif
+
+#####################################################################
+#
+# Warning flags for C programs
+# If the warnings in your own program about shadowing variables are
+# resolved, you can comment out the warning -Wshadow in order to
+# rid of all warnings about iostream functions
+#
+#####################################################################
+
+CWARNINGS = \
+	-Wall \
+	-Wno-unused \
+	-Wshadow \
+	-Wbad-function-cast \
+
+CXXWARNINGS = $(CWARNINGS) \
+	-Woverloaded-virtual \
+	-Wno-non-virtual-dtor \
+	-Wno-shadow \
+	-Wno-ctor-dtor-privacy \
+	-Wno-overloaded-virtual \
+
+NCWARNINGS = \
+	-Wall \
+	-Wpointer-arith \
+	-Wcast-qual \
+	-Wcast-align \
+	-Wstrict-prototypes \
+	-Wmissing-prototypes \
+	-Wmissing-declarations \
+
+NXXWARNINGS = \
+	-Wuninitialized \
+	-Wwrite-strings \
+	-Wnested-externs \
+	-Wtraditional \
+	-Wconversion \
+	-Wcomment \
+	-Wcast-align \
+	-Winline \
+	-Wredundant-decls \
+	-Wid-clash-31 \
+	
+#####################################################################
+#
+# DEPENDENCIES FLAGS
+#
+#####################################################################
+
+# DPFLAG		dependencies flag
+# DPPREPROCFLAGS	preproc c flag
+# DPPREPROCXXFLAGS	prepro cxx flag
+
+DPFLAG   = -D__IEEE_LITTLE_ENDIAN
+DPPREPROCFLAGS = $(CFLAGS) 
+DPPREPROCXXFLAGS = $(CXXFLAGS)
+
+# to generate map file.  Not needed most of the time.
+# LISTING_FILES = -Wa,-al
+
+#####################################################################
+#
+# COMPILE FLAGS
+#
+#####################################################################
+
+ifeq ($(TARGETTYPE),LIBRARY)
+DEBUG_OPTIMIZATIONFLAG =
+else
+DEBUG_OPTIMIZATIONFLAG =
+endif
+
+ifeq ($(CONFIG), DEBUG)
+COMPILERFLAGS = -g $(DEBUG_OPTIMIZATIONFLAG)
+endif
+
+ifeq ($(CONFIG), RELEASE)
+COMPILERFLAGS = -Os -fbyte-bool
+endif
+
+ifeq ($(CONFIG), TUNE)
+COMPILERFLAGS = -g -O3
+endif
+
+# -Winline -Wsoftware-math-library are removed for less warnings prints out
+WARNINGS = -G 0 -Wa,-G,0
+
+# for C compatibility
+CEXCEPTION = -fno-common -fno-strict-aliasing
+CFLAGS  = -c -ffast-math 
+ifeq ($(OSTYPE),linux)
+else
+CFLAGS += -fdefault-single-float
+endif
+CFLAGS += $(CWARNINGS) $(WARNINGS) $(LISTING_FILES) $(CEXCEPTION) $(COMPILERFLAGS)
+
+# for VC++ compatibility
+CXXEXCEPTION = -fno-exceptions -fno-common -fno-strict-aliasing
+CXXFLAGS = -c -ffast-math 
+ifeq ($(OSTYPE),linux)
+else
+CXXFLAGS += -fdefault-single-float 
+endif
+CXXFLAGS += $(CXXWARNINGS) $(WARNINGS) $(LISTING_FILES) $(CXXEXCEPTION) $(COMPILERFLAGS)
+
+#####################################################################
+#
+# DSM FLAGS
+#
+#####################################################################
+
+ifeq ($(CONFIG), DEBUG)
+DVPASMFLAGS = --gstabs
+endif
+
+ifeq ($(CONFIG), RELEASE)
+DVPASMFLAGS = --gstabs
+endif
+
+ifeq ($(CONFIG), TUNE)
+DVPASMFLAGS = -J -W
+endif
+
+#####################################################################
+#
+# AS FLAGS
+#
+#####################################################################
+
+ASFLAGS     = -c -xassembler-with-cpp $(LISTING_FILES)
+
+#####################################################################
+#
+# VCL FLAGS
+#
+#####################################################################
+
+VCLFLAGS =  -g -t4 -A
+
+#####################################################################
+#
+# LINKER FLAGS
+#
+#####################################################################
+LINKERCMDFILE = $(SONY)/lib/app.cmd
+
+LIBDIRS	+= -L$(SONY)/lib
+LCF += $(LINKERCMDFILE)
+
+ifeq ($(PS2LINKER),SNLINKER)
+
+ifeq ($(MAPFILE), TRUE)
+LDFLAGS      = $(LIBDIRS) -collect2 -Map $(TARGET).map
+else
+LDFLAGS      = $(LIBDIRS) -collect2
+endif
+
+else
+
+ifeq ($(MAPFILE), TRUE)
+LDFLAGS     = -Wl,-Map,$(TARGET).map -nostartfiles $(LIBDIRS) -lm
+else
+LDFLAGS      = -nostartfiles $(LIBDIRS) -lm
+endif
+
+endif
+
+# Use this LDFLAGS if you want a map file generated
+#LDFLAGS     = -Wl,-Map,$(TARGET).map -nostartfiles $(LIBDIRS) -lm
+
+#####################################################################
+#
+# SONY INCLUDES & SONY LIBRARIES
+#
+#####################################################################
+
+INCLUDEDIR += \
+	$(SCE)/common/include \
+	$(SONY)/include \
+	$(SONY)/gcc/ee/include \
+	$(SONY)/gcc/ee/include/sys \
+	$(SONY)/gcc/include \
+	$(SONY)/gcc/lib/gcc-lib/ee/2.95.3/include \
+	$(SONY)/gcc/include/g++-2 \
+
+ifeq ($(PS2LINKER),SNLINKER)
+
+SYSTEMLIBS += \
+	$(SONY)/gcc/ee/lib/libg.a \
+	$(SONY)/gcc/ee/lib/libstdc++.a \
+	$(SONY)/lib/libgraph.a \
+	$(SONY)/lib/libdma.a \
+	$(SONY)/lib/libdev.a \
+	$(SONY)/lib/libpc.a \
+	$(SONY)/lib/libpkt.a \
+	$(SONY)/lib/libvu0.a \
+	$(SONY)/lib/libpad.a \
+	$(SONY)/lib/libmpeg.a \
+	$(SONY)/lib/libipu.a \
+	$(SONY)/lib/libsdr.a \
+	$(SONY)/lib/libcdvd.a \
+	$(SONY)/lib/libmtap.a \
+	$(SONY)/lib/libscf.a \
+	$(SONY)/lib/libmc.a \
+	$(SONY)/lib/libsn.a \
+	$(SONY)/lib/libkernl.a \
+	$(SONY)/gcc/ee/lib/libm.a \
+	$(SONY)/gcc/ee/lib/libc.a \
+	$(SONY)/gcc/lib/gcc-lib/ee/2.95.3/libgcc.a \
+
+else
+
+SYSTEMLIBS += \
+	$(SONY)/gcc/ee/lib/libg.a \
+	$(SONY)/gcc/ee/lib/libstdc++.a \
+	$(SONY)/lib/libgraph.a \
+	$(SONY)/lib/libdma.a \
+	$(SONY)/lib/libdev.a \
+	$(SONY)/lib/libpc.a \
+	$(SONY)/lib/libpkt.a \
+	$(SONY)/lib/libvu0.a \
+	$(SONY)/lib/libpad.a \
+	$(SONY)/lib/libmpeg.a \
+	$(SONY)/lib/libipu.a \
+	$(SONY)/lib/libsdr.a \
+	$(SONY)/lib/libcdvd.a \
+	$(SONY)/lib/libmtap.a \
+	$(SONY)/lib/libscf.a \
+	$(SONY)/lib/libmc.a \
+	$(SONY)/lib/libsn.a \
+
+endif

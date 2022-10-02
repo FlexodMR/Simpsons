@@ -1,0 +1,34 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformUIClearStateList.mel
+// Author: Bryan Brandt
+//
+// Description: Deformation tool utility function for clearing UI state lists
+//
+
+
+// Clears a given state list
+// - arguments:
+//     arg_window - window containing column form
+//     arg_column_form - column form containing the state panel list
+//
+global proc p3dDeformUIClearStateList(string $arg_window,
+                                      string $arg_column_form)
+{
+   if (!(`window -exists $arg_window`))
+   {
+      return;
+   }
+
+   string $state_panels[] = eval("columnLayout -q -ca " + $arg_column_form);
+   int $state_panel_count = size($state_panels);
+
+   int $i;
+   for ($i = 0; $i < $state_panel_count; $i++)
+   {
+      deleteUI -layout $state_panels[$i];
+   }
+}
+
+
+// End of file.

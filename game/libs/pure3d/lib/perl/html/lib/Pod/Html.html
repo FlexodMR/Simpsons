@@ -1,0 +1,346 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Pod::HTML - module to convert pod files to HTML
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#ARGUMENTS">ARGUMENTS</A>
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Pod::HTML - module to convert pod files to 
+<FONT SIZE=-1>HTML</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Pod::HTML;
+    pod2html([options]);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Converts files from pod format (see <A HREF="/n|/perl/html/./lib/Pod/perlpod.html#">the perlpod manpage</A>) to 
+<FONT SIZE=-1>HTML</FONT> format. It can automatically generate indexes and
+cross-references, and it keeps a cache of things it knows how to
+cross-reference.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ARGUMENTS">ARGUMENTS
+
+</A></H1>
+Pod::Html takes the following arguments:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_help">help
+
+</A></STRONG><DD>
+<PRE>    --help
+</PRE>
+
+<P>
+
+Displays the usage message.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_htmlroot">htmlroot
+
+</A></STRONG><DD>
+<PRE>    --htmlroot=name
+</PRE>
+
+<P>
+
+Sets the base 
+<FONT SIZE=-1>URL</FONT> for the 
+<FONT SIZE=-1>HTML</FONT> files. When cross-references are made, the 
+<FONT SIZE=-1>HTML</FONT> root is prepended to the 
+<FONT SIZE=-1>URL.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_infile">infile
+
+</A></STRONG><DD>
+<PRE>    --infile=name
+</PRE>
+
+<P>
+
+Specify the pod file to convert. Input is taken from 
+<FONT SIZE=-1>STDIN</FONT> if no infile is specified.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_outfile">outfile
+
+</A></STRONG><DD>
+<PRE>    --outfile=name
+</PRE>
+
+<P>
+
+Specify the 
+<FONT SIZE=-1>HTML</FONT> file to create. Output goes to 
+<FONT SIZE=-1>STDOUT</FONT> if no outfile is specified.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_podroot">podroot
+
+</A></STRONG><DD>
+<PRE>    --podroot=name
+</PRE>
+
+<P>
+
+Specify the base directory for finding library pods.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_podpath">podpath
+
+</A></STRONG><DD>
+<PRE>    --podpath=name:...:name
+</PRE>
+
+<P>
+
+Specify which subdirectories of the podroot contain pod files whose 
+<FONT SIZE=-1>HTML</FONT> converted forms can be linked-to in
+cross-references.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_libpods">libpods
+
+</A></STRONG><DD>
+<PRE>    --libpods=name:...:name
+</PRE>
+
+<P>
+
+List of page names (eg, ``perlfunc'') which contain linkable <CODE>=item</CODE>s.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_netscape">netscape
+
+</A></STRONG><DD>
+<PRE>    --netscape
+</PRE>
+
+<P>
+
+Use Netscape 
+<FONT SIZE=-1>HTML</FONT> directives when applicable.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_nonetscape">nonetscape
+
+</A></STRONG><DD>
+<PRE>    --nonetscape
+</PRE>
+
+<P>
+
+Do not use Netscape 
+<FONT SIZE=-1>HTML</FONT> directives (default).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_index">index
+
+</A></STRONG><DD>
+<PRE>    --index
+</PRE>
+
+<P>
+
+Generate an index at the top of the 
+<FONT SIZE=-1>HTML</FONT> file (default behaviour).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_noindex">noindex
+
+</A></STRONG><DD>
+<PRE>    --noindex
+</PRE>
+
+<P>
+
+Do not generate an index at the top of the 
+<FONT SIZE=-1>HTML</FONT> file.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_recurse">recurse
+
+</A></STRONG><DD>
+<PRE>    --recurse
+</PRE>
+
+<P>
+
+Recurse into subdirectories specified in podpath (default behaviour).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_norecurse">norecurse
+
+</A></STRONG><DD>
+<PRE>    --norecurse
+</PRE>
+
+<P>
+
+Do not recurse into subdirectories specified in podpath.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_title">title
+
+</A></STRONG><DD>
+<PRE>    --title=title
+</PRE>
+
+<P>
+
+Specify the title of the resulting 
+<FONT SIZE=-1>HTML</FONT> file.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_verbose">verbose
+
+</A></STRONG><DD>
+<PRE>    --verbose
+</PRE>
+
+<P>
+
+Display progress messages.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+<PRE>    pod2html(&quot;pod2html&quot;,
+             &quot;--podpath=lib:ext:pod:vms&quot;, 
+             &quot;--podroot=/usr/src/perl&quot;,
+             &quot;--htmlroot=/perl/nmanual&quot;,
+             &quot;--libpods=<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html">perlfunc</A>:<A HREF="/n|/perl/html/./lib/Pod/perlguts.html">perlguts</A>:<A HREF="/n|/perl/html/./lib/Pod/perlvar.html">perlvar</A>:<A HREF="/n|/perl/html/./lib/Pod/perlrun.html">perlrun</A>:<A HREF="/n|/perl/html/./lib/Pod/perlop.html">perlop</A>&quot;,
+             &quot;--recurse&quot;,
+             &quot;--infile=foo.pod&quot;,
+             &quot;--outfile=/perl/nmanual/foo.html&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Christiansen, &lt;<A HREF="MAILTO:tchrist@perl.com">tchrist@perl.com</A>&gt;.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Has trouble with <CODE></CODE> etc in = commands.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Pod/perlpod.html#">the perlpod manpage</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+This program is distributed under the Artistic License.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,71 @@
+SelectMission("m2sd");
+
+SetAnimatedCameraName( "mission2camShape" );
+SetAnimCamMulticontName( "mission2cam" );
+SetMissionStartCameraName( "mission2camShape" );
+SetMissionStartMulticontName( "mission2cam" );
+
+SetMissionResetPlayerOutCar("m2_lisa_start", "m2_carstart");
+SetDynaLoadData("l3z1.p3d;l3r1.p3d;l3r5.p3d;l3r5_dam.p3d;");
+
+UsePedGroup(0);
+
+AddStage(0);
+	SetStageMessageIndex(179);
+	SetHUDIcon( "noise" );
+	SetMaxTraffic(3);
+	AddObjective("goto");
+		AddNPC("milhouse", "m2_milhouse_sd");
+		SetDestination("m2_arcade", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(163);
+	SetHUDIcon( "milhouse" );
+	AddObjective("talkto");
+		AddNPC("milhouse", "m2_milhouse_sd");
+		AddObjectiveNPCWaypoint( "milhouse", "milhouse_walk_1" );
+		SetTalkToTarget("milhouse", 0, -0.5);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis03_02.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_thinking" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		SetDialogueInfo("lisa","milhouse","noiseland",0);
+		SetCamBestSide( "m2_bestside" );
+		SetDialoguePositions("m2_lisa_loc","m2_milhouse_sd","m2_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//DIALOGUE ANIMATION LIST
+//
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air
+

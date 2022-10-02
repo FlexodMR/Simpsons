@@ -1,0 +1,26 @@
+// CPRP: 
+// Colour, Specular(coloured), Reflection(spherical), Projection
+
+xps.1.1    // Xbox pixel shader
+
+tex t0				;base map
+tex t1				;specular map
+tex t2				;reflection map
+tex t3				;projection map
+
+;Want:
+; diffusecolour *base.rgb(0) + 
+; specular*specular.rgb(1)  Don't need this one, specular map would be premultiplied*specular.a(1) +
+; reflection.rgb(2)*reflection.a(1) +
+; projection.rgb(3)
+
+mul r0, v0, t0			;Base colour
+mad r0, v1, t1, r0		;Specular colour
+mad r0, t2, t1.a, r0	;reflection map, modulated with alpha from specular
+add r0, r0, t3_bx2		;projection map
+
+;don't do specular or again, but still do fog.
+;final color = s0*s1 + (1-s0)*s2 + s3, 
+xfc fog.a, r0, fog.rgb, zero, zero, zero, r0
+
+

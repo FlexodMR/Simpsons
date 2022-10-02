@@ -1,0 +1,1034 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlrun - how to execute the Perl interpreter
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#_and_quoting_on_non_Unix_syste">#! and quoting on non-Unix systems</A>
+		<LI><A HREF="#Switches">Switches</A>
+	</UL>
+
+	<LI><A HREF="#ENVIRONMENT">ENVIRONMENT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlrun - how to execute the Perl interpreter
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<STRONG>perl</STRONG>		[&nbsp;<STRONG>-sTuU</STRONG>&nbsp;]
+	
+	[&nbsp;<STRONG>-hv</STRONG>&nbsp;]&nbsp;[&nbsp;<STRONG>-V</STRONG>[:<EM>configvar</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-cw</STRONG>&nbsp;]&nbsp;[&nbsp;<STRONG>-d</STRONG>[:<EM>debugger</EM>]&nbsp;]&nbsp;[&nbsp;<STRONG>-D</STRONG>[<EM>number/list</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-pna</STRONG>&nbsp;]&nbsp;[&nbsp;<STRONG>-F</STRONG><EM>pattern</EM>&nbsp;]&nbsp;[&nbsp;<STRONG>-l</STRONG>[<EM>octal</EM>]&nbsp;]&nbsp;[&nbsp;<STRONG>-0</STRONG>[<EM>octal</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-I</STRONG><EM>dir</EM>&nbsp;]&nbsp;[&nbsp;<STRONG>-m</STRONG>[<STRONG>-</STRONG>]<EM>module</EM>&nbsp;]&nbsp;[&nbsp;<STRONG>-M</STRONG>[<STRONG>-</STRONG>]<EM>'module...'</EM>&nbsp;]
+	
+	[&nbsp;<STRONG>-P</STRONG>&nbsp;]
+	
+	[&nbsp;<STRONG>-S</STRONG>&nbsp;]
+	
+	[&nbsp;<STRONG>-x</STRONG>[<EM>dir</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-i</STRONG>[<EM>extension</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-e</STRONG>&nbsp;<EM>'command'</EM>&nbsp;]&nbsp;[&nbsp;<STRONG>--</STRONG>&nbsp;]&nbsp;[&nbsp;<EM>programfile</EM>&nbsp;]&nbsp;[&nbsp;<EM>argument</EM>&nbsp;]...
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Upon startup, Perl looks for your script in one of the following places:
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+Specified line by line via <STRONG>-e</STRONG> switches on the command line.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+Contained in the file specified by the first filename on the command line.
+(Note that systems supporting the #! notation invoke interpreters this
+way.)
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+Passed in implicitly via standard input. This works only if there are no filename arguments--to pass arguments to a 
+<FONT SIZE=-1>STDIN</FONT> script you must explicitly specify a ``-'' for the script name.
+
+
+
+<P>
+
+</OL>
+With methods 2 and 3, Perl starts parsing the input file from the
+beginning, unless you've specified a <STRONG>-x</STRONG> switch, in which case it scans for the first line starting with #! and
+containing the word ``perl'', and starts there instead. This is useful for
+running a script embedded in a larger message. (In this case you would
+indicate the end of the script using the <CODE>__END__</CODE> token.)
+
+
+<P>
+
+The #! line is always examined for switches as the line is being parsed.
+Thus, if you're on a machine that allows only one argument with the #!
+line, or worse, doesn't even recognize the #! line, you still can get
+consistent switch behavior regardless of how Perl was invoked, even if <STRONG>-x</STRONG> was used to find the beginning of the script.
+
+
+<P>
+
+Because many operating systems silently chop off kernel interpretation of
+the #! line after 32 characters, some switches may be passed in on the
+command line, and some may not; you could even get a ``-'' without its
+letter, if you're not careful. You probably want to make sure that all your
+switches fall either before or after that 32 character boundary. Most
+switches don't actually care if they're processed redundantly, but getting
+a - instead of a complete switch could cause Perl to try to execute
+standard input instead of your script. And a partial <STRONG>-I</STRONG> switch could also cause odd results.
+
+
+<P>
+
+Parsing of the #! switches starts wherever ``perl'' is mentioned in the
+line. The sequences ``-*'' and ``- '' are specifically ignored so that you
+could, if you were so inclined, say
+
+
+<P>
+
+<PRE>    #!/bin/sh -- # -*- perl -*- -p
+    eval 'exec /usr/bin/perl $0 -S ${1+&quot;$@&quot;}'
+        if $running_under_some_shell;
+</PRE>
+
+<P>
+
+to let Perl see the <STRONG>-p</STRONG> switch.
+
+
+<P>
+
+If the #! line does not contain the word ``perl'', the program named after the #! is executed instead of the Perl interpreter. This is slightly bizarre, but it helps people on machines that don't do #!, because they can tell a program that their 
+<FONT SIZE=-1>SHELL</FONT> is /usr/bin/perl, and Perl will then dispatch the program to the correct interpreter for them.
+
+
+
+<P>
+
+After locating your script, Perl compiles the entire script to an internal
+form. If there are any compilation errors, execution of the script is not
+attempted. (This is unlike the typical shell script, which might run
+part-way through before finding a syntax error.)
+
+
+<P>
+
+If the script is syntactically correct, it is executed. If the script runs
+off the end without hitting an <CODE>exit()</CODE> or <CODE>die()</CODE>
+operator, an implicit
+<A HREF="#item_exit">exit(0)</A> is provided to indicate successful completion.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_and_quoting_on_non_Unix_syste">#! and quoting on non-Unix systems
+
+</A></H2>
+Unix's #! technique can be simulated on other systems:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_OS">OS/2
+
+</A></STRONG><DD>
+Put
+
+
+<P>
+
+<PRE>    extproc perl -S -your_switches
+</PRE>
+
+<P>
+
+as the first line in <CODE>*.cmd</CODE> file (<A HREF="#item__S">-S</A> due to a bug in cmd.exe's `extproc' handling).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_MS">MS-DOS
+
+</A></STRONG><DD>
+Create a batch file to run your script, and codify it in
+<CODE>ALTERNATIVE_SHEBANG</CODE> (see the <EM>dosish.h</EM> file in the source distribution for more information).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Win95">Win95/NT
+
+</A></STRONG><DD>
+The Win95/NT installation, when using the Activeware port of Perl, will
+modify the Registry to associate the .pl extension with the perl
+interpreter. If you install another port of Perl, including the one in the
+Win32 directory of the Perl distribution, then you'll have to modify the
+Registry yourself.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Macintosh">Macintosh
+
+</A></STRONG><DD>
+Macintosh perl scripts will have the appropriate Creator and Type, so that
+double-clicking them will invoke the perl application.
+
+
+<P>
+
+</DL>
+Command-interpreters on non-Unix systems have rather different ideas on
+quoting than Unix shells. You'll need to learn the special characters in
+your command-interpreter (<CODE>*</CODE>, <CODE>\</CODE> and <CODE>"</CODE> are common) and how to protect whitespace and these characters to run
+one-liners (see <A HREF="#item__e">-e</A> below).
+
+
+<P>
+
+On some systems, you may have to change single-quotes to double ones, which
+you must <EM>NOT</EM> do on Unix or Plan9 systems. You might also have to change a single % to a
+%%.
+
+
+<P>
+
+For example:
+
+
+<P>
+
+<PRE>    # Unix
+    perl -e 'print &quot;Hello world\n&quot;'
+</PRE>
+
+<P>
+
+<PRE>    # MS-DOS, etc.
+    perl -e &quot;print \&quot;Hello world\n\&quot;&quot;
+</PRE>
+
+<P>
+
+<PRE>    # Macintosh
+    print &quot;Hello world\n&quot;
+     (then Run &quot;Myscript&quot; or Shift-Command-R)
+</PRE>
+
+<P>
+
+<PRE>    # VMS
+    perl -e &quot;print &quot;&quot;Hello world\n&quot;&quot;&quot;
+</PRE>
+
+<P>
+
+The problem is that none of this is reliable: it depends on the command and it is entirely possible neither works. If 
+<FONT SIZE=-1>4DOS</FONT> was the command shell, this would probably work better:
+
+
+
+<P>
+
+<PRE>    perl -e &quot;print &lt;Ctrl-x&gt;&quot;Hello world\n&lt;Ctrl-x&gt;&quot;&quot;
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>CMD.EXE</FONT> in Windows 
+<FONT SIZE=-1>NT</FONT> slipped a lot of standard Unix functionality in when nobody was looking, but just try to find documentation for its quoting rules.
+
+
+
+<P>
+
+Under the Macintosh, it depends which environment you are using. The MacPerl shell, or 
+<FONT SIZE=-1>MPW,</FONT> is much like Unix shells in its support for several quoting variants, except that it makes free use of the Macintosh's non-ASCII characters as control characters.
+
+
+
+<P>
+
+There is no general solution to all of this. It's just a mess.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Switches">Switches
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> single-character switch may be combined with the
+following switch, if any.
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl -spi.bak    # same as -s -p -i.bak
+</PRE>
+
+<P>
+
+Switches include:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__0_digits_">-0[digits]
+
+</A></STRONG><DD>
+specifies the input record separator (<CODE>$/</CODE>) as an octal number. If there are no digits, the null character is the
+separator. Other switches may precede or follow the digits. For example, if
+you have a version of
+<STRONG>find</STRONG> which can print filenames terminated by the null character, you can say
+this:
+
+
+<P>
+
+<PRE>    find . -name '*.bak' -print0 | perl -n0e unlink
+</PRE>
+
+<P>
+
+The special value 00 will cause Perl to slurp files in paragraph mode. The
+value 0777 will cause Perl to slurp files whole because there is no legal
+character with that value.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__a">-a
+
+</A></STRONG><DD>
+turns on autosplit mode when used with a <STRONG>-n</STRONG> or <STRONG>-p</STRONG>. An implicit split command to the <CODE>@F</CODE> array is done as the
+first thing inside the implicit while loop produced by the <STRONG>-n</STRONG> or <STRONG>-p</STRONG>.
+
+
+<P>
+
+<PRE>    perl -ane 'print pop(@F), &quot;\n&quot;;'
+</PRE>
+
+<P>
+
+is equivalent to
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        @F = split(' ');
+        print pop(@F), &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+An alternate delimiter may be specified using <STRONG>-F</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c">-c
+
+</A></STRONG><DD>
+causes Perl to check the syntax of the script and then exit without
+executing it. Actually, it <EM>will</EM> execute <A HREF="#item_BEGIN">BEGIN</A>, <A HREF="#item_END">END</A>, and <A HREF="#item_use">use</A> blocks, because these are considered as occurring outside the execution of
+your program.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__d">-d
+
+</A></STRONG><DD>
+runs the script under the Perl debugger. See <A HREF="/n|/perl/html/./lib/Pod/perldebug.html#">the perldebug manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__d_foo">-d:foo
+
+</A></STRONG><DD>
+runs the script under the control of a debugging or tracing module
+installed as Devel::foo. E.g., <STRONG>-d:DProf</STRONG> executes the script using the Devel::DProf profiler. See <A HREF="/n|/perl/html/./lib/Pod/perldebug.html#">the perldebug manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__Dnumber">-Dnumber
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__Dlist">-Dlist
+
+</A></STRONG><DD>
+sets debugging flags. To watch how it executes your script, use
+<STRONG>-D14</STRONG>. (This works only if debugging is compiled into your Perl.) Another nice
+value is <STRONG>-D1024</STRONG>, which lists your compiled syntax tree. And <STRONG>-D512</STRONG> displays compiled regular expressions. As an alternative specify a list of
+letters instead of numbers (e.g., <STRONG>-D14</STRONG> is equivalent to <STRONG>-Dtls</STRONG>):
+
+
+<P>
+
+<PRE>        1  p  Tokenizing and Parsing
+        2  s  Stack Snapshots
+        4  l  Label Stack Processing
+        8  t  Trace Execution
+       16  o  Operator Node Construction
+       32  c  String/Numeric Conversions
+       64  P  Print Preprocessor Command for -P
+      128  m  Memory Allocation
+      256  f  Format Processing
+      512  r  Regular Expression Parsing
+     1024  x  Syntax Tree Dump
+     2048  u  Tainting Checks
+     4096  L  Memory Leaks (not supported anymore)
+     8192  H  Hash Dump -- usurps values()
+    16384  X  Scratchpad Allocation
+    32768  D  Cleaning Up
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__e">-e commandline
+
+</A></STRONG><DD>
+may be used to enter one line of script. If <STRONG>-e</STRONG> is given, Perl will not look for a script filename in the argument list.
+Multiple <STRONG>-e</STRONG> commands may be given to build up a multi-line script. Make sure to use
+semicolons where you would in a normal program.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__Fpattern">-Fpattern
+
+</A></STRONG><DD>
+specifies the pattern to split on if <STRONG>-a</STRONG> is also in effect. The pattern may be surrounded by <CODE>//</CODE>, <CODE>""</CODE>, or <CODE>''</CODE>, otherwise it will be put in single quotes.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__h">-h
+
+</A></STRONG><DD>
+prints a summary of the options.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__i_extension_">-i[extension]
+
+</A></STRONG><DD>
+specifies that files processed by the <CODE>&lt;&gt;</CODE> construct are to be edited in-place. It does this by renaming the input
+file, opening the output file by the original name, and selecting that
+output file as the default for <CODE>print()</CODE> statements. The
+extension, if supplied, is added to the name of the old file to make a
+backup copy. If no extension is supplied, no backup is made. From the
+shell, saying
+
+
+<P>
+
+<PRE>    $ perl -p -i.bak -e &quot;s/foo/bar/; ... &quot;
+</PRE>
+
+<P>
+
+is the same as using the script:
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl -pi.bak
+    s/foo/bar/;
+</PRE>
+
+<P>
+
+which is equivalent to
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl
+    while (&lt;&gt;) {
+        if ($ARGV ne $oldargv) {
+            rename($ARGV, $ARGV . '.bak');
+            open(ARGVOUT, &quot;&gt;$ARGV&quot;);
+            select(ARGVOUT);
+            $oldargv = $ARGV;
+        }
+        s/foo/bar/;
+    }
+    continue {
+        print;  # this prints to original filename
+    }
+    select(STDOUT);
+</PRE>
+
+<P>
+
+except that the <STRONG>-i</STRONG> form doesn't need to compare <CODE>$ARGV</CODE> to <CODE>$oldargv</CODE> to know when the filename has changed. It does, however, use 
+<FONT SIZE=-1>ARGVOUT</FONT> for the selected filehandle. Note that 
+<FONT SIZE=-1>STDOUT</FONT> is restored as the default output filehandle after the loop.
+
+
+
+<P>
+
+You can use <A HREF="#item_eof">eof</A> without parenthesis to locate the end of each input file, in case you want
+to append to each file, or reset line numbering (see example in <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#eof">eof</A>).
+
+
+<P>
+
+<DT><STRONG><A NAME="item__Idirectory">-Idirectory
+
+</A></STRONG><DD>
+Directories specified by <STRONG>-I</STRONG> are prepended to the search path for modules (<A HREF="#item__INC">@INC</A>), and also tells the 
+<FONT SIZE=-1>C</FONT> preprocessor where to search for include files. The 
+<FONT SIZE=-1>C</FONT> preprocessor is invoked with
+ <STRONG>-P</STRONG>; by default it searches /usr/include and /usr/lib/perl.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__l_octnum_">-l[octnum]
+
+</A></STRONG><DD>
+enables automatic line-ending processing. It has two effects: first, it
+automatically chomps ``<CODE>$/</CODE>'' (the input record separator) when used with <STRONG>-n</STRONG> or <STRONG>-p</STRONG>, and second, it assigns ``<CODE>$\</CODE>'' (the output record separator) to have the value of <EM>octnum</EM> so that any print statements will have that separator added back on. If
+<EM>octnum</EM> is omitted, sets ``<CODE>$\</CODE>'' to the current value of ``<CODE>$/</CODE>''. For instance, to trim lines to 80 columns:
+
+
+<P>
+
+<PRE>    perl -lpe 'substr($_, 80) = &quot;&quot;'
+</PRE>
+
+<P>
+
+Note that the assignment <CODE>$\ = $/</CODE> is done when the switch is processed, so the input record separator can be
+different than the output record separator if the <STRONG>-l</STRONG> switch is followed by a <STRONG>-0</STRONG> switch:
+
+
+<P>
+
+<PRE>    gnufind / -print0 | perl -ln0e 'print &quot;found $_&quot; if -p'
+</PRE>
+
+<P>
+
+This sets <CODE>$\</CODE> to newline and then sets <CODE>$/</CODE> to the null character.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__m_module">-m[-]module
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__M_module">-M[-]module
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__M_module">-M[-]'module ...'
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__mM_module_arg_arg_">-[mM][-]module=arg[,arg]...
+
+</A></STRONG><DD>
+<A HREF="#item__m">-m</A><EM>module</EM> executes <A HREF="#item_use">use</A>  <EM>module</EM>  <CODE>();</CODE> before executing your script.
+
+
+<P>
+
+<CODE>-M</CODE><EM>module</EM> executes <A HREF="#item_use">use</A>  <EM>module</EM>  <CODE>;</CODE> before executing your script. You can use quotes to add extra code after
+the module name, e.g., <CODE>-M'module qw(foo bar)'</CODE>.
+
+
+<P>
+
+If the first character after the <CODE>-M</CODE> or <A HREF="#item__m">-m</A> is a dash (<CODE>-</CODE>) then the 'use' is replaced with 'no'.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> little builtin syntactic sugar means you can also
+say
+<CODE>-mmodule=foo,bar</CODE> or <CODE>-Mmodule=foo,bar</CODE> as a shortcut for
+<CODE>-M'module qw(foo bar)'</CODE>. This avoids the need to use quotes when importing symbols. The actual
+code generated by <CODE>-Mmodule=foo,bar</CODE> is
+<CODE>use module split(/,/,q{foo,bar})</CODE>. Note that the <CODE>=</CODE> form removes the distinction between <A HREF="#item__m">-m</A> and <CODE>-M</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__n">-n
+
+</A></STRONG><DD>
+causes Perl to assume the following loop around your script, which makes it
+iterate over filename arguments somewhat like <STRONG>sed -n</STRONG> or
+<STRONG>awk</STRONG>:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        ...             # your script goes here
+    }
+</PRE>
+
+<P>
+
+Note that the lines are not printed by default. See <STRONG>-p</STRONG> to have lines printed. If a file named by an argument cannot be opened for
+some reason, Perl warns you about it, and moves on to the next file.
+
+
+<P>
+
+Here is an efficient way to delete all files older than a week:
+
+
+<P>
+
+<PRE>    find . -mtime +7 -print | perl -nle 'unlink;'
+</PRE>
+
+<P>
+
+This is faster than using the <A HREF="#item__exec">-exec</A> switch of <STRONG>find</STRONG> because you don't have to start a process on every filename found.
+
+
+<P>
+
+<A HREF="#item_BEGIN">BEGIN</A> and <A HREF="#item_END">END</A> blocks may be used to capture control before or after the implicit loop,
+just as in <STRONG>awk</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__p">-p
+
+</A></STRONG><DD>
+causes Perl to assume the following loop around your script, which makes it
+iterate over filename arguments somewhat like <STRONG>sed</STRONG>:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        ...             # your script goes here
+    } continue {
+        print or die &quot;-p destination: $!\n&quot;;
+    }
+</PRE>
+
+<P>
+
+If a file named by an argument cannot be opened for some reason, Perl warns
+you about it, and moves on to the next file. Note that the lines are
+printed automatically. An error occuring during printing is treated as
+fatal. To suppress printing use the <STRONG>-n</STRONG> switch. 
+<FONT SIZE=-1>A</FONT> <STRONG>-p</STRONG>
+overrides a <STRONG>-n</STRONG> switch.
+
+
+<P>
+
+<A HREF="#item_BEGIN">BEGIN</A> and <A HREF="#item_END">END</A> blocks may be used to capture control before or after the implicit loop,
+just as in awk.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__P">-P
+
+</A></STRONG><DD>
+causes your script to be run through the 
+<FONT SIZE=-1>C</FONT> preprocessor before compilation by Perl. (Because both comments and cpp directives begin with the # character, you should avoid starting comments with any words recognized by the 
+<FONT SIZE=-1>C</FONT> preprocessor such as ``if'', ``else'', or ``define''.)
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__s">-s
+
+</A></STRONG><DD>
+enables some rudimentary switch parsing for switches on the command line
+after the script name but before any filename arguments (or before a <STRONG>--</STRONG>). Any switch found there is removed from <CODE>@ARGV</CODE> and sets the
+corresponding variable in the Perl script. The following script prints
+``true'' if and only if the script is invoked with a <STRONG>-xyz</STRONG> switch.
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl -s
+    if ($xyz) { print &quot;true\n&quot;; }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__S">-S
+
+</A></STRONG><DD>
+makes Perl use the 
+<FONT SIZE=-1>PATH</FONT> environment variable to search for the script (unless the name of the script contains directory separators). On some platforms, this also makes Perl append suffixes to the filename while searching for it. For example, on Win32 platforms, the ``.bat'' and ``.cmd'' suffixes are appended if a lookup for the original name fails, and if the name does not already end in one of those suffixes. If your Perl was compiled with 
+<FONT SIZE=-1>DEBUGGING</FONT> turned on, using the -Dp switch to Perl shows how the search progresses.
+
+
+
+<P>
+
+If the file supplied contains directory separators (i.e. it is an absolute
+or relative pathname), and if the file is not found, platforms that append
+file extensions will do so and try to look for the file with those
+extensions added, one by one.
+
+
+<P>
+
+On DOS-like platforms, if the script does not contain directory separators, it will first be searched for in the current directory before being searched for on the 
+<FONT SIZE=-1>PATH.</FONT> On Unix platforms, the script will be searched for strictly on the 
+<FONT SIZE=-1>PATH.</FONT>
+
+
+
+<P>
+
+Typically this is used to emulate #! startup on platforms that don't
+support #!. This example works on many platforms that have a shell
+compatible with Bourne shell:
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl
+    eval 'exec /usr/bin/perl -S $0 ${1+&quot;$@&quot;}'
+            if $running_under_some_shell;
+</PRE>
+
+<P>
+
+The system ignores the first line and feeds the script to /bin/sh, which
+proceeds to try to execute the Perl script as a shell script. The shell
+executes the second line as a normal shell command, and thus starts up the
+Perl interpreter. On some systems <CODE>$0</CODE> doesn't always contain
+the full pathname, so the <STRONG>-S</STRONG> tells Perl to search for the script if necessary. After Perl locates the script, it parses the lines and ignores them because the variable <CODE>$running_under_some_shell</CODE> is never true. 
+<FONT SIZE=-1>A</FONT> better construct than
+ <CODE>$*</CODE> would be <CODE>${1+"$@"}</CODE>, which handles embedded spaces and such in the filenames, but doesn't work
+if the script is being interpreted by csh. To start up sh rather than csh,
+some systems may have to replace the #! line with a line containing just a
+colon, which will be politely ignored by Perl. Other systems can't control
+that, and need a totally devious construct that will work under any of csh,
+sh, or Perl, such as the following:
+
+
+<P>
+
+<PRE>        eval '(exit $?0)' &amp;&amp; eval 'exec /usr/bin/perl -S $0 ${1+&quot;$@&quot;}'
+        &amp; eval 'exec /usr/bin/perl -S $0 $argv:q'
+                if $running_under_some_shell;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__T">-T
+
+</A></STRONG><DD>
+forces ``taint'' checks to be turned on so you can test them. Ordinarily these checks are done only when running setuid or setgid. It's a good idea to turn them on explicitly for programs run on another's behalf, such as 
+<FONT SIZE=-1>CGI</FONT> programs. See
+ <A HREF="/n|/perl/html/./lib/Pod/perlsec.html#">the perlsec manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__u">-u
+
+</A></STRONG><DD>
+causes Perl to dump core after compiling your script. You can then take
+this core dump and turn it into an executable file by using the
+<STRONG>undump</STRONG> program (not supplied). This speeds startup at the expense of some disk space (which you can minimize by stripping the executable). (Still, a ``hello world'' executable comes out to about 
+<FONT SIZE=-1>200K</FONT> on my machine.) If you want to execute a portion of your script before dumping, use the <CODE>dump()</CODE> operator instead. Note: availability of
+ <STRONG>undump</STRONG> is platform specific and may not be available for a specific port of Perl.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__U">-U
+
+</A></STRONG><DD>
+allows Perl to do unsafe operations. Currently the only ``unsafe''
+operations are the unlinking of directories while running as superuser, and
+running setuid programs with fatal taint checks turned into warnings.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__v">-v
+
+</A></STRONG><DD>
+prints the version and patchlevel of your Perl executable.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__V">-V
+
+</A></STRONG><DD>
+prints summary of the major perl configuration values and the current value of 
+<FONT SIZE=-1>@INC.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__V_name">-V:name
+
+</A></STRONG><DD>
+Prints to 
+<FONT SIZE=-1>STDOUT</FONT> the value of the named configuration variable.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__w">-w
+
+</A></STRONG><DD>
+prints warnings about variable names that are mentioned only once, and
+scalar variables that are used before being set. Also warns about redefined
+subroutines, and references to undefined filehandles or filehandles opened
+read-only that you are attempting to write on. Also warns you if you use
+values as a number that doesn't look like numbers, using an array as though
+it were a scalar, if your subroutines recurse more than 100 deep, and
+innumerable other things.
+
+
+<P>
+
+You can disable specific warnings using <CODE>__WARN__</CODE> hooks, as described in <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#">the perlvar manpage</A> and <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#warn">warn</A>. See also <A HREF="/n|/perl/html/./lib/Pod/perldiag.html#">the perldiag manpage</A> and <A HREF="/n|/perl/html/./lib/Pod/perltrap.html#">the perltrap manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__x">-x directory
+
+</A></STRONG><DD>
+tells Perl that the script is embedded in a message. Leading garbage will
+be discarded until the first line that starts with #! and contains the
+string ``perl''. Any meaningful switches on that line will be applied. If a
+directory name is specified, Perl will switch to that directory before
+running the script. The <STRONG>-x</STRONG> switch controls only the disposal of leading garbage. The script must be
+terminated with <CODE>__END__</CODE> if there is trailing garbage to be ignored (the script can process any or all of the trailing garbage via the 
+<FONT SIZE=-1>DATA</FONT> filehandle if desired).
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="ENVIRONMENT">ENVIRONMENT
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_HOME">HOME
+
+</A></STRONG><DD>
+Used if chdir has no argument.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_LOGDIR">LOGDIR
+
+</A></STRONG><DD>
+Used if chdir has no argument and 
+<FONT SIZE=-1>HOME</FONT> is not set.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PATH">PATH
+
+</A></STRONG><DD>
+Used in executing subprocesses, and in finding the script if <STRONG>-S</STRONG> is used.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PERL5LIB">PERL5LIB
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> colon-separated list of directories in which to look for Perl library files before looking in the standard library and the current directory. If 
+<FONT SIZE=-1>PERL5LIB</FONT> is not defined, 
+<FONT SIZE=-1>PERLLIB</FONT> is used. When running taint checks (because the script was running setuid or setgid, or the
+
+<STRONG>-T</STRONG> switch was used), neither variable is used. The script should instead say
+
+
+<P>
+
+<PRE>    use lib &quot;/my/directory&quot;;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_PERL5OPT">PERL5OPT
+
+</A></STRONG><DD>
+Command-line options (switches). Switches in this variable are taken as if
+they were on every Perl command line. Only the <STRONG>-[DIMUdmw]</STRONG>
+switches are allowed. When running taint checks (because the script was
+running setuid or setgid, or the <STRONG>-T</STRONG> switch was used), this variable is ignored.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PERLLIB">PERLLIB
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> colon-separated list of directories in which to look for Perl library files before looking in the standard library and the current directory. If 
+<FONT SIZE=-1>PERL5LIB</FONT> is defined, 
+<FONT SIZE=-1>PERLLIB</FONT> is not used.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PERL5DB">PERL5DB
+
+</A></STRONG><DD>
+The command used to load the debugger code. The default is:
+
+
+<P>
+
+<PRE>        BEGIN { require 'perl5db.pl' }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_PERL5SHELL">PERL5SHELL (specific to WIN32 port)
+
+</A></STRONG><DD>
+May be set to an alternative shell that perl must use internally for executing ``backtick'' commands or <CODE>system().</CODE> Perl doesn't use 
+<FONT SIZE=-1>COMSPEC</FONT> for this purpose because 
+<FONT SIZE=-1>COMSPEC</FONT> has a high degree of variability among users, leading to portability concerns. Besides, perl can use a shell that may not be fit for interactive use, and setting 
+<FONT SIZE=-1>COMSPEC</FONT> to such a shell may interfere with the proper functioning of other programs (which usually look in 
+<FONT SIZE=-1>COMSPEC</FONT> to find a shell fit for interactive use).
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PERL_DEBUG_MSTATS">PERL_DEBUG_MSTATS
+
+</A></STRONG><DD>
+Relevant only if your perl executable was built with <STRONG>-DDEBUGGING_MSTATS</STRONG>, if set, this causes memory statistics to be dumped after execution. If
+set to an integer greater than one, also causes memory statistics to be
+dumped after compilation.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PERL_DESTRUCT_LEVEL">PERL_DESTRUCT_LEVEL
+
+</A></STRONG><DD>
+Relevant only if your perl executable was built with <STRONG>-DDEBUGGING</STRONG>, this controls the behavior of global destruction of objects and other
+references.
+
+
+<P>
+
+</DL>
+Perl also has environment variables that control how Perl handles data
+specific to particular natural languages. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+Apart from these, Perl uses no other environment variables, except to make
+them available to the script being executed, and to child processes.
+However, scripts running setuid would do well to execute the following
+lines before doing anything else, just to keep people honest:
+
+
+<P>
+
+<PRE>    $ENV{PATH} = '/bin:/usr/bin';    # or whatever you need
+    $ENV{SHELL} = '/bin/sh' if exists $ENV{SHELL};
+    delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

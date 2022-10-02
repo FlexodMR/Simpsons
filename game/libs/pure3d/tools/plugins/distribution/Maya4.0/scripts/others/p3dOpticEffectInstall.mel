@@ -1,0 +1,115 @@
+//**************************************************************************************************
+//  Procedure Name:
+//    p3dOpticEffect_Install()
+//
+//  Description:
+//    Sets up the optic effects command buttons in P3DOpticEffectTools shelf
+//
+//  Input Arguments:
+//    None.
+//
+//  Return Value:
+//    None.
+//**************************************************************************************************
+global proc p3dOpticEffect_Install()
+{
+   source p3dOpticEffectTools;
+ 
+   $windowPrefExists = `windowPref -ex "ChooseChildWindow"`;
+   if ($windowPrefExists)
+   {
+      windowPref -r "ChooseChildWindow";
+   }
+
+   // BUG FIX: Do NOT create Shelf if Shelf UI is hidden!
+   //          The Shelf may already exist in Maya's Preferences
+   //          but be deferred until the Shelf UI is visible,
+   //          and a clash will result if a duplicate is made.
+   // BUG FIX: Do NOT attempt if without UI.
+   if ( !`about -batch` && isUIComponentVisible( "Shelf" ) )
+   {
+       if (`shelfLayout -exists "P3DOpticEffectTools"`==0)
+       {
+          addNewShelfTab "P3DOpticEffectTools";
+       }
+
+       string $buttons[] = `shelfLayout -q -ca P3DOpticEffectTools`;
+       //int $particle_ui_exists = 0;
+       int $create_lens_flare_group_exists = 0;
+       int $create_lens_flare_exists = 0;
+
+       int $i;
+       for ($i = 0;
+            ($i < size($buttons)) &&
+             (($create_lens_flare_group_exists == 0 ) ||
+             ($create_lens_flare_exists == 0));
+            $i++)
+       {
+          string $command = `shelfButton -q -c $buttons[$i]`;
+
+          //remove old shelf buttons
+          if ($command == "P3DCreateCorona")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "P3DCreateFlareParent")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "p3dOpticEffect_CreateLensFlareParent")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "P3DAddFlare")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "p3dOpticEffect_AddLensFlare")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "p3dOpticEffect_CreateCoronaGroup")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "p3dOpticEffect_CreateCorona")
+          {
+             deleteUI $buttons[$i];
+          }
+
+          //determine if new shelf buttons already exist
+          if ($command == "p3dOpticEffect_CreateLensFlareGroup")
+          {
+             $create_lens_flare_group_exists = 1;
+          }
+          else if ($command == "p3dOpticEffect_CreateLensFlare")
+          {
+             $create_lens_flare_exists = 1;
+          }
+
+       }
+
+       if (!$create_lens_flare_group_exists)
+       {
+          shelfButton -c   "p3dOpticEffect_CreateLensFlareGroup" 
+                      -p   "P3DOpticEffectTools"
+                      -i1  "p3dLensFlareGroup.bmp" 
+                      -ann "Create a Lens Flare Group"
+                      -l   "P3DCreateLensFlareGroupButton";
+       }
+       if (!$create_lens_flare_exists)
+       {
+          shelfButton -c   "p3dOpticEffect_CreateLensFlare" 
+                      -p   "P3DOpticEffectTools"
+                      -i1  "p3dLensFlare.bmp" 
+                      -ann "Create a Lens Flare"
+                      -l   "P3DCreateLensFlareButton";
+       }
+    }
+}
+
+/*
+source p3dOpticEffectInstall; p3dOpticEffect_Install;
+*/
+
+// End of file.

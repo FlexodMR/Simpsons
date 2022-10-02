@@ -1,0 +1,400 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTML::Element - Class for objects that represent HTML elements
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#_h_HTML_Element_new_tag_">$h = HTML::Element->new('tag', 'attrname' => 'value',...)</A>
+		<LI><A HREF="#_h_tag_">$h->tag()</A>
+		<LI><A HREF="#_h_starttag_">$h->starttag()</A>
+		<LI><A HREF="#_h_endtag_">$h->endtag()</A>
+		<LI><A HREF="#_h_parent_newparent_">$h->parent([$newparent])</A>
+		<LI><A HREF="#_h_implicit_bool_">$h->implicit([$bool])</A>
+		<LI><A HREF="#_h_is_inside_tag_">$h->is_inside('tag',...)</A>
+		<LI><A HREF="#_h_pos_">$h->pos()</A>
+		<LI><A HREF="#_h_attr_attr_value_">$h->attr('attr', [$value])</A>
+		<LI><A HREF="#_h_content_">$h->content()</A>
+		<LI><A HREF="#_h_is_empty_">$h->is_empty()</A>
+		<LI><A HREF="#_h_insert_element_element_im">$h->insert_element($element, $implicit)</A>
+		<LI><A HREF="#_h_push_content_element_or_tex">$h->push_content($element_or_text,...)</A>
+		<LI><A HREF="#_h_delete_content_">$h->delete_content()</A>
+		<LI><A HREF="#_h_delete_">$h->delete()</A>
+		<LI><A HREF="#_h_traverse_callback_ignor">$h->traverse(\&callback, [$ignoretext])</A>
+		<LI><A HREF="#_h_extract_links_wantedTypes_">$h->extract_links([@wantedTypes])</A>
+		<LI><A HREF="#_h_dump_">$h->dump()</A>
+		<LI><A HREF="#_h_as_HTML_">$h->as_HTML()</A>
+	</UL>
+
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTML::Element - Class for objects that represent 
+<FONT SIZE=-1>HTML</FONT> elements
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require HTML::Element;
+ $a = new HTML::Element 'a', href =&gt; '<A HREF="http://www.oslonett.no/">http://www.oslonett.no/</A>';
+ $a-&gt;push_content(&quot;Oslonett AS&quot;);
+</PRE>
+
+<P>
+
+<PRE> $tag = $a-&gt;tag;
+ $tag = $a-&gt;starttag;
+ $tag = $a-&gt;endtag;
+ $ref = $a-&gt;attr('href');
+</PRE>
+
+<P>
+
+<PRE> $links = $a-&gt;extract_links();
+</PRE>
+
+<P>
+
+<PRE> print $a-&gt;as_HTML;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Objects of the HTML::Element class can be used to represent elements of 
+<FONT SIZE=-1>HTML.</FONT> These objects have attributes and content. The content is an array of text segments and other HTML::Element objects. Thus a tree of HTML::Element objects as nodes can represent the syntax tree for a 
+<FONT SIZE=-1>HTML</FONT> document.
+
+
+
+<P>
+
+The following methods are available:
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_HTML_Element_new_tag_">$h = HTML::Element->new('tag', 'attrname' => 'value',...)
+
+</A></H2>
+The object constructor. Takes a tag name as argument. Optionally, allows
+you to specify initial attributes at object creation time.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_tag_">$h->tag()
+
+</A></H2>
+Returns (optionally sets) the tag name for the element. The tag is always
+converted to lower case.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_starttag_">$h->starttag()
+
+</A></H2>
+Returns the complete start tag for the element. Including leading ``&lt;'',
+trailing ``&gt;'' and attributes.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_endtag_">$h->endtag()
+
+</A></H2>
+Returns the complete end tag. Includes leading ``&lt;/'' and the trailing
+``&gt;''.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_parent_newparent_">$h->parent([$newparent])
+
+</A></H2>
+Returns (optionally sets) the parent for this element.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_implicit_bool_">$h->implicit([$bool])
+
+</A></H2>
+Returns (optionally sets) the implicit attribute. This attribute is used to indicate that the element was not originally present in the source, but was inserted in order to conform to 
+<FONT SIZE=-1>HTML</FONT> strucure.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_is_inside_tag_">$h->is_inside('tag',...)
+
+</A></H2>
+Returns true if this tag is contained inside one of the specified tags.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_pos_">$h->pos()
+
+</A></H2>
+Returns (and optionally sets) the current position. The position is a
+reference to a HTML::Element object that is part of the tree that has the
+current object as root. This restriction is not enforced when setting
+<CODE>pos(),</CODE> but unpredictable things will happen if this is not
+true.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_attr_attr_value_">$h->attr('attr', [$value])
+
+</A></H2>
+Returns (and optionally sets) the value of some attribute.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_content_">$h->content()
+
+</A></H2>
+Returns the content of this element. The content is represented as a
+reference to an array of text segments and references to other
+HTML::Element objects.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_is_empty_">$h->is_empty()
+
+</A></H2>
+Returns true if there is no content.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_insert_element_element_im">$h->insert_element($element, $implicit)
+
+</A></H2>
+Inserts a new element at current position and updates <CODE>pos()</CODE> to
+point to the inserted element. Returns $element.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_push_content_element_or_tex">$h->push_content($element_or_text,...)
+
+</A></H2>
+Adds to the content of the element. The content should be a text segment
+(scalar) or a reference to a HTML::Element object.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_delete_content_">$h->delete_content()
+
+</A></H2>
+Clears the content.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_delete_">$h->delete()
+
+</A></H2>
+Frees memory associated with the element and all children. This is needed
+because perl's reference counting does not work since we use circular
+references.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_traverse_callback_ignor">$h->traverse(\&callback, [$ignoretext])
+
+</A></H2>
+Traverse the element and all of its children. For each node visited, the
+callback routine is called with the node, a startflag and the depth as
+arguments. If the <CODE>$ignoretext</CODE> parameter is true, then the
+callback will not be called for text content. The flag is 1 when we enter a
+node and 0 when we leave the node.
+
+
+<P>
+
+If the returned value from the callback is false then we will not traverse
+the children.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_extract_links_wantedTypes_">$h->extract_links([@wantedTypes])
+
+</A></H2>
+Returns links found by traversing the element and all of its children. The
+return value is a reference to an array. Each element of the array is an
+array with 2 values; the link value and a reference to the corresponding
+element.
+
+
+<P>
+
+You might specify that you just want to extract some types of links. For
+instance if you only want to extract &lt;a href=``...''&gt; and &lt;img
+src=``...''&gt; links you might code it like this:
+
+
+<P>
+
+<PRE>  for (@{ $e-&gt;extract_links(qw(a img)) }) {
+      ($link, $linkelem) = @$_;
+      ...
+  }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_dump_">$h->dump()
+
+</A></H2>
+Prints the element and all its children to 
+<FONT SIZE=-1>STDOUT.</FONT> Mainly useful for debugging. The structure of
+the document is shown by indentation (no end tags).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_as_HTML_">$h->as_HTML()
+
+</A></H2>
+Returns a string (the 
+<FONT SIZE=-1>HTML</FONT> document) that represents the element and its
+children.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+If you want to free the memory assosiated with a tree built of
+HTML::Element nodes then you will have to delete it explicitly. The reason
+for this is that perl currently has no proper garbage collector, but
+depends on reference counts in the objects. This scheme fails because the
+parse tree contains circular references (parents have references to their
+children and children have a reference to their parent).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/HTML/AsSubs.html">AsSubs</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1995,1996 Gisle Aas. All rights reserved.
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gisle Aas <A HREF="MAILTO:<aas@sn.no>"><aas@sn.no></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

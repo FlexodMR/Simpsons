@@ -1,0 +1,52 @@
+SelectMission("m7");
+
+SetMissionResetPlayerInCar("m7_homer_carstart");
+SetDynaLoadData("l6z1.p3d;l6r1.p3d;l6r5.p3d;l6r5_dam.p3d;");
+InitLevelPlayerVehicle("homer_v","m7_homer_carstart","OTHER");
+
+//This is a forced car mission
+SetForcedCar();
+
+AddStage("final");
+	RESET_TO_HERE();
+	SetStageMessageIndex(94);
+	SetHUDICon( "duff" );
+	SetMaxTraffic(5); //traffic off until we get AI vs Traffic mass advantage fix in code
+	AddStageVehicle("cSedan","m7_AI_carstart1","race","Missions\level06\M7race.con");
+	SetVehicleAIParams( "cSedan", 50, 51 ); //  <=== name, min, max; 50,51 = all shortcuts 
+//	SetStageAIRaceCatchupParams("cSedan", 80, 0.9, 1.5, 2.3); 
+	SetStageAIRaceCatchupParams("cSedan", 80, 1.0, 1.7, 2.3); 
+
+	//AddNPC("homer", "m7_homer_hide");// WON"T WORK AND CRASHES THE GAME???
+
+	StartCountdown("count");
+	AddToCountdownSequence( "3",  1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "2",  1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "1",  1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "GO", 1000 ); // duration time in milliseconds
+
+	AddStageWaypoint( "m7_AI_path7" );
+	AddStageWaypoint( "m7_AI_path12" );
+	AddStageWaypoint( "m7_AI_path21" );
+	AddObjective( "race" );
+		AddCollectible("m7_AI_path1");
+		AddCollectible("m7_AI_path7");
+		AddCollectible("m7_AI_path9");
+		AddCollectible("m7_AI_path12");
+		AddCollectible("m7_AI_path19");
+		AddCollectible("m7_AI_path20");
+		AddCollectible("m7_AI_path21","finish_line");
+	CloseObjective();
+	AddCondition("position");
+		SetConditionPosition(1);
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "homer_v" );
+	CloseCondition();
+CloseStage();
+
+CloseMission();

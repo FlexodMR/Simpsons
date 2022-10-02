@@ -1,0 +1,1073 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlfaq6 - Regexps ($Revision: 1.17 $, $Date: 1997/04/24 22:44:10 $)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#How_can_I_hope_to_use_regular_ex">How can I hope to use regular expressions without creating illegible and unmaintainable code?</A>
+		<LI><A HREF="#I_m_having_trouble_matching_over">I'm having trouble matching over more than one line.  What's wrong?</A>
+		<LI><A HREF="#How_can_I_pull_out_lines_between">How can I pull out lines between two patterns that are themselves on different lines?</A>
+		<LI><A HREF="#I_put_a_regular_expression_into_">I put a regular expression into $/ but it didn't work. What's wrong?</A>
+		<LI><A HREF="#How_do_I_substitute_case_insensi">How do I substitute case insensitively on the LHS, but preserving case on the RHS?</A>
+		<LI><A HREF="#How_can_I_make_C_w_match_accen">How can I make <A HREF="#item__w">\w</A> match accented characters?</A>
+		<LI><A HREF="#How_can_I_match_a_locale_smart_v">How can I match a locale-smart version of <CODE>/[a-zA-Z]/</CODE>?</A>
+		<LI><A HREF="#How_can_I_quote_a_variable_to_us">How can I quote a variable to use in a regexp?</A>
+		<LI><A HREF="#What_is_C_o_really_for_">What is <CODE>/o</CODE> really for?</A>
+		<LI><A HREF="#How_do_I_use_a_regular_expressio">How do I use a regular expression to strip C style comments from a file?</A>
+		<LI><A HREF="#Can_I_use_Perl_regular_expressio">Can I use Perl regular expressions to match balanced text?</A>
+		<LI><A HREF="#What_does_it_mean_that_regexps_a">What does it mean that regexps are greedy?  How can I get around it?</A>
+		<LI><A HREF="#How_do_I_process_each_word_on_ea">How do I process each word on each line?</A>
+		<LI><A HREF="#How_can_I_print_out_a_word_frequ">How can I print out a word-frequency or line-frequency summary?</A>
+		<LI><A HREF="#How_can_I_do_approximate_matchin">How can I do approximate matching?</A>
+		<LI><A HREF="#How_do_I_efficiently_match_many_">How do I efficiently match many regular expressions at once?</A>
+		<LI><A HREF="#Why_don_t_word_boundary_searches">Why don't word-boundary searches with <A HREF="#item__b">\b</A> work for me?</A>
+		<LI><A HREF="#Why_does_using_or_slo">Why does using $&, $`, or $' slow my program down?</A>
+		<LI><A HREF="#What_good_is_C_G_in_a_regular_">What good is <CODE>\G</CODE> in a regular expression?</A>
+		<LI><A HREF="#Are_Perl_regexps_DFAs_or_NFAs_A">Are Perl regexps DFAs or NFAs?  Are they POSIX compliant?</A>
+		<LI><A HREF="#What_s_wrong_with_using_grep_or_">What's wrong with using grep or map in a void context?</A>
+		<LI><A HREF="#How_can_I_match_strings_with_mul">How can I match strings with multibyte characters?</A>
+	</UL>
+
+	<LI><A HREF="#AUTHOR_AND_COPYRIGHT">AUTHOR AND COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlfaq6 - Regexps ($Revision: 1.17 $, $Date: 1997/04/24 22:44:10 $)
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This section is surprisingly small because the rest of the 
+<FONT SIZE=-1>FAQ</FONT> is littered with answers involving regular expressions. For example, decoding a 
+<FONT SIZE=-1>URL</FONT> and checking whether something is a number are handled with regular expressions, but those answers are found elsewhere in this document (in the section on Data and the Networking one on networking, to be precise).
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_hope_to_use_regular_ex">How can I hope to use regular expressions without creating illegible and unmaintainable code?
+
+</A></H2>
+Three techniques can make regular expressions maintainable and
+understandable.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Comments">Comments Outside the Regexp
+
+</A></STRONG><DD>
+Describe what you're doing and how you're doing it, using normal Perl
+comments.
+
+
+<P>
+
+<PRE>    # turn the line into the first word, a colon, and the
+    # number of characters on the rest of the line
+    s/^(\w+)(.*)/ lc($1) . &quot;:&quot; . length($2) /ge;
+</PRE>
+
+<P>
+
+<DT><STRONG>Comments Inside the Regexp
+
+</A></STRONG><DD>
+The <A HREF="#item__x">/x</A> modifier causes whitespace to be ignored in a regexp pattern (except in a
+character class), and also allows you to use normal comments there, too. As
+you can imagine, whitespace and comments help a lot.
+
+
+<P>
+
+<A HREF="#item__x">/x</A> lets you turn this:
+
+
+<P>
+
+<PRE>    s{&lt;(?:[^&gt;'&quot;]*|&quot;.*?&quot;|'.*?')+&gt;}{}gs;
+</PRE>
+
+<P>
+
+into this:
+
+
+<P>
+
+<PRE>    s{ &lt;                    # opening angle bracket
+        (?:                 # Non-backreffing grouping paren
+             [^&gt;'&quot;] *       # 0 or more things that are neither &gt; nor ' nor &quot;
+                |           #    or else
+             &quot;.*?&quot;          # a section between double quotes (stingy match)
+                |           #    or else
+             '.*?'          # a section between single quotes (stingy match)
+        ) +                 #   all occurring one or more times
+       &gt;                    # closing angle bracket
+    }{}gsx;                 # replace with nothing, i.e. delete
+</PRE>
+
+<P>
+
+It's still not quite so clear as prose, but it is very useful for
+describing the meaning of each part of the pattern.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Different">Different Delimiters
+
+</A></STRONG><DD>
+While we normally think of patterns as being delimited with <CODE>/</CODE>
+characters, they can be delimited by almost any character.  <A HREF="/n|/perl/html/./lib/Pod/perlre.html#">the perlre manpage</A>
+describes this. For example, the <A HREF="#item_s_">s///</A> above uses braces as delimiters. Selecting another delimiter can avoid
+quoting the delimiter within the pattern:
+
+
+<P>
+
+<PRE>    s/\/usr\/local/\/usr\/share/g;      # bad delimiter choice
+    s#/usr/local#/usr/share#g;          # better
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="I_m_having_trouble_matching_over">I'm having trouble matching over more than one line.  What's wrong?
+
+</A></H2>
+Either you don't have newlines in your string, or you aren't using the
+correct <CODE>modifier(s)</CODE> on your pattern.
+
+
+<P>
+
+There are many ways to get multiline data into a string. If you want it to
+happen automatically while reading input, you'll want to set $/ (probably
+to '' for paragraphs or <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_undef">undef</A> for the whole file) to allow you to read more than one line at a time.
+
+
+<P>
+
+Read <A HREF="/n|/perl/html/./lib/Pod/perlre.html#">the perlre manpage</A> to help you decide which of <A HREF="#item__s">/s</A> and <A HREF="#item__m">/m</A> (or both) you might want to use: <A HREF="#item__s">/s</A> allows dot to include newline, and <A HREF="#item__m">/m</A>
+allows caret and dollar to match next to a newline, not just at the end of
+the string. You do need to make sure that you've actually got a multiline
+string in there.
+
+
+<P>
+
+For example, this program detects duplicate words, even when they span line
+breaks (but not paragraph ones). For this example, we don't need
+<A HREF="#item__s">/s</A> because we aren't using dot in a regular expression that we want to cross
+line boundaries. Neither do we need <A HREF="#item__m">/m</A> because we aren't wanting caret or dollar to match at any point inside the
+record next to newlines. But it's imperative that $/ be set to something
+other than the default, or else we won't actually ever have a multiline
+record read in.
+
+
+<P>
+
+<PRE>    $/ = '';            # read in more whole paragraph, not just one line
+    while ( &lt;&gt; ) {
+        while ( /\b(\w\S+)(\s+\1)+\b/gi ) {
+            print &quot;Duplicate $1 at paragraph $.\n&quot;;
+        }
+    }
+</PRE>
+
+<P>
+
+Here's code that finds sentences that begin with ``From '' (which would be
+mangled by many mailers):
+
+
+<P>
+
+<PRE>    $/ = '';            # read in more whole paragraph, not just one line
+    while ( &lt;&gt; ) {
+        while ( /^From /gm ) { # /m makes ^ match next to \n
+            print &quot;leading from in paragraph $.\n&quot;;
+        }
+    }
+</PRE>
+
+<P>
+
+Here's code that finds everything between 
+<FONT SIZE=-1>START</FONT> and 
+<FONT SIZE=-1>END</FONT> in a paragraph:
+
+
+
+<P>
+
+<PRE>    undef $/;           # read in whole file, not just one line or paragraph
+    while ( &lt;&gt; ) {
+        while ( /START(.*?)END/sm ) { # /s makes . cross line boundaries
+            print &quot;$1\n&quot;;
+        }
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_pull_out_lines_between">How can I pull out lines between two patterns that are themselves on different lines?
+
+</A></H2>
+You can use Perl's somewhat exotic <CODE>..</CODE> operator (documented in
+<A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A>):
+
+
+<P>
+
+<PRE>    perl -ne 'print if /START/ .. /END/' file1 file2 ...
+</PRE>
+
+<P>
+
+If you wanted text and not lines, you would use
+
+
+<P>
+
+<PRE>    perl -0777 -pe 'print &quot;$1\n&quot; while /START(.*?)END/gs' file1 file2 ...
+</PRE>
+
+<P>
+
+But if you want nested occurrences of <CODE>START</CODE> through <A HREF="#item_END">END</A>, you'll run up against the problem described in the question in this
+section on matching balanced text.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="I_put_a_regular_expression_into_">I put a regular expression into $/ but it didn't work. What's wrong?
+
+</A></H2>
+$/ must be a string, not a regular expression. Awk has to be better for
+something. :-)
+
+
+<P>
+
+Actually, you could do this if you don't mind reading the whole file into
+memory:
+
+
+<P>
+
+<PRE>    undef $/;
+    @records = split /your_pattern/, &lt;FH&gt;;
+</PRE>
+
+<P>
+
+The Net::Telnet module (available from 
+<FONT SIZE=-1>CPAN)</FONT> has the capability to wait for a pattern in the
+input stream, or timeout if it doesn't appear within a certain time.
+
+
+<P>
+
+<PRE>    ## Create a file with three lines.
+    open FH, &quot;&gt;file&quot;;
+    print FH &quot;The first line\nThe second line\nThe third line\n&quot;;
+    close FH;
+</PRE>
+
+<P>
+
+<PRE>    ## Get a read/write filehandle to it.
+    $fh = new FileHandle &quot;+&lt;file&quot;;
+</PRE>
+
+<P>
+
+<PRE>    ## Attach it to a &quot;stream&quot; object.
+    use Net::Telnet;
+    $file = new Net::Telnet (-fhopen =&gt; $fh);
+</PRE>
+
+<P>
+
+<PRE>    ## Search for the second line and print out the third.
+    $file-&gt;waitfor('/second line\n/');
+    print $file-&gt;getline;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_substitute_case_insensi">How do I substitute case insensitively on the LHS, but preserving case on the RHS?
+
+</A></H2>
+It depends on what you mean by ``preserving case''. The following script
+makes the substitution have the same case, letter by letter, as the
+original. If the substitution has more characters than the string being
+substituted, the case of the last character is used for the rest of the
+substitution.
+
+
+<P>
+
+<PRE>    # Original by Nathan Torkington, massaged by Jeffrey Friedl
+    #
+    sub preserve_case($$)
+    {
+        my ($old, $new) = @_;
+        my ($state) = 0; # 0 = no change; 1 = lc; 2 = uc
+        my ($i, $oldlen, $newlen, $c) = (0, length($old), length($new));
+        my ($len) = $oldlen &lt; $newlen ? $oldlen : $newlen;
+</PRE>
+
+<P>
+
+<PRE>        for ($i = 0; $i &lt; $len; $i++) {
+            if ($c = substr($old, $i, 1), $c =~ /[\W\d_]/) {
+                $state = 0;
+            } elsif (lc $c eq $c) {
+                substr($new, $i, 1) = lc(substr($new, $i, 1));
+                $state = 1;
+            } else {
+                substr($new, $i, 1) = uc(substr($new, $i, 1));
+                $state = 2;
+            }
+        }
+        # finish up with any remaining new (for when new is longer than old)
+        if ($newlen &gt; $oldlen) {
+            if ($state == 1) {
+                substr($new, $oldlen) = lc(substr($new, $oldlen));
+            } elsif ($state == 2) {
+                substr($new, $oldlen) = uc(substr($new, $oldlen));
+            }
+        }
+        return $new;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $a = &quot;this is a TEsT case&quot;;
+    $a =~ s/(test)/preserve_case($1, &quot;success&quot;)/gie;
+    print &quot;$a\n&quot;;
+</PRE>
+
+<P>
+
+This prints:
+
+
+<P>
+
+<PRE>    this is a SUcCESS case
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_make_C_w_match_accen">How can I make <A HREF="#item__w">\w</A> match accented characters?
+
+</A></H2>
+See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_match_a_locale_smart_v">How can I match a locale-smart version of <CODE>/[a-zA-Z]/</CODE>?
+
+</A></H2>
+One alphabetic character would be <CODE>/[^\W\d_]/</CODE>, no matter what locale you're in. Non-alphabetics would be <CODE>/[\W\d_]/</CODE> (assuming you don't consider an underscore a letter).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_quote_a_variable_to_us">How can I quote a variable to use in a regexp?
+
+</A></H2>
+The Perl parser will expand <CODE>$variable</CODE> and
+<CODE>@variable</CODE> references in regular expressions unless the
+delimiter is a single quote. Remember, too, that the right-hand side of a <A HREF="#item_s_">s///</A> substitution is considered a double-quoted string (see <A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A> for more details). Remember also that any regexp special characters will be acted on unless you precede the substitution with 
+<FONT SIZE=-1>\Q.</FONT> Here's an example:
+
+
+
+<P>
+
+<PRE>    $string = &quot;to die?&quot;;
+    $lhs = &quot;die?&quot;;
+    $rhs = &quot;sleep no more&quot;;
+</PRE>
+
+<P>
+
+<PRE>    $string =~ s/\Q$lhs/$rhs/;
+    # $string is now &quot;to sleep no more&quot;
+</PRE>
+
+<P>
+
+Without the 
+<FONT SIZE=-1>\Q,</FONT> the regexp would also spuriously match ``di''.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="What_is_C_o_really_for_">What is <CODE>/o</CODE> really for?
+
+</A></H2>
+Using a variable in a regular expression match forces a re-evaluation (and
+perhaps recompilation) each time through. The <CODE>/o</CODE> modifier locks in the regexp the first time it's used. This always happens
+in a constant regular expression, and in fact, the pattern was compiled
+into the internal format at the same time your entire program was.
+
+
+<P>
+
+Use of <CODE>/o</CODE> is irrelevant unless variable interpolation is used in the pattern, and if
+so, the regexp engine will neither know nor care whether the variables
+change after the pattern is evaluated the <EM>very
+first</EM> time.
+
+
+<P>
+
+<CODE>/o</CODE> is often used to gain an extra measure of efficiency by not performing
+subsequent evaluations when you know it won't matter (because you know the
+variables won't change), or more rarely, when you don't want the regexp to
+notice if they do.
+
+
+<P>
+
+For example, here's a ``paragrep'' program:
+
+
+<P>
+
+<PRE>    $/ = '';  # paragraph mode
+    $pat = shift;
+    while (&lt;&gt;) {
+        print if /$pat/o;
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_use_a_regular_expressio">How do I use a regular expression to strip C style comments from a file?
+
+</A></H2>
+While this actually can be done, it's much harder than you'd think. For
+example, this one-liner
+
+
+<P>
+
+<PRE>    perl -0777 -pe 's{/\*.*?\*/}{}gs' foo.c
+</PRE>
+
+<P>
+
+will work in many but not all cases. You see, it's too simple-minded for certain kinds of 
+<FONT SIZE=-1>C</FONT> programs, in particular, those with what appear to be comments in quoted strings. For that, you'd need something like this, created by Jeffrey Friedl:
+
+
+
+<P>
+
+<PRE>    $/ = undef;
+    $_ = &lt;&gt;;
+    s#/\*[^*]*\*+([^/*][^*]*\*+)*/|(&quot;(\\.|[^&quot;\\])*&quot;|'(\\.|[^'\\])*'|\n+|.[^/&quot;'\\]*)#$2#g;
+    print;
+</PRE>
+
+<P>
+
+This could, of course, be more legibly written with the <A HREF="#item__x">/x</A> modifier, adding whitespace and comments.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Can_I_use_Perl_regular_expressio">Can I use Perl regular expressions to match balanced text?
+
+</A></H2>
+Although Perl regular expressions are more powerful than ``mathematical''
+regular expressions, because they feature conveniences like backreferences
+(<CODE>\1</CODE> and its ilk), they still aren't powerful enough. You still need to use
+non-regexp techniques to parse balanced text, such as the text enclosed
+between matching parentheses or braces, for example.
+
+
+<P>
+
+An elaborate subroutine (for 7-bit 
+<FONT SIZE=-1>ASCII</FONT> only) to pull out balanced and possibly nested
+single chars, like <CODE>`</CODE> and <CODE>'</CODE>, <CODE>{</CODE> and <CODE>}</CODE>, or <CODE>(</CODE> and <CODE>)</CODE> can be found in <A
+HREF="http://www.perl.com/CPAN/authors/id/TOMC/scripts/pull_quotes.gz">http://www.perl.com/CPAN/authors/id/TOMC/scripts/pull_quotes.gz</A>
+.
+
+
+<P>
+
+The C::Scan module from 
+<FONT SIZE=-1>CPAN</FONT> contains such subs for internal usage, but they
+are undocumented.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="What_does_it_mean_that_regexps_a">What does it mean that regexps are greedy?  How can I get around it?
+
+</A></H2>
+Most people mean that greedy regexps match as much as they can. Technically
+speaking, it's actually the quantifiers (<CODE>?</CODE>, <CODE>*</CODE>, <CODE>+</CODE>,
+<CODE>{}</CODE>) that are greedy rather than the whole pattern; Perl prefers local greed
+and immediate gratification to overall greed. To get non-greedy versions of
+the same quantifiers, use (<CODE>??</CODE>, <CODE>*?</CODE>, <CODE>+?</CODE>, <CODE>{}?</CODE>).
+
+
+<P>
+
+An example:
+
+
+<P>
+
+<PRE>        $s1 = $s2 = &quot;I am very very cold&quot;;
+        $s1 =~ s/ve.*y //;      # I am cold
+        $s2 =~ s/ve.*?y //;     # I am very cold
+</PRE>
+
+<P>
+
+Notice how the second substitution stopped matching as soon as it
+encountered ``y ''. The <CODE>*?</CODE> quantifier effectively tells the regular expression engine to find a match
+as quickly as possible and pass control on to whatever is next in line,
+like you would if you were playing hot potato.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_process_each_word_on_ea">How do I process each word on each line?
+
+</A></H2>
+Use the split function:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        foreach $word ( split ) { 
+            # do something with $word here
+        } 
+    }
+</PRE>
+
+<P>
+
+Note that this isn't really a word in the English sense; it's just chunks
+of consecutive non-whitespace characters.
+
+
+<P>
+
+To work with only alphanumeric sequences, you might consider
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        foreach $word (m/(\w+)/g) {
+            # do something with $word here
+        }
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_print_out_a_word_frequ">How can I print out a word-frequency or line-frequency summary?
+
+</A></H2>
+To do this, you have to parse out each word in the input stream. We'll
+pretend that by word you mean chunk of alphabetics, hyphens, or
+apostrophes, rather than the non-whitespace chunk idea of a word given in
+the previous question:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        while ( /(\b[^\W_\d][\w'-]+\b)/g ) {   # misses &quot;`sheep'&quot;
+            $seen{$1}++;
+        }
+    }
+    while ( ($word, $count) = each %seen ) {
+        print &quot;$count $word\n&quot;;
+    }
+</PRE>
+
+<P>
+
+If you wanted to do the same thing for lines, you wouldn't need a regular
+expression:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) { 
+        $seen{$_}++;
+    }
+    while ( ($line, $count) = each %seen ) {
+        print &quot;$count $line&quot;;
+    }
+</PRE>
+
+<P>
+
+If you want these output in a sorted order, see the section on Hashes.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_do_approximate_matchin">How can I do approximate matching?
+
+</A></H2>
+See the module String::Approx available from 
+<FONT SIZE=-1>CPAN.</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_efficiently_match_many_">How do I efficiently match many regular expressions at once?
+
+</A></H2>
+The following is super-inefficient:
+
+
+<P>
+
+<PRE>    while (&lt;FH&gt;) {
+        foreach $pat (@patterns) {
+            if ( /$pat/ ) {
+                # do something
+            }
+        }
+    }
+</PRE>
+
+<P>
+
+Instead, you either need to use one of the experimental Regexp extension modules from 
+<FONT SIZE=-1>CPAN</FONT> (which might well be overkill for your purposes), or else put together something like this, inspired from a routine in Jeffrey Friedl's book:
+
+
+
+<P>
+
+<PRE>    sub _bm_build {
+        my $condition = shift;
+        my @regexp = @_;  # this MUST not be local(); need my()
+        my $expr = join $condition =&gt; map { &quot;m/\$regexp[$_]/o&quot; } (0..$#regexp);
+        my $match_func = eval &quot;sub { $expr }&quot;;
+        die if $@;  # propagate $@; this shouldn't happen!
+        return $match_func;
+    }
+</PRE>
+
+<P>
+
+<PRE>    sub bm_and { _bm_build('&amp;&amp;', @_) }
+    sub bm_or  { _bm_build('||', @_) }
+</PRE>
+
+<P>
+
+<PRE>    $f1 = bm_and qw{
+            xterm
+            (?i)window
+    };
+</PRE>
+
+<P>
+
+<PRE>    $f2 = bm_or qw{
+            \b[Ff]ree\b
+            \bBSD\B
+            (?i)sys(tem)?\s*[V5]\b
+    };
+</PRE>
+
+<P>
+
+<PRE>    # feed me /etc/termcap, prolly
+    while ( &lt;&gt; ) {
+        print &quot;1: $_&quot; if &amp;$f1;
+        print &quot;2: $_&quot; if &amp;$f2;
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Why_don_t_word_boundary_searches">Why don't word-boundary searches with <A HREF="#item__b">\b</A> work for me?
+
+</A></H2>
+Two common misconceptions are that <A HREF="#item__b">\b</A> is a synonym for <A HREF="#item__s_">\s+</A>, and that it's the edge between whitespace characters and non-whitespace
+characters. Neither is correct.  <A HREF="#item__b">\b</A> is the place between a <A HREF="#item__w">\w</A>
+character and a <CODE>\W</CODE> character (that is, <A HREF="#item__b">\b</A> is the edge of a ``word''). It's a zero-width assertion, just like <CODE>^</CODE>, <CODE>$</CODE>, and all the other anchors, so it doesn't consume any characters.  <A HREF="/n|/perl/html/./lib/Pod/perlre.html#">the perlre manpage</A>
+describes the behaviour of all the regexp metacharacters.
+
+
+<P>
+
+Here are examples of the incorrect application of <A HREF="#item__b">\b</A>, with fixes:
+
+
+<P>
+
+<PRE>    &quot;two words&quot; =~ /(\w+)\b(\w+)/;          # WRONG
+    &quot;two words&quot; =~ /(\w+)\s+(\w+)/;         # right
+</PRE>
+
+<P>
+
+<PRE>    &quot; =matchless= text&quot; =~ /\b=(\w+)=\b/;   # WRONG
+    &quot; =matchless= text&quot; =~ /=(\w+)=/;       # right
+</PRE>
+
+<P>
+
+Although they may not do what you thought they did, <A HREF="#item__b">\b</A> and <CODE>\B</CODE>
+can still be quite useful. For an example of the correct use of
+<A HREF="#item__b">\b</A>, see the example of matching duplicate words over multiple lines.
+
+
+<P>
+
+An example of using <CODE>\B</CODE> is the pattern <CODE>\Bis\B</CODE>. This will find occurrences of ``is'' on the insides of words only, as in
+``thistle'', but not ``this'' or ``island''.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Why_does_using_or_slo">Why does using $&, $`, or $' slow my program down?
+
+</A></H2>
+Because once Perl sees that you need one of these variables anywhere in the
+program, it has to provide them on each and every pattern match. The same
+mechanism that handles these provides for the use of $1, $2, etc., so you
+pay the same price for each regexp that contains capturing parentheses. But
+if you never use $&amp;, etc., in your script, then regexps <EM>without</EM> capturing parentheses won't be penalized. So avoid $&amp;, $', and $` if
+you can, but if you can't (and some algorithms really appreciate them),
+once you've used them once, use them at will, because you've already paid
+the price.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="What_good_is_C_G_in_a_regular_">What good is <CODE>\G</CODE> in a regular expression?
+
+</A></H2>
+The notation <CODE>\G</CODE> is used in a match or substitution in conjunction the
+<CODE>/g</CODE> modifier (and ignored if there's no <CODE>/g</CODE>) to anchor the regular expression to the point just past where the last
+match occurred, i.e. the <CODE>pos()</CODE> point.
+
+
+<P>
+
+For example, suppose you had a line of text quoted in standard mail and
+Usenet notation, (that is, with leading <A HREF="#item__gt_">&gt;</A> characters), and you want change each leading <A HREF="#item__gt_">&gt;</A> into a corresponding <CODE>:</CODE>. You could do so in this way:
+
+
+<P>
+
+<PRE>     s/^(&gt;+)/':' x length($1)/gem;
+</PRE>
+
+<P>
+
+Or, using <CODE>\G</CODE>, the much simpler (and faster):
+
+
+<P>
+
+<PRE>    s/\G&gt;/:/g;
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> more sophisticated use might involve a tokenizer.
+The following lex-like example is courtesy of Jeffrey Friedl. It did not
+work in 5.003 due to bugs in that release, but does work in 5.004 or
+better. (Note the use of <A HREF="#item__c">/c</A>, which prevents a failed match with <CODE>/g</CODE> from resetting the search position back to the beginning of the string.)
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+      chomp;
+      PARSER: {
+           m/ \G( \d+\b    )/gcx    &amp;&amp; do { print &quot;number: $1\n&quot;;  redo; };
+           m/ \G( \w+      )/gcx    &amp;&amp; do { print &quot;word:   $1\n&quot;;  redo; };
+           m/ \G( \s+      )/gcx    &amp;&amp; do { print &quot;space:  $1\n&quot;;  redo; };
+           m/ \G( [^\w\d]+ )/gcx    &amp;&amp; do { print &quot;other:  $1\n&quot;;  redo; };
+      }
+    }
+</PRE>
+
+<P>
+
+Of course, that could have been written as
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+      chomp;
+      PARSER: {
+           if ( /\G( \d+\b    )/gcx  {
+                print &quot;number: $1\n&quot;;
+                redo PARSER;
+           }
+           if ( /\G( \w+      )/gcx  {
+                print &quot;word: $1\n&quot;;
+                redo PARSER;
+           }
+           if ( /\G( \s+      )/gcx  {
+                print &quot;space: $1\n&quot;;
+                redo PARSER;
+           }
+           if ( /\G( [^\w\d]+ )/gcx  {
+                print &quot;other: $1\n&quot;;
+                redo PARSER;
+           }
+      }
+    }
+</PRE>
+
+<P>
+
+But then you lose the vertical alignment of the regular expressions.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Are_Perl_regexps_DFAs_or_NFAs_A">Are Perl regexps DFAs or NFAs?  Are they POSIX compliant?
+
+</A></H2>
+While it's true that Perl's regular expressions resemble the DFAs
+(deterministic finite automata) of the <CODE>egrep(1)</CODE> program, they
+are in fact implemented as NFAs (non-deterministic finite automata) to
+allow backtracking and backreferencing. And they aren't POSIX-style either,
+because those guarantee worst-case behavior for all cases. (It seems that
+some people prefer guarantees of consistency, even when what's guaranteed
+is slowness.) See the book ``Mastering Regular Expressions'' (from
+O'Reilly) by Jeffrey Friedl for all the details you could ever hope to know
+on these matters (a full citation appears in
+<A HREF="/n|/perl/html/./lib/Pod/perlfaq2.html#">the perlfaq2 manpage</A>).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="What_s_wrong_with_using_grep_or_">What's wrong with using grep or map in a void context?
+
+</A></H2>
+Strictly speaking, nothing. Stylistically speaking, it's not a good way to
+write maintainable code. That's because you're using these constructs not
+for their return values but rather for their side-effects, and side-effects
+can be mystifying. There's no void <CODE>grep()</CODE> that's not better
+written as a <CODE>for</CODE> (well, <CODE>foreach</CODE>, technically) loop.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_match_strings_with_mul">How can I match strings with multibyte characters?
+
+</A></H2>
+This is hard, and there's no good way. Perl does not directly support wide
+characters. It pretends that a byte and a character are synonymous. The
+following set of approaches was offered by Jeffrey Friedl, whose article in
+issue #5 of The Perl Journal talks about this very matter.
+
+
+<P>
+
+Let's suppose you have some weird Martian encoding where pairs of 
+<FONT SIZE=-1>ASCII</FONT> uppercase letters encode single Martian letters (i.e. the two bytes 
+<FONT SIZE=-1>``CV''</FONT> make a single Martian letter, as do the two bytes 
+<FONT SIZE=-1>``SG'',</FONT> 
+<FONT SIZE=-1>``VS'',</FONT> 
+<FONT SIZE=-1>``XX'',</FONT> etc.). Other bytes represent single characters, just like 
+<FONT SIZE=-1>ASCII.</FONT>
+
+
+
+<P>
+
+So, the string of Martian 
+<FONT SIZE=-1>``I</FONT> am 
+<FONT SIZE=-1>CVSGXX!''</FONT> uses 12 bytes to encode the nine characters 
+<FONT SIZE=-1>'I',</FONT> ' ', 'a', 'm', ' ', 
+<FONT SIZE=-1>'CV',</FONT> 
+<FONT SIZE=-1>'SG',</FONT> 
+<FONT SIZE=-1>'XX',</FONT> '!'.
+
+
+
+<P>
+
+Now, say you want to search for the single character <CODE>/GX/</CODE>. Perl doesn't know about Martian, so it'll find the two bytes 
+<FONT SIZE=-1>``GX''</FONT> in the 
+<FONT SIZE=-1>``I</FONT> am 
+<FONT SIZE=-1>CVSGXX!''</FONT> string, even though that character isn't there: it just looks like it is because 
+<FONT SIZE=-1>``SG''</FONT> is next to 
+<FONT SIZE=-1>``XX'',</FONT> but there's no real 
+<FONT SIZE=-1>``GX''.</FONT> This is a big problem.
+
+
+
+<P>
+
+Here are a few ways, all painful, to deal with it:
+
+
+<P>
+
+<PRE>   $martian =~ s/([A-Z][A-Z])/ $1 /g; # Make sure adjacent ``martian'' bytes
+                                      # are no longer adjacent.
+   print &quot;found GX!\n&quot; if $martian =~ /GX/;
+</PRE>
+
+<P>
+
+Or like this:
+
+
+<P>
+
+<PRE>   @chars = $martian =~ m/([A-Z][A-Z]|[^A-Z])/g;
+   # above is conceptually similar to:     @chars = $text =~ m/(.)/g;
+   #
+   foreach $char (@chars) {
+       print &quot;found GX!\n&quot;, last if $char eq 'GX';
+   }
+</PRE>
+
+<P>
+
+Or like this:
+
+
+<P>
+
+<PRE>   while ($martian =~ m/\G([A-Z][A-Z]|.)/gs) {  # \G probably unneeded
+       print &quot;found GX!\n&quot;, last if $1 eq 'GX';
+   }
+</PRE>
+
+<P>
+
+Or like this:
+
+
+<P>
+
+<PRE>   die &quot;sorry, Perl doesn't (yet) have Martian support )-:\n&quot;;
+</PRE>
+
+<P>
+
+In addition, a sample program which converts half-width to full-width katakana (in Shift-JIS or 
+<FONT SIZE=-1>EUC</FONT> encoding) is available from 
+<FONT SIZE=-1>CPAN</FONT> as
+
+
+
+<P>
+
+There are many double- (and multi-) byte encodings commonly used these
+days. Some versions of these have 1-, 2-, 3-, and 4-byte characters, all
+mixed.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR_AND_COPYRIGHT">AUTHOR AND COPYRIGHT
+
+</A></H1>
+Copyright (c) 1997 Tom Christiansen and Nathan Torkington. All rights
+reserved. See <A HREF="/n|/perl/html/./lib/Pod/perlfaq.html#">the perlfaq manpage</A> for distribution information.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

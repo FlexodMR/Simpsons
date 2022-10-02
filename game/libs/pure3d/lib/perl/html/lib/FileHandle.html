@@ -1,0 +1,271 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>FileHandle - supply object methods for filehandles
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+FileHandle - supply object methods for filehandles
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use FileHandle;
+</PRE>
+
+<P>
+
+<PRE>    $fh = new FileHandle;
+    if ($fh-&gt;open &quot;&lt; file&quot;) {
+        print &lt;$fh&gt;;
+        $fh-&gt;close;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $fh = new FileHandle &quot;&gt; FOO&quot;;
+    if (defined $fh) {
+        print $fh &quot;bar\n&quot;;
+        $fh-&gt;close;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $fh = new FileHandle &quot;file&quot;, &quot;r&quot;;
+    if (defined $fh) {
+        print &lt;$fh&gt;;
+        undef $fh;       # automatically closes the file
+    }
+</PRE>
+
+<P>
+
+<PRE>    $fh = new FileHandle &quot;file&quot;, O_WRONLY|O_APPEND;
+    if (defined $fh) {
+        print $fh &quot;corge\n&quot;;
+        undef $fh;       # automatically closes the file
+    }
+</PRE>
+
+<P>
+
+<PRE>    $pos = $fh-&gt;getpos;
+    $fh-&gt;setpos($pos);
+</PRE>
+
+<P>
+
+<PRE>    $fh-&gt;setvbuf($buffer_var, _IOLBF, 1024);
+</PRE>
+
+<P>
+
+<PRE>    ($readfh, $writefh) = FileHandle::pipe;
+</PRE>
+
+<P>
+
+<PRE>    autoflush STDOUT 1;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+
+<FONT SIZE=-1>NOTE:</FONT> This class is now a front-end to the 
+<FONT SIZE=-1>IO::*</FONT> classes.
+
+
+
+<P>
+
+<CODE>FileHandle::new</CODE> creates a <A HREF="#item_FileHandle">FileHandle</A>, which is a reference to a newly created symbol (see the <A HREF="#item_Symbol">Symbol</A> package). If it receives any parameters, they are passed to <CODE>FileHandle::open</CODE>; if the open fails, the <A HREF="#item_FileHandle">FileHandle</A> object is destroyed. Otherwise, it is returned to the caller.
+
+
+<P>
+
+<CODE>FileHandle::new_from_fd</CODE> creates a <A HREF="#item_FileHandle">FileHandle</A> like <A HREF="#item_new">new</A> does. It requires two parameters, which are passed to <CODE>FileHandle::fdopen</CODE>; if the fdopen fails, the <A HREF="#item_FileHandle">FileHandle</A> object is destroyed. Otherwise, it is returned to the caller.
+
+
+<P>
+
+<CODE>FileHandle::open</CODE> accepts one parameter or two. With one parameter, it is just a front end
+for the built-in <A HREF="#item_open">open</A> function. With two parameters, the first parameter is a filename that may
+include whitespace or other special characters, and the second parameter is
+the open mode, optionally followed by a file permission value.
+
+
+<P>
+
+If <CODE>FileHandle::open</CODE> receives a Perl mode string (``&gt;'', ``+&lt;'', etc.) or a 
+<FONT SIZE=-1>POSIX</FONT> <CODE>fopen()</CODE> mode string (``w'', ``r+'',
+etc.), it uses the basic Perl <A HREF="#item_open">open</A> operator.
+
+
+<P>
+
+If <CODE>FileHandle::open</CODE> is given a numeric mode, it passes that mode and the optional permissions
+value to the Perl <A HREF="#item_sysopen">sysopen</A> operator. For convenience, <CODE>FileHandle::import</CODE> tries to import the 
+<FONT SIZE=-1>O_XXX</FONT> constants from the Fcntl module. If dynamic
+loading is not available, this may fail, but the rest of FileHandle will
+still work.
+
+
+<P>
+
+<CODE>FileHandle::fdopen</CODE> is like <A HREF="#item_open">open</A> except that its first parameter is not a filename but rather a file handle
+name, a FileHandle object, or a file descriptor number.
+
+
+<P>
+
+If the 
+<FONT SIZE=-1>C</FONT> functions <CODE>fgetpos()</CODE> and
+<CODE>fsetpos()</CODE> are available, then
+<CODE>FileHandle::getpos</CODE> returns an opaque value that represents the current position of the
+FileHandle, and <CODE>FileHandle::setpos</CODE> uses that value to return to a previously visited position.
+
+
+<P>
+
+If the 
+<FONT SIZE=-1>C</FONT> function <CODE>setvbuf()</CODE> is available, then <CODE>FileHandle::setvbuf</CODE>
+sets the buffering policy for the FileHandle. The calling sequence for the Perl function is the same as its 
+<FONT SIZE=-1>C</FONT> counterpart, including the macros
+ <CODE>_IOFBF</CODE>, <CODE>_IOLBF</CODE>, and <CODE>_IONBF</CODE>, except that the buffer parameter specifies a scalar variable to use as a buffer. 
+<FONT SIZE=-1>WARNING:</FONT> 
+<FONT SIZE=-1>A</FONT> variable used as a buffer by
+ <CODE>FileHandle::setvbuf</CODE> must not be modified in any way until the FileHandle is closed or until
+<CODE>FileHandle::setvbuf</CODE> is called again, or memory corruption may result!
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A> for complete descriptions of each of the following supported <A HREF="#item_FileHandle">FileHandle</A> methods, which are just front ends for the corresponding built-in
+functions:
+
+
+<P>
+
+<PRE>    close
+    fileno
+    getc
+    gets
+    eof
+    clearerr
+    seek
+    tell
+</PRE>
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#">the perlvar manpage</A> for complete descriptions of each of the following supported <A HREF="#item_FileHandle">FileHandle</A> methods:
+
+
+<P>
+
+<PRE>    autoflush
+    output_field_separator
+    output_record_separator
+    input_record_separator
+    input_line_number
+    format_page_number
+    format_lines_per_page
+    format_lines_left
+    format_name
+    format_top_name
+    format_line_break_characters
+    format_formfeed
+</PRE>
+
+<P>
+
+Furthermore, for doing normal 
+<FONT SIZE=-1>I/O</FONT> you might need these:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__fh_print">$fh->print
+
+</A></STRONG><DD>
+See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#print">print</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_printf">$fh->printf
+
+</A></STRONG><DD>
+See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#printf">printf</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_getline">$fh->getline
+
+</A></STRONG><DD>
+This works like &lt;$fh&gt; described in <A HREF="/n|/perl/html/./lib/Pod/perlop.html#I_O_Operators">I/O Operators</A>
+except that it's more readable and can be safely called in an array context
+but still returns just one line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_getlines">$fh->getlines
+
+</A></STRONG><DD>
+This works like &lt;$fh&gt; when called in an array context to read all the
+remaining lines in a file, except that it's more readable. It will also
+<CODE>croak()</CODE> if accidentally called in a scalar context.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+The <STRONG>IO</STRONG> extension,
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>, 
+<A HREF="/n|/perl/html/./lib/Pod/perlop.html#I_O_Operators">I/O Operators</A>.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

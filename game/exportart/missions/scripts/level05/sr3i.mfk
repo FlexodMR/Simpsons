@@ -1,0 +1,92 @@
+SelectMission("sr3");
+	//The CIRCUIT RACE (with AI cars)
+
+
+	SetMissionResetPlayerInCar("sr3_carstart");
+	SetDynaLoadData("l5r1.p3d;l5z1.p3d;l5r4.p3d;");
+	PlacePlayerCar("current", "sr3_carstart");
+
+	UsePedGroup(0);
+
+	SetMissionStartCameraName( "race3camShape" );
+	SetMissionStartMulticontName( "race3cam" );
+	SetAnimatedCameraName( "race3camShape" );
+	SetAnimCamMulticontName( "race3cam" );
+
+	//Chuck: StreetRace Prop Load and Unload Setup
+	StreetRacePropsLoad("l5_sr3p.p3d;");
+	StreetRacePropsUnload("l5_sr3p.p3d:");
+
+
+	AddStage(0);
+		SetHUDIcon( "race" ); 
+		DisableHitAndRun();
+		StartCountdown("count");
+			AddToCountdownSequence( "6", 800 ); // duration time in milliseconds
+			AddToCountdownSequence( "12", 800 ); // duration time in milliseconds
+			AddToCountdownSequence( "1", 600 ); // duration time in milliseconds
+			AddToCountdownSequence( "GO", 400 ); // duration time in milliseconds
+		SetStageMessageIndex(224);
+		RESET_TO_HERE(); 
+		NoTrafficForStage();
+		AddStageVehicle("bart_v","sr3_bart_carstart1","race","Missions\level05\sr3_1st.con","bart");
+			SetVehicleAIParams( "bart_v", -50, -49 );
+			SetStageAIRaceCatchupParams("bart_v", 80, 0.95, 1.2, 2.0); 
+		//AddStageVehicle("sportsB","sr3_AI_carstart2","race","Missions\level05\sr3_2nd.con");
+		//AddStageVehicle("ambul","sr3_AI_carstart3","race","Missions\level05\sr3_3rd.con");
+		//	SetVehicleAIParams( "ambul", -50, -49 );
+		//AddStageVehicle("votetruc","sr3_AI_carstart4","race","Missions\level05\sr3_4th.con");
+		//	SetVehicleAIParams( "votetruc", -50, -49 );
+		
+		AddStageWaypoint( "sr3_waypoint1" );
+		AddStageWaypoint( "sr3_navpoint1" );
+		AddStageWaypoint( "sr3_navpoint2" );
+		AddStageWaypoint( "sr3_navpoint3" );
+		AddObjective( "race","neither" );
+			AddNPC("patty", "sr3_patty");
+			AddNPC("selma", "sr3_selma");
+			AddCollectible("sr3_waypoint1","carsphere");
+				SetCollectibleEffect("wrench_collect");
+			AddCollectible("sr3_waypoint2","carsphere");
+				SetCollectibleEffect("wrench_collect");
+			AddCollectible("sr3_waypoint3","carsphere");
+				SetCollectibleEffect("wrench_collect");
+			AddCollectible("sr3_waypoint4","finish_line");
+				SetCollectibleEffect("wrench_collect");
+		CloseObjective();
+		AddCondition("position");
+			SetConditionPosition(1);
+		CloseCondition();
+
+		AddCondition( "damage" );
+			SetCondMinHealth( 0.0 );
+			SetCondTargetVehicle( "current");
+		CloseCondition();
+		AddCondition("outofvehicle");
+			SetCondTime( 10000 );
+		CloseCondition();
+
+	CloseStage();
+
+AddStage(1, "final");
+	AddObjective("dialogue");
+		AddNPC("patty", "sr3_patty");
+		AddNPC("selma", "sr3_selma");
+		//AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		//AmbientAnimationRandomize( 0, 0 );      <<<===---  ASK IAN ABOUT THIS COMMAND
+		//AddAmbientNpcAnimation( "dialogue_open_arm_hand_gesture" );
+		//AddAmbientNpcAnimation( "none" );
+		//AddAmbientNpcAnimation( "dialogue_thinking" );
+		//AddAmbientPcAnimation( "none" );
+		//AddAmbientPcAnimation( "dialogue_yes" );
+		//AddAmbientPcAnimation( "none" );
+		//AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		//SetConversationCam( 3, "pc_far" );
+		//SetConversationCamNpcName("npc_near");
+		//SetConversationCamPcName("pc_near");            <<<===--- ASK IAN ABOUT THIS COMMAND.
+		SetDialogueInfo("patty","apu","success",0);
+		SetDialoguePositions("sr3_patty","sr3_apu_end","level5_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();

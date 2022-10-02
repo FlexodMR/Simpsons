@@ -1,0 +1,511 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Set::IntegerRange - Sets of Integers
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<UL>
+
+		<LI><A HREF="#METHODS">METHODS</A>
+		<LI><A HREF="#OVERLOADED_OPERATORS">OVERLOADED OPERATORS</A>
+	</UL>
+
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#VERSION">VERSION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#LICENSE">LICENSE</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Set::IntegerRange - Sets of Integers
+
+
+<P>
+
+Easy manipulation of sets of integers (arbitrary intervals)
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="METHODS">METHODS
+
+</A></H2>
+<PRE>  Version
+      $version = $Set::IntegerRange::VERSION;
+</PRE>
+
+<P>
+
+<PRE>  new
+      $set = new Set::IntegerRange($lower,$upper);
+      $set = Set::IntegerRange-&gt;new($lower,$upper);
+      $set = $any_set-&gt;new($lower,$upper);
+</PRE>
+
+<P>
+
+<PRE>  Resize
+      $set-&gt;Resize($lower,$upper);
+</PRE>
+
+<P>
+
+<PRE>  Size
+      ($lower,$upper) = $set-&gt;Size();
+</PRE>
+
+<P>
+
+<PRE>  Empty
+      $set-&gt;Empty();
+</PRE>
+
+<P>
+
+<PRE>  Fill
+      $set-&gt;Fill();
+</PRE>
+
+<P>
+
+<PRE>  Flip
+      $set-&gt;Flip();
+</PRE>
+
+<P>
+
+<PRE>  Interval_Empty
+      $set-&gt;Interval_Empty($lower,$upper);
+      $set-&gt;Empty_Interval($lower,$upper); # (deprecated)
+</PRE>
+
+<P>
+
+<PRE>  Interval_Fill
+      $set-&gt;Interval_Fill($lower,$upper);
+      $set-&gt;Fill_Interval($lower,$upper);  # (deprecated)
+</PRE>
+
+<P>
+
+<PRE>  Interval_Flip
+      $set-&gt;Interval_Flip($lower,$upper);
+      $set-&gt;Flip_Interval($lower,$upper);  # (deprecated)
+</PRE>
+
+<P>
+
+<PRE>  Interval_Scan_inc
+      while (($min,$max) = $set-&gt;Interval_Scan_inc($start))
+</PRE>
+
+<P>
+
+<PRE>  Interval_Scan_dec
+      while (($min,$max) = $set-&gt;Interval_Scan_dec($start))
+</PRE>
+
+<P>
+
+<PRE>  Bit_Off
+      $set-&gt;Bit_Off($index);
+      $set-&gt;Delete($index);                # (deprecated)
+</PRE>
+
+<P>
+
+<PRE>  Bit_On
+      $set-&gt;Bit_On($index);
+      $set-&gt;Insert($index);                # (deprecated)
+</PRE>
+
+<P>
+
+<PRE>  bit_flip
+      $bit = $set-&gt;bit_flip($index);
+      if ($set-&gt;bit_flip($index))
+      $bit = $set-&gt;flip($index);           # (deprecated)
+      if ($set-&gt;flip($index))              # (deprecated)
+</PRE>
+
+<P>
+
+<PRE>  bit_test
+      $bit = $set-&gt;bit_test($index);
+      if ($set-&gt;bit_test($index))
+      $bit = $set-&gt;contains($index);
+      if ($set-&gt;contains($index))
+      $bit = $set-&gt;in($index);             # (deprecated)
+      if ($set-&gt;in($index))                # (deprecated)
+</PRE>
+
+<P>
+
+<PRE>  Norm
+      $norm = $set-&gt;Norm();
+</PRE>
+
+<P>
+
+<PRE>  Min
+      $min = $set-&gt;Min();
+</PRE>
+
+<P>
+
+<PRE>  Max
+      $max = $set-&gt;Max();
+</PRE>
+
+<P>
+
+<PRE>  Union
+      $set1-&gt;Union($set2,$set3);           # in-place is possible!
+</PRE>
+
+<P>
+
+<PRE>  Intersection
+      $set1-&gt;Intersection($set2,$set3);    # in-place is possible!
+</PRE>
+
+<P>
+
+<PRE>  Difference
+      $set1-&gt;Difference($set2,$set3);      # in-place is possible!
+</PRE>
+
+<P>
+
+<PRE>  ExclusiveOr
+      $set1-&gt;ExclusiveOr($set2,$set3);     # in-place is possible!
+</PRE>
+
+<P>
+
+<PRE>  Complement
+      $set1-&gt;Complement($set2);            # in-place is possible!
+</PRE>
+
+<P>
+
+<PRE>  is_empty
+      if ($set-&gt;is_empty())
+</PRE>
+
+<P>
+
+<PRE>  is_full
+      if ($set-&gt;is_full())
+</PRE>
+
+<P>
+
+<PRE>  equal
+      if ($set1-&gt;equal($set2))
+</PRE>
+
+<P>
+
+<PRE>  subset
+      if ($set1-&gt;subset($set2))
+      if ($set1-&gt;inclusion($set2))         # (deprecated)
+</PRE>
+
+<P>
+
+<PRE>  lexorder
+      if ($set1-&gt;lexorder($set2))
+</PRE>
+
+<P>
+
+<PRE>  Compare
+      $cmp = $set1-&gt;Compare($set2);
+</PRE>
+
+<P>
+
+<PRE>  Copy
+      $set1-&gt;Copy($set2);
+</PRE>
+
+<P>
+
+<PRE>  Shadow
+      $other_set = $some_set-&gt;Shadow();
+</PRE>
+
+<P>
+
+<PRE>  Clone
+      $twin_set = $some_set-&gt;Clone();
+</PRE>
+
+<P>
+
+<PRE>  to_ASCII
+      $string = $set-&gt;to_ASCII();          # e.g., &quot;-8..-5,-1..2,4,6..9&quot;
+</PRE>
+
+<P>
+
+<PRE>  from_ASCII
+      eval { $set-&gt;from_ASCII($string); };
+</PRE>
+
+<P>
+
+<PRE>  to_String
+      $string = $set-&gt;to_String();         # e.g., &quot;0007AF1E&quot;
+</PRE>
+
+<P>
+
+<PRE>  from_String
+      eval { $set-&gt;from_String($string); };
+</PRE>
+
+<P>
+
+<PRE>  BitVector
+      $set-&gt;BitVector-&gt;any_Bit_Vector_method();
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="OVERLOADED_OPERATORS">OVERLOADED OPERATORS
+
+</A></H2>
+<PRE>      # &quot;$index&quot; is a number or a Perl scalar variable containing a
+      # number which represents the set containing only that element:
+</PRE>
+
+<P>
+
+<PRE>  Emptyness
+      if ($set) # if not empty
+      if (! $set) # if empty
+      unless ($set) # if empty
+</PRE>
+
+<P>
+
+<PRE>  Equality
+      if ($set1 == $set2)
+      if ($set1 != $set2)
+      if ($set == $index)
+      if ($set != $index)
+</PRE>
+
+<P>
+
+<PRE>  Lexical Comparison
+      $cmp = $set1 cmp $set2;
+      if ($set1 lt $set2)
+      if ($set1 le $set2)
+      if ($set1 gt $set2)
+      if ($set1 ge $set2)
+      if ($set1 eq $set2)
+      if ($set1 ne $set2)
+      $cmp = $set cmp $index;
+      if ($set lt $index)
+      if ($set le $index)
+      if ($set gt $index)
+      if ($set ge $index)
+      if ($set eq $index)
+      if ($set ne $index)
+</PRE>
+
+<P>
+
+<PRE>  String Conversion
+      $string = &quot;$set&quot;;
+      print &quot;\$set = '$set'\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>  Union
+      $set1 = $set2 + $set3;
+      $set1 += $set2;
+      $set1 = $set2 | $set3;
+      $set1 |= $set2;
+      $set1 = $set2 + $index;
+      $set += $index;
+      $set1 = $set2 | $index;
+      $set |= $index;
+</PRE>
+
+<P>
+
+<PRE>  Intersection
+      $set1 = $set2 * $set3;
+      $set1 *= $set2;
+      $set1 = $set2 &amp; $set3;
+      $set1 &amp;= $set2;
+      $set1 = $set2 * $index;
+      $set *= $index;
+      $set1 = $set2 &amp; $index;
+      $set &amp;= $index;
+</PRE>
+
+<P>
+
+<PRE>  Difference
+      $set1 = $set2 - $set3;
+      $set1 -= $set2;
+      $set1 = $set2 - $set1;
+      $set1 = $set2 - $index;
+      $set1 = $index - $set2;
+      $set -= $index;
+</PRE>
+
+<P>
+
+<PRE>  ExclusiveOr
+      $set1 = $set2 ^ $set3;
+      $set1 ^= $set2;
+      $set1 = $set2 ^ $index;
+      $set ^= $index;
+</PRE>
+
+<P>
+
+<PRE>  Complement
+      $set1 = -$set2;
+      $set1 = ~$set2;
+      $set = -$set;
+      $set = ~$set;
+</PRE>
+
+<P>
+
+<PRE>  Subset Relationship
+      if ($set1 &lt;= $set2)
+</PRE>
+
+<P>
+
+<PRE>  True Subset Relationship
+      if ($set1 &lt; $set2)
+</PRE>
+
+<P>
+
+<PRE>  Superset Relationship
+      if ($set1 &gt;= $set2)
+</PRE>
+
+<P>
+
+<PRE>  True Superset Relationship
+      if ($set1 &gt; $set2)
+</PRE>
+
+<P>
+
+<PRE>  Norm
+      $norm = abs($set);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This class lets you dynamically create sets of arbitrary intervals of
+integers and perform all the basic operations for sets on them (for a list
+of available methods and operators, see above).
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/site/Bit/Vector_3_.html">Vector(3)</A> for more details!
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Bit::Vector(3), Set::IntegerFast(3), Math::MatrixBool(3),
+Math::MatrixReal(3), DFA::Kleene(3), Math::Kleene(3), Graph::Kruskal(3).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VERSION">VERSION
+
+</A></H1>
+This man page documents ``Set::IntegerRange'' version 4.2.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Steffen Beyer <A HREF="MAILTO:<sb@sdm.de>."><sb@sdm.de>.</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1996, 1997 by Steffen Beyer. All rights reserved.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="LICENSE">LICENSE
+
+</A></H1>
+This package is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

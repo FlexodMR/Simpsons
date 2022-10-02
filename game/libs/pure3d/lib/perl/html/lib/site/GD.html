@@ -1,0 +1,1695 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>GD.pm - Interface to Gd Graphics Library
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#Method_Calls">Method Calls</A>
+	<UL>
+
+		<LI><A HREF="#Creating_and_Saving_Images">Creating and Saving Images</A>
+		<LI><A HREF="#Color_Control">Color Control</A>
+		<LI><A HREF="#Special_Colors">Special Colors</A>
+		<LI><A HREF="#Drawing_Commands">Drawing Commands</A>
+		<LI><A HREF="#Image_Copying_Commands">Image Copying Commands</A>
+		<LI><A HREF="#Character_and_String_Drawing">Character and String Drawing</A>
+		<LI><A HREF="#Miscellaneous_Image_Methods">Miscellaneous Image Methods</A>
+		<LI><A HREF="#Polygon_Methods">Polygon Methods</A>
+		<LI><A HREF="#Font_Utilities">Font Utilities</A>
+	</UL>
+
+	<LI><A HREF="#Obtaining_the_C_language_version">Obtaining the C-language version of gd</A>
+	<LI><A HREF="#Copyright_Information">Copyright Information</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+GD.pm - Interface to Gd Graphics Library
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<STRONG>GD.pm</STRONG> is a port of Thomas Boutell's gd graphics library (see below). 
+<FONT SIZE=-1>GD</FONT> allows you to create color drawings using a large number of graphics primitives, and emit the drawings as 
+<FONT SIZE=-1>GIF</FONT> files.
+
+
+
+<P>
+
+
+<FONT SIZE=-1>GD</FONT> defines the following three classes:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_GD">GD::Image
+
+</A></STRONG><DD>
+An image class, which holds the image data and accepts graphic primitive
+method calls.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_GD">GD::Font
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> font class, which holds static font information and
+used for text rendering.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_GD">GD::Polygon
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> simple polygon object, used for storing lists of
+vertices prior to rendering a polygon into an image.
+
+
+<P>
+
+</DL>
+
+<FONT SIZE=-1>A</FONT> Simple Example:
+
+
+<P>
+
+<PRE>        #!/usr/local/bin/perl
+</PRE>
+
+<P>
+
+<PRE>        use GD;
+        
+        # create a new image
+        $im = new GD::Image(100,100);
+</PRE>
+
+<P>
+
+<PRE>        # allocate some colors
+        $white = $im-&gt;colorAllocate(255,255,255);
+        $black = $im-&gt;colorAllocate(0,0,0);       
+        $red = $im-&gt;colorAllocate(255,0,0);      
+        $blue = $im-&gt;colorAllocate(0,0,255);
+</PRE>
+
+<P>
+
+<PRE>        # make the background transparent and interlaced
+        $im-&gt;transparent($white);
+        $im-&gt;interlaced('true');
+</PRE>
+
+<P>
+
+<PRE>        # Put a black frame around the picture
+        $im-&gt;rectangle(0,0,99,99,$black);
+</PRE>
+
+<P>
+
+<PRE>        # Draw a blue oval
+        $im-&gt;arc(50,50,95,75,0,360,$blue);
+</PRE>
+
+<P>
+
+<PRE>        # And fill it with red
+        $im-&gt;fill(50,50,$red);
+</PRE>
+
+<P>
+
+<PRE>        # Convert the image to GIF and print it on standard output
+        print $im-&gt;gif;
+</PRE>
+
+<P>
+
+Notes:
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item_To_create_a_new_empty_image_se">
+To create a new, empty image, send a new() message to GD::Image, passing
+it the width and height of the image you want to create.  An image
+object will be returned.  Other class methods allow you to initialize
+an image from a preexisting GIF, GD or XBM file.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Next_you_will_ordinarily_add_col">
+Next you will ordinarily add colors to the image's color table.
+colors are added using a colorAllocate() method call.  The three
+parameters in each call are the red, green and blue (rgb) triples for
+the desired color.  The method returns the index of that color in the
+image's color table.  You should store these indexes for later use.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Now_you_can_do_some_drawing_The">
+Now you can do some drawing!  The various graphics primitives are
+described below.  In this example, we do some text drawing, create an
+oval, and create and draw a polygon.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Polygons_are_created_with_a_new_">
+Polygons are created with a new() message to GD::Polygon.  You can add
+points to the returned polygon one at a time using the addPt() method.
+The polygon can then be passed to an image for rendering.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_When_you_re_done_drawing_you_ca">
+When you're done drawing, you can convert the image into GIF format by
+sending it a gif() message.  It will return a (potentially large)
+scalar value containing the binary data for the image.  Ordinarily you
+will print it out at this point or write it to a file.
+
+</A></STRONG>
+</OL>
+<P>
+<HR>
+<H1><A NAME="Method_Calls">Method Calls
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Creating_and_Saving_Images">Creating and Saving Images
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_new">new
+
+</A></STRONG><DD>
+<CODE>GD::Image::new(width,height)</CODE>  <EM>class method</EM>
+
+
+
+
+<P>
+
+To create a new, blank image, send a <CODE>new()</CODE> message to the
+GD::Image class. For example:
+
+
+<P>
+
+<PRE>        $myImage = new GD::Image(100,100) || die;
+</PRE>
+
+<P>
+
+This will create an image that is 100 x 100 pixels wide. If you don't
+specify the dimensions, a default of 64 x 64 will be chosen. If something
+goes wrong (e.g. insufficient memory), this call will return undef.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_newFromGif">newFromGif
+
+</A></STRONG><DD>
+<CODE>GD::Image::newFromGif(FILEHANDLE)</CODE>  <EM>class method</EM>
+
+
+
+
+<P>
+
+This will create an image from a 
+<FONT SIZE=-1>GIF</FONT> file read in through the provided filehandle. The filehandle must previously have been opened on a valid 
+<FONT SIZE=-1>GIF</FONT> file or pipe. If successful, this call will return an initialized image which you can then manipulate as you please. If it fails, which usually happens if the thing at the other end of the filehandle is not a valid 
+<FONT SIZE=-1>GIF</FONT> file, the call returns undef. Notice that the call doesn't automatically close the filehandle for you.
+
+
+
+<P>
+
+To get information about the size and color usage of the information, you
+can call the image query methods described below.
+
+
+<P>
+
+<PRE>        Example usage:
+</PRE>
+
+<P>
+
+<PRE>        open (GIF,&quot;barnswallow.gif&quot;) || die;
+        $myImage = newFromGif GD::Image(GIF) || die;
+        close GIF;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newFromXbm">newFromXbm
+
+</A></STRONG><DD>
+<CODE>GD::Image::newFromXbm(FILEHANDLE)</CODE>  <EM>class method</EM>
+
+
+
+
+<P>
+
+This works in exactly the same way as <A HREF="#item_newFromGif">newFromGif</A>, but reads the contents of an 
+<FONT SIZE=-1>X</FONT> Bitmap file:
+
+
+<P>
+
+<PRE>        open (XBM,&quot;coredump.xbm&quot;) || die;
+        $myImage = newFromXbm GD::Image(XBM) || die;
+        close XBM;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newFromGd">newFromGd
+
+</A></STRONG><DD>
+<CODE>GD::Image::newFromGd(FILEHANDLE)</CODE>  <EM>class method</EM>
+
+
+
+
+<P>
+
+This works in exactly the same way as <A HREF="#item_newFromGif">newFromGif</A>, but reads the contents of a 
+<FONT SIZE=-1>GD</FONT> file. 
+<FONT SIZE=-1>GD</FONT> is Tom Boutell's disk-based storage format, intended for the rare case when you need to read and write the image to disk quickly. It's not intended for regular use, because, unlike 
+<FONT SIZE=-1>GIF</FONT> or 
+<FONT SIZE=-1>JPEG,</FONT> no image compression is performed and these files can become
+ <STRONG>BIG</STRONG>.
+
+
+<P>
+
+<PRE>        open (GDF,&quot;godzilla.gd&quot;) || die;
+        $myImage = newFromGd GD::Image(GDF) || die;
+        close GDF;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_gif">gif
+
+</A></STRONG><DD>
+<CODE>GD::Image::gif</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This returns the image data in 
+<FONT SIZE=-1>GIF</FONT> format. You can then print it, pipe it to a
+display program, or write it to a file. Example:
+
+
+<P>
+
+<PRE>        $gif_data = $myImage-&gt;gif;
+        open (DISPLAY,&quot;| display -&quot;) || die;
+        print DISPLAY $gif_data;
+        close DISPLAY;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_gd">gd
+
+</A></STRONG><DD>
+<CODE>GD::Image::gd</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This returns the image data in 
+<FONT SIZE=-1>GD</FONT> format. You can then print it, pipe it to a display
+program, or write it to a file. Example:
+
+
+<P>
+
+<PRE>        print MYOUTFILE $myImage-&gt;gd;
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Color_Control">Color Control
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_colorAllocate">colorAllocate
+
+</A></STRONG><DD>
+<CODE>GD::Image::colorAllocate(red,green,blue)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This allocates a color with the specified red, green and blue components
+and returns its index in the color table, if specified. The first color
+allocated in this way becomes the image's background color. (255,255,255)
+is white (all pixels on). (0,0,0) is black (all pixels off). (255,0,0) is
+fully saturated red. (127,127,127) is 50% gray. You can find plenty of
+examples in /usr/X11/lib/X11/rgb.txt.
+
+
+<P>
+
+If no colors are allocated, then this function returns -1.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $white = $myImage-&gt;colorAllocate(0,0,0); #background color
+        $black = $myImage-&gt;colorAllocate(255,255,255);
+        $peachpuff = $myImage-&gt;colorAllocate(255,218,185);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_colorDeallocate">colorDeallocate
+
+</A></STRONG><DD>
+<CODE>GD::Image::colorDeallocate(colorIndex)</CODE>  <EM>object method</EM> 
+
+ 
+
+
+<P>
+
+This marks the color at the specified index as being ripe for reallocation.
+The next time colorAllocate is used, this entry will be replaced. You can
+call this method several times to deallocate multiple colors. There's no
+function result from this call.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $myImage-&gt;colorDeallocate($peachpuff);
+        $peachy = $myImage-&gt;colorAllocate(255,210,185);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_colorClosest">colorClosest
+
+</A></STRONG><DD>
+<CODE>GD::Image::colorClosest(red,green,blue)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This returns the index of the color closest in the color table to the red
+green and blue components specified. If no colors have yet been allocated,
+then this call returns -1.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $apricot = $myImage-&gt;colorClosest(255,200,180);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_colorExact">colorExact
+
+</A></STRONG><DD>
+<CODE>GD::Image::colorExact(red,green,blue)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This returns the index of a color that exactly matches the specified red
+green and blue components. If such a color is not in the color table, this
+call returns -1.
+
+
+<P>
+
+<PRE>        $rosey = $myImage-&gt;colorExact(255,100,80);
+        warn &quot;Everything's coming up roses.\n&quot; if $rosey &gt;= 0;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_colorsTotal">colorsTotal
+
+</A></STRONG><DD>
+<CODE>GD::Image::colorsTotal)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This returns the total number of colors allocated in the object.
+
+
+<P>
+
+<PRE>        $maxColors = $myImage-&gt;colorsTotal;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_getPixel">getPixel
+
+</A></STRONG><DD>
+<CODE>GD::Image::getPixel(x,y)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This returns the color table index underneath the specified point. It can
+be combined with <CODE>rgb()</CODE> to obtain the rgb color underneath the
+pixel.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $index = $myImage-&gt;getPixel(20,100);
+        ($r,$g,$b) = $myImage-&gt;rgb($index);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_rgb">rgb
+
+</A></STRONG><DD>
+<CODE>GD::Image::rgb(colorIndex)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This returns a list containing the red, green and blue components of the
+specified color index.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        @RGB = $myImage-&gt;rgb($peachy);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_transparent">transparent
+
+</A></STRONG><DD>
+<CODE>GD::Image::transparent(colorIndex)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This marks the color at the specified index as being transparent. Portions of the image drawn in this color will be invisible. This is useful for creating paintbrushes of odd shapes, as well as for making 
+<FONT SIZE=-1>GIF</FONT> backgrounds transparent for displaying on the Web. Only one color can be transparent at any time. To disable transparency, specify -1 for the index.
+  
+
+
+<P>
+
+If you call this method without any parameters, it will return the current
+index of the transparent color, or -1 if none.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        open(GIF,&quot;test.gif&quot;);
+        $im = newFromGif GD::Image(GIF);
+        $white = $im-&gt;colorClosest(255,255,255); # find white
+        $im-&gt;transparent($white);
+        print $im-&gt;gif;
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Special_Colors">Special Colors
+
+</A></H2>
+
+<FONT SIZE=-1>GD</FONT> implements a number of special colors that can be used to achieve special effects. They are constants defined in the 
+<FONT SIZE=-1>GD::</FONT> namespace, but automatically exported into your namespace when the 
+<FONT SIZE=-1>GD</FONT> module is loaded.
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_setBrush">setBrush
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_gdBrushed">gdBrushed
+
+</A></STRONG><DD>
+<CODE>GD::Image::setBrush( )</CODE> and <CODE>GD::gdBrushed</CODE>
+
+
+
+
+<P>
+
+You can draw lines and shapes using a brush pattern. Brushes are just
+images that you can create and manipulate in the usual way. When you draw
+with them, their contents are used for the color and shape of the lines.
+
+
+<P>
+
+To make a brushed line, you must create or load the brush first, then
+assign it to the image using <A HREF="#item_setBrush">setBrush</A>. You can then draw in that with that brush using the <A HREF="#item_gdBrushed">gdBrushed</A> special color. It's often useful to set the background of the brush to
+transparent so that the non-colored parts don't overwrite other parts of
+your image.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        # Create a brush at an angle
+        $diagonal_brush = new GD::Image(5,5);
+        $white = $diagonal_brush-&gt;allocateColor(255,255,255);
+        $black = $diagonal_brush-&gt;allocateColor(0,0,0);
+        $diagonal_brush-&gt;transparent($white);
+        $diagonal_brush-&gt;line(0,4,4,0,$black); # NE diagonal
+</PRE>
+
+<P>
+
+<PRE>        # Set the brush
+        $myImage-&gt;setBrush($diagonal_brush);
+        
+        # Draw a circle using the brush
+        $myImage-&gt;arc(50,50,25,25,0,360,gdBrushed);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_setStyle">setStyle
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_gdStyled">gdStyled
+
+</A></STRONG><DD>
+<CODE>GD::Image::setStyle(@colors)</CODE> and <CODE>GD::gdStyled</CODE>
+
+
+
+
+<P>
+
+Styled lines consist of an arbitrary series of repeated colors and are
+useful for generating dotted and dashed lines. To create a styled line, use <A HREF="#item_setStyle">setStyle</A> to specify a repeating series of colors. It accepts an array consisting of
+one or more color indexes. Then draw using the <A HREF="#item_gdStyled">gdStyled</A> special color. Another special color,
+<CODE>gdTransparent</CODE> can be used to introduce holes in the line, as the example shows.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        # Set a style consisting of 4 pixels of yellow,
+        # 4 pixels of blue, and a 2 pixel gap
+        $myImage-&gt;setStyle($yellow,$yellow,$yellow,$yellow,
+                           $blue,$blue,$blue,$blue,
+                           gdTransparent,gdTransparent);
+        $myImage-&gt;arc(50,50,25,25,0,360,gdStyled);
+</PRE>
+
+<P>
+
+To combine the <A HREF="#item_gdStyled">gdStyled</A> and <A HREF="#item_gdBrushed">gdBrushed</A> behaviors, you can specify
+<CODE>gdStyledBrushed</CODE>. In this case, a pixel from the current brush pattern is rendered wherever
+the color specified in <CODE>setStyle()</CODE> is neither gdTransparent nor
+0.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_gdTiled">gdTiled
+
+</A></STRONG><DD>
+Draw filled shapes and flood fills using a pattern. The pattern is just
+another image. The image will be tiled multiple times in order to fill the
+required space, creating wallpaper effects. You must call
+<CODE>setTile</CODE> in order to define the particular tile pattern you'll use for drawing when
+you specify the gdTiled color. details.
+
+
+<P>
+
+<DT><STRONG>gdStyled
+
+</A></STRONG><DD>
+The gdStyled color is used for creating dashed and dotted lines. 
+<FONT SIZE=-1>A</FONT> styled line can contain any series of colors and is
+created using the
+<CODE>setStyled</CODE> command.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Drawing_Commands">Drawing Commands
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_setPixel">setPixel
+
+</A></STRONG><DD>
+<CODE>GD::Image::setPixel(x,y,color)</CODE>  <EM>object method</EM> 
+
+ 
+
+
+<P>
+
+This sets the pixel at (x,y) to the specified color index. No value is
+returned from this method. The coordinate system starts at the upper left
+at (0,0) and gets larger as you go down and to the right. You can use a
+real color, or one of the special colors gdBrushed, gdStyled and
+gdStyledBrushed can be specified.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        # This assumes $peach already allocated
+        $myImage-&gt;setPixel(50,50,$peach);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_line">line
+
+</A></STRONG><DD>
+<CODE>GD::Image::line(x1,y1,x2,y2,color)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This draws a line from (x1,y1) to (x2,y2) of the specified color. You can
+use a real color, or one of the special colors gdBrushed, gdStyled and
+gdStyledBrushed.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        # Draw a diagonal line using the currently defind
+        # paintbrush pattern.
+        $myImage-&gt;line(0,0,150,150,gdBrushed);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_dashedLine">dashedLine
+
+</A></STRONG><DD>
+<CODE>GD::Image::dashedLine(x1,y1,x2,y2,color)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This draws a dashed line from (x1,y1) to (x2,y2) in the specified color. 
+<FONT SIZE=-1>A</FONT> more powerful way to generate arbitrary dashed and
+dotted lines is to use the <CODE>setStyle()</CODE> method described below
+and to draw with the special color gdStyled.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $myImage-&gt;dashedLine(0,0,150,150,$blue);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_rectangle">rectangle
+
+</A></STRONG><DD>
+<CODE>GD::Image::rectangle(x1,y1,x2,y2,color)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This draws a rectangle with the specified color. (x1,y1) and (x2,y2) are
+the upper left and lower right corners respectively. Both real color
+indexes and the special colors gdBrushed, gdStyled and gdStyledBrushed are
+accepted.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $myImage-&gt;rectangle(10,10,100,100,$rose);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_filledRectangle">filledRectangle
+
+</A></STRONG><DD>
+<CODE>GD::Image::filledRectangle(x1,y1,x2,y2,color)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This draws a rectangle filed with the specified color. You can use a real
+color, or the special fill color gdTiled to fill the polygon with a
+pattern.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        # read in a fill pattern and set it
+        open(GIF,&quot;happyface.gif&quot;) || die;
+        $tile = newFromGif GD::Image(GIF);
+        $myImage-&gt;setTile($tile); 
+</PRE>
+
+<P>
+
+<PRE>        # draw the rectangle, filling it with the pattern
+        $myImage-&gt;filledRectangle(10,10,150,200,gdTiled);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_polygon">polygon
+
+</A></STRONG><DD>
+<CODE>GD::Image::polygon(polygon,color)</CODE>  <EM>object method</EM> 
+
+ 
+
+
+<P>
+
+This draws a polygon with the specified color. The polygon must be created
+first (see below). The polygon must have at least three vertices. If the
+last vertex doesn't close the polygon, the method will close it for you.
+Both real color indexes and the special colors gdBrushed, gdStyled and
+gdStyledBrushed can be specified.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $poly = new GD::Polygon;
+        $poly-&gt;addPt(50,0);
+        $poly-&gt;addPt(99,99);
+        $poly-&gt;addPt(0,99);
+        $myImage-&gt;polygon($poly,$blue);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_filledPolygon">filledPolygon
+
+</A></STRONG><DD>
+<CODE>GD::Image::filledPolygon(poly,color)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This draws a polygon filled with the specified color. You can use a real
+color, or the special fill color gdTiled to fill the polygon with a
+pattern.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        # make a polygon
+        $poly = new GD::Polygon;
+        $poly-&gt;addPt(50,0);
+        $poly-&gt;addPt(99,99);
+        $poly-&gt;addPt(0,99);
+</PRE>
+
+<P>
+
+<PRE>        # draw the polygon, filling it with a color
+        $myImage-&gt;filledPolygon($poly,$peachpuff);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_arc">arc
+
+</A></STRONG><DD>
+<CODE>GD::Image::arc(cx,cy,width,height,start,end,color)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This draws arcs and ellipses. (cx,cy) are the center of the arc, and
+(width,height) specify the width and height, respectively. The portion of
+the ellipse covered by the arc are controlled by start and end, both of
+which are given in degrees from 0 to 360. Zero is at the top of the
+ellipse, and angles increase clockwise. To specify a complete ellipse, use
+0 and 360 as the starting and ending angles. To draw a circle, use the same
+value for width and height.
+
+
+<P>
+
+You can specify a normal color or one of the special colors gdBrushed,
+gdStyled, or gdStyledBrushed.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        # draw a semicircle centered at 100,100
+        $myImage-&gt;arc(100,100,50,50,0,180,$blue);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_fill">fill
+
+</A></STRONG><DD>
+<CODE>GD::Image::fill(x,y,color)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This method flood-fills regions with the specified color. The color will
+spread through the image, starting at point (x,y), until it is stopped by a
+pixel of a different color from the starting pixel (this is similar to the
+``paintbucket'' in many popular drawing toys). You can specify a normal
+color, or the special color gdTiled, to flood-fill with patterns.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        # Draw a rectangle, and then make its interior blue
+        $myImage-&gt;rectangle(10,10,100,100,$black);
+        $myImage-&gt;fill(50,50,$blue);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_GD">GD::Image::fillToBorder(x,y,bordercolor,color) object method
+
+</A></STRONG><DD>
+Like <A HREF="#item_fill">fill</A>, this method flood-fills regions with the specified color, starting at
+position (x,y). However, instead of stopping when it hits a pixel of a
+different color than the starting pixel, flooding will only stop when it
+hits the color specified by bordercolor. You must specify a normal indexed
+color for the bordercolor. However, you are free to use the gdTiled color
+for the fill.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        # This has the same effect as the previous example
+        $myImage-&gt;rectangle(10,10,100,100,$black);
+        $myImage-&gt;fillToBorder(50,50,$black,$blue);
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Image_Copying_Commands">Image Copying Commands
+
+</A></H2>
+Two methods are provided for copying a rectangular region from one image to
+another. One method copies a region without resizing it. The other allows
+you to stretch the region during the copy operation.
+
+
+<P>
+
+With either of these methods it is important to know that the routines will
+attempt to flesh out the destination image's color table to match the
+colors that are being copied from the source. If the destination's color
+table is already full, then the routines will attempt to find the best
+match, with varying results.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_copy">copy
+
+</A></STRONG><DD>
+<CODE>GD::Image::copy(sourceImage,dstX,dstY,srcX,srcY,width,height)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This is the simpler of the two copy operations, copying the specified
+region from the source image to the destination image (the one performing
+the method call). (srcX,srcY) specify the upper left corner of a rectangle
+in the source image, and (width,height) give the width and height of the
+region to copy. (dstX,dstY) control where in the destination image to stamp
+the copy. You can use the same image for both the source and the
+destination, but the source and destination regions must not overlap or
+strange things will happen.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $myImage = new GD::Image(100,100);
+        ... various drawing stuff ...
+        $srcImage = new GD::Image(50,50);
+        ... more drawing stuff ...
+        # copy a 25x25 pixel region from $srcImage to
+        # the rectangle starting at (10,10) in $myImage
+        $myImage-&gt;copy($srcImage,10,10,0,0,25,25);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_copyResized">copyResized
+
+</A></STRONG><DD>
+<CODE>GD::Image::copyResized(sourceImage,dstX,dstY,srcX,srcY,destW,destH,srcW,srcH)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+This method is similar to <CODE>copy()</CODE> but allows you to choose
+different sizes for the source and destination rectangles. The source and
+destination rectangle's are specified independently by (srcW,srcH) and
+(destW,destH) respectively. <CODE>copyResized()</CODE> will stretch or
+shrink the image to accomodate the size requirements.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $myImage = new GD::Image(100,100);
+        ... various drawing stuff ...
+        $srcImage = new GD::Image(50,50);
+        ... more drawing stuff ...
+        # copy a 25x25 pixel region from $srcImage to
+        # a larger rectangle starting at (10,10) in $myImage
+        $myImage-&gt;copyResized($srcImage,10,10,0,0,50,50,25,25);
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Character_and_String_Drawing">Character and String Drawing
+
+</A></H2>
+Gd allows you to draw characters and strings, either in normal horizontal
+orientation or rotated 90 degrees. These routines use a GD::Font object,
+described in more detail below. There are four built-in fonts, available in
+global variables gdLargeFont, gdMediumBoldFont, gdSmallFont and gdTinyFont.
+Currently there is no way of dynamically creating your own fonts.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_string">string
+
+</A></STRONG><DD>
+<CODE>GD::Image::string(font,x,y,string,color)</CODE>  <EM>Object Method</EM>
+
+
+
+
+<P>
+
+This method draws a string startin at position (x,y) in the specified font
+and color. Your choices of fonts are gdSmallFont, gdMediumBoldFont,
+gdTinyFont and gdLargeFont.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        $myImage-&gt;string(gdSmallFont,2,10,&quot;Peachy Keen&quot;,$peach);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_stringUp">stringUp
+
+</A></STRONG><DD>
+<CODE>GD::Image::stringUp(font,x,y,string,color)</CODE>  <EM>Object Method</EM>
+
+
+
+
+<P>
+
+Just like the previous call, but draws the text rotated counterclockwise 90
+degrees.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_char">char
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_charUp">charUp
+
+</A></STRONG><DD>
+<CODE>GD::Image::char(font,x,y,char,color)</CODE>  <EM>Object Method</EM>
+
+<CODE>GD::Image::charUp(font,x,y,char,color)</CODE>  <EM>Object Method</EM>
+
+
+
+
+<P>
+
+These methods draw single characters at position (x,y) in the specified font and color. They're carry-overs from the 
+<FONT SIZE=-1>C</FONT> interface, where there is a distinction between characters and strings. Perl is insensible to such subtle distinctions.
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Miscellaneous_Image_Methods">Miscellaneous Image Methods
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_interlaced">interlaced
+
+</A></STRONG><DD>
+<CODE>GD::Image::interlaced( )</CODE>  <CODE>GD::Image::interlaced(1)</CODE>  <EM>Object method</EM>
+
+
+
+
+<P>
+
+This method sets or queries the image's interlaced setting. Interlace
+produces a cool venetian blinds effect on certain viewers. Provide a true
+parameter to set the interlace attribute. Provide undef to disable it. Call
+the method without parameters to find out the current setting.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_c">c<getBounds>
+
+</A></STRONG><DD>
+<CODE>GD::Image::getBounds( )</CODE>  <EM>Object method</EM>
+
+
+
+
+<P>
+
+This method will return a two-member list containing the width and height
+of the image. You query but not not change the size of the image once it's
+created.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Polygon_Methods">Polygon Methods
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> few primitive polygon creation and manipulation methods are provided. They aren't part of the Gd library, but 
+<FONT SIZE=-1>I</FONT> thought they might be handy to have around (they're borrowed from my qd.pl Quickdraw library).
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_c">c<new>
+
+</A></STRONG><DD>
+<CODE>GD::Polygon::new</CODE>  <EM>class method</EM>
+
+
+
+
+<P>
+
+Create an empty polygon with no vertices.
+
+
+<P>
+
+<PRE>        $poly = new GD::Polygon;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_addPt">addPt
+
+</A></STRONG><DD>
+<CODE>GD::Polygon::addPt(x,y)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+Add point (x,y) to the polygon.
+
+
+<P>
+
+<PRE>        $poly-&gt;addPt(0,0);
+        $poly-&gt;addPt(0,50);
+        $poly-&gt;addPt(25,25);
+        $myImage-&gt;fillPoly($poly,$blue);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_getPt">getPt
+
+</A></STRONG><DD>
+<CODE>GD::Polygon::getPt(index)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+Retrieve the point at the specified vertex.
+
+
+<P>
+
+<PRE>        ($x,$y) = $poly-&gt;getPt(2);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_setPt">setPt
+
+</A></STRONG><DD>
+<CODE>GD::Polygon::setPt(index,x,y)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+Change the value of an already existing vertex. It is an error to set a
+vertex that isn't already defined.
+
+
+<P>
+
+<PRE>        $poly-&gt;setPt(2,100,100);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_deletePt">deletePt
+
+</A></STRONG><DD>
+<CODE>GD::Polygon:deletePt(index)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+Delete the specified vertex, returning its value.
+
+
+<P>
+
+<PRE>        ($x,$y) = $poly-&gt;deletePt(1); 
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_length">length
+
+</A></STRONG><DD>
+<CODE>GD::Polygon::length</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+Return the number of vertices in the polygon.
+
+
+<P>
+
+<PRE>        $points = $poly-&gt;length;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_vertices">vertices
+
+</A></STRONG><DD>
+<CODE>GD::Polygon::vertices</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+Return a list of all the verticies in the polygon object. Each membver of
+the list is a reference to an (x,y) array.
+
+
+<P>
+
+<PRE>        @vertices = $poly-&gt;vertices;
+        foreach $v (@vertices)
+           print join(&quot;,&quot;,@$v),&quot;\n&quot;;
+        }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_bounds">bounds
+
+</A></STRONG><DD>
+<CODE>GD::Polygon::bounds</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+Return the smallest rectangle that completely encloses the polygon. The
+return value is an array containing the (left,top,right,bottom) of the
+rectangle.
+
+
+<P>
+
+<PRE>        ($left,$top,$right,$bottom) = $poly-&gt;bounds;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_offset">offset
+
+</A></STRONG><DD>
+<CODE>GD::Polygon::offset(dx,dy)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+Offset all the vertices of the polygon by the specified horizontal (dh) and
+vertical (dy) amounts. Positive numbers move the polygon down and to the
+right.
+
+
+<P>
+
+<PRE>        $poly-&gt;offset(10,30);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_map">map
+
+</A></STRONG><DD>
+<CODE>GD::Polygon::map(srcL,srcT,srcR,srcB,destL,dstT,dstR,dstB)</CODE>  <EM>object method</EM>
+
+
+
+
+<P>
+
+Map the polygon from a source rectangle to an equivalent position in a
+destination rectangle, moving it and resizing it as necessary. See polys.pl
+for an example of how this works. Both the source and destination
+rectangles are given in (left,top,right,bottom) coordinates. For
+convenience, you can use the polygon's own bounding box as the source
+rectangle.
+
+
+<P>
+
+<PRE>        # Make the polygon really tall
+        $poly-&gt;map($poly-&gt;bounds,0,0,50,200);
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Font_Utilities">Font Utilities
+
+</A></H2>
+Gd's support for fonts is minimal. Basically you have access to gdSmallFont
+and gdLargeFont for drawing, and not much else. However, for future
+compatibility, I've made the fonts into perl objects of type GD::Font that
+you can query and, perhaps someday manipulate.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_gdSmallFont">gdSmallFont
+
+</A></STRONG><DD>
+<CODE>GD::Font::gdSmallFont</CODE>  <EM>constant</EM>
+
+
+
+
+<P>
+
+This is the basic small font, ``borrowed'' from a well known public domain
+6x12 font.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_gdLargeFont">gdLargeFont
+
+</A></STRONG><DD>
+<CODE>GD::Font::gdLargeFont</CODE>  <EM>constant</EM>
+
+
+
+
+<P>
+
+This is the basic large font, ``borrowed'' from a well known public domain
+8x16 font.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_gdMediumBoldFont">gdMediumBoldFont
+
+</A></STRONG><DD>
+<CODE>GD::Font::gdMediumBoldFont</CODE>  <EM>constant</EM>
+
+
+
+
+<P>
+
+This is a bold font intermediate in size between the small and large fonts,
+borrowed from a public domain 7x13 font;
+
+
+<P>
+
+<DT><STRONG><A NAME="item_gdTinyFont">gdTinyFont
+
+</A></STRONG><DD>
+<CODE>GD::Font::gdTinyFont</CODE>  <EM>constant</EM>
+
+
+
+
+<P>
+
+This is a tiny, almost unreadable font, 5x8 pixels wide.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_nchars">nchars
+
+</A></STRONG><DD>
+<CODE>GD::Font::nchars</CODE>		<EM>object method</EM>
+
+
+
+
+<P>
+
+This returns the number of characters in the font.
+
+
+<P>
+
+<PRE>        print &quot;The large font contains &quot;,gdLargeFont-&gt;nchars,&quot; characters\n&quot;;
+</PRE>
+
+<P>
+
+<DT><STRONG>offset
+
+</A></STRONG><DD>
+<CODE>GD::Font::offset</CODE> 	 	<EM>object method</EM>
+
+
+
+
+<P>
+
+This returns the 
+<FONT SIZE=-1>ASCII</FONT> value of the first character in the font
+
+
+<P>
+
+<DT><STRONG><A NAME="item_width">width
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_height">height
+
+</A></STRONG><DD>
+<CODE>GD::Font::width</CODE>  <CODE>GD::Font::height</CODE>		<EM>object methods</EM>
+
+
+
+
+<P>
+
+These return the width and height of the font.
+
+
+<P>
+
+<PRE>        ($w,$h) = (gdLargeFont-&gt;width,gdLargeFont-&gt;height);
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="Obtaining_the_C_language_version">Obtaining the C-language version of gd
+
+</A></H1>
+libgd, the C-language version of gd, can be obtained at 
+<FONT SIZE=-1>URL</FONT> <A
+HREF="http://www.boutell.com/gd/gd.html.">http://www.boutell.com/gd/gd.html.</A>
+Directions for installing and using it can be found at that site. Please do
+not contact me for help with libgd.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Copyright_Information">Copyright Information
+
+</A></H1>
+The GD.pm interface is copyright 1995, Lincoln 
+<FONT SIZE=-1>D.</FONT> Stein. You are free to use it for any purpose, commercial or noncommercial, provided that if you redistribute the source code this statement of copyright remains attached. The gd library is covered separately under a 1994 copyright by Quest Protein Database Center, Cold Spring Harbor Labs and Thomas Boutell. For usage information see the gd documentation at 
+<FONT SIZE=-1>URL</FONT>
+
+
+
+<P>
+
+<PRE>        <A HREF="http://www.boutell.com/gd/gd.html">http://www.boutell.com/gd/gd.html</A>
+</PRE>
+
+<P>
+
+The latest versions of GD.pm are available at
+
+
+<P>
+
+<PRE>  <A HREF="http://www.genome.wi.mit.edu/ftp/pub/software/WWW/GD.html">http://www.genome.wi.mit.edu/ftp/pub/software/WWW/GD.html</A>
+  <A HREF="ftp://ftp-genome.wi.mit.edu/pub/software/WWW/GD.pm.tar.gz">ftp://ftp-genome.wi.mit.edu/pub/software/WWW/GD.pm.tar.gz</A>
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

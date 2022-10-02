@@ -1,0 +1,3743 @@
+//**************************************************************************************************
+//
+// Global Variables... set by the GUI
+//
+//**************************************************************************************************
+//global int     $hidden = 0;
+// global int     $g_BoundingVolumeIsDynamic = 0;
+
+// *** Mass removed per Martin Courchesne's request: 22 Jan 2002 
+// global float   $g_BoundingVolumeMass = 0.0;
+global string  $g_BoundingVolumeGameString;
+global float   $g_BoundingVolumeXScale = 100.0;
+global float   $g_BoundingVolumeYScale = 100.0;
+global float   $g_BoundingVolumeZScale = 100.0;
+global int     $g_BoundingVolumeTesselation = 1;
+global int     $g_BoundingVolumeCurveTech;
+global int     $g_BoundingVolumeParentGenerated = 0;
+
+//
+// These are for the 4 Point Selection Hack
+//
+//
+// Global call to start the selection scriptJob
+//
+global int $g_4PointBoxSelectionON = 0;
+global int $g_4PointBoxScriptJobID = 0;
+global string $g_SelectedComponents[];
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+// Constraints: 
+//
+//===========================================================================
+proc float version()
+{
+    return ( 19.0 );
+}
+
+//===========================================================================
+// useOldLayerBar
+//===========================================================================
+// Description: Determines whether the Maya v3 style layerBar should be
+//              used instead of Maya v4 displayLayers.
+//
+// Constraints: 
+//
+// Parameters:  (none)
+//
+// Return:      (int): TRUE (non-zero) if user is running Maya prior to v4;
+//                     FALSE (zero) if user is running Maya v4 or better.
+//
+//===========================================================================
+proc int useOldLayerBar()
+{
+    string $version = `about -v`;
+    int $major = `match "^[0-9]+" $version`;
+    return ( $major < 4.0 );
+}
+
+// ////////////////////////////////////////////////////////////////
+//  rootNode
+//
+// Description: Strips the dot-suffix of the specified string.
+//  e.g. "object.attribute" is returned as "object"
+
+proc string rootNode( string $object )
+{
+    string $buffer[];
+    tokenize $object "." $buffer;
+    return $buffer[0];
+}
+
+//===========================================================================
+// getTransform
+//===========================================================================
+// Description: Returns the transform for the specified shape node.
+//
+//  Parameters: string $shape: The shape node.
+//
+//      Return: (string): The transform node.
+//
+//===========================================================================
+proc string getTransform( string $shape )
+{
+    string $transform = $shape;
+    
+    // Special case for "joint" -- 
+    // a joint is a transform and has no corresponding Shape.
+    if ( `objExists $shape` && ( "transform" != `nodeType $shape` ) && ( "joint" != `nodeType $shape` ) )
+    // If given node is already a transform, just pass on through
+    {
+        string $parents[] = `listRelatives -fullPath -parent $shape`;
+        $transform = $parents[0];
+    }
+
+    return $transform;
+}
+
+//===========================================================================
+// getShape
+//===========================================================================
+// Description: Returns the first shape associated with the specified
+//              transform.
+//
+//  Parameters: string $xform: The transform node.
+//
+//      Return: (string): The shape node.
+//
+//===========================================================================
+proc string getShape( string $xform )
+{
+    string $shapes[];
+    
+    $shapes[0] = $xform;
+    
+    if ( `objExists $xform` && ( "transform" == `nodeType $xform` || "joint" == `nodeType $xform` ) )
+    // If given node is not a transform, assume it is a shape 
+    // and pass it through
+    {
+        $shapes = `listRelatives -fullPath -shapes $xform`;
+    }
+    
+    return $shapes[0];
+}
+
+//===========================================================================
+// sansExtension
+//===========================================================================
+// Description: Strips the ".ma", ".mb" or ".p3d" extension from the 
+//              end of the specified path/filename.
+//
+// Constraints: Only ".ma", ".mb" and ".p3d" extensions are detected.
+//
+// Parameters:  string $path: The path or filename.  May or may not have
+//                            an extension.
+//
+// Return:      (string): The path or filename, without its extension.
+//
+//===========================================================================
+proc string sansExtension( string $path )
+{
+    $path = `substitute ".m[a,b]$" $path ""`;
+    $path = `substitute ".p3d$" $path ""`;
+    return $path;
+}
+
+//===========================================================================
+// filepart
+//===========================================================================
+// Description: Returns the file portion from a fully qualified filepath.
+//
+// Constraints: 
+//
+// Parameters:  string $path: The fully qualified filepath.
+//
+// Return:      (string): The file portion of the filepath.
+//
+//===========================================================================
+proc string filepart( string $path )
+{
+    string $filepart =  match( "[^/\\]*$", $path );
+
+    return $filepart;
+}
+
+//===========================================================================
+// SetUpSelectionScriptJob
+//===========================================================================
+// Description: This sets up a SelectionChanged scriptJob to capture 
+//              component selection in a global array.
+//
+//              See notes below in P3DBoundingTools_SelectProc()
+//
+//              The global array $g_SelectedComponents is populated with
+//              the current vertex selection.  This may or may not be a
+//              good idea, because this won't have any reflection on 
+//              the selection order.
+//
+//              The "Box" button is set enabled if there are at least four
+//              vertex components selected; else it is disable.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc SetUpSelectionScriptJob()
+{
+   global string $g_SelectedComponents[];
+   global int $g_4PointBoxScriptJobID;
+   global int $g_4PointBoxSelectionON;
+
+   $g_4PointBoxSelectionON = 1;
+
+   // Initialize with current vertex component selection list.
+   $g_SelectedComponents = `filterExpand -sm 31 -ex true`;
+
+   $g_4PointBoxScriptJobID = `scriptJob -parent P3DBoundingVolumeTool -e "SelectionChanged" "P3DBoundingTools_SelectProc"`;
+//   print "Started Selection Script Job Number:";
+//   print $g_4PointBoxScriptJobID;
+//   print "\n";
+
+    button -e -enable ( `size $g_SelectedComponents` >= 4 ) P3DBoundingVolumeBoxUI;
+}
+
+//===========================================================================
+// KillSelectionScriptJob
+//===========================================================================
+// Description: This kills the scriptJob initiated in SetUpSelectionScriptJob().
+//
+//              The "Box" button is enabled as it is no longer restricted
+//              to component selection.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc KillSelectionScriptJob()
+{
+   global string $g_SelectedComponents[]; 
+   global int $g_4PointBoxScriptJobID;
+   global int $g_4PointBoxSelectionON;
+
+   $g_4PointBoxSelectionON = 0;
+   clear ($g_SelectedComponents);
+
+   scriptJob -kill $g_4PointBoxScriptJobID;
+//   print "Killed Selection Script Job Number:";
+//   print $g_4PointBoxScriptJobID;
+//   print "\n";
+
+    button -e -enable true P3DBoundingVolumeBoxUI;
+}
+
+proc int isVtxComponent( string $sel )
+{
+    return `gmatch $sel "*.vtx*"`;
+}
+
+//===========================================================================
+// 
+//===========================================================================
+// Description: The 4-point Box creation relies on processing the vertex
+//              components in the order they are selected.  As we are all
+//              well aware, Maya offers absolutely no method of querying the
+//              selection order for components.
+//
+//              An array is successively built as new items are selected;
+//              selected items not already in the array are appended.
+//
+//              The "Box" button is enabled if at least four vertex components
+//              exist in the $g_SelectedComponents array; else it is disabled.
+//
+// Constraints: Only explicitly selected vertex components are added to the 
+//              array.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DBoundingTools_SelectProc() 
+{
+   global string $g_SelectedComponents[]; 
+   global int $g_4PointBoxSelectionON;
+
+   string $selC[] = `ls -sl -flatten`; 
+   if (size($selC) > 0) 
+   { 
+      int $match = 0; 
+      for ($newSel in $selC) 
+      {
+         $match = 0; 
+         for ($oneComponent in $g_SelectedComponents) 
+         { 
+            if ($newSel == $oneComponent) 
+            {
+               $match = 1; 
+            }
+         } 
+
+         if ( ($match == 0) && ( isVtxComponent( $newSel ) ) )
+         {
+            $g_SelectedComponents[size($g_SelectedComponents)] = $newSel; 
+         }
+      }
+   } 
+   else 
+   { 
+      clear ($g_SelectedComponents); 
+   }
+
+    if ( $g_4PointBoxSelectionON )
+    {
+        button -e -enable ( `size $g_SelectedComponents` >= 4 ) P3DBoundingVolumeBoxUI;
+    }
+
+   int $debug = 0; 
+   if ($debug && (size($selC) > 0)) 
+   { 
+      print ("Selected components (in the order) ...\n"); 
+      print ($g_SelectedComponents); 
+      print ("\n"); 
+   }
+}
+
+//**************************************************************************************************
+//  Procedure Name:
+//    AddJointInfo()
+//
+//  Description:
+//    Used to add extra information to joints that is needed for physic objects on skins
+//
+//  Input Arguments:
+//      string $joint : joint name
+//
+//  Return Value: 
+//    None.
+//**************************************************************************************************
+global proc AddJointInfo (string $joint)
+{
+   $valid = `attributeQuery -ex -n $joint simulateJoint`;
+   if ($valid==0)
+   {
+      addAttr -sn sj -ln simulateJoint -at bool $joint;
+      setAttr ($joint + ".simulateJoint") false;
+   }
+   $valid = `attributeQuery -ex -n $joint degreeOfFreedom`;
+   if ($valid==0)
+   {
+      addAttr -sn dof -ln degreeOfFreedom -at short -dv 0 -min 0 -max 3 $joint;
+   }
+   $valid = `attributeQuery -ex -n $joint stiffness`;
+   if ($valid==0)
+   {
+      addAttr -sn st -ln stiff -at "float" -dv 0 -min 0 -max 1 $joint;
+   }
+   $valid = `attributeQuery -ex -n $joint minAngle`;
+   if ($valid==0)
+   {
+      addAttr -sn min -ln minAngle -at "float" -dv 0 -min -360 -max 360 $joint;
+   }
+   $valid = `attributeQuery -ex -n $joint maxAngle`;
+   if ($valid==0)
+   {
+      addAttr -sn max -ln maxAngle -at "float" -dv 0 -min -360 -max 360 $joint;
+   }
+}
+
+proc int isBitSet( int $value, int $bit )
+{
+    int $isBitSet = false;
+    
+    for ( $i = 8; $i >= 0; $i-- )
+    {
+        int $bitpow = `pow 2 $i`;
+        
+        if ( $value < $bitpow )
+            continue;
+            
+        if ( $i == $bit )
+        {
+            $isBitSet = true;
+            break;
+        }
+        
+        $value -= $bitpow;
+    }
+    
+    return $isBitSet;
+}
+
+proc int IsSkeletonRoot( string $node )
+{
+    int $isSkeletonRoot = false;
+
+    if ( `attributeQuery -node $node -exists "p3dBooleanAttributes"` )
+    {
+        if ( isBitSet( `getAttr ( $node + ".p3dBooleanAttributes" )`, 1 ) )
+        {
+            $isSkeletonRoot = true;
+        }
+    }
+
+    return $isSkeletonRoot;
+}
+
+// //////////////////////////////////////////////////////////////////////
+//  shortName
+//
+// Description: Returns the shortest possible name that is unique to 
+//  the specified node.
+//
+//  $reallyShort - if TRUE, strip leading '|' character as well
+proc string shortName( string $node, int $reallyShort )
+{
+    string $shortName = "";
+    
+    string $bloodyArray[] = `ls -shortNames $node`;
+    $shortName = $bloodyArray[0];
+    
+    if ( $reallyShort )
+        $shortName = `match "[^|]*$" $shortName`;
+        
+    return $shortName;
+}
+
+proc int IsBoundingNode( string $node )
+{
+    int $isBN = false;
+
+    if ( ( $node != "" ) && ( `objExists $node` ) )
+    {
+        $isBN = ( `nodeType $node` == "p3dBoundNodeShape" );
+
+        string $shape = getShape( $node );
+        $isBN = $isBN || ( ( $shape != "" ) && ( `nodeType $shape` == "p3dBoundNodeShape" ) );
+    }
+
+    return $isBN;
+}
+
+proc int IsBoundingVolume( string $node )
+{
+    int $isBV = ( `nodeType $node` == "p3dBoundVolShape" );
+
+    string $shape = getShape( $node );
+    $isBV = $isBV || ( ( $shape != "" ) && `nodeType $shape` ==  "p3dBoundVolShape" );
+
+    return $isBV;
+}
+
+proc int IsValidBVRoot( string $target )
+{
+    int $isValid = true;
+
+    if ( ( `nodeType $target` == "p3dBoundVolShape" ) || ( `nodeType $target` == "p3dBoundNodeShape" ) )
+    {
+        $isValid = false;
+    }
+
+    if ( `nodeType $target` == "joint" && ( getShape( $target ) != "" ) )
+    {
+        string $shape = getShape( $target );
+        if ( ( `nodeType $shape` == "p3dBoundVolShape" ) || ( `nodeType $shape` == "p3dBoundNodeShape" ) )
+        {
+            $isValid = false;
+        }
+    }
+
+    // If this is not a mesh shape node AND it's not a Skeleton Root, don't apply.
+    if ( ( `nodeType $target` != "mesh" ) && ( !IsSkeletonRoot( $target ) ) )
+    {
+        $isValid = false;
+    }
+
+    return $isValid;
+}
+
+proc string GetBVRoot( string $target )
+{
+    if ( $target != "" )
+    {
+        string $fullPath[] = `ls -long $target`;
+
+        string $pathTokens[];
+        tokenize $fullPath[0] "|" $pathTokens;
+        string $path = $pathTokens[0];
+
+        // bug fix: Long path may _start_ with a '|' token.
+        // tack it back on to ensure no ambiguity with starting point.
+        if ( `substring $fullPath[0] 1 1` == "|" )
+        {
+            $path = "|" + $path;
+        }
+
+        int $p;
+
+        for ( $p = 1; $p < `size $pathTokens`; $p++ )
+        {
+            if ( ( `nodeType $path` == "p3dBoundVolShape" ) || ( `nodeType $path` == "p3dBoundNodeShape" ) ) break;
+
+            // If, at anywhere up the hierarchy, the "Skeleton Root" flag
+            // is set, return the node which has this set.
+            // The top-most node with this bit set will be returned.
+            if ( IsSkeletonRoot( $path ) )
+            {
+                $target = $path;
+                break;
+            }
+
+            $path += ( "|" + $pathTokens[$p] );
+        }
+
+        while ( ( $target != "" ) && !IsValidBVRoot( $target ) )
+        {
+            string $parents[] = `listRelatives -f -parent $target`;
+            $target = $parents[0];
+        }
+    }
+
+    // If no node is tagged as "Skeleton Root", revert to the specified node.
+    return $target;
+}
+
+proc string GetBVParent( string $target )
+{
+    while ( $target != "" )
+    {
+        if ( !( IsBoundingVolume( $target ) || IsBoundingNode( $target ) ) ) break;
+
+        string $parents[] = `listRelatives -f -parent $target`;
+        $target = $parents[0];
+    }
+
+    return $target;
+}
+
+//**************************************************************************************************
+//  Procedure Name:
+//    AddGeomParentInfo()
+//
+//  Description:
+//    Used to add extra information to joints/meshes that 
+//    is needed for physic objects.
+//
+//    Called by AddGeomParentInfoOnSelected()
+//
+//  Input Arguments:
+//      string $geomParent : mesh or joint name
+//
+//  Return Value:
+//    None.
+//**************************************************************************************************
+global proc AddGeomParentInfo (string $geomRequest)
+{
+    global string  $g_BoundingVolumeGameString;
+
+    int $areaTag = 0;
+
+    int $isDynamic = 0;     // 0 == static; 1 == moveable; 2 == dynamic
+
+    int $canRoll = false;
+    int $canSlide = false;
+    int $canBounce = false;
+    int $canSpin = false;
+
+    if ( `optionVar -exists P3DPhysicsAreaTag` )
+    {
+        $areaTag = `optionVar -q P3DPhysicsAreaTag`;
+    }
+
+    if ( `optionVar -exists P3DPhysicsDynamic` )
+    {
+        $isDynamic = `optionVar -q P3DPhysicsDynamic`;
+    }
+
+    if ( `optionVar -exists P3DPhysicsCanRoll` )
+    {
+        $canRoll = `optionVar -q P3DPhysicsCanRoll`;
+    }
+    if ( `optionVar -exists P3DPhysicsCanSlide` )
+    {
+        $canSlide = `optionVar -q P3DPhysicsCanSlide`;
+    }
+    if ( `optionVar -exists P3DPhysicsCanBounce` )
+    {
+        $canBounce = `optionVar -q P3DPhysicsCanBounce`;
+    }
+    if ( `optionVar -exists P3DPhysicsCanSpin` )
+    {
+        $canSpin = `optionVar -q P3DPhysicsCanSpin`;
+    }
+
+// *** Mass removed per Martin Courchesne's request: 22 Jan 2002 
+//   global float $g_BoundingVolumeMass;
+
+// *** Mass removed per Martin Courchesne's request: 22 Jan 2002 
+//   //
+//   // Create mass attribute
+//   //
+//   $valid = `attributeQuery -ex -n $geomP mass`;
+//   if ($valid==0)
+//   {
+//      addAttr -sn ms -ln mass -at "float" $geomP;
+//   }
+//   //
+//   // Set mass attribute
+//   //
+//   setAttr ($geomP + ".mass") $g_BoundingVolumeMass;
+
+    // Find target geometry to apply attributes.
+
+    $geomP = GetBVRoot( $geomRequest );
+
+    if ( $geomP == "" )
+    {
+    // Physics Attributes are NOT applied to Bounding Volume nodes.
+    // They are applied to the geometry above the collision node(s).
+        $geomP = getShape( GetBVParent( $geomRequest ) );
+    }
+
+    if ( $geomP != "" )
+    {
+//        print( "Physics Attributes added to: " + $geomP + "\n" );
+       
+        //
+        // Create canRoll attribute
+        //
+        $valid = `attributeQuery -ex -n $geomP canRoll`;
+        if ($valid==0)
+        {
+            addAttr -sn roll -ln canRoll -at bool $geomP;
+        }
+        //
+        // Set canRoll attribute
+        //
+        setAttr ($geomP + ".canRoll") $canRoll;
+
+        //
+        // Create canSlide attribute
+        //
+        $valid = `attributeQuery -ex -n $geomP canSlide`;
+        if ($valid==0)
+        {
+            addAttr -sn slid -ln canSlide -at bool $geomP;
+        }
+        //
+        // Set canSlide attribute
+        //
+        setAttr ($geomP + ".canSlide") $canSlide;
+
+        //
+        // Create canBounce attribute
+        //
+        $valid = `attributeQuery -ex -n $geomP canBounce`;
+        if ($valid==0)
+        {
+            addAttr -sn bnce -ln canBounce -at bool $geomP;
+        }
+        //
+        // Set canBounce attribute
+        //
+        setAttr ($geomP + ".canBounce") $canBounce;
+
+        //
+        // Create canSpin attribute
+        //
+        $valid = `attributeQuery -ex -n $geomP canSpin`;
+        if ($valid==0)
+        {
+            addAttr -sn spin -ln canSpin -at bool $geomP;
+        }
+        //
+        // Set canSpin attribute
+        //
+        setAttr ($geomP + ".canSpin") $canSpin;
+
+        //
+        // Create isDynamic attribute
+        //
+        $valid = `attributeQuery -ex -n $geomP isDynamic`;
+        if ( $valid && ( `getAttr -type ( $geomP + ".isDynamic" )` == "bool" ) )
+        {
+            $isDynamic = `getAttr ( $geomP + ".isDynamic" )`;
+            deleteAttr ( $geomP + ".isDynamic" );
+            $valid = false;
+        }
+        if ($valid==0)
+        {
+            addAttr -sn dy -ln isDynamic -at short $geomP;
+        }
+        //
+        // Set isDynamic attribute
+        //
+        setAttr ($geomP + ".isDynamic") $isDynamic;
+
+        //
+        // Create areaTag attribute
+        //
+        $valid = `attributeQuery -ex -n $geomP areaTag`;
+        if ($valid==0)
+        {
+            addAttr -sn area -ln areaTag -at long $geomP;
+        }
+        //
+        // Set areaTag attribute
+        //
+        setAttr ($geomP + ".areaTag") $areaTag;
+
+        //
+        // Create String Data attribute
+        //
+        $valid = `attributeQuery -ex -n $geomP stringData`;
+        if ($valid==0)
+        {
+            addAttr -sn sd -ln stringData -dt "string" $geomP;
+        }
+        //
+        // Set String Data attribute
+        //
+        setAttr ($geomP + ".sd") -type "string" $g_BoundingVolumeGameString;
+    }
+
+    // As of v17.2 the UI reflects the node to which the Physics Attributes will
+    // be applied, and does not allow assignment if a valid node is not selected.
+//    if ( $geomP != $geomRequest )
+//    {
+//        if ( $geomP == "" )
+//        {
+//            string $message = ( "Could not apply Physics Attributes to\n\"" + $geomRequest + "\"" );
+//            $message += ( "\n\nCould not find associated geometry shape or Skeleton Root." );
+//
+//            confirmDialog -message $message -messageAlign "center" -button "OK";
+//        }
+//        else
+//        {
+//            warning ( "Physics Attributes applied to: " + $geomP );
+//        }
+//    }
+
+}       
+
+global proc DeleteAllPhysicsAttributes()
+{
+    string $dags[] = `ls -dag`;
+
+    string $attrList[] = 
+    {
+        "isDynamic",
+        "stringData",
+        "areaTag",
+        "canRoll",
+        "canBounce",
+        "canSpin",
+        "canSlide"
+    };
+
+    for ( $dag in $dags )
+    {
+        for ( $attr in $attrList )
+        {
+            if ( `attributeQuery -node $dag -exists $attr` )
+            {
+                string $attrName = ( $dag + "." + $attr );
+                warning ( "Delete Physics Attribute: " + $attrName );
+                deleteAttr $attrName;
+            }
+        }
+    }
+}
+ 
+//**************************************************************************************************
+//  Procedure Name:
+//    P3DMakeBoundVolumeShader()
+//
+//  Description:
+//    Sets up the shading material that is used to display bounding boxes
+//
+//  Input Arguments:
+//    None.
+//
+//  Return Value:
+//    None.
+//**************************************************************************************************
+global proc P3DMakeBoundVolumeShader()
+{
+   $listOfMats=`ls -mat`;           //list materials
+   int $exists = 0;                 
+   for ($mat in $listOfMats) 
+   {
+      if ($mat == "P3D_Bounding_Volume_Lambert")    //check if the BBox shader exists already
+         $exists=1;  
+   }
+   if ($exists == 0)                     //make the BBox shader
+   {
+      $shader = `shadingNode -asShader lambert`;
+      rename $shader "P3D_Bounding_Volume_Lambert";
+      sets -renderable true -noSurfaceShader true -empty -name P3D_Bounding_Volume_LambertSG;
+      connectAttr -f P3D_Bounding_Volume_Lambert.outColor P3D_Bounding_Volume_LambertSG.surfaceShader;
+      setAttr "P3D_Bounding_Volume_Lambert.transparency" -type double3 .8 .8 .8 ;
+      setAttr "P3D_Bounding_Volume_Lambert.color" -type double3 .5 1 .6 ;
+   }
+}
+
+//**************************************************************************************************
+//  Procedure Name:
+//    P3DMakeBoundVolumeLayer()
+//
+//  Description:
+//    Sets up the display layer that is used to hold the bounding volumes
+//
+//  Input Arguments:
+//    None.
+//
+//  Return Value:
+//    None.
+//**************************************************************************************************
+global proc P3DMakeBoundVolumeLayer()
+{
+   $exist = `layerButton -q -ex Pure3DBoundingVolumes`;
+   if ($exist == 0)
+   {
+      createDisplayLayer -name "Pure3DBoundingVolumes" -empty;
+      setAttr -lock on "Pure3DBoundingVolumes.texturing" 0;
+      setAttr -lock on "Pure3DBoundingVolumes.playback" 0;
+   }
+}
+
+//**************************************************************************************************
+//  Procedure Name:
+//    P3DFindNextAvailBoundName()
+//
+//  Description:
+//    Used to determine the next available number on which to append to the name for a bounding volume
+//
+//  Input Arguments:
+//      string $name : the name of the bounding volume
+//
+//  Return Value:
+//      string : the new bounding volume name
+//**************************************************************************************************
+global proc string P3DFindNextAvailBoundName(string $name)
+{
+   int $num = 1;
+
+   /* Take out "|" characters (if $name is a path, ie more than one object by this name)
+      since Maya will have taken them out of previous objects */
+   $name = `substitute "|" $name ""`;
+ 
+    if ( `objExists $name` )
+    {
+        while ( `objExists ( $name + "_" + $num )` )
+        {
+            $num++;
+        }
+       $name = $name + "_" + $num;
+    }
+
+   return $name;
+}
+
+
+//**************************************************************************************************
+//  Procedure Name:
+//      P3DBoundVolumeTypeName()
+//
+//  Description:
+//
+//  Input Arguments:
+//      The Volume type
+//
+//  Return Value:
+//      The string name of the bounding volumeType.
+//**************************************************************************************************
+global proc string P3DBoundVolumeTypeName(int $volumeType)
+{
+   string $volumeTypeName = "box";
+   switch($volumeType)
+   {
+      case 0:
+         $volumeTypeName = "box";
+         break;
+      case 1:
+         $volumeTypeName = "sphere";
+         break;
+      case 2:
+         $volumeTypeName = "cylinder";
+         break;
+      case 3:
+         $volumeTypeName = "capsule";
+         break;
+      case 4:
+         $volumeTypeName = "plane";
+         break;
+   }
+
+   return($volumeTypeName);
+}
+
+//===========================================================================
+// finalizeBoundingVolume
+//===========================================================================
+// Description: After a Bounding Volume has been created several "housekeeping"
+//              tasks need to be done.
+//
+//              1. The Bounding Volume is assigned to the 
+//                  P3D_Bounding_Volume_LambertSG shader.
+//
+//              2. The Bounding Volume is added to the Pure3DBoundingVolumes
+//                  displayLayer.
+//
+//              2b. The Pure3DBoundingVolumes displayLayer visibility is
+//                  set ON if it wasn't visible.
+//
+//              3. The Bounding Volume may be parented under a mesh or
+//                  Bounding Node (optional).
+//
+//              4. The Pure3D Exporter attribute '.p3dNotInSkeleton' must
+//                  be set to TRUE; the transform for a Bounding Volume
+//                  is actually a Maya joint, and this should not be
+//                  interpreted as a joint contributing to the deformer 
+//                  hierarchy.
+//
+// Constraints: If the $newBV array is empty, or if the first item is an
+//              empty string, then it is assumed that the Bounding Volume
+//              was not successfully created and no action is taken.
+//
+//  Parameters: string $newBV[]: Array of newly created Bounding Volumes.
+//              string $parent: Bounding Volumes will be parented to this
+//                              node; this may be an empty string, which 
+//                              signifies that no parent is performed.
+//
+//      Return: (int): TRUE if successful; else FALSE.
+//
+//===========================================================================
+proc int finalizeBoundingVolume( string $newBV[], string $parent )
+{
+    int $bSuccess = false;
+
+    //
+    // Did we actually create a boundingVolume
+    //
+    if( $newBV[0] != "" )
+    {
+        //
+        // Hook UP the shader!!!
+        //
+        sets -e -forceElement P3D_Bounding_Volume_LambertSG $newBV;
+        select -r $newBV;
+
+        // Add the new object to a Display Layer
+        if ( useOldLayerBar() )
+        {
+            layerBarAssignObjects Pure3DBoundingVolumes;
+        }
+        else
+        {
+            editDisplayLayerMembers Pure3DBoundingVolumes $newBV;
+        }
+
+        setAttr Pure3DBoundingVolumes.visibility true;
+
+        //
+        // Now Parent to the transform
+        //
+        if ( $parent != "" )
+        {
+            parent $newBV $parent;
+        }
+
+        //
+        // Make sure that the bounding volume transform 
+        // doesn't effect a skeleton
+        //
+        for($boundingTransform in $newBV)
+        {
+           $valid = `attributeQuery -ex -n $boundingTransform p3dBooleanAttributes`;
+           if ($valid!=0)
+           {
+                // p3dSetBoolAttr() defined in "p3dSetAttribute.mel"
+                p3dSetBoolAttr2($boundingTransform, "p3dNotInSkeleton", 1); 
+           }
+        }
+
+        $bSuccess = true;
+    }
+
+//                string $message = "Connect from:"+$transform+".scale"+" to:"+$newName[1] + ".inverseScale\n";
+//                print $message;
+//                connectAttr ($transform + ".scale") ($newName[1] + ".inverseScale");
+
+    return $bSuccess;
+}
+
+//===========================================================================
+// GetBoundingVolumeName
+//===========================================================================
+// Description: Uses User Preferences (i.e. the "Naming" layout in the
+//              Bounding Volume UI) to derive a name for the Bounding
+//              Volume applied to the specified node.
+//
+// Constraints: 
+//
+//  Parameters: 
+//
+//      Return: 
+//
+//===========================================================================
+proc string GetBoundingVolumeName( string $boundingVolume )
+{
+    string $DEFAULT_PREFIX = "P3D_BVol";
+
+    if ( IsBoundingNode( $boundingVolume ) )
+    {
+        $DEFAULT_PREFIX = "P3D_BNode";
+    }
+
+    string $bvName = "";
+
+    int $nameType               = 0;
+    string $nameField           = "";
+    int $prePostFix             = 0;
+    string $prePostfixField     = "";
+
+    if ( `optionVar -exists p3dBVNameType` )
+    {
+        $nameType = `optionVar -q p3dBVNameType`;
+    }
+
+    if ( `optionVar -exists p3dBVName` )
+    {
+        $nameField = `optionVar -q p3dBVName`;
+    }
+
+    if ( `optionVar -exists p3dBVPrePostFixType` )
+    {
+        $prePostFix = `optionVar -q p3dBVPrePostFixType`;
+    }
+
+    if ( `optionVar -exists p3dBVPrePostFix` )
+    {
+        $prePostfixField = `optionVar -q p3dBVPrePostFix`;
+    }
+
+   string $newBoundTransformName = "";
+   string $longTransform = getTransform( $boundingVolume );
+   string $shortTransform[] = `ls -shortNames $longTransform`;
+   string $longShape = getShape( $longTransform );
+   string $shortShape[] = `ls -shortNames $longShape`;
+
+    string $bvRoot = GetBVParent( $boundingVolume );
+
+    string $shortBVRoot[];
+    
+        $shortBVRoot = `ls -shortNames $bvRoot`;
+
+   //create the name of the new bounding box by concatenating BBox and the object's name together
+    switch ( $nameType )
+    {
+        case 0:     // Original
+        {
+            $bvName = $shortBVRoot[0];
+            break;
+        }
+        case 1:     // Filename
+        {
+            $bvName = sansExtension( filepart( `file -q -sn` ) );
+            break;
+        }
+        case 2:     // Custom
+        {
+            $bvName = $nameField;
+            break;
+        }
+        default:
+        {
+            error ( "Name Type INVALID?? " + $nameType );
+        }
+    }
+
+    switch ( $prePostFix )
+    {
+        case 0:     // Default
+        {
+            if ( $bvName != "" )
+            {
+                $bvName = $DEFAULT_PREFIX + "_" + $bvName;
+            }
+            else
+            {
+                $bvName = $DEFAULT_PREFIX + $bvName;
+            }
+
+            break;
+        }
+        case 1:     // Prefix
+        {
+            $bvName = $prePostfixField + $bvName;
+            break;
+        }
+        case 2:     // Postfix
+        {
+            $bvName = $bvName + $prePostfixField;
+            break;
+        }
+    }
+
+    if ( $bvName == "" )
+    {
+       $bvName = "P3D_BVol_" + $shortShape[0];
+    }
+
+    return $bvName;
+}
+
+//**************************************************************************************************
+//  Procedure Name:
+//      P3DCreateBoundingVolume2()
+//
+//  Description:
+//      Creates a bounding volume around 
+//          - the selected objects  OR
+//          - selected verticies    OR
+//          - generated along a spline curve
+//
+//  Input Arguments:
+//      All relevant Bounding Volume Create parameters from the GUI
+//
+//  Return Value:
+//      None.
+//**************************************************************************************************
+global proc P3DCreateBoundingVolume2
+(
+   int     $volumeType,
+   float   $BoundingVolumeXScale,
+   float   $BoundingVolumeYScale,
+   float   $BoundingVolumeZScale,
+   int     $BoundingVolumeTesselation,
+   int     $BoundingVolumeCurveTech,
+   int     $GenerateParent
+)
+{
+    global string $g_SelectedComponents[];
+    global int $g_4PointBoxSelectionON;
+
+    //
+    // List selected transform nodes
+    //
+    string $listOfTrans[] =`ls -sl -tr`; 
+
+    //
+    // Get the actual selected mesh... needed for 
+    // attaching physics information and parenting
+    //
+    string $selectedShape[];
+    string $shapeTransform[];
+    
+    $selectedShape = `selectedNodes`;
+    if ( $selectedShape[0] != "" )
+    {
+        $shapeTransform = `listRelatives -f -p $selectedShape[0]`;
+    }
+
+    //
+    // Make sure there is a shader constructed
+    //
+    P3DMakeBoundVolumeShader;
+    P3DMakeBoundVolumeLayer;
+
+    //
+    // Examine what is selected
+    //
+    int $isCurveSelected = 0;
+    int $isJointSelected = 0;
+    for( $trans in $listOfTrans )
+    {
+        $shapes = `listRelatives -f -shapes $trans`; 
+
+        if(size ($shapes) > 0)
+        {
+            for($shape in $shapes)
+            {
+                if("nurbsCurve" == ` nodeType $shape`)
+                {
+                    $isCurveSelected = 1;
+                }
+            }
+        }
+
+        if("joint" == `nodeType $trans`)
+        {
+            $isJointSelected = 1;
+        }
+    }
+
+    //
+    // Need the name type for the volume
+    //
+    string $volumeTypeName = P3DBoundVolumeTypeName($volumeType);
+
+    //
+    // Now create the volume based on the type of selection
+    //
+    if($isCurveSelected == 1)
+    {
+        //
+        // Try to construct along a curve
+        //
+        if($BoundingVolumeCurveTech == 1) // this is for curve fit... it's a hack!
+        {
+            $BoundingVolumeTesselation = -1;
+        }
+
+        string $boundNodeName;
+        $boundNodeName = GetBoundingVolumeName( $listOfTrans[0] );
+        $boundNodeName = P3DFindNextAvailBoundName($boundNodeName);
+
+        $newName = `p3dcreateBoundingVolumeFromSelectedCurveCmd 
+                     -t  $volumeTypeName
+                     -n  $boundNodeName
+                     -ts $BoundingVolumeTesselation
+                     -sx $BoundingVolumeXScale
+                     -sy $BoundingVolumeYScale
+                     -sz $BoundingVolumeZScale`;
+
+        if($GenerateParent)
+        {
+            $boundNodeName = GetBoundingVolumeName( $listOfTrans[0] );
+            $boundNodeName = P3DFindNextAvailBoundName($boundNodeName);
+
+            string $boundNodeTransform = `createNode joint -n $boundNodeName`;
+            color -ud 2 $boundNodeTransform;
+
+            $boundNodeShapeName    = P3DFindNextAvailBoundName($boundNodeTransform+"_Shape");
+            string $boundNodeShape = `createNode p3dBoundNodeShape -n $boundNodeShapeName -p $boundNodeTransform`;
+
+            parent $newName $boundNodeTransform;
+
+            //
+            // Now Add Physics information...
+            //
+        }
+
+        if ( !finalizeBoundingVolume( $newName, "" ) )
+        {
+            warning ( "Warning::No Bounding Volume created for curve." );
+        }
+
+    }
+    else 
+    {
+        string $newName[];
+
+        //
+        // Test the special 4-point Box builder
+        //      
+        if ( ( $volumeType == 0 ) && ( $g_4PointBoxSelectionON ) )
+        {
+            if ( size($g_SelectedComponents) < 4 )
+            {
+                error ( "Please select 4 vertex components to define the size and orientation for a 4-point Box Bounding Volume." );
+                return;
+            }
+
+            //
+            // Find the name of the object that is selected
+            //
+            string $transformObjectfilterRegularExpr = "([0-99-z]+)";
+            string $meshTransform = `match $transformObjectfilterRegularExpr $g_SelectedComponents[1]`;
+            int $meshVert = 1;
+
+            string $indexfilterRegularExpr = "(\[[0-9]+\])"; 
+
+            int $meshIndices[];
+            for($meshVert=0;$meshVert<4;$meshVert++)
+            {
+                string $first = `match $indexfilterRegularExpr $g_SelectedComponents[$meshVert]`;
+
+                //
+                // Strip the Brackets
+                //
+                $meshIndices[$meshVert] = `match "[0-9]+" $first`;
+            }
+
+//            print "Here are the indicies";
+//            print $meshIndices;
+//            print "\n";
+
+            string $boundNodeName;
+            $boundNodeName = GetBoundingVolumeName( $meshTransform );
+            $boundNodeName = P3DFindNextAvailBoundName($boundNodeName);
+
+            $newName = `p3dcreateBoundingVolume4PointBox
+                           -m  $meshTransform
+                           -n $boundNodeName
+                           -v1 $meshIndices[0]
+                           -v2 $meshIndices[1]
+                           -v3 $meshIndices[2]
+                           -v4 $meshIndices[3]`;
+
+            if ( !finalizeBoundingVolume( $newName, $shapeTransform[0] ) )
+            {
+                print "Warning::No Bounding Volume created for:";
+                print $meshTransform;
+                print "\n";
+            }
+
+
+        }       // if ( 4-point Box )
+
+        // If user has not requested a 4-point Box,
+        // check if component-based volume is requested.
+        // This requires that no objects are in the selection list,
+        // only components.
+        else if ( `size $listOfTrans` == 0 )
+        {
+
+            // Perform a Component-based Bounding Volume.
+            // This works _only_ with selected vertices, so
+            // explicitly convert all components to vertices first:
+//            PolySelectConvert 3;    // convert selection to vertices
+
+            string $boundNodeName;
+            $boundNodeName = GetBoundingVolumeName( $shapeTransform[0] );
+            $boundNodeName = P3DFindNextAvailBoundName($boundNodeName);
+
+            $newName = `p3dcreateBoundingVolumeFromSelectedComponentsCmd 
+                        -t  $volumeTypeName
+                        -n  $boundNodeName
+                        -sx $BoundingVolumeXScale
+                        -sy $BoundingVolumeYScale
+                        -sz $BoundingVolumeZScale`;
+
+            if ( !finalizeBoundingVolume( $newName, $shapeTransform[0] ) )
+            {
+                warning ( "Warning::No Bounding Volume created for selected components." );
+            }
+
+        }
+
+        // Two remaining cases: User has selected a Joint,
+        // or user has selected geometry.
+        else 
+        {
+            for ($transform in $listOfTrans)
+            {
+
+                string $newName[];
+
+                if($isJointSelected == 1)
+                {
+                    string $boundNodeName;
+                    $boundNodeName = GetBoundingVolumeName( $transform );
+                    $boundNodeName = P3DFindNextAvailBoundName($boundNodeName);
+
+                    $newName = `p3dcreateBoundingVolumeOnJointCmd 
+                                   -j $transform 
+                                   -t  $volumeTypeName
+                                   -n $boundNodeName
+                                   -sx $BoundingVolumeXScale
+                                   -sy $BoundingVolumeYScale
+                                   -sz $BoundingVolumeZScale`;
+
+                    //
+                    // Physics information not added to Joints.
+                    //
+                    //AddGeomParentInfo($shape[0]);
+                }
+                else
+                {
+                    string $shape[] = `p3dGetBoundShapeNodeCmd -o $transform`;
+
+                    string $boundNodeName;
+                    $boundNodeName = GetBoundingVolumeName( $transform );
+                    $boundNodeName = P3DFindNextAvailBoundName($boundNodeName);
+
+                    $newName = `p3dcreateBoundingVolumeCmd 
+                                   -t $volumeTypeName 
+                                   -m $shape[0] 
+                                   -n $boundNodeName`;
+                    //
+                    // Now add physics information
+                    //
+                    AddGeomParentInfo($shape[0]);
+                }
+
+                if ( !finalizeBoundingVolume( $newName, $transform ) )
+                {
+                    warning( "Warning::No Bounding Volume created for:" + $transform );
+                }
+            }
+        }
+    }
+}
+
+//-------------------------------------------------------------------------
+// Create Bounding Node Stuff
+//-------------------------------------------------------------------------
+//===========================================================================
+// HasAsParent
+//===========================================================================
+// Description: Determines if the specified $parent node is a parent of
+//              the specified $node.  The hierarchy is traversed all the
+//              way up to the root.
+//
+// Constraints: Used by GetCommonParent().
+//
+//  Parameters: string $node: The node for which we are querying its parent.
+//              string $parent: The parent to match in the $node's hierarchy.
+//
+//      Return: (int): TRUE if $parent is a parent of $node; else FALSE.
+//
+//===========================================================================
+proc int HasAsParent( string $node, string $parent )
+{
+    int $hasAsParent = false;
+
+    string $parents[];
+
+    while ( $node != "" )
+    {
+        $parents = `listRelatives -f -parent $node`;
+
+        if ( $parents[0] == $parent )
+        {
+            $hasAsParent = true;
+            break;
+        }
+
+        $node = $parents[0];
+    }
+
+    return $hasAsParent;
+}
+
+//===========================================================================
+// GetCommonParent
+//===========================================================================
+// Description: Returns the node that serves as the common parent for all
+//              specified nodes.  For example, if two nodes are:
+//
+//                  |pCube1|bv_cube1_sphere 
+//                  |pCube1|pCone1|pCube2|bv_cube2_sphere
+//
+//              The common parent is:
+//
+//                  |pCube1
+//
+//              (Think of the Greatest Common Divisor math principle.)
+//
+// Constraints: This can return NULL.  A NULL result means that the
+//              common parent is the World (i.e. ("parent -world")).
+//
+//              Requires HasAsParent().
+//
+//  Parameters: string $nodes[]: The array of nodes for which to find the
+//                               common parent.
+//
+//      Return: (string): The common parent.  May be NULL (if NULL the
+//                        common parent is the World).
+//
+//===========================================================================
+proc string GetCommonParent( string $nodes[] )
+{
+    string $commonParent = "";
+
+    string $parents[];
+
+    string $node = $nodes[0];
+
+    while ( $node != "" )
+    {
+        string $relatives[] = `listRelatives -f -parent $node`;
+        if ( $relatives[0] != "" )
+        {
+            $parents[`size $parents`] = $relatives[0];
+        }
+
+        $node = $relatives[0];
+    }
+
+    for ( $p = 0; $p < `size $parents`; $p++ )
+    {
+        int $numMatch = 1;
+
+        for ( $i = 1; $i < `size $nodes`; $i++ )
+        {
+            if ( HasAsParent( $nodes[$i], $parents[$p] ) )
+            {
+                $numMatch++;
+            }
+        }
+
+        if ( $numMatch == `size $nodes` )
+        {
+            $commonParent = $parents[$p];
+            break;
+        }
+    }
+
+    return $commonParent;
+}
+
+//===========================================================================
+// DeleteEmptyBoundingNodes
+//===========================================================================
+// Description: Grouping Bounding Volumes under a new Bounding Node may
+//              orphan one or more Bounding Nodes.  This cleans up any
+//              empty Bounding Nodes that are no longer necessary.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+proc DeleteEmptyBoundingNodes()
+{
+    string $deleteMe[];
+
+    string $boundingNodes[] = `ls -type "p3dBoundNodeShape"`;
+    string $boundingVolume;
+
+    for ( $node in $boundingNodes )
+    {
+        string $transform = getTransform( $node );
+
+        string $children[] = `listRelatives -f -allDescendents $transform`;
+
+        int $numValidChildren = 0;
+
+        for ( $child in $children )
+        {
+            if ( `nodeType $child` == "p3dBoundVolShape" )
+            {
+                $boundingVolume = $child;
+                $numValidChildren++;
+                continue;
+            }
+        }
+
+        if ( ( $numValidChildren == 1 ) && ( $boundingVolume != "" ) )
+        {
+            string $select[] = `ls -sl`;
+            select -r $boundingVolume;
+            P3DRemoveFromBoundingNode();    // recursively calls this function
+            select $select;
+        }
+
+        if ( $numValidChildren == 0 )
+        {
+            $deleteMe[ `size $deleteMe` ] = $transform;
+        }
+    }
+
+    delete $deleteMe;
+}
+
+//===========================================================================
+// DeleteEmptyTransforms
+//===========================================================================
+// Description: Maya routinely inserts extra transforms ahead of joints
+//              when they are moved about in a hierarchy.  The transform is
+//              inserted as a child of the target parent for the joint, and
+//              the joint is made an immediate child of the transform.
+//              These transforms can become orphaned if the joint is 
+//              subsequently moved again.  This function cleans up empty
+//              transforms in a hierarchy that serve no real purpose.
+//
+// Constraints: The hierarchy is searched only downward from the $startNode.
+//
+//  Parameters: start $startNode: The node at which to start traversing the
+//                                hierarchy to look for empty transforms.
+//                                The hierarchy is not traversed upward.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc DeleteEmptyTransforms( string $startNode )
+{
+    string $deleteMe[];
+
+    string $nodes[];
+
+    // If instructed to start from the world, just gather all transform nodes.
+    if ( $startNode == "" )
+    {
+        $nodes = `ls -l -transforms`;
+    }
+    else
+    {
+        $nodes = `listRelatives -f -allDescendents $startNode`;
+    }
+
+    for ( $node in $nodes )
+    {
+        if ( `nodeType $node` == "transform" )
+        {
+            string $children[] = `listRelatives -f -allDescendents $node`;
+            string $connections[] = `listConnections $node`;
+
+            if ( ( `size $children` == 0 ) && ( `size $connections` == 0 ) )
+            {
+                $deleteMe[ `size $deleteMe` ] = $node;
+            }
+        }
+    }
+
+    delete $deleteMe;
+}
+
+
+proc ConnectBoundingVolumeToNodeScale( string $boundNodeTransform, string $boundingVolume )
+{
+    string $bvTransform = getTransform( $boundingVolume );
+    if ( $bvTransform == "" ) error ( "No Transform for Bounding Volume: " + $boundingVolume );
+    
+    // Create TWO mult/divide nodes
+    string $mdNode = `createNode "multiplyDivide" -name "BNode_multiplyDivide#"`;
+    string $mdVol = `createNode "multiplyDivide" -name "BVol_multiplyDivide#"`;
+    
+    // Disconnect from bv transform node to bv scaleInput
+    string $connectedTo[] = `listConnections -plugs true ( $boundingVolume + ".scaleInput" )`;
+    if ( $connectedTo[0] != "" )
+    {
+//        traceMe( "Disconnect \"" + $boundingVolume + "\" from \"" + $connectedTo[0] + "\"" );
+        disconnectAttr $connectedTo[0] ( $boundingVolume + ".scaleInput" );
+    }
+
+    // Get scale factor for Bounding Node
+    float $scaleNode[3] = `getAttr ( $boundNodeTransform + ".scale" )`;
+    float $scaleNodeInverse[3];
+    $scaleNodeInverse[0] = ( 1.0 / $scaleNode[0] );
+    $scaleNodeInverse[1] = ( 1.0 / $scaleNode[1] );
+    $scaleNodeInverse[2] = ( 1.0 / $scaleNode[2] );
+    // Set this inverse as '.input2' on $mdNode;
+    setAttr ( $mdNode + ".input2" ) $scaleNodeInverse[0] $scaleNodeInverse[1] $scaleNodeInverse[2];
+
+    // Hook up the multiply/divide node
+//    traceMe( "Connect \"" + $boundNodeTransform + "\" to \"" + $mdNode + "\"" );
+    connectAttr ( $boundNodeTransform + ".scale" ) ( $mdNode + ".input1" );
+
+//    traceMe( "Connect \"" + $mdNode + "\" to \"" + $mdVol + "\"" );
+    connectAttr ( $mdNode + ".output" ) ( $mdVol + ".input1" );
+
+//    traceMe( "Connect \"" + $bvTransform + "\" to \"" + $mdVol + "\"" );
+    connectAttr ( $bvTransform + ".scale" ) ( $mdVol + ".input2" );
+    
+//    traceMe( "Connect \"" + $mdVol + "\" to \"" + $boundingVolume + "\"" );
+    connectAttr ( $mdVol + ".output" ) ( $boundingVolume + ".scaleInput" );
+}
+
+proc DisconnectBoundingVolumeFromNodeScale( string $boundNodeTransform, string $boundingVolume )
+{
+    string $bvTransform = getTransform( $boundingVolume );
+    if ( $bvTransform == "" ) error ( "No Transform for Bounding Volume: " + $boundingVolume );
+
+    // $mdToVolConnect[] == connection from 'multiply/divide.output' to 'boundingVolume.scaleInput'.
+    // $mdVolDag = DAG for multiple/divide immediately upstream from boundingVolume.
+    // $mdToMdConnect[] == connection from first 'm/d' node to second 'm/d' node.
+    // $bvToMdConnect[] == connection from bv Transform to 'm/d' node upstream from boundingVolume.
+    // $mdNodeDag = DAG for multiple/divide immediately downstream from boundingNode.
+    // $bvTransformDag = DAG for Transform for boundingVolume.
+    // $bnToMdConnect[] = connection from boundingNode to first 'm/d' node immediately downstream from boundingNode.
+    // $bnDag = DAG for boundingNode
+
+    // Get connection for this BV's ".scaleInput"
+    string $mdToVolConnect[] = `listConnections -plugs true ( $boundingVolume + ".scaleInput" )`;
+    if ( ( $mdToVolConnect[0] != "" ) && ( `nodeType $mdToVolConnect[0]` == "multiplyDivide" ) )
+    {
+        string $mdVolDag = rootNode( $mdToVolConnect[0] );
+        
+        string $mdToMdConnect[] = `listConnections -plugs true ( $mdVolDag + ".input1" )`;
+        string $bvToMdConnect[] = `listConnections -plugs true ( $mdVolDag + ".input2" )`;
+
+        if ( ( $mdToMdConnect[0] != "" ) && ( $bvToMdConnect[0] != "" ) )
+        {
+            string $mdNodeDag = rootNode( $mdToMdConnect[0] );
+            string $bvTransformDag = rootNode( $bvToMdConnect[0] );
+
+            string $bnToMdConnect[] = `listConnections -plugs true ( $mdNodeDag + ".input1" )`;
+
+            if ( $bnToMdConnect[0] != "" )
+            {
+                string $bnDag = rootNode( $bnToMdConnect[0] );
+            
+                // Get current scale factor
+                float $scaleFactor[3] = `getAttr ( $boundingVolume + ".scaleInput" )`;
+            
+                // Disconnect inputs on first md node (inverse of Bounding Node scale)
+//                traceMe( "Disconnect \"" + $mdNodeDag + "\" from \"" + $bnToMdConnect[0] + "\"" );
+                disconnectAttr $bnToMdConnect[0] ( $mdNodeDag + ".input1" );
+
+                // Disconnect inputs on second md node (provides scale to bv node)
+//                traceMe( "Disconnect \"" + $mdVolDag + "\" from \"" + $mdToMdConnect[0] + "\"" );
+                disconnectAttr $mdToMdConnect[0] ( $mdVolDag + ".input1" );
+//                traceMe( "Disconnect \"" + $mdVolDag + "\" from \"" + $bvToMdConnect[0] + "\"" );
+                disconnectAttr $bvToMdConnect[0] ( $mdVolDag + ".input2" );
+
+                // Disconnect inputs on boundingVolume
+//                traceMe( "Disconnect \"" + $boundingVolume + "\" from \"" + $mdToVolConnect[0] + "\"" );
+                disconnectAttr $mdToVolConnect[0] ( $boundingVolume + ".scaleInput" );
+            
+                // Connect what was connected to bvMultDiv to boundingVolume
+//                traceMe( "Connect \"" + $bvToMdConnect[0] + "\" to \"" + $boundingVolume + "\"" );
+                connectAttr $bvToMdConnect[0] ( $boundingVolume + ".scaleInput" );
+            
+                // Delete the two md nodes
+                delete $mdNodeDag;
+                delete $mdVolDag;
+            
+                // Restore scale factor
+                if ( !`getAttr -lock ( $bvTransformDag + ".scaleX" )` )
+                {
+                    setAttr ( $bvTransformDag + ".scaleX" ) $scaleFactor[0];
+                }
+                if ( !`getAttr -lock ( $bvTransformDag + ".scaleY" )` )
+                {
+                    setAttr ( $bvTransformDag + ".scaleY" ) $scaleFactor[1];
+                }
+                if ( !`getAttr -lock ( $bvTransformDag + ".scaleZ" )` )
+                {
+                    setAttr ( $bvTransformDag + ".scaleZ" ) $scaleFactor[2];
+                }
+            }
+        }
+    }
+}
+
+//**************************************************************************************************
+//  Procedure Name:
+//      P3DCreateBoundingNode()
+//
+//  Description:
+//      Creates a bounding node around the selected object
+//
+//  Input Arguments:
+//      None.
+//
+//  Return Value:
+//      None.
+//**************************************************************************************************
+global proc P3DCreateBoundingNode()
+{
+    float $boundingNodeSize = 50.0;
+    if ( `optionVar -exists P3DBoundingNodeSize` )
+    {
+        $boundingNodeSize = `optionVar -q P3DBoundingNodeSize`;
+    }
+
+    string $boundingVolumes[] = `ls -sl -dag -leaf -type "p3dBoundVolShape"`;
+
+    int $numBV = `size $boundingVolumes`;
+
+    if ( $numBV <  2 ) 
+    {
+        error "Select two or more Bounding Volumes to create a Bounding Node.";
+        return;
+    }
+
+    string $commonParent;
+    string $commonParentShape;
+    string $boundNodeTransform;
+    string $boundNodeShape;
+//    float  $avgX, $avgY, $avgZ;
+    float $rpPos[3];
+    $rpPos[0] = $rpPos[1] = $rpPos[2] = 0.0;
+
+    // Get common parent for all Bounding Volumes
+    $commonParent = GetCommonParent( $boundingVolumes );
+    $commonParentShape = getShape( $commonParent );
+
+    if ( ( $commonParentShape != "" ) && ( `nodeType $commonParentShape` == "p3dBoundNodeShape" ) )
+    {
+        error "Please don't create a Bounding Node that will become an immediate child of a Bounding Node.";
+        return;
+    }
+
+    P3DMakeBoundVolumeShader;
+    P3DMakeBoundVolumeLayer;
+
+    // Build name for Bounding Node
+    $boundNodeTransform = "P3D_BNode_" + `substitute "P3D_BNode_" $commonParent ""`;
+    $boundNodeShape = ( $boundNodeTransform + "Shape" );
+    $boundNodeTransform = P3DFindNextAvailBoundName($boundNodeTransform);
+
+    // Create a transform node (a joint) for the Bounding Node.
+    // Parent to $commonParent.
+    if ( $commonParent != "" )
+    {
+        $boundNodeTransform = `createNode joint -n $boundNodeTransform -p $commonParent`;
+        connectAttr ($commonParent + ".scale") ($boundNodeTransform + ".inverseScale");
+
+        // The "true" world-space position for an object is 
+        // the world-space coordinates of its Rotate Pivot!
+        $rpPos = `xform -ws -q -rp $commonParent`;
+    }
+    else
+    // Parent to World
+    {
+        $boundNodeTransform = `createNode joint -n $boundNodeTransform`;
+    }
+    color -ud 2 $boundNodeTransform;
+
+    // Set Exporter attributes
+    $exporterInstalled = `attributeQuery -ex -n $boundNodeTransform p3dTraversalStop`;
+    if ($exporterInstalled)
+    {
+        setAttr ($boundNodeTransform + ".p3dTraversalStop") 1;
+        setAttr -lock on ($boundNodeTransform + ".p3dTraversalStop");
+    }
+
+    // Create shape node (the actual Bounding Node) and parent to transform
+    $boundNodeShape = P3DFindNextAvailBoundName( $boundNodeTransform + "Shape" );
+    $boundNodeShape = `createNode p3dBoundNodeShape -n $boundNodeShape -p $boundNodeTransform`;
+
+    xform -ws -t $rpPos[0] $rpPos[1] $rpPos[2] $boundNodeTransform;
+
+    xform -scale $boundingNodeSize $boundingNodeSize $boundingNodeSize $boundNodeTransform;
+
+//    rename $boundTransform $boundName;
+    sets -e -forceElement P3D_Bounding_Volume_LambertSG $boundNodeShape;
+    select -r $boundNodeTransform;
+
+    // Add the new object to a Display Layer
+    if ( useOldLayerBar() )
+    {
+        layerBarAssignObjects Pure3DBoundingVolumes;
+    }
+    else
+    {
+        editDisplayLayerMembers Pure3DBoundingVolumes $boundNodeTransform;
+    }
+
+    for ( $bv in $boundingVolumes )
+    {
+        // If common parent is already the world, don't parent it to the world
+        if ( $commonParent != "" )
+        {
+            parent -world ( getTransform( $bv ) );
+        }
+
+        // Connect BVz .scaleInput through Bounding Node .scale
+        ConnectBoundingVolumeToNodeScale( $boundNodeTransform, $bv );
+
+        parent ( getTransform( $bv ) ) $boundNodeTransform;
+    }
+
+    // Should delete empty Bounding Nodes and empty transforms
+    // that are a result of the scene graph restructuring...
+
+    DeleteEmptyTransforms( $commonParent );
+    DeleteEmptyBoundingNodes();
+
+    select -r $boundNodeTransform;
+
+// **** BEGIN OBSOLETE : 28 Jan 2002 ****
+// Bounding Node construction has been revamped. 
+// The following code remains here temporarily for reference
+// purposes; it is no longer used.
+
+//    int $isJoint = 0;
+//
+//    for ($transform in $listOfTrans)
+//    {
+//        string $shape[] = `p3dGetBoundShapeNodeCmd -o $transform`;
+//        int $valid[]=`p3dObjValidToBoundCmd -o $shape[0]`;
+//        switch ($valid[0])
+//        {
+//        case 0:
+//         warning "This object is not valid to be bound. Select a transform node.";
+//          continue;
+//          break;
+//        case 1 : //mesh object
+//          break;
+//        case 2 :
+//          //AddJointInfo($shape[0]);
+//         $isJoint = 1;
+//          break;
+//        default:
+//         warning "This object is not valid to be bound.";
+//          continue;
+//          break;
+//        }
+//
+//        float $transformA[] = `p3dGetBoundTransformValuesCmd -o $shape[0]`;
+//
+//        //create the name of the new bounding node by concatenating BBox and the object's name together
+//        $boundName = "P3D_BNode_" + $shape[0];
+//        $boundName = P3DFindNextAvailBoundName($boundName);
+//
+//        string $boundTransform = `createNode joint -n $boundName -p $transform`;
+//        color -ud 2 $boundTransform;
+//        connectAttr ($transform + ".scale") ($boundTransform + ".inverseScale");
+//
+//        $exporterInstalled = `attributeQuery -ex -n $boundTransform p3dTraversalStop`;
+//        if ($exporterInstalled)
+//        {
+//         setAttr ($boundTransform + ".p3dTraversalStop") 1;
+//         setAttr -lock on ($boundTransform + ".p3dTraversalStop");
+//        }
+//
+//        $boundShapeName = P3DFindNextAvailBoundName($boundTransform+"_Shape");
+//        string $boundShape = `createNode p3dBoundNodeShape -n $boundShapeName -p $boundTransform`;
+//
+//        //string $boundTransform[] = `p3dGetBoundTransformNodeCmd -o $boundShape`;
+//        if ($boundTransform!="")
+//        {
+//            if ($isJoint)
+//            {
+//                //get locations of parent and child.
+//                string $kids[] = `p3dGetBoundFirstLevelKidsCmd -o $transform`;
+//                $kidSize = size($kids);
+//
+//                switch ($kidSize)
+//                {
+//                case 0:
+//
+//                    setAttr ($boundTransform+".tx") 0;
+//                    setAttr ($boundTransform+".ty") 0;
+//                    setAttr ($boundTransform+".tz") 0;
+//                    break;
+//
+//                case 1:
+//
+//                    //only one kid, get its distance from parent
+//                    $kid = $kids[0];
+//                    float $kidLoc[] = `getAttr ($kid + ".translate")`;
+//                    vector $kidL = <<$kidLoc[0], $kidLoc[1], $kidLoc[2]>>;
+//
+//
+//                    //need to convert to current units
+//                    string $linearUnit = `currentUnit -q -linear`;
+//
+//                    //get magnitude of vector from parent to kid
+//                    float $dist = `mag $kidL`;
+//                    $dist = `convertUnit -fromUnit $linearUnit -toUnit "cm" ($dist + "")`;
+//
+//                    setAttr ($boundTransform+".tx") (0.5 * $kidL.x);
+//                    setAttr ($boundTransform+".ty") (0.5 * $kidL.y);
+//                    setAttr ($boundTransform+".tz") (0.5 * $kidL.z);
+//
+//                    break;
+//
+//                default:  //several kids to surround
+//
+//                    // For multiple subjoints, do a very rough calculation of a bounding box.
+//                    float $max[3] = {0, 0, 0}; //maximum translation in each axis
+//                    float $min[3] = {0, 0, 0};
+//
+//                    for ($kid in $kids)
+//                    {
+//                        //$kidLoc = `p3dGetBoundTransformValuesCmd -o $kid`; 
+//                        $kidLoc = `getAttr ($kid + ".translate")`;
+//
+//                        if ($kidLoc[0] > $max[0])
+//                            $max[0] = $kidLoc[0];
+//                        else if ($kidLoc[0] < $min[0])
+//                            $min[0] = $kidLoc[0];
+//
+//                        if ($kidLoc[1] > $max[1])
+//                            $max[1] = $kidLoc[1];
+//                        else if ($kidLoc[1] < $min[1])
+//                            $min[1] = $kidLoc[1];
+//
+//                        if ($kidLoc[2] > $max[2])
+//                            $max[2] = $kidLoc[2];
+//                        else if ($kidLoc[2] < $min[2])
+//                            $min[2] = $kidLoc[2];
+//                    }
+//
+//                    //get center
+//                    $center[0] = ($max[0] + $min[0])/2; 
+//                    $center[1] = ($max[1] + $min[1])/2; 
+//                    $center[2] = ($max[2] + $min[2])/2; 
+//
+//                    //set attributes
+//                    setAttr ($boundTransform+".tx") $center[0];
+//                    setAttr ($boundTransform+".ty") $center[1];
+//                    setAttr ($boundTransform+".tz") $center[2];
+//
+//                    break;
+//                }
+//            }
+//            else  //mesh
+//            {
+//                setAttr ($boundTransform+".tx") $transformA[0];
+//                setAttr ($boundTransform+".ty") $transformA[1];
+//                setAttr ($boundTransform+".tz") $transformA[2];  
+//            }
+//
+//            setAttr ($boundTransform+".sx") $boundingNodeSize;
+//            setAttr ($boundTransform+".sy") $boundingNodeSize;
+//            setAttr ($boundTransform+".sz") $boundingNodeSize;
+//
+//            rename $boundTransform $boundName;
+//            sets -e -forceElement P3D_Bounding_Volume_LambertSG $boundName;
+//            select -r $boundTransform;
+//
+//            // Add the new object to a Display Layer
+//            if ( useOldLayerBar() )
+//            {
+//                layerBarAssignObjects Pure3DBoundingVolumes;
+//            }
+//            else
+//            {
+//                editDisplayLayerMembers Pure3DBoundingVolumes $boundTransform;
+//            }
+//
+//        }
+//    }
+   //select $boundTransform;
+
+// **** END OBSOLETE ****
+
+}
+
+//===========================================================================
+// GetBoundingVolumesFromCurrent
+//===========================================================================
+// Description: Returns an array of all Bounding Volume objects associated
+//              with the items in the current Selection List.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (string[]): Array of Bounding Volume objects.
+//
+//===========================================================================
+proc string[] GetBoundingVolumesFromCurrent()
+{
+    string $select[] = `ls -sl`;
+
+    string $bvFromCurrent[];
+
+    for ( $node in $select )
+    {
+        string $shape = getShape( $node );
+        if ( ( $shape != "" ) && ( `nodeType $shape` == "p3dBoundVolShape" ) )
+        {
+            $bvFromCurrent[ `size $bvFromCurrent` ] = $node;
+        }
+        else
+        {
+            string $transform = getTransform( $node );
+            string $children[] = `listRelatives -f -children $transform`;
+
+            for ( $child in $children )
+            {
+                $shape = getShape( $child );
+
+                if ( ( $shape != "" ) && ( `nodeType $shape` == "p3dBoundVolShape" ) )
+                {
+                    $bvFromCurrent[ `size $bvFromCurrent` ] = $child;
+                }
+                // Special case whereby Maya adds an extra Transform 
+                // for the transform (joint) of a Bounding Volume.
+                if ( `nodeType $child` == "transform" )
+                {
+                    string $moreChildren[] = `listRelatives -f -children $child`;
+                    $shape = getShape( $moreChildren[0] );
+
+                    if ( ( $shape != "" ) && ( `nodeType $shape` == "p3dBoundVolShape" ) )
+                    {
+                        $bvFromCurrent[ `size $bvFromCurrent` ] = $moreChildren[0];
+                    }
+                }
+
+            }
+        }
+    }
+    
+    return $bvFromCurrent;
+}
+
+//===========================================================================
+// P3DRemoveFromBoundingNode
+//===========================================================================
+// Description: Removes the selected Bounding Volumes from their parent
+//              Bounding Node, if one exists.  The Bounding Volumes are
+//              then parented to the immediate parent of the Bounding
+//              Node.
+//
+//              After the Bounding Volumes are moved the scene is "cleaned"
+//              of empty transforms which often result from parenting
+//              nodes in skeletons.  The scene is then scanned for any
+//              Bounding Nodes that have less than two Bounding Volumes
+//              as children.  Such Bounding Nodes are not needed and
+//              are removed (any child Bounding Volume will be reparented
+//              first, as described here).
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DRemoveFromBoundingNode()
+{
+    // Each Bounding Volume may be processed individually
+    string $volumes[] = `ls -sl -dag -leaf -type "p3dBoundVolShape"`;
+
+    for ( $bv in $volumes )
+    {
+        // Shape of parent of parent should be Bounding Volume.
+        string $parent[];
+        string $transformVolume = "";   // transform for Bounding Volume
+        string $shapeNode = "";         // shape for Bounding Node
+
+        // pickWalk to transform of Bounding Volume (will be a joint)
+        $parent = `listRelatives -f -parent $bv`;
+        $transform = $parent[0];
+
+        // pickWalk to parent of Bounding Volume.
+        // May be a joint, and if so this joint may be the transform for a Bounding Node.
+        // May also be one of those silly transforms Maya throws into joint hierarchies.
+        $parent = `listRelatives -f -parent $transform`;
+        while ( ( $parent[0] != "" ) && ( `nodeType $parent[0]` != "joint" ) )
+        {
+            $parent = `listRelatives -f -parent $parent[0]`;
+        }
+
+        if ( $parent[0] != "" )
+        {
+            $shapeNode = getShape( $parent[0] );
+        }
+
+        
+        if ( ( $shapeNode != "" ) && ( `nodeType $shapeNode` == "p3dBoundNodeShape" ) )
+        {
+            // Connect BVz .scaleInput through Bounding Node .scale
+            DisconnectBoundingVolumeFromNodeScale( $parent[0], $bv );
+
+            // Get parent from Bounding Node -- 
+            // this will be the new parent for the Bounding Volume.
+            $parent = `listRelatives -f -parent $parent[0]`;
+            if ( $parent[0] != "" )
+            {
+                parent $transform $parent[0];
+            }
+            else
+            {
+                parent -world $transform;
+            }
+            DeleteEmptyTransforms( $parent[0] );
+        }
+    }
+
+    DeleteEmptyBoundingNodes();
+
+    select $volumes;
+}
+
+//===========================================================================
+// P3DRemoveBoundingVolumes
+//===========================================================================
+// Description: Removes the Bounding Volumes from all objects in the current
+//              Selection List.  Cleans up empty transforms and unnecessary
+//              Bounding Nodes.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DRemoveBoundingVolumes()
+{
+    string $deleteMe[] = GetBoundingVolumesFromCurrent();
+    
+    if ( `size $deleteMe` > 0 )
+    {
+        delete $deleteMe;
+        DeleteEmptyTransforms( "" );
+        DeleteEmptyBoundingNodes();
+    }
+}
+
+//===========================================================================
+// P3DSelectBoundingVolumes
+//===========================================================================
+// Description: Selects all Bounding Volume objects associated with the
+//              items in the current Selection List.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DSelectBoundingVolumes()
+{
+    string $bv[] = GetBoundingVolumesFromCurrent();
+    
+    if ( `size $bv` > 0 )
+    {
+        select -r $bv;
+    }
+}
+
+//**************************************************************************************************
+//  Procedure Name:
+//      P3DHideAllBoundingVolumes(int hide)
+//
+//  Description:
+//      Hide All Bounding Volumes... duh
+//
+//      If the "Pure3DBoundingVolumes" displayLayer exists the visibility toggle is applied
+//      only to this displayLayer.  Else all nodes are toggled individually.
+//
+//  Input Arguments:
+//      "0" to unhide and "1" to hide
+//
+//  Return Value:
+//      None.
+//**************************************************************************************************
+global proc P3DHideAllBoundingVolumes(int $hide)
+{
+    string $dl = "Pure3DBoundingVolumes";
+
+    // If displayLayer exists, just toggle its visibility
+    if ( `objExists $dl` )
+    {
+        // Add the new object to a Display Layer
+        if ( useOldLayerBar() )
+        {
+            setAttr ( $dl + ".di.v" ) (!$hide);
+        }
+        else
+        {
+            setAttr ( $dl + ".visibility" ) (!$hide);
+        }
+    }
+
+    else
+    // No convenient displayLayer; must iterate through all nodes.
+    {
+        if( `itemFilter -exists boundFilter` == false )
+        {
+          itemFilter -bt "p3dBoundVolShape" -bt "p3dBoundNodeShape" boundFilter;
+        }
+        else
+        {
+          print "Item filter leaked";
+        }
+        string $boundingVolumes[] = `lsThroughFilter boundFilter`;
+
+        //
+        // First find out whether I'm hiding or un-hiding them
+        //
+        if ($hide == 1) 
+        {  
+          //
+          // Hide them
+          //
+          for ($bv in $boundingVolumes) 
+          {
+             // also hide the parent joint
+             $parentJoint = `p3dGetBoundTransformNodeCmd -o $bv`;
+             hide $parentJoint[0];
+          }
+        } 
+        else  
+        {
+          //
+          // Show
+          //
+          for ($bv in $boundingVolumes) 
+          {
+             // also show the parent joint
+             $parentJoint = `p3dGetBoundTransformNodeCmd -o $bv`;
+             showHidden $parentJoint[0];
+          }
+        }
+
+        delete boundFilter;
+    }
+}
+
+//**************************************************************************************************
+//  Procedure Name:
+//      P3DBoundingVolumeDefaults Auxiliary Functions
+//
+//  Description:
+//
+//  Input Arguments:
+//      None.
+//
+//  Return Value:
+//      None.
+//**************************************************************************************************
+//global proc SetIsDynamicOn()
+//{
+//   global int $g_BoundingVolumeIsDynamic;
+//   $g_BoundingVolumeIsDynamic = 1;
+//}
+//
+//global proc SetIsDynamicOff()
+//{
+//   global int $g_BoundingVolumeIsDynamic;
+//   $g_BoundingVolumeIsDynamic = 0;
+//}
+ 
+//===========================================================================
+// SetBoundingVolumeGameString
+//===========================================================================
+// Description: Sets the global $g_BoundingVolumeGameString variable
+//              to the specified string.  Used as a change callback for the
+//              "Global Game Data String" input textField control.
+//
+// Constraints: 
+//
+//  Parameters: string $newString: New string to assign to global.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc SetBoundingVolumeGameString(string $newString)
+{
+   global string  $g_BoundingVolumeGameString;
+   $g_BoundingVolumeGameString = $newString;
+}
+
+//===========================================================================
+// ConnectBoundingVolumes
+//===========================================================================
+// Description: Creates a connection to a Bounding Volume's '.scaleInput'
+//              attribute from its parent transform's '.scale' attribute.
+//              Without this connection the user cannot scale the Bounding
+//              Volume.
+//
+//              Used by RenameAllBoundingVolumes()
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc ConnectBoundingVolumes()
+{
+   if( `itemFilter -exists boundVolFilter` == false )
+   {
+      itemFilter -bt "p3dBoundVolShape" boundVolFilter;
+   }
+   else
+   {
+      print "Item filter leaked";
+   }
+   string $boundingVolumes[] = `lsThroughFilter boundVolFilter`;
+   string $boundingVolume;
+
+   for($boundingVolume in $boundingVolumes)
+   {
+      string $parentTransform[] = `p3dGetBoundTransformNodeCmd -o $boundingVolume`;
+
+        // Disconnect any inputs to .scaleInput
+        string $connectedTo[] = `listConnections -plugs true ( $boundingVolume + ".scaleInput" )`;
+        if ( $connectedTo[0] != "" )
+        {
+            disconnectAttr $connectedTo[0] ( $boundingVolume + ".scaleInput" );
+        }
+
+      if(`isConnected ($parentTransform[0] + ".scale") ($boundingVolume + ".scaleInput")` == false )
+      {
+         connectAttr ($parentTransform[0] + ".scale") ($boundingVolume + ".scaleInput");
+      }
+   }
+   
+   delete boundVolFilter;
+}
+
+
+//===========================================================================
+// RenameBoundingVolume
+//===========================================================================
+// Description: Renames the specified Bounding Volume to the recommended 
+//              naming standard.
+//
+// Constraints: 
+//
+//  Parameters: string $boundingVolume: The Bounding Volume to rename.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc int RenameBoundingVolume(string $boundingVolume)
+{
+    int $success = false;
+
+    if ( `objExists $boundingVolume` )
+    {
+        string $longTransform = getTransform( $boundingVolume );
+        string $shortTransform[] = `ls -shortNames $longTransform`;
+        string $longShape = getShape( $longTransform );
+        string $shortShape [] = `ls -shortNames $longShape`;
+
+        // Create temporary names for nodes
+        $longShape = `rename $longShape ( "__PrenotatoPerDuplicare_" + $shortShape[0] )`;
+//        traceMe( "Rename to \"" + $longShape + "\"" );
+        $longTransform = `rename $longTransform ( "__PrenotatoPerDuplicare_" + $shortTransform[0] )`;
+//        traceMe( "Rename to \"" + $longTransform + "\"" );
+
+        string $newBVName = GetBoundingVolumeName( $longShape );
+
+        $newBVName = P3DFindNextAvailBoundName($newBVName);
+
+        string $newBoundShapeName = P3DFindNextAvailBoundName($newBVName+"Shape");
+
+        //
+        // Now rename
+        //
+//        traceMe( "Rename \"" + $longShape + "\" to \"" + $newBoundShapeName );
+        rename $longShape ($newBoundShapeName);
+//        traceMe( "Rename \"" + $longTransform + "\" to \"" + $newBVName );
+        rename $longTransform  ($newBVName);
+
+        $success = true;
+    }
+
+    return $success;
+}
+
+//===========================================================================
+// RenameAllBoundingVolumes
+//===========================================================================
+// Description: Renames all Bounding Volumes to the recommended naming
+//              standard.
+//
+//              Uses RenameBoundingVolume()
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc RenameAllBoundingVolumes( int $retryOnFail )
+{
+    if ( $retryOnFail < 0 ) $retryOnFail = 0;
+
+    waitCursor -state on;
+
+    string $boundingVolumes[] = `ls -l -type "p3dBoundVolShape" -type "p3dBoundNodeShape"`;
+    string $boundingVolume;
+
+    int $remaining = `size $boundingVolumes`;
+
+    for($boundingVolume in $boundingVolumes)
+    {
+        if ( RenameBoundingVolume($boundingVolume) )
+        {
+            $remaining--;
+        }
+    }
+
+    // It's possible that some nodes won't rename..
+    // specifically BVs that are children of BVs.
+    // Because their parent BVs get renamed mid-stride they 
+    // cannot be found to rename in this pass.. 
+    // The $retryOnFail gives the option to perform multiple 
+    // passes to try and catch these.
+    if ( $retryOnFail && ( $remaining > 0 ) )
+    {
+        $retryOnFail--;
+        RenameAllBoundingVolumes( $retryOnFail );
+    }
+
+    waitCursor -state off;
+}
+
+global proc CloneBoundingVolume()
+{
+    string $newBVz[] = `p3dCloneBoundingVolumeCmd`;
+    finalizeBoundingVolume( $newBVz, "" );
+}
+
+//===========================================================================
+// AddGeomParentInfoOnSelected
+//===========================================================================
+// Description: Called AddGeomParentInfo() to add Physics attributes to
+//              selected objects.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc AddGeomParentInfoOnSelected()
+{
+   string $boundingVolumes[] = `ls -sl`;
+   string $boundingVolume;
+
+    string $target;
+
+   for($boundingVolume in $boundingVolumes)
+   {
+        $target = "";
+
+        string $transform = getTransform( $boundingVolume );
+        string $shape = getShape( $boundingVolume );
+
+        if ( IsSkeletonRoot( $transform ) )
+        {
+            $target = $transform;
+        }
+        else
+        {
+             if( ( $shape != "" ) && (`nodeType $shape` == "mesh") )    // || (`nodeType $shapes[0]` == "p3dBoundVolShape"))
+             {
+            //            print "Selected:";
+            //            print $shapes[0];
+            //            print "\n";
+    
+                $target = $shape;
+             }
+             else if(`nodeType $boundingVolume` == "transform" )
+             {
+            //            print "Selected:";
+            //            print $boundingVolume;
+            //            print " and add to transform\n";
+                $target = $boundingVolume;
+             }
+        }
+
+        AddGeomParentInfo($target);
+   }
+
+}
+
+global proc FixBVDisplayLayer()
+{
+    string $select[] = `ls -sl`;
+
+    string $bvs[] = `ls -type "p3dBoundVolShape"`;
+    string $bns[] = `ls -type "p3dBoundNodeShape"`;
+    string $transforms[];
+
+    for ( $bv in $bvs )
+    {
+        string $t = getTransform( $bv );
+        if ( $t != "" )
+        {
+            $transforms[`size $transforms`] = $t;
+        }
+    }
+
+    for ( $bn in $bns )
+    {
+        string $t = getTransform( $bn );
+        if ( $t != "" )
+        {
+            $transforms[`size $transforms`] = $t;
+        }
+    }
+
+    // Add the new object to a Display Layer
+    if ( useOldLayerBar() )
+    {
+        select $transforms;
+        layerBarAssignObjects Pure3DBoundingVolumes;
+    }
+    else
+    {
+        editDisplayLayerMembers Pure3DBoundingVolumes $transforms;
+    }
+
+    select $select;
+}
+
+//===========================================================================
+// DuplicateWithUpstream
+//===========================================================================
+// Description: A convenience function for duplicating Bounding Volumes.
+//              Maintains the Bounding Volumes pivot orientation.
+//
+//              Duplicates all Bounding Volumes in the current selection list.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc DuplicateWithUpstream()
+{
+    // Get shape nodes for selected Bounding Nodes and Bounding Volumes
+    string $boundingVolumes[] = `ls -sl -l -dag -leaf -type "p3dBoundNodeShape" -type "p3dBoundVolShape"`;
+
+    for ( $bv in $boundingVolumes )
+    {
+        string $transform = getTransform( $bv );
+        if ( $transform != "" )
+        {
+            duplicate -inputConnections $transform;
+        }
+    }
+}
+
+//===========================================================================
+// SetPhysicsDefaults
+//===========================================================================
+// Description: Stores the default Physics attributes in user preferences.
+//              Most of these are saved in optionVars, with the exception
+//              of Curve Tesselation which is saved as a global
+//              $g_BoundingVolumeCurveTech.
+//
+// Constraints: 
+//
+// Parameters:  string $mode: A string identifying which preference to set.
+//              int $value: The value for the preference.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc SetPhysicsDefault( string $mode, int $value )
+{
+    global int $g_BoundingVolumeCurveTech;
+    int $enableBehavior = true;
+    int $enablePlane = true;
+
+    switch ( $mode )
+    {
+        case "dynamic":
+        {
+            optionVar -intValue P3DPhysicsDynamic 2;
+            $enablePlane = false;
+            break;
+        }
+        case "moveable":
+        {
+            optionVar -intValue P3DPhysicsDynamic 1;
+            break;
+        }
+        case "static":
+        {
+            optionVar -intValue P3DPhysicsDynamic 0;
+            $enableBehavior = false;
+            break;
+        }
+        case "roll":
+        {
+            optionVar -intValue P3DPhysicsCanRoll $value;
+            break;
+        }
+        case "slide":
+        {
+            optionVar -intValue P3DPhysicsCanSlide $value;
+            break;
+        }
+        case "bounce":
+        {
+            optionVar -intValue P3DPhysicsCanBounce $value;
+            break;
+        }
+        case "spin":
+        {
+            optionVar -intValue P3DPhysicsCanSpin $value;
+            break;
+        }
+        case "fixed":
+        {
+            optionVar -intValue P3DPhysicsCurveTech 1;
+            break;
+        }
+        case "curveFit":
+        {
+            optionVar -intValue P3DPhysicsCurveTech 2;
+            break;
+        }
+        case "curveTech":
+        {
+            $g_BoundingVolumeCurveTech = $value;
+            intField -e -enable (!$value) P3DTesselationUI;
+        }
+    }
+
+    button -e -enable $enablePlane P3DBoundingVolumePlaneUI;
+
+    checkBox -e -enable $enableBehavior P3DPhysicsCanBounceUI;
+    checkBox -e -enable $enableBehavior P3DPhysicsCanRollUI;
+    checkBox -e -enable $enableBehavior P3DPhysicsCanSlideUI;
+    checkBox -e -enable $enableBehavior P3DPhysicsCanSpinUI;
+}
+
+//===========================================================================
+// P3DInitBoundingVolumeGUI
+//===========================================================================
+// Description: Initializes the Bounding Volumes UI from user preferences.
+//
+// Constraints: 
+//
+// Parameters:  (none)
+//
+// Return:      (none)
+//
+//===========================================================================
+proc P3DInitBoundingVolumeGUI()
+{
+    int $isDynamic = 0;
+
+    int $canRoll = off;
+    int $canSlide = off;
+    int $canBounce = off;
+    int $canSpin = off;
+
+    int $areaTag = 0;
+
+    float $boundingNodeSize = 50.0;
+
+    global int     $g_BoundingVolumeCurveTech;
+
+    if ( `optionVar -exists P3DPhysicsDynamic` )
+    {
+        $isDynamic = `optionVar -q P3DPhysicsDynamic`;
+    }
+
+    if ( `optionVar -exists P3DPhysicsCanRoll` )
+    {
+        $canRoll = `optionVar -q P3DPhysicsCanRoll`;
+    }
+    if ( `optionVar -exists P3DPhysicsCanSlide` )
+    {
+        $canSlide = `optionVar -q P3DPhysicsCanSlide`;
+    }
+    if ( `optionVar -exists P3DPhysicsCanBounce` )
+    {
+        $canBounce = `optionVar -q P3DPhysicsCanBounce`;
+    }
+    if ( `optionVar -exists P3DPhysicsCanSpin` )
+    {
+        $canSpin = `optionVar -q P3DPhysicsCanSpin`;
+    }
+
+    if ( `optionVar -exists P3DPhysicsAreaTag` )
+    {
+        $areaTag = `optionVar -q P3DPhysicsAreaTag`;
+    }
+
+    if ( `optionVar -exists P3DBoundingNodeSize` )
+    {
+        $boundingNodeSize = `optionVar -q P3DBoundingNodeSize`;
+    }
+
+    switch ( $isDynamic )
+    {
+        case 2:
+        {  
+            radioButton -e -select P3DPhysicsDynamicUI;
+            break;
+        }
+        case 1:
+        {  
+            radioButton -e -select P3DPhysicsMoveableUI;
+            break;
+        }
+        case 0:
+        default:
+        {  
+            radioButton -e -select P3DPhysicsStaticUI;
+            break;
+        }
+    }
+
+    button -e -enable ( $isDynamic != 2 ) P3DBoundingVolumePlaneUI;
+
+    checkBox -e -value $canRoll -enable ( $isDynamic > 0 ) P3DPhysicsCanRollUI;
+    checkBox -e -value $canSlide -enable ( $isDynamic > 0 ) P3DPhysicsCanSlideUI;
+    checkBox -e -value $canBounce -enable ( $isDynamic > 0 ) P3DPhysicsCanBounceUI;
+    checkBox -e -value $canSpin -enable ( $isDynamic > 0 ) P3DPhysicsCanSpinUI;
+
+    intField -e -value $areaTag P3DPhysicsAreaTagUI;
+
+    floatField -e -value $boundingNodeSize P3DBoundingNodeSizeUI;
+
+    switch ( $g_BoundingVolumeCurveTech )
+    {
+        case 0:
+        {
+            radioButton -e -select P3DPhysicsFixedUI;
+            break;
+        }
+        case 1:
+        {
+            radioButton -e -select P3DPhysicsCurveFitUI;
+            break;
+        }
+    }
+    intField -e -enable (!$g_BoundingVolumeCurveTech) P3DTesselationUI;
+}
+
+
+//===========================================================================
+// initBoundingVolumeUITemplate
+//===========================================================================
+// Description: Initializes the uiTemplate used in the UI generated by
+//              this script.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+proc initBoundingVolumeUITemplate()
+{
+    int $labelWidth = 96;
+    int $fieldWidth = 64;
+    int $sliderFieldWidth = 48;
+    int $sliderWidth = ( $fieldWidth + $sliderFieldWidth );
+    int $buttonWidth = 32;
+    int $checkBoxWidth = 16;
+    int $offset = 4;
+
+    if ( !`uiTemplate -exists P3DBoundingVolumeUITemplate` )
+    {
+        uiTemplate P3DBoundingVolumeUITemplate;
+    }
+
+    button -defineTemplate P3DBoundingVolumeUITemplate
+        -align "center"
+        ;
+
+    frameLayout -defineTemplate P3DBoundingVolumeUITemplate
+    
+        -marginWidth 4
+        -marginHeight 4
+        
+        ;
+
+    columnLayout -defineTemplate P3DBoundingVolumeUITemplate
+        -adjustableColumn true
+        -columnAlign "left";
+
+    rowLayout -defineTemplate P3DBoundingVolumeUITemplate
+
+        //  Assume a non-labeled item. It should be aligned with the
+        //  control area.
+        //
+        -columnAlign1  "left"
+        -columnAttach1 "left"       // "both" does _not_ work here!!
+        -columnOffset1 $labelWidth
+        -columnWidth1  $fieldWidth
+//        -adjustableColumn1 1
+
+        //  Assume a labeled item.
+        //
+        -columnAlign2  "right" "left"
+        -columnAttach2 "both" "both"
+        -columnOffset2 $offset 0
+        -columnWidth2  $labelWidth 
+                       ( $fieldWidth * 3 )
+
+        //  Assume label, some control, and label/control
+        //  
+        -columnAlign3  "right" "left" "left"
+        -columnAttach3 "both" "both" "both"
+        -columnOffset3 $offset 0 0
+        -columnWidth3  $labelWidth
+                       $checkBoxWidth
+                       ( $buttonWidth * 2 )
+
+        //  Assume label, 1 field and 2 controls.
+        //
+        -columnAlign4  "right" "left" "left" "left"
+        -columnAttach4 "both" "both" "both" "both"
+        -columnOffset4 $offset 0 0 0
+        -columnWidth4  $labelWidth
+                       $fieldWidth
+                       $fieldWidth
+                       $fieldWidth
+
+        //  Assume label, info button and 2 extra items.
+        //
+        -columnAlign5  "right" "left" "left" "left" "left"
+        -columnAttach5 "both" "both" "both" "both" "both"
+        -columnOffset5 $offset 0 0 0 0
+        -columnWidth5  $labelWidth
+                       ( $fieldWidth - $checkBoxWidth )
+                       $checkBoxWidth
+                       $buttonWidth
+                       $buttonWidth
+
+        //  Assume label, checkBox, label, info button, and 2 extra items.
+        //
+        -columnAlign6  "right" "left" "left" "left" "left" "left"
+        -columnAttach6 "both" "both" "both" "both" "both" "both"
+        -columnOffset6 $offset 0 0 0 0 0
+        -columnWidth6  $labelWidth
+                       $checkBoxWidth
+                       ( $fieldWidth - ( $checkBoxWidth * 2 ) )
+                       $checkBoxWidth
+                       $buttonWidth
+                       $buttonWidth
+                       
+        ;
+
+    radioButtonGrp -defineTemplate P3DBoundingVolumeUITemplate
+
+        -columnAlign2  "left" "left"
+        -columnAttach2 "both" "both"
+        -columnOffset2 0 0
+        -columnWidth2  ( $fieldWidth )
+                       ( $fieldWidth )
+
+        -columnAlign3  "left" "left" "left"
+        -columnAttach3 "both" "both" "both"
+        -columnOffset3 0 0 0
+        -columnWidth3  ( $fieldWidth )
+                       ( $fieldWidth )
+                       ( $fieldWidth )
+        ;
+
+}
+
+//===========================================================================
+// P3DCreateAnimationNamingGUI
+//===========================================================================
+// Description: Creates the controls for the "Animation Naming" frame.
+//              These are used to display and edit the array attributes
+//              on the current p3dExporterSetting node that adjust the
+//              naming style for animations.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control: columnLayout.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DCreateBVNamingGUI( string $parent )
+{
+    setUITemplate -pushTemplate P3DBoundingVolumeUITemplate;
+    
+    setParent $parent;
+
+    string $animNamesMainUI     = "p3dBVNamesMainUI";
+    
+    string $nameTypeUI          = "p3dBVNameTypeUI";
+    string $nameFieldUI         = "p3dBVNameFieldUI";
+    string $prePostfixUI        = "p3dBVPrePostFixUI";
+    string $prePostfixFieldUI   = "p3dBVPrePostfixFieldUI";
+
+    string $previewUI           = "p3dBVNamePreviewUI";
+    
+    string $bvNamingFrameUI[] = p3dFrameLayout( "Naming", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/boundingVolumes.html#_naming", true, true );
+
+        columnLayout -adj true $animNamesMainUI;    
+
+            // ×× NAME ××
+
+                rowLayout -nc 2;
+
+                    text -label "Base Name";
+                    radioButtonGrp -nrb 3
+                        -label1 "Original"
+                        -label2 "Filename"
+                        -label3 "Custom"
+                        -select 1
+                            $nameTypeUI;
+
+                    setParent ..;
+
+                rowLayout -nc 2;
+
+                    text -label "";
+                        popupMenu -button 3;
+                            menuItem -label "pop" -c ( "textField -e -enable ( !`textField -q -enable " + $nameFieldUI + "` ) " + $nameFieldUI );
+                    textField -text "" $nameFieldUI;
+
+                    setParent ..;
+
+            // ×× PRE- & POST-FIX ××
+
+                rowLayout -nc 2;
+
+                    text -label "Pre- & Post-Fix";
+                    radioButtonGrp -nrb 3
+                        -label1 "Default"
+                        -label2 "Prefix"
+                        -label3 "Postfix"
+                        -select 1
+                            $prePostfixUI;
+
+                    setParent ..;
+
+                rowLayout -nc 2;
+
+                    text -label "";
+                        popupMenu -button 3;
+                            menuItem -label "pop" -c ( "textField -e -enable ( !`textField -q -enable " + $prePostfixFieldUI + "` ) " + $prePostfixFieldUI );
+                    textField -text "" $prePostfixFieldUI;
+
+                    setParent ..;
+
+            rowLayout -nc 2;
+
+                text -label "Preview:";
+                text -label "" $previewUI;
+
+            setParent ..;
+
+    int $nameType               = 0;
+    string $nameField           = "";
+    int $prePostFix             = 0;
+    string $prePostfixField     = "";
+
+    if ( `optionVar -exists p3dBVNameType` )
+    {
+        $nameType = `optionVar -q p3dBVNameType`;
+    }
+    else    optionVar -iv p3dBVNameType $nameType;
+
+    if ( `optionVar -exists p3dBVName` )
+    {
+        $nameField = `optionVar -q p3dBVName`;
+    }
+    else    optionVar -sv p3dBVName $nameField;
+
+    if ( `optionVar -exists p3dBVPrePostFixType` )
+    {
+        $prePostFix = `optionVar -q p3dBVPrePostFixType`;
+    }
+    else    optionVar -iv p3dBVPrePostFixType $prePostFix;
+
+    if ( `optionVar -exists p3dBVPrePostFix` )
+    {
+        $prePostfixField = `optionVar -q p3dBVPrePostFix`;
+    }
+    else    optionVar -sv p3dBVPrePostFix $prePostfixField;
+
+    // Change callback for all controls == Reflect UI to attributes.
+    radioButtonGrp -e 
+        -select ( $nameType + 1 )
+        -onc ( "int $nameType = `radioButtonGrp -q -select " + $nameTypeUI + "` - 1; optionVar -iv p3dBVNameType $nameType; P3DUpdateBVNamingGUI " + $animNamesMainUI + " 1") 
+            $nameTypeUI;
+
+    radioButtonGrp -e 
+        -select ( $prePostFix + 1 )
+        -onc ( "int $prePostFix = `radioButtonGrp -q -select " + $prePostfixUI + "` - 1; optionVar -iv p3dBVPrePostFixType $prePostFix; P3DUpdateBVNamingGUI " + $animNamesMainUI + " 1") 
+            $prePostfixUI;
+
+    textField -e 
+        -text $nameField
+        -cc ( "optionVar -sv p3dBVName \"#1\"; P3DUpdateBVNamingGUI " + $animNamesMainUI + " 1" ) 
+            $nameFieldUI;
+
+    textField -e 
+        -text $prePostfixField
+        -cc ( "optionVar -sv p3dBVPrePostFix \"#1\"; P3DUpdateBVNamingGUI " + $animNamesMainUI + " 1" ) 
+            $prePostfixFieldUI;
+
+    setUITemplate -popTemplate;
+
+    P3DUpdateBVNamingGUI $animNamesMainUI 0;
+
+    PopP3dFrameLayout( $bvNamingFrameUI );
+}
+
+//===========================================================================
+// sansExtension
+//===========================================================================
+// Description: Strips the ".ma", ".mb" or ".p3d" extension from the 
+//              end of the specified path/filename.
+//
+// Constraints: Only ".ma", ".mb" and ".p3d" extensions are detected.
+//
+// Parameters:  string $path: The path or filename.  May or may not have
+//                            an extension.
+//
+// Return:      (string): The path or filename, without its extension.
+//
+//===========================================================================
+proc string sansExtension( string $path )
+{
+    $path = `substitute ".m[a,b]$" $path ""`;
+    $path = `substitute ".p3d$" $path ""`;
+    return $path;
+}
+
+//===========================================================================
+// filepart
+//===========================================================================
+// Description: Returns the file portion from a fully qualified filepath.
+//
+// Constraints: 
+//
+// Parameters:  string $path: The fully qualified filepath.
+//
+// Return:      (string): The file portion of the filepath.
+//
+//===========================================================================
+global proc string filepart( string $path )
+{
+    string $filepart =  match( "[^/\\]*$", $path );
+
+    return $filepart;
+}
+
+//===========================================================================
+// P3DUpdateAnimationNamingGUI
+//===========================================================================
+// Description: Populates the controls for the "Animation Naming" frame from
+//              the current p3dExporterSetting node.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control for the "Animation
+//                              Naming" control group - columnLayout.  Used to
+//                              (un)ghost the controls when necessary.
+//              int $bReflect: If TRUE (non-zero) reflect changes by 
+//                             auto-naming BV in scene; if FALSE, just 
+//                             update UI controls.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DUpdateBVNamingGUI( string $parent, int $bReflect )
+{
+    string $DEFAULT_PREFIX = "P3D_BVol_";
+
+    setParent $parent;
+
+    string $animNamesMainUI     = "p3dBVNamesMainUI";
+    
+    string $nameTypeUI          = "p3dBVNameTypeUI";
+    string $nameFieldUI         = "p3dBVNameFieldUI";
+    string $prePostfixUI        = "p3dBVPrePostFixUI";
+    string $prePostfixFieldUI   = "p3dBVPrePostfixFieldUI";
+
+    string $previewUI           = "p3dBVNamePreviewUI";
+    
+    string $currentSetting = "";
+    string $previewResult = "";
+    string $previewFilename = `file -q -sn`;
+
+    int $nameType               = 0;
+    string $nameField           = "";
+    int $prePostFix             = 0;
+    string $prePostfixField     = "";
+
+    if ( `optionVar -exists p3dBVNameType` )
+    {
+        $nameType = `optionVar -q p3dBVNameType`;
+    }
+
+    if ( `optionVar -exists p3dBVName` )
+    {
+        $nameField = `optionVar -q p3dBVName`;
+    }
+
+    if ( `optionVar -exists p3dBVPrePostFixType` )
+    {
+        $prePostFix = `optionVar -q p3dBVPrePostFixType`;
+    }
+
+    if ( `optionVar -exists p3dBVPrePostFix` )
+    {
+        $prePostfixField = `optionVar -q p3dBVPrePostFix`;
+    }
+
+    switch ( $nameType )
+    {
+        case 0:     // Original
+        {
+            $previewResult = "<object>";
+
+            textField -e
+                -text ""
+                -enable false
+                    $nameFieldUI;
+
+            break;
+        }
+        case 1:     // Filename
+        {
+            $previewResult = ( sansExtension( filepart( $previewFilename ) ) );
+
+            string $previewFilename = $previewResult;
+            if ( $previewFilename == "" )
+            {
+                $previewFilename = "<not specified>";
+                $previewResult = "<filename>";
+            }
+
+            textField -e
+                -text ( sansExtension( filepart( $previewFilename ) ) )
+                -enable false
+                    $nameFieldUI;
+
+            break;
+        }
+        case 2:     // Custom
+        {
+            $previewResult = $nameField;
+
+            textField -e
+                -text $nameField
+                -enable true
+                    $nameFieldUI;
+
+            break;
+        }
+        
+    }
+    
+    switch ( $prePostFix )
+    {
+        case 0:     // Default
+        {
+            $previewResult = $DEFAULT_PREFIX + $previewResult;
+
+            textField -e
+                -enable false
+                    $prePostfixFieldUI;
+
+            break;
+        }
+        case 1:     // Prefix
+        {
+            $previewResult = $prePostfixField + $previewResult;
+
+            textField -e
+                -enable true
+                    $prePostfixFieldUI;
+
+            break;
+        }
+        case 2:     // Postfix
+        {
+            $previewResult = $previewResult + $prePostfixField;
+
+            textField -e
+                -enable true
+                    $prePostfixFieldUI;
+
+            break;
+        }
+    }
+
+    radioButtonGrp -e -select ( $prePostFix + 1 ) $prePostfixUI;
+
+    text -e
+        -label ( "\"" + $previewResult + "\"" )
+            $previewUI;
+
+    if ( $bReflect ) RenameAllBoundingVolumes( 3 );
+}
+
+global proc P3DUpdateBVApplyPhysics( string $ui )
+{
+    string $select[] = `ls -sl`;
+    string $node = $select[0];
+    string $bvp = $node;
+    int $ok = false;
+
+    if ( $node != "" )
+    {
+        $bvp = GetBVRoot( $node );
+        if( $bvp == "" )
+        {
+            $bvp = getShape( GetBVParent( $node ) );
+        }
+
+        if ( $bvp != "" ) 
+        {
+            // Protect against random selection, like Shaders...
+            if ( ( `nodeType $bvp` == "mesh" ) || ( IsSkeletonRoot( $bvp ) && ( ( `nodeType $bvp` == "transform" ) || ( `nodeType $bvp` == "joint" ) ) ) )
+            {
+                $ok = true;
+            }
+        }
+    }
+
+    if ( $ok )
+    {
+        button -e
+            -label ( "Apply Physics Attributes: " + shortName( $bvp, true ) )
+            -enable true
+                $ui;
+    }
+    else
+    {
+        button -e
+            -label "Apply Physics Attributes"
+            -enable false
+                $ui;
+    }
+}
+
+//**************************************************************************************************
+//  Procedure Name:
+//      P3DCreateBoundingVolumeSetupGUI()
+//
+//  Description:
+//      Creates a Selection Dialog Box for creating bound volumes
+//
+//  Input Arguments:
+//      None.
+//
+//  Return Value:
+//      None.
+//**************************************************************************************************
+global proc P3DCreateBoundingVolumeSetupGUI()
+{
+//    global int     $g_BoundingVolumeIsDynamic;
+    global string  $g_BoundingVolumeGameString;
+    global float   $g_BoundingVolumeXScale;
+    global float   $g_BoundingVolumeYScale;
+    global float   $g_BoundingVolumeZScale;
+    global int     $g_BoundingVolumeTesselation;
+    global int     $g_BoundingVolumeCurveTech;
+    global int     $g_BoundingVolumeParentGenerated;
+    global int     $g_4PointBoxSelectionON;
+
+    string $p3dBVApplyPhysicsUI = "p3dBVApplyPhysicsUI";
+
+// *** Mass removed per Martin Courchesne's request: 22 Jan 2002 
+//   global float   $g_BoundingVolumeMass;
+
+    initBoundingVolumeUITemplate();
+
+    string $windowName = "P3DBoundingVolumeTool";
+    int $windowWidth  = 300;
+    int $windowHeight = 200;
+
+    if ( `window -query -exists $windowName` )
+    {
+        deleteUI -window $windowName;
+    }
+
+    string $urlUI[];
+    string $form;
+    string $infoButton;
+    string $frame;
+
+    string $mllVersion = "?";
+    if ( `pluginInfo -q -loaded "p3dBoundingVolume.mll"` )
+    {
+        $mllVersion = `pluginInfo -q -version "p3dBoundingVolume.mll"`;
+    }
+
+    float $version = version();
+    if ( $version != (float)$mllVersion )
+    {
+        error ( "Bounding Volume plug-in not loaded or not valid.  Expecting p3dBoundingVolume v" + version() + "." );
+        return;
+    }
+
+    window 
+        -width  $windowWidth 
+        -title ( $windowName + " v" + $mllVersion )
+        -resizeToFitChildren true
+        $windowName;
+
+    // ***** UITemplate must be invoked within 'window' control!!! ***** //
+    setUITemplate -pushTemplate P3DBoundingVolumeUITemplate;
+
+    string $mainBVLayout = `columnLayout`;
+
+        // Create a formLayout to "trick" the layout into allowing an 
+        // info symbolButton inline with the frameLayout's label
+        $urlUI = p3dFrameLayout( "Bounding Volumes", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/boundingVolumes.html#_bv", true, false );
+
+                columnLayout -adj true;
+
+                    // Button Layout
+                    gridLayout 
+                        -numberOfColumns 5 
+                        -cellHeight 20
+                        -cellWidth (($windowWidth-10)/5);
+       
+                        button 
+                            -label "Box" 
+                            -command "P3DCreateBoundingVolume2(0, $g_BoundingVolumeXScale,      \
+                                                                  $g_BoundingVolumeYScale,      \
+                                                                  $g_BoundingVolumeZScale,      \
+                                                                  $g_BoundingVolumeTesselation, \
+                                                                  $g_BoundingVolumeCurveTech,   \
+                                                                  $g_BoundingVolumeParentGenerated )"
+                                P3DBoundingVolumeBoxUI;
+                        button 
+                            -label "Sphere"
+                            -command "P3DCreateBoundingVolume2(1, $g_BoundingVolumeXScale,      \
+                                                                  $g_BoundingVolumeYScale,      \
+                                                                  $g_BoundingVolumeZScale,      \
+                                                                  $g_BoundingVolumeTesselation, \
+                                                                  $g_BoundingVolumeCurveTech,   \
+                                                                  $g_BoundingVolumeParentGenerated )";
+                        button 
+                            -label "Cylinder"
+                            -command "P3DCreateBoundingVolume2(2, $g_BoundingVolumeXScale,      \
+                                                                  $g_BoundingVolumeYScale,      \
+                                                                  $g_BoundingVolumeZScale,      \
+                                                                  $g_BoundingVolumeTesselation, \
+                                                                  $g_BoundingVolumeCurveTech,   \
+                                                                  $g_BoundingVolumeParentGenerated )";
+                        button 
+                            -label "Capsule" 
+                            -command "P3DCreateBoundingVolume2(3, $g_BoundingVolumeXScale,      \
+                                                                  $g_BoundingVolumeYScale,      \
+                                                                  $g_BoundingVolumeZScale,      \
+                                                                  $g_BoundingVolumeTesselation, \
+                                                                  $g_BoundingVolumeCurveTech,   \
+                                                                  $g_BoundingVolumeParentGenerated )";
+                        button 
+                            -label "Plane"
+                            -command "P3DCreateBoundingVolume2(4, $g_BoundingVolumeXScale,      \
+                                                                  $g_BoundingVolumeYScale,      \
+                                                                  $g_BoundingVolumeZScale,      \
+                                                                  $g_BoundingVolumeTesselation, \
+                                                                  $g_BoundingVolumeCurveTech,   \
+                                                                  $g_BoundingVolumeParentGenerated )"
+                                P3DBoundingVolumePlaneUI;
+        
+                        setParent ..;       // from gridLayout for Bounding Volume creation buttons
+
+                    // Second Row Button layout
+                    rowLayout -nc 1;
+
+                        checkBox                  
+                            -align "left"
+                            -label "4 Point Box"
+                            -value $g_4PointBoxSelectionON
+                            -onCommand "SetUpSelectionScriptJob" 
+                            -offCommand "KillSelectionScriptJob";
+
+                        setParent ..;
+     
+                    // Third Row Button layout
+                    gridLayout 
+                        -numberOfColumns 2 
+                        -cellHeight 20
+                        -cellWidth (($windowWidth-10)/2);
+     
+                        button 
+                            -label "Hide All"
+                            -command "P3DHideAllBoundingVolumes(1)";
+                        button 
+                            -label "Un-Hide All"
+                            -command "P3DHideAllBoundingVolumes(0)";
+
+                        setParent ..;       // from gridLayout for Hide/UnHide
+
+                    gridLayout 
+                        -numberOfColumns 2 
+                        -cellHeight 20
+                        -cellWidth (($windowWidth-10)/2);
+
+                        button -label "Select for Current" -c "P3DSelectBoundingVolumes";
+
+                        button -label "Delete from Current" -c "P3DRemoveBoundingVolumes";
+
+                    setParent ..;       // from columnLayout for frameLayout for Bounding Volumes
+
+            PopP3dFrameLayout( $urlUI );
+
+        // Create a formLayout to "trick" the layout into allowing an 
+        // info symbolButton inline with the frameLayout's label
+        $urlUI = p3dFrameLayout( "Bounding Nodes", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/boundingVolumes.html#_bn", true, true );
+
+                columnLayout -adj true;
+
+                    rowLayout -nc 4;    // extra columns to accomodate uiTemplate limitations
+                        text -label "B. Node Size";
+                        floatField 
+                            -changeCommand ("optionVar -floatValue P3DBoundingNodeSize (#1)")
+                                P3DBoundingNodeSizeUI;
+                        text -label "";
+                        text -label "";
+                        setParent ..;
+
+                    gridLayout
+                        -numberOfColumns 2
+                        -cellHeight 20
+                        -cellWidth (($windowWidth-10)/2);
+
+                        button 
+                            -label "Create Bounding Node"
+                            -command "P3DCreateBoundingNode()";
+
+                        button 
+                            -label "Remove Volumes"
+                            -command "P3DRemoveFromBoundingNode()";
+
+                        setParent ..;       // from gridLayout
+
+                    setParent ..;       // from columnLayout for frameLayout for Bounding Nodes
+
+            PopP3dFrameLayout( $urlUI );
+
+        // Create a formLayout to "trick" the layout into allowing an 
+        // info symbolButton inline with the frameLayout's label
+        $urlUI = p3dFrameLayout( "Curve Generation Settings", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/boundingVolumes.html#_curve", true, false );
+
+                columnLayout;
+
+                    radioCollection;
+                    rowLayout -nc 2;
+                        text -label "Curve Fit";
+                        radioButton 
+                            -label ""
+                            -onCommand( "SetPhysicsDefault \"curveTech\" on" )
+                                P3DPhysicsCurveFitUI;
+                        setParent ..;
+                    rowLayout -nc 3;
+                        text -label "Fixed Tesselation";
+                        radioButton 
+                            -label ""
+                            -onCommand( "SetPhysicsDefault \"curveTech\" off" )
+                                P3DPhysicsFixedUI;
+                        intField 
+                            -value $g_BoundingVolumeTesselation 
+                            -changeCommand ("$g_BoundingVolumeTesselation = (#1)")
+                                P3DTesselationUI;
+                        setParent ..;
+
+                    rowLayout -nc 1;
+                        checkBox
+                            -align "left"
+                            -label "Group Under Bounding Node" 
+                            -changeCommand  ("$g_BoundingVolumeParentGenerated = (#1)");
+                        setParent ..;
+
+                    setParent ..;       // from columnLayout for frameLayout for Curve Generation
+
+            PopP3dFrameLayout( $urlUI );
+
+        P3DCreateBVNamingGUI( $mainBVLayout );
+        
+        int $physicsNoAttributesWarning = `optionVar -q P3DPhysicsNoAttributesWarning`;
+        //
+        // Attribute Defaults
+        //
+        // Create a formLayout to "trick" the layout into allowing an 
+        // info symbolButton inline with the frameLayout's label
+        $urlUI = p3dFrameLayout( "Physics Default Attributes", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/boundingVolumes.html#_physics", true, false );
+                columnLayout -adj true; 
+
+                    string $displayMe = "";
+                    string $displayMe_warning = "";
+                    string $displayMe_button = "";
+                    if ( !$physicsNoAttributesWarning )
+                    {
+                        $displayMe = `formLayout -visible (!$physicsNoAttributesWarning)`;
+                    
+                            $displayMe_warning = `scrollField -height 128 -wordWrap true -editable false -text "The Physics Attributes displayed here are only defaults that will be applied when Bounding Volumes are created, or when you click the 'Apply Physics Attributes' button.  Changing these values will not alter any existing Physics information stored in the scene."`;
+                            $displayMe_button = `button -label "Go Away"`;
+
+                            setParent ..;
+
+                            formLayout -e
+                                -af     $displayMe_button       "left"      2
+                                -af     $displayMe_button       "right"     2
+                                -af     $displayMe_button       "bottom"    2
+
+                                -af     $displayMe_warning      "top"       2
+                                -af     $displayMe_warning      "left"      2
+                                -af     $displayMe_warning      "right"     2
+                                -ac     $displayMe_warning      "bottom"    8   $displayMe_button
+                                    $displayMe;
+                    }
+
+        //        checkBoxGrp
+        //            -label "Global IsDynamic" 
+        //            -v1 $g_BoundingVolumeIsDynamic
+        //            -cal 2 "left"
+        //            -cat 1 "left" 0
+        //            -onCommand "SetIsDynamicOn" 
+        //            -offCommand "SetIsDynamicOff";
+
+                    string $hideMe = `columnLayout -adj true -visible $physicsNoAttributesWarning`;
+
+                    string $formPhysics = `formLayout`;
+
+                        string $dynamicFrame = `frameLayout -labelVisible false -collapsable false`;
+                            columnLayout -adj true;
+                                radioCollection dynamicCollection;
+                                radioButton -label "Static" -align "left"
+                                    -onCommand( "SetPhysicsDefault \"static\" on;" )
+                                        P3DPhysicsStaticUI;
+                                radioButton -label "Moveable" -align "left"
+                                    -onCommand( "SetPhysicsDefault \"moveable\" on;" )
+                                        P3DPhysicsMoveableUI;
+                                radioButton -label "Dynamic" -align "left" 
+                                    -select
+                                    -onCommand( "SetPhysicsDefault \"dynamic\" on;" )
+                                        P3DPhysicsDynamicUI;
+                                setParent ..;
+                            setParent ..;
+
+                        string $canFrame = `frameLayout -labelVisible false -collapsable false`;
+                            columnLayout -adj true;
+                                checkBox 
+                                    -label "Can Bounce" 
+                                    -align "left"
+                                    -changeCommand( "SetPhysicsDefault \"bounce\" (#1);" )
+                                        P3DPhysicsCanBounceUI;
+                                checkBox 
+                                    -label "Can Roll" 
+                                    -align "left"
+                                    -changeCommand( "SetPhysicsDefault \"roll\" (#1);" )
+                                        P3DPhysicsCanRollUI;
+                                checkBox 
+                                    -label "Can Slide" 
+                                    -align "left"
+                                    -changeCommand( "SetPhysicsDefault \"slide\" (#1);" )
+                                        P3DPhysicsCanSlideUI;
+                                checkBox 
+                                    -label "Can Spin" 
+                                    -align "left"
+                                    -changeCommand( "SetPhysicsDefault \"spin\" (#1);" )
+                                        P3DPhysicsCanSpinUI;
+                                setParent ..;
+                            setParent ..;
+
+                        formLayout -e
+                            -af     $dynamicFrame           "top"       2
+                            -af     $dynamicFrame           "left"      0
+                            -ap     $dynamicFrame           "right"     1   50
+                            -af     $dynamicFrame           "bottom"    2
+
+                            -af     $canFrame               "top"       2
+                            -ap     $canFrame               "left"      1   50
+                            -af     $canFrame               "right"     4
+                            -af     $canFrame               "bottom"    2
+                                $formPhysics;
+
+                        setParent ..;       // from formLayout for Physics
+
+            // *** Mass removed per Martin Courchesne's request: 22 Jan 2002 
+            //            floatFieldGrp 
+            //                  -label "Global Mass"
+            //                  -v1 $g_BoundingVolumeMass 
+            //                  -cal 2 "left"
+            //                  -cat 1 "left" 0
+            //                  -changeCommand ("$g_BoundingVolumeMass = #1");  
+
+                    string $ctrlName;
+                    text -l "Global Game String Data:";
+                    $ctrlName = `textField  
+                        -text $g_BoundingVolumeGameString
+                        -width 200
+                        -changeCommand ("SetBoundingVolumeGameString("+"\"#1\""+")")`;
+
+                    rowLayout -nc 4;    // extra columns to accomodate uiTemplate limitations
+                        text -label "Area Tag" -align "right";
+                        intField 
+                            -value 0 
+                            -changeCommand ( "optionVar -intValue P3DPhysicsAreaTag (#1)" )
+                                P3DPhysicsAreaTagUI;
+                        text -label "";
+                        text -label "";
+                        setParent ..;
+
+                    rowLayout -nc 4;
+                        text -label "Size (X,Y,Z)";
+                        floatField 
+                            -value $g_BoundingVolumeXScale
+                            -cc ( "$g_BoundingVolumeXScale = (#1);" );
+                        floatField 
+                            -value $g_BoundingVolumeYScale
+                            -cc ( "$g_BoundingVolumeYScale = (#1);" );
+                        floatField 
+                            -value $g_BoundingVolumeZScale
+                            -cc ( "$g_BoundingVolumeZScale = (#1);" );
+                        setParent ..;
+
+                    button 
+                        -label   "Apply Physics Attributes"
+                        -command "AddGeomParentInfoOnSelected"
+                            $p3dBVApplyPhysicsUI;
+
+                    setParent ..;       // from columnLayout for frameLayout for Physics
+
+                if ( !$physicsNoAttributesWarning )
+                {
+                    frameLayout -e
+                        -pec ( "columnLayout -e -visible false " + $hideMe + "; formLayout -e -visible true " + $displayMe )
+                            $urlUI[0];
+                    button -e
+                        -c ( "formLayout -e -visible false " + $displayMe + "; columnLayout -e -visible true " + $hideMe + "; optionVar -intValue P3DPhysicsNoAttributesWarning 1;" )
+                            $displayMe_button;
+                }
+
+            PopP3dFrameLayout( $urlUI );
+
+        // Fourth Row Button layout
+        // Create a formLayout to "trick" the layout into allowing an 
+        // info symbolButton inline with the frameLayout's label
+        $urlUI = p3dFrameLayout( "Fixer Commands", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/boundingVolumes.html#_fixer", true, true );
+
+                columnLayout -adj true;
+
+                    gridLayout
+                        -numberOfColumns 2
+                        -cellHeight 20
+                        -cellWidth (($windowWidth-10)/2);
+
+                        button 
+                            -label "Connect Size Controls"
+                            -command "ConnectBoundingVolumes";
+
+                        button 
+                            -label   "Auto-Name"
+                            -command "RenameAllBoundingVolumes 3"; 
+
+                        gridLayout
+                            -numberOfColumns 2
+                            -cellHeight 20
+                            -cellWidth (($windowWidth-10)/4);
+
+                            button 
+                                -label   "Duplicate"
+                                -command "DuplicateWithUpstream";              
+                            button 
+                                -label   "Clone"
+                                -command "CloneBoundingVolume;";
+
+                            setParent ..;
+
+                        button 
+                            -label   "Assign To Display Layer"
+                            -command "FixBVDisplayLayer";              
+
+                    setParent ..;       // from columnLayout for frameLayout for Fixer Commands
+
+            PopP3dFrameLayout( $urlUI );
+
+        //
+        // Return to the window
+        //
+        setParent -topLevel;
+
+    setUITemplate -popTemplate;
+
+    // Adjust UI controls to reflect user preferences.
+    P3DInitBoundingVolumeGUI();
+
+    scriptJob -p $windowName -event "SelectionChanged" ( "P3DUpdateBVApplyPhysics \"" + $p3dBVApplyPhysicsUI + "\"" );
+    P3DUpdateBVApplyPhysics $p3dBVApplyPhysicsUI;
+
+    showWindow $windowName;
+}
+
+/*
+source p3dBoundingTools;
+*/

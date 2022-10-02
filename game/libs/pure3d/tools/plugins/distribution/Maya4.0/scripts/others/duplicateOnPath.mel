@@ -1,0 +1,513 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     14 June, 2002
+//
+// Component:   duplicateOnPath
+//
+// Description: Provides a UI which offers functions for duplicating a
+//              selected node along a selected curve via one of two methods:
+//
+//               1. Create 'n' duplicates spanning the entire curve.
+//               2. Create duplicates (as many as will fit) at specified
+//                  distances along the curve.
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+// Constraints: 
+//
+//===========================================================================
+proc float version()
+{
+    return ( 1.0 );
+}
+
+//===========================================================================
+// getTransform
+//===========================================================================
+// Description: Returns the transform for the specified shape node.
+//
+//  Parameters: string $shape: The shape node.
+//
+//      Return: (string): The transform node.
+//
+//===========================================================================
+proc string getTransform( string $shape )
+{
+    string $transform = $shape;
+    
+    // Special case for "joint" -- 
+    // a joint is a transform and has no corresponding Shape.
+    if ( `objExists $shape` && ( "transform" != `nodeType $shape` ) && ( "joint" != `nodeType $shape` ) )
+    // If given node is already a transform, just pass on through
+    {
+        string $parents[] = `listRelatives -fullPath -parent $shape`;
+        $transform = $parents[0];
+    }
+
+    return $transform;
+}
+
+//===========================================================================
+// getShape
+//===========================================================================
+// Description: Returns the shape node, if any, for the specified transform.
+//
+// Constraints: Considers only a single shape.
+//
+//  Parameters: string $xform: The transform node.
+//
+//      Return: (string): The shape node.
+//
+//===========================================================================
+proc string getShape( string $xform )
+{
+    string $shapes[];
+    
+    $shapes[0] = $xform;
+    
+    string $isTransform[] = `ls -transforms $xform`;
+    
+    if ( `size $isTransform` > 0 )
+    // If given node is not a transform, assume it is a shape 
+    // and pass it through
+    {
+        $shapes = `listRelatives -fullPath -shapes $xform`;
+    }
+    
+    return $shapes[0];
+}
+
+//===========================================================================
+// uiToInternal
+//===========================================================================
+// Description: Convert UI linear units to Maya's internal unit (cm).
+//
+// Constraints: Not all UI units are supported yet.
+//
+//  Parameters: float $ui: The linear value from the UI.
+//
+//      Return: (float): The value represented in internal units (cm).
+//
+//===========================================================================
+proc float uiToInternal( float $ui )
+{
+    string $unit = `currentUnit -q -l`;
+
+    float $factor = 1.0;
+    
+    switch ( $unit )
+    {
+        case "mm":
+            $factor = 0.1;
+            break;
+        case "m":
+            $factor = 100.0;
+            break;
+        default:
+            error ( "duplicateOnPath: Unsupported unit in uiToInternal()" );
+    }
+
+    return ( $ui * $factor );
+}
+
+//===========================================================================
+// dop_go_count
+//===========================================================================
+// Description: Performs a duplication by count, creating 'n' duplicates
+//              of the specified node at calculated distances along the 
+//              specified curve.
+//
+// Constraints: The duplicate count is obtained from the UI.
+//
+//  Parameters: string $curve: The name of the NURBS curve used as the path
+//                             for the duplicated nodes.
+//              string $node: The node to duplicate along the curve.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc dop_go_count( string $curve, string $node )
+{
+    waitCursor -state on;
+
+    string $countFieldUI = "dopCountFieldUI";
+    int $count = `intField -q -value $countFieldUI`;
+    
+    // What's the extent of this curve?
+    float $min = `getAttr ( $curve + ".minValue" )`;
+    float $max = `getAttr ( $curve + ".maxValue" )`;
+    float $range = $max - $min;
+    float $stride = $range / ( $count - 1 );
+    
+    int $i;
+    string $allNodes[];
+    
+    for ( $i = 0; $i < $count; $i++ )
+    {
+        if ( $i == ( $count - 1 ) ) $min = $max;
+        
+        // Where should this go?
+        float $xyz[] = `pointOnCurve -pr $min -p $curve`;
+        
+        // Create duplicate of node
+        string $newNode[] = `duplicate $node`;
+        
+        // Move it into position
+        xform -ws -t $xyz[0] $xyz[1] $xyz[2] $newNode[0];
+        
+        // Bump position
+        $min += $stride;
+        
+        $allNodes[`size $allNodes`] = $newNode[0];
+    }
+    
+    // Group all new nodes
+    group -name "group_duplicateOnPath" -world $allNodes;
+
+    waitCursor -state off;
+}
+
+//===========================================================================
+// seesaw
+//===========================================================================
+// Description: It is not possible to simple calculate the parameterization
+//              for an arc which represents a particular distance (arc length).
+//              This function is used to "seesaw" back and forth looking for
+//              the paramaterization which is within the specified tolerance
+//              of the specified arc distance.
+//
+// Constraints: The moveOnArc() procedure guarantees that the values passed
+//              to this function are all valid.
+//
+//  Parameters: string $arcLD: The arcLengthDimension node created to provide
+//                             arc distance information.
+//              float $start: The parameterization at the start of the arc.
+//              float $min: The lower parameterization bounds used to 
+//                          calculate the midpoint at which arc distance is
+//                          evaluated.
+//              float $mid: The midpoint at which the arc distance is
+//                          evaluated. I suppose this is not entirely 
+//                          necessary...
+//              float $max: The upper parameterization bounds used to 
+//                          calculate the midpoint at which arc distance is
+//                          evaluated.
+//              float $distance: The distance for which we are seeking.
+//              float $threshold: The threshold at which we consider the
+//                                distance found to be "close enough" to
+//                                our target distance.
+//              int $save: A "hint" to detect unnecessarily deep recursion.
+//                         Used while debugging; currently inactive.
+//
+//      Return: (float): The parameterization which represents the specified
+//                       arc distance from the start point.
+//
+//===========================================================================
+proc float seesaw( string $arcLD, float $start, float $min, float $mid, float $max, float $distance, float $threshold, int $save )
+{
+    $save++;
+    
+    if ( $min < 0.0 ) error ( "Invalid UParam!" );
+    if ( $mid < 0.0 ) error ( "Invalid UParam midpoint!" );
+
+    // Distance to midpoint?
+    setAttr ( $arcLD + ".uParamValue" ) $mid;
+    float $toMid = `getAttr ( $arcLD + ".arcLength" )` - $start;
+
+    // Do I need to keep looking?
+    if ( abs( $toMid - $distance ) > $threshold )
+    {
+        // If we went too far, use $mid as $max
+        if ( $toMid > $distance )
+        {
+            $max = $mid;
+            $mid = ( $max + $min ) / 2.0;
+            $mid = seesaw( $arcLD, $start, $min, $mid, $max, $distance, $threshold, $save );
+        }
+        else
+        // Not far enough; use $mid as $min
+        {
+            $min = $mid;
+            $mid = ( $max + $min ) / 2.0;
+            $mid = seesaw( $arcLD, $start, $min, $mid, $max, $distance, $threshold, $save );
+        }
+    }
+    
+    return $mid;
+}
+
+//===========================================================================
+// moveOnArc
+//===========================================================================
+// Description: Initiates the "seesaw" process which will find the 
+//              parameterization point which is the specified distance from
+//              the specified parameterization point.
+//
+//              If the specified distance cannot be reached (because the 
+//              curve simply isn't long enough) an error value of (-1)
+//              is returned.
+//
+// Constraints: 
+//
+//  Parameters: string $arcLD: The arcLengthDimension node created to provide
+//                             arc distance information.
+//              float $min: The parameterization at which to start. The 
+//                          target point is $distance arcLength units from
+//                          this point.
+//              float $max: The maximum parameterization for the curve.
+//              float $distance: The distance from the start point.
+//
+//      Return: (float): The parameterization for the curve that represents
+//                       $distance arcLength from the start parameterization.
+//                       (-1) indicates that the point could not be reached.
+//
+//===========================================================================
+proc float moveOnArc( string $arcLD, float $min, float $max, float $distance )
+{
+    // What's the distance at $min?
+    setAttr ( $arcLD + ".uParamValue" ) $min;
+
+    float $start = `getAttr ( $arcLD + ".arcLength" )`;
+    float $target = $start + $distance;
+
+    // Can we reach the target?
+    setAttr ( $arcLD + ".uParamValue" ) $max;
+    float $maxDistance = `getAttr ( $arcLD + ".arcLength" )`;
+    
+    if ( $maxDistance < $target )
+    {
+        // Nope.
+        return -1;
+    }
+    
+    // Now we seesaw back and forth until we find the appropriate distance
+    float $threshold = 0.01;
+    
+    float $mid = ( $min + $max ) / 2.0;
+    $min = seesaw( $arcLD, $start, $min, $mid, $max, $distance, $threshold, 0 );
+
+    return $min;
+}
+
+//===========================================================================
+// dop_go_distance
+//===========================================================================
+// Description: Performs a duplication by distance, creating a duplicate
+//              of the specified node at uniform distances along the specified
+//              curve.
+//
+// Constraints: The distance factor is obtained from the UI.
+//
+//  Parameters: string $curve: The curve along which to duplicate the nodes.
+//              string $node: The node to duplicate along the curve.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc dop_go_distance( string $curve, string $node )
+{
+    waitCursor -state on;
+    
+    int $loop = 0;
+    
+    string $distanceFieldUI = "dopDistanceFieldUI";
+    int $distance = `floatField -q -value $distanceFieldUI`;
+    $distance = uiToInternal( $distance );
+    
+    // What's the extent of this curve?
+    float $min = `getAttr ( $curve + ".minValue" )`;
+    float $max = `getAttr ( $curve + ".maxValue" )`;
+    
+    // Create an arcLengthDimension node at $max
+    string $arcLD = `arcLengthDimension ( $curve + ".u[" + $max + "]" )`;
+    float $length = `getAttr ( $arcLD + ".arcLength" )`;
+    
+    string $allNodes[];
+
+    while ( $min >= 0 )
+    {
+        $loop++;
+        
+        // Where should this go?
+        float $xyz[] = `pointOnCurve -pr $min -p $curve`;
+
+        // Create duplicate of node
+        string $newNode[] = `duplicate $node`;
+        
+        // Move it into position
+        xform -ws -t $xyz[0] $xyz[1] $xyz[2] $newNode[0];
+
+        // Where's the next one?
+        $min = moveOnArc( $arcLD, $min, $max, $distance );
+        
+        $allNodes[`size $allNodes`] = $newNode[0];
+    }
+    
+    // Delete the arcLengthDimension node
+    delete $arcLD;
+
+    // Group all new nodes
+    group -name "group_duplicateOnPath" -world $allNodes;
+
+    waitCursor -state off;
+}
+
+//===========================================================================
+// dop_go
+//===========================================================================
+// Description: This callback is used when the user presses the "Go" button.
+//
+//              The state of the UI is evaluated and the appropriate 
+//              duplication procedure is called.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc dop_go()
+{
+    string $countUI = "dopCountUI";
+    string $countUI = "dopCountUI";
+    string $distanceUI = "dopDistanceUI";
+
+    int $isCount = `radioButton -q -select $countUI`;
+    int $isDistance = `radioButton -q -select $distanceUI`;
+
+    string $nodes[] = `ls -sl`;
+    
+    if ( `size $nodes` < 2 ) error "Select an object and a curve.";
+    
+    string $curve;
+    string $node;
+
+    string $shape0 = getShape( $nodes[0] );
+    string $shape1 = getShape( $nodes[1] );
+    
+    if ( `nodeType $shape0` == "nurbsCurve" )
+    {
+        $curve = $shape0;
+        $node = getTransform( $nodes[1] );
+    }
+    else
+    if ( `nodeType $shape1` == "nurbsCurve" )
+    {
+        $curve = $shape1;
+        $node = getTransform( $nodes[0] );
+    }
+    else
+    {
+        error ( "Select an object and a curve." );
+    }
+    
+    if ( $isCount ) dop_go_count( $curve, $node );
+    if ( $isDistance ) dop_go_distance( $curve, $node );
+}
+
+//===========================================================================
+// duplicateOnPath
+//===========================================================================
+// Description: Provides a UI which offers functions for duplicating a
+//              selected node along a selected curve via one of two methods:
+//
+//               1. Create 'n' duplicates spanning the entire curve.
+//               2. Create duplicates (as many as will fit) at specified
+//                  distances along the curve.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc duplicateOnPath()
+{
+    string $windowUI = "duplicateOnPathUI";
+    
+    string $labelUI = "dopLabelUI";
+    
+    string $countUI = "dopCountUI";
+    string $distanceUI = "dopDistanceUI";
+    string $countFieldUI = "dopCountFieldUI";
+    string $distanceFieldUI = "dopDistanceFieldUI";
+    string $goUI = "dopGoUI";
+    
+    if ( `window -exists $windowUI` )
+        deleteUI -window $windowUI;
+        
+    window -title "Duplicate On Path" -iconName "DupePath" $windowUI;
+    
+    columnLayout;
+
+        string $form = `formLayout`;
+        
+            radioCollection;
+                radioButton -label "Count" -select $countUI;
+                radioButton -label "Distance" $distanceUI;
+
+            intField -value 16 -min 3 -max 1024 -visible true $countFieldUI;
+            floatField -value 2.0 -min 0.0 -visible false $distanceFieldUI;
+
+            // Put this here else it jumps to a new position when 
+            // the field controls are hidden/shown.
+            text -label "Mode" -align "right" $labelUI;
+
+            button -label "Go" $goUI;
+            
+        setParent ..;
+
+    formLayout -e
+        -af     $labelUI            "top"       4
+        -af     $labelUI            "left"      4
+        -ap     $labelUI            "right"     2   33
+        
+        -af     $countUI            "top"       4
+        -ap     $countUI            "left"      2   33
+        
+        -af     $distanceUI         "top"       4
+        -ac     $distanceUI         "left"      4   $countUI
+        
+        -ac     $countFieldUI       "top"       4   $countUI
+        -ap     $countFieldUI       "left"      2   33
+        -ac     $distanceFieldUI    "top"       4   $distanceUI
+        -ap     $distanceFieldUI    "left"      2   33
+
+        -ac     $goUI               "top"       8   $countFieldUI
+        -af     $goUI               "left"      8
+        -af     $goUI               "right"     8
+        
+            $form;
+            
+    showWindow;
+    
+    radioButton -e
+        -onc ( "intField -e -visible true " + $countFieldUI + "; floatField -e -visible false " + $distanceFieldUI )
+            $countUI;
+            
+    radioButton -e
+        -onc ( "intField -e -visible false " + $countFieldUI + "; floatField -e -visible true " + $distanceFieldUI )
+            $distanceUI;
+            
+    button -e
+        -c "dop_go"
+            $goUI;
+
+        
+}
+
+/*
+source duplicateOnPath; duplicateOnPath;
+*/

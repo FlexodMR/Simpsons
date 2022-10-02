@@ -1,0 +1,320 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>SelfLoader - load functions only on demand
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#The_DATA_token">The __DATA__ token</A>
+		<LI><A HREF="#SelfLoader_autoloading">SelfLoader autoloading</A>
+		<LI><A HREF="#Autoloading_and_package_lexicals">Autoloading and package lexicals</A>
+		<LI><A HREF="#SelfLoader_and_AutoLoader">SelfLoader and AutoLoader</A>
+		<LI><A HREF="#_DATA_END_and_the_FOOBA">__DATA__, __END__, and the FOOBAR::DATA filehandle.</A>
+		<LI><A HREF="#Classes_and_inherited_methods_">Classes and inherited methods.</A>
+	</UL>
+
+	<LI><A HREF="#Multiple_packages_and_fully_qual">Multiple packages and fully qualified subroutine names</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+SelfLoader - load functions only on demand
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    package FOOBAR;
+    use SelfLoader;
+    
+    ... (initializing code)
+    
+    __DATA__
+    sub {....
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module tells its users that functions in the 
+<FONT SIZE=-1>FOOBAR</FONT> package are to be autoloaded from after the <A HREF="#item__DATA_">__DATA__</A> token. See also
+<A HREF="/n|/perl/html/./lib/Pod/perlsub.html#Autoloading">Autoloading</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="The_DATA_token">The __DATA__ token
+
+</A></H2>
+The <A HREF="#item__DATA_">__DATA__</A> token tells the perl compiler that the perl code for compilation is
+finished. Everything after the <A HREF="#item__DATA_">__DATA__</A> token is available for reading via the filehandle 
+<FONT SIZE=-1>FOOBAR::DATA,</FONT> where 
+<FONT SIZE=-1>FOOBAR</FONT> is the name of the current package when the
+ <A HREF="#item__DATA_">__DATA__</A>
+token is reached. This works just the same as <CODE>__END__</CODE> does in package 'main', but for other modules data after <CODE>__END__</CODE> is not automatically retreivable , whereas data after <A HREF="#item__DATA_">__DATA__</A> is. The <A HREF="#item__DATA_">__DATA__</A> token is not recognized in versions of perl prior to 5.001m.
+
+
+<P>
+
+Note that it is possible to have <A HREF="#item__DATA_">__DATA__</A> tokens in the same package in multiple files, and that the last <A HREF="#item__DATA_">__DATA__</A> token in a given package that is encountered by the compiler is the one
+accessible by the filehandle. This also applies to <CODE>__END__</CODE> and main, i.e. if the 'main' program has an <CODE>__END__</CODE>, but a module 'require'd (_not_ 'use'd) by that program has a 'package
+main;' declaration followed by an '<A HREF="#item__DATA_">__DATA__</A>', then the <CODE>DATA</CODE> filehandle is set to access the data after the <A HREF="#item__DATA_">__DATA__</A>
+in the module, _not_ the data after the <CODE>__END__</CODE> token in the 'main' program, since the compiler encounters the 'require'd
+file later.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="SelfLoader_autoloading">SelfLoader autoloading
+
+</A></H2>
+The <STRONG>SelfLoader</STRONG> works by the user placing the <A HREF="#item__DATA_">__DATA__</A>
+token <EM>after</EM> perl code which needs to be compiled and run at 'require' time, but <EM>before</EM> subroutine declarations that can be loaded in later - usually because they
+may never be called.
+
+
+<P>
+
+The <STRONG>SelfLoader</STRONG> will read from the 
+<FONT SIZE=-1>FOOBAR::DATA</FONT> filehandle to load in the data after <A HREF="#item__DATA_">__DATA__</A>, and load in any subroutine when it is called. The costs are the one-time
+parsing of the data after <A HREF="#item__DATA_">__DATA__</A>, and a load delay for the _first_ call of any autoloaded function. The
+benefits (hopefully) are a speeded up compilation phase, with no need to
+load functions which are never used.
+
+
+<P>
+
+The <STRONG>SelfLoader</STRONG> will stop reading from <A HREF="#item__DATA_">__DATA__</A> if it encounters the <CODE>__END__</CODE> token - just as you would expect. If the <CODE>__END__</CODE> token is present, and is followed by the token 
+<FONT SIZE=-1>DATA,</FONT> then the <STRONG>SelfLoader</STRONG> leaves the 
+<FONT SIZE=-1>FOOBAR::DATA</FONT> filehandle open on the line after that
+token.
+
+
+<P>
+
+The <STRONG>SelfLoader</STRONG> exports the <A HREF="#item_AUTOLOAD">AUTOLOAD</A> subroutine to the package using the <STRONG>SelfLoader</STRONG>, and this loads the called subroutine when it is first called.
+
+
+<P>
+
+There is no advantage to putting subroutines which will _always_ be called
+after the <A HREF="#item__DATA_">__DATA__</A> token.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Autoloading_and_package_lexicals">Autoloading and package lexicals
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> 'my $pack_lexical' statement makes the variable
+<CODE>$pack_lexical</CODE> local _only_ to the file up to the <A HREF="#item__DATA_">__DATA__</A> token. Subroutines declared elsewhere _cannot_ see these types of
+variables, just as if you declared subroutines in the package but in
+another file, they cannot see these variables.
+
+
+<P>
+
+So specifically, autoloaded functions cannot see package lexicals (this
+applies to both the <STRONG>SelfLoader</STRONG> and the Autoloader). The <A HREF="#item_vars">vars</A> pragma provides an alternative to defining package-level globals that will
+be visible to autoloaded routines. See the documentation on <STRONG>vars</STRONG> in the pragma section of <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#">the perlmod manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="SelfLoader_and_AutoLoader">SelfLoader and AutoLoader
+
+</A></H2>
+The <STRONG>SelfLoader</STRONG> can replace the AutoLoader - just change 'use AutoLoader' to 'use
+SelfLoader' (though note that the <STRONG>SelfLoader</STRONG> exports the 
+<FONT SIZE=-1>AUTOLOAD</FONT> function - but if you have your own 
+<FONT SIZE=-1>AUTOLOAD</FONT> and are using the AutoLoader too, you probably know what you're doing), and the
+ <CODE>__END__</CODE> token to <A HREF="#item__DATA_">__DATA__</A>. You will need perl version 5.001m or later to use this (version 5.001
+with all patches up to patch m).
+
+
+<P>
+
+There is no need to inherit from the <STRONG>SelfLoader</STRONG>.
+
+
+<P>
+
+The <STRONG>SelfLoader</STRONG> works similarly to the AutoLoader, but picks up the subs from after the <A HREF="#item__DATA_">__DATA__</A> instead of in the 'lib/auto' directory. There is a maintainance gain in not
+needing to run AutoSplit on the module at installation, and a runtime gain
+in not needing to keep opening and closing files to load subs. There is a
+runtime loss in needing to parse the code after the <A HREF="#item__DATA_">__DATA__</A>. Details of the <STRONG>AutoLoader</STRONG> and another view of these distinctions can be found in that module's
+documentation.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_DATA_END_and_the_FOOBA">__DATA__, __END__, and the FOOBAR::DATA filehandle.
+
+</A></H2>
+This section is only relevant if you want to use the <CODE>FOOBAR::DATA</CODE> together with the <STRONG>SelfLoader</STRONG>.
+
+
+<P>
+
+Data after the <A HREF="#item__DATA_">__DATA__</A> token in a module is read using the 
+<FONT SIZE=-1>FOOBAR::DATA</FONT> filehandle. <CODE>__END__</CODE> can still be used to denote the end of the <A HREF="#item__DATA_">__DATA__</A> section if followed by the token 
+<FONT SIZE=-1>DATA</FONT> - this is supported by the <STRONG>SelfLoader</STRONG>. The <CODE>FOOBAR::DATA</CODE> filehandle is left open if an
+<CODE>__END__</CODE> followed by a 
+<FONT SIZE=-1>DATA</FONT> is found, with the filehandle positioned at the
+start of the line after the <CODE>__END__</CODE> token. If no <CODE>__END__</CODE> token is present, or an <CODE>__END__</CODE> token with no 
+<FONT SIZE=-1>DATA</FONT> token on the same line, then the filehandle is
+closed.
+
+
+<P>
+
+The <STRONG>SelfLoader</STRONG> reads from wherever the current position of the <CODE>FOOBAR::DATA</CODE> filehandle is, until the 
+<FONT SIZE=-1>EOF</FONT> or <CODE>__END__</CODE>. This means that if you want to use that filehandle (and 
+<FONT SIZE=-1>ONLY</FONT> if you want to), you should either
+
+
+<P>
+
+1. Put all your subroutine declarations immediately after the <A HREF="#item__DATA_">__DATA__</A> token and put your own data after those declarations, using the <CODE>__END__</CODE> token to mark the end of subroutine declarations. You must also ensure that
+the <STRONG>SelfLoader</STRONG>
+reads first by calling 'SelfLoader-&gt;<CODE>load_stubs();',</CODE> or by using a function which is selfloaded;
+
+
+<P>
+
+or
+
+
+<P>
+
+2. You should read the <CODE>FOOBAR::DATA</CODE> filehandle first, leaving the handle open and positioned at the first line
+of subroutine declarations.
+
+
+<P>
+
+You could conceivably do both.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Classes_and_inherited_methods_">Classes and inherited methods.
+
+</A></H2>
+For modules which are not classes, this section is not relevant. This
+section is only relevant if you have methods which could be inherited.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> subroutine stub (or forward declaration) looks like
+
+
+<P>
+
+<PRE>  sub stub;
+</PRE>
+
+<P>
+
+i.e. it is a subroutine declaration without the body of the subroutine. For
+modules which are not classes, there is no real need for stubs as far as
+autoloading is concerned.
+
+
+<P>
+
+For modules which 
+<FONT SIZE=-1>ARE</FONT> classes, and need to handle inherited methods,
+stubs are needed to ensure that the method inheritance mechanism works
+properly. You can load the stubs into the module at 'require' time, by
+adding the statement 'SelfLoader-&gt;<CODE>load_stubs();'</CODE> to the module to do this.
+
+
+<P>
+
+The alternative is to put the stubs in before the <A HREF="#item__DATA_">__DATA__</A> token 
+<FONT SIZE=-1>BEFORE</FONT> releasing the module, and for this purpose the <CODE>Devel::SelfStubber</CODE>
+module is available. However this does require the extra step of ensuring that the stubs are in the module. If this is done 
+<FONT SIZE=-1>I</FONT> strongly recommend that this is done 
+<FONT SIZE=-1>BEFORE</FONT> releasing the module - it should 
+<FONT SIZE=-1>NOT</FONT> be done at install time in general.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Multiple_packages_and_fully_qual">Multiple packages and fully qualified subroutine names
+
+</A></H1>
+Subroutines in multiple packages within the same file are supported - but
+you should note that this requires exporting the <CODE>SelfLoader::AUTOLOAD</CODE> to every package which requires it. This is done automatically by the
+<STRONG>SelfLoader</STRONG> when it first loads the subs into the cache, but you should really specify
+it in the initialization before the <A HREF="#item__DATA_">__DATA__</A> by putting a 'use SelfLoader' statement in each package.
+
+
+<P>
+
+Fully qualified subroutine names are also supported. For example,
+
+
+<P>
+
+<PRE>   __DATA__
+   sub foo::bar {23}
+   package baz;
+   sub dob {32}
+</PRE>
+
+<P>
+
+will all be loaded correctly by the <STRONG>SelfLoader</STRONG>, and the <STRONG>SelfLoader</STRONG>
+will ensure that the packages 'foo' and 'baz' correctly have the
+<STRONG>SelfLoader</STRONG>  <A HREF="#item_AUTOLOAD">AUTOLOAD</A> method when the data after <A HREF="#item__DATA_">__DATA__</A> is first parsed.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

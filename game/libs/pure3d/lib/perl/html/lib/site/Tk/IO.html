@@ -1,0 +1,132 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::IO - high level interface to Tk's 'fileevent' mechanism
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#WARNING">WARNING</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::IO - high level interface to Tk's 'fileevent' mechanism
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  my $fh = Tk::IO-&gt;new(-linecommand =&gt; callback, -childcommand =&gt; callback);
+  $fh-&gt;exec(&quot;command&quot;)
+  $fh-&gt;wait
+  $fh-&gt;kill
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="WARNING">WARNING
+
+</A></H1>
+
+<FONT SIZE=-1>INTERFACES</FONT> 
+<FONT SIZE=-1>TO</FONT> 
+<FONT SIZE=-1>THIS</FONT> 
+<FONT SIZE=-1>MODULE</FONT> 
+<FONT SIZE=-1>MAY</FONT> 
+<FONT SIZE=-1>CHANGE</FONT> 
+<FONT SIZE=-1>AS</FONT> 
+<FONT SIZE=-1>PERL'S</FONT> 
+<FONT SIZE=-1>IO</FONT> 
+<FONT SIZE=-1>EVOLVES</FONT> 
+<FONT SIZE=-1>AND</FONT> 
+<FONT SIZE=-1>WITH</FONT> 
+<FONT SIZE=-1>PORT</FONT> 
+<FONT SIZE=-1>OF</FONT> 
+<FONT SIZE=-1>TK4.1</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Tk::IO is now layered on perl's IO::Handle class. Interfaces have changed,
+and are still evolving. 
+
+
+<P>
+
+In theory 
+<FONT SIZE=-1>C</FONT> methods which enable non-blocking 
+<FONT SIZE=-1>IO</FONT> as in earlier Tk-b* <CODE>release(s)</CODE> are still there. 
+<FONT SIZE=-1>I</FONT> have not changed them to use perl's additional Configure information, or tested them much.
+
+
+
+<P>
+
+Assumption is that <STRONG>exec</STRONG> is used to fork a child process and a callback is called each time a
+complete line arrives up the implied pipe.
+
+
+<P>
+
+``line'' should probably be defined in terms of perl's input record
+separator but is not yet.
+
+
+<P>
+
+The -childcommand callback is called when end-of-file occurs.
+
+
+<P>
+
+$fh-&gt;<STRONG>wait</STRONG> can be used to wait for child process while processing other Tk events.
+
+
+<P>
+
+$fh-&gt;<STRONG>kill</STRONG> can be used to send signal to child process.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Still not finished. Idea is to use ``exec'' to emulate ``system'' in a
+non-blocking manner.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

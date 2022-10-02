@@ -1,0 +1,75 @@
+SelectMission("m7sd");
+
+SetMissionResetPlayerOutCar("m7_bart_start","m7_carstart");
+SetDynaLoadData("l6z1.p3d;l6r1.p3d;l6r5.p3d;l6r5_dam.p3d;");
+
+UsePedGroup(0);
+
+SetMissionStartCameraName( "mission3camShape" );
+SetMissionStartMulticontName( "mission3cam" );
+SetAnimatedCameraName( "mission3camShape" );
+SetAnimCamMulticontName( "mission3cam" );
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(180);
+	SetHUDIcon("kburger");
+	AddObjective( "goto" );
+		AddNPC("homer", "m7_homer_sd");
+		AddStageVehicle("homer_v","m7_homer_carstart","NULL","HardRace\AI_2nd.con");
+		SetDestination( "m7_krustyburger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(5);
+	RESET_TO_HERE();
+	SetStageMessageIndex(201);
+	SetHUDIcon("homer");
+	AddObjective("talkto");
+		AddNPC("homer", "m7_homer_sd");
+		AddObjectiveNPCWaypoint( "homer", "m7_homer_walk1" );
+		SetTalkToTarget("homer", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetCamBestSide( "bestside_m7" );
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis06_07.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_near" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_near" );
+		SetConversationCam( 4, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shaking_fist" );
+		SetCamBestSide( "m7_bestside" );
+		SetDialogueInfo("bart","homer","defile",0);
+		SetDialoguePositions("m7_bart_homertalk","m7_homer_sd","m7_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

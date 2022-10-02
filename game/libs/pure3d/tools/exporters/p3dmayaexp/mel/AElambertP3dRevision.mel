@@ -1,0 +1,57 @@
+/*===========================================================================
+   AElambertP3dRevision.mel
+   created: Feb. 22, 2000
+   Torre Zuk
+
+   Copyright (c) 2000 Radical Entertainment, Inc.
+   All rights reserved.
+===========================================================================*/
+
+//
+//  Procedure Name:
+//	AElambertTemplate
+//
+//  Description:
+//	This file duplicates the content of AELambertTemplate.mel,
+//	but adds additional functionality for the p3d exporter plug-in.
+//
+//  Input Value:
+//	nodeName
+//
+//  Output Value:
+//	None
+//
+
+//--------------------------------------------------------------
+//  Procedure Name:
+//	AElambertTemplate
+//		(with additions for pure3d)
+//
+global proc AElambertTemplate ( string $nodeName )
+{
+    AEswatchDisplay $nodeName;
+    editorTemplate -beginScrollLayout;
+
+        AElambertCommon $nodeName;
+        AElambertCommon2 $nodeName;
+
+        editorTemplate -beginLayout "Raytrace Options";
+            AElambertCommonRaytraceOptions $nodeName;
+        editorTemplate -endLayout;
+
+        // include/call base class/node attributes
+        AElambertCommonInclude $nodeName;
+
+        editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+            AEhardwareTextureTemplate $nodeName
+                ("color transparency ambientColor incandescence normalCamera diffuse translucence");
+        editorTemplate -endLayout;
+
+	
+	    // THIS IS THE NEW PART
+		p3dMatAttr();
+	    // END OF NEW PART
+
+    	editorTemplate -addExtraControls;
+	editorTemplate -endScrollLayout;
+}

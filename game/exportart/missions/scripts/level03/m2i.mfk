@@ -1,0 +1,282 @@
+SelectMission("m2");
+
+SetMissionResetPlayerInCar("m2_carstart");
+SetDynaLoadData("l3z1.p3d;l3r1.p3d;l3r5.p3d;l3r5_dam.p3d;");
+
+UsePedGroup(0);
+
+//AddStage(1);
+//	RESET_TO_HERE();
+//	SetStageMessageIndex(49);
+//	SetHUDIcon( "wallewea" );
+//	AddObjective("goto");
+//		AddStageVehicle("cSedan","m2_sedanstart_1","NULL", "Pursuit\Easycop.con");
+//		SetDestination("m2_sedan_1_trigger", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(178);
+//	SetHUDIcon( "bsedan_v" );
+//	AddObjective("losetail");
+//		ActivateVehicle("cSedan","NULL","chase");
+//		SetObjTargetVehicle("cSedan");
+//		SetObjDistance(150);
+//	CloseObjective();
+//	SetStageTime(60);
+//	AddCondition("timeout");
+//	CloseCondition();
+//	StageStartMusicEvent("M2_drama");
+//CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin", "neither");
+		AddNPC("milhouse", "m2_milhouse_1");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(5);
+	RESET_TO_HERE();
+	SetStageMessageIndex(49);
+	SetHUDIcon( "wallewea" );
+	AddObjective("goto");
+		AddNPC("milhouse", "m2_milhouse_1");
+		SetDestination("m2_sedan_1_trigger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(20);
+	AddCondition("timeout");
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(163);
+	SetHUDIcon( "milhouse" );
+	AddObjective("talkto", "neither");
+		AddNPC("milhouse", "m2_milhouse_1");
+		AddObjectiveNPCWaypoint( "milhouse", "milhouse_walk_2" );
+		SetTalkToTarget("milhouse", 0, -0.5);
+	CloseObjective();
+CloseStage();
+
+
+
+AddStage(0);
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_far" );
+		SetConversationCam( 4, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide( "m2_bestside2" );
+		SetDialogueInfo("lisa","milhouse","weasel",0);
+		SetDialoguePositions("l3_lisa_loc2","m2_milhouse_1","m2_sedanstart_1");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin", "neither");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+
+//AddStage(1);
+//	SetStageMessageIndex(186);
+//	SetHUDIcon( "planethy" );
+//	AddObjective("goto");
+//		AddStageVehicle("cSedan","m2_sedanstart_2","NULL", "Pursuit\Easycop.con");
+//		SetDestination("m2_sedan_2_trigger", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//CloseStage();
+//
+//AddStage(0); 
+//	SetStageMessageIndex(178);
+//	SetHUDIcon( "bsedan_v" );
+//	AddObjective("losetail");
+//		ActivateVehicle("cSedan","NULL","chase");
+//		SetObjTargetVehicle("cSedan");
+//		SetObjDistance(150);
+//	CloseObjective();
+//	SetStageTime(60);
+//	AddCondition("timeout");
+//	CloseCondition();
+//CloseStage();
+
+//AddStage(0);
+//	AddObjective("goto");
+//		SetDestination("mhouse_loc2");
+//	CloseObjective();
+//	SetStageTime(60);
+//	AddCondition("timeout");
+//	CloseCondition();
+//CloseStage();
+
+AddStage(5);
+	SetStageMessageIndex(186);
+	SetHUDIcon( "planethy" );
+	AddObjective("goto");
+		AddNPC("milhouse", "m2_milhouse_2");
+		SetDestination("m2_sedan_2_trigger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(60);
+	AddCondition("timeout");
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(163);
+	SetHUDIcon( "milhouse" );
+	AddObjective("talkto", "neither");
+		AddNPC("milhouse", "m2_milhouse_2");
+		AddObjectiveNPCWaypoint( "milhouse", "milhouse_walk_3" );
+		SetTalkToTarget("milhouse", 0, -0.5);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "npc_far" );
+		SetConversationCam( 1, "pc_far" );
+		SetConversationCam( 2, "npc_far" );
+		SetConversationCam( 3, "pc_far" );
+		AddAmbientNpcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_thinking" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_no" );
+		SetCamBestSide( "m2_bestside3" );
+		SetDialogueInfo("lisa","milhouse","store",0);
+		SetDialoguePositions("m2_lisa_loc3","m2_milhouse_2","m2_sedanstart_2");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin", "neither");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+//AddStage(1);
+//	SetStageMessageIndex(95);
+//	SetHUDIcon( "spsign" );
+//	AddObjective("goto");
+//		AddStageVehicle("cSedan","m2_sedanstart_3","NULL", "Pursuit\Easycop.con");
+//		SetDestination("m2_sedan_3_trigger", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//CloseStage();
+//
+//AddStage(1);
+//	SetStageMessageIndex(178);
+//	SetHUDIcon( "bsedan_v" );
+//	AddObjective("losetail");
+//		ActivateVehicle("cSedan","NULL","chase");
+//		SetObjTargetVehicle("cSedan");
+//		SetObjDistance(150);
+//	CloseObjective();
+//	SetStageTime(60);
+//	AddCondition("timeout");
+//	CloseCondition();
+//CloseStage();
+
+//AddStage(0);
+//	AddObjective("goto");
+//		SetDestination("mil_loc3");
+//	CloseObjective();
+//	SetStageTime(60);
+//	AddCondition("timeout");
+//	CloseCondition();
+//CloseStage();
+
+AddStage(5);
+	SetStageMessageIndex(95);
+	SetHUDIcon( "spsign" );
+	AddObjective("goto");
+		AddNPC("milhouse", "m2_milhouse_3");
+		SetDestination("m2_sedan_3_trigger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(60);
+	AddCondition("timeout");
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(5); 
+	SetStageMessageIndex(163);
+	SetHUDIcon( "milhouse" );
+	AddObjective("talkto", "neither");
+		AddNPC("milhouse", "m2_milhouse_3");
+		AddObjectiveNPCWaypoint( "milhouse", "milhouse_walk_4" );
+		SetTalkToTarget("milhouse", 0, -0.5);
+	CloseObjective();
+CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "npc_far" );
+		SetConversationCam( 1, "pc_far" );
+		SetConversationCam( 2, "npc_far" );
+		SetConversationCam( 3, "pc_far" );
+		SetConversationCam( 4, "npc_far" );
+		SetConversationCam( 5, "pc_far" );
+		AddAmbientNpcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_cross_arms" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_thinking" );
+		SetCamBestSide( "m2_bestside4" );
+		SetDialogueInfo("lisa","milhouse","sign",0);
+		SetDialoguePositions("m2_lisa_loc4","m2_milhouse_3","m2_sedanstart_2",1);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

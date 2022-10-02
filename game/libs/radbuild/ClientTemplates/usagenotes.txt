@@ -1,0 +1,125 @@
+==============================================================================
+ Welcome to the radbuild usage notes 
+==============================================================================
+
+Created Feb 27, 2002
+Robert Sparks
+
+==============================================================================
+ Basics
+==============================================================================
+
+The ClientTemplates directory contains the public interfaces of the radbuild
+system.  
+
+The ClientTemplate files allow radbuild clients to customize their builds 
+in an independent manner, without affecting the builds of other clients.
+
+The ClientTemplate files are meant to demonstrate how to interface with radbuild.
+
+You should copy the ClientTemplate files into your program's build directory 
+and use them as a starting point and then customiize them as needed.
+
+Note: If you find that changes are required within radbuild itself, please 
+submit a bug to FTech using PVCSTracker or by contacting a member of the 
+team directly.  
+
+==============================================================================
+ Input Variables
+==============================================================================
+
+Clients interact with radbuild primarily through input variables.  
+
+These input variables often have default values.  Default values are platform
+dependent and defined in the /radbuild/config.xxx files.
+
+Clients can override variables or add to them.  ('VARIABLE = x' will override 
+defaults.  'VARIABLE += x' will add to the defaults.)
+
+Radbuild provides the following input variables:
+
+ASFLAGS
+    * assembler flags
+
+BINDIRECTORY 
+    * relative path to binary directory where output file will be put
+
+CFLAGS
+    * compile flags for c files
+
+CXXFLAGS
+    * compile flags for cpp files
+    * (note that this variable often contains CFLAGS as a value)
+
+DEFINE
+    * preprocessor defintions
+
+GENERAL_DEPENDS 
+    * files on which the client's build depend
+    * changes to these files will cause radbuild to recompile all client files
+
+INCLUDEDIR 
+    * client search path for included files
+
+LDFLAGS
+    * linker flags
+
+LIBS
+    * static libraries
+
+OBJS
+    * object files to include in the link step
+
+ROOTDIR 
+    * relative path the the FTech root directory
+      (i.e. directory containing radbuild, radcore, etc.)
+
+SOURCEDIR 
+    * client search path for source files
+
+SOURCEFILES
+    * source file names (excluding file extensions)
+
+TARGET	
+    * output file name (excluding platform suffixes, config suffixes, 
+      and file extensions)
+    * radbuild will append appropriate suffixes and extensions to this name
+
+TARGETTYPE	
+    * the type of the output file (LIBRARY or EXECUTABLE)
+
+==============================================================================
+ Client Template Files
+==============================================================================
+
+Three ClientTemplate files exist per supported platform:
+    * build.bat
+    * makefile
+    * files.txt
+
+Build.bat invokes the client makefile.
+
+Makefile invokes the global radbuild/makefile.  Makefile also controls the 
+overall build process.  It breaks the build into five steps
+    * precompile
+    * library compile
+    * client file compile
+    * prelink
+    * link
+
+Files.txt defines the client's project settings.  Use this file to alter 
+radbuild input variables.  Use this file to tap into precompile and 
+prelink steps.
+
+
+
+
+
+
+
+
+
+
+
+
+

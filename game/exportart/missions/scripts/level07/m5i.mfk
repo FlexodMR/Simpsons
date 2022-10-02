@@ -1,0 +1,82 @@
+SelectMission("m5");
+
+SetMissionResetPlayerOutCar("m5_homertalk", "m5_carstart");
+SetDynaLoadData("l7z6.p3d;l7r6.p3d;");
+
+UsePedGroup(5);
+
+AddStage(1);
+	RESET_TO_HERE();
+	SetStageMessageIndex(220);
+	SetHUDIcon( "map" );
+	AddObjective("goto");
+		SetDestination("m5_map", "map");
+	CloseObjective();
+//	AddObjective( "delivery" );
+//		AddCollectible( "m5_map", "map" );
+//	CloseObjective();
+	SetStageTime(30);
+	AddCondition("timeout");
+	CloseCondition();
+//	ShowStageComplete();
+CloseStage();
+
+AddStage(2);
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+	SetStageTime(30);
+	AddCondition("timeout");
+	CloseCondition();
+CloseStage();
+
+AddStage(3);
+	AddCollectibleStateProp("bombbarrel","m5_barrel1", 2);
+	SetStageMessageIndex(221);
+	SetHUDIcon( "barrel" );
+	AddObjective( "pickupitem" );
+		SetPickupTarget("bombbarrel");
+	CloseObjective();
+	SetStageTime(100);
+	AddCondition("timeout");
+	CloseCondition();
+//	ShowStageComplete();
+CloseStage();
+
+AddStage(4);
+	SetStageMessageIndex(202);
+	SetHUDIcon( "playgrou" );
+	AddObjective( "goto" );
+		AddNPC("snake", "m2_cbg_sd");
+//		AddStageVehicle("snake_v","m6_snake_carstart","NULL","HardRace\AI_2nd.con");
+		SetDestination( "m2_playground", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+		AllowRockOut();
+	CloseObjective();
+	AddCondition( "keepbarrel", 1 );
+	CloseCondition();
+	SetStageTime(100);
+	AddCondition( "timeout" );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage("final");
+	SetStageMessageIndex(219);
+	SetHUDIcon( "ufo" );
+	AddObjective("destroyboss");
+		AddCondition("damage");
+		SetObjTargetBoss("Planet Express Ship");
+		CloseCondition();
+	CloseObjective();
+	AddCondition( "keepbarrel", 2 );
+	CloseCondition();
+	AddStageTime(10);
+	AddCondition("timeout");
+	CloseCondition();
+	SetCompletionDialog("ashtray");
+CloseStage();
+
+CloseMission();
+

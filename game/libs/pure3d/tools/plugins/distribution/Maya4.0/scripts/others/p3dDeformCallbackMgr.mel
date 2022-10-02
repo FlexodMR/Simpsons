@@ -1,0 +1,80 @@
+// Copyright (C) 2001 Radical Entertainment
+// 
+// Name:   p3dDeformUICallback.mel
+// Author: Pamela Chow
+//
+// Description: Centralizes all UI control callbacks funcs. All UI controls should call this
+// function and pass appropriate arguments.
+//
+
+global proc int p3dDeformCallbackMgr(string $funcID, string $args[] )
+{
+	switch ($funcID)
+	{
+		//shelfbutton callbacks	
+		case "SnapToRef":   p3dDeformSnapToReferenceMesh();break;
+		case "DrawUI":	    p3dDeformCreateTabbedUI();break;
+		case "ConvArt":	    p3dDeformConvert(); break;
+		case "CopyOffsets": p3dDeformCopyOffsetsScript();break;
+		case "PruneExpr":   p3dDeformPruneExpressionWindow();break;
+		
+		//Option menu callbacks
+		case "WriteSettings":	p3dDeformWriteAllSettings(); break;
+		case "LoadOrSave":		p3dDeformAskForMesh($args[0]);break;
+
+		//tab callbacks
+		case "ChangeTab":		p3dDeformChangeTab(); break; 
+
+		//Modelling tab
+		case "SetPose":			 p3dDeformSetPoseKey($args[0]);break;				
+		case "RenameExpr":		 p3dDeformRenameState($args[0]);break;
+		case "DeleteExpr":		 p3dDeformDeleteState($args[0]);break;
+		case "RenameGroup":	     p3dDeformRenameGroup($args[0]);break;	 
+		case "DeleteGroup":		 p3dDeformDeleteGroup($args[0]);break;
+		case "SetBlendStage":    p3dDeformBlendStageUpdate($args[0], $args[1]);break;
+		case "UpdateKeyList":    p3dDeformListBoxUpdate($args[0]);break;
+		case "ChangePoseKey":    p3dDeformChangePoseKey($args[0]);break;
+		case "RemovePoseKey":    p3dDeformRemovePoseKey($args[0]);break;
+		case "CreateExpr":		 p3dDeformCreateState($args[0]);break;
+		case "NeutralPose":		 p3dDeformResetState($args[0]);break;
+		case "AddVertices":		 p3dDeformUpdateVertices($args[0], $args[1]); break;
+		case "UpdateTestSlider": p3dDeformUpdateTestState($args[0]); break;
+		case "CreateGroup":		 p3dDeformExpressionUICreateGroup(); break;
+		case "ChangeNeutral":	 p3dDeformExpressionUISetNeutral();break;
+		case "UpdateMesh":       p3dDeformUpdateScrollSelection($args[0]);				//Sets the mesh position to selected key in keylist
+
+		//Animation tab
+		case "KeyAll":			 p3dDeformKeyAll($args[0]);break;
+		case "ZeroAll":			 p3dDeformZeroAll($args[0]); break;				
+		case "SelectAll":		 p3dDeformSelectAll($args[0]); break;
+		case "SelectNone":		 p3dDeformSelectNone($args[0]); break;
+		case "CopyAll":			 p3dDeformCopyAll($args[0]);break;
+		case "PasteAll":		 p3dDeformPasteAll($args[0]);break;
+		case "KeyExpr":			 p3dDeformKeyState($args[0]);break;						//string $exprName
+		case "ZeroExpr":		 p3dDeformZeroState($args[0]); break; 
+		case "UpdateState":		 p3dDeformAnimSliderChanged($args[0]); break;
+		case "Sel":				 p3dDeformUpdateSelection($args[0]); break;
+		case "EnterHotKey":		 p3dDeformEnterHotKey($args[0]); break;
+
+		//Prune Expression window
+		case "PruneVerticesGo":		 p3dDeformDebugTrace("Calling p3dDeformPruneExpressionCallback proc");p3dDeformPruneExpressionCallback();break;
+		case "RefreshPruneWin":		 p3dDeformDebugTrace("Calling p3dDeformPruneExpressionRefreshWindowCallback proc");p3dDeformPruneExpressionRefreshWindowCallback();break;
+		
+		//-------------------------These commands facilitate automated UI testing-------------------------------------------------//
+		
+		//animation UI
+		case "SetState":		 p3dDeformSetAnimSliderState($args[0], $args[1]); break;	//string $state, float $weightFloat
+		case "ExpandFrameSC":	 p3dScriptExpAnimFrame($args[0]);break;						//string $groupName
+		case "KeyExpr":			 p3dScriptSetKeyframe($args[0], $args[1]);break;			//string $exprName, float $weightFloat
+
+		//modelling UI
+		case "CreateExprSC":			p3dScriptCreateState($args[0]);break;
+		case "EnterNewKeySC":			p3dScriptEnterSetKey($args[0], $args[1]);break;		//string $groupName, int $value
+		case "SelectExprFromMenuSC":	p3dScriptSelectExpr($args[0], $args[1]); break;		//string $exprName, string $groupName
+		case "SetNeutralPoseSC":		p3dScriptSetNeutralShape($args[0]);break;			//string $groupName
+		case "SetPoseSC":				p3dScriptSetPoseKey($args[0]);break;				//string $groupName
+		case "SelectAnimLayoutSC":		p3dScriptSelectAnimLayout();break;					//equivalent to clicking Animation tab
+	}
+
+	return 1;
+}

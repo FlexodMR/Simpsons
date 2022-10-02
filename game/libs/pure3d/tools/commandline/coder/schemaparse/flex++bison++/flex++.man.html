@@ -1,0 +1,658 @@
+
+
+<HTML><HEAD><TITLE>Manpage of FLEX++</TITLE>
+</HEAD><BODY>
+<H1>FLEX++</H1>
+Section: COMMANDS (1)<BR>Updated: 3/3/93<BR><A HREF="#index">Index</A>
+<A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME </H2>
+
+flex++ - generate a scanner in c or c++..
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS </H2>
+
+<B>scanner++</B> [<B>-bcFfdIiLpsTtv?</B>] [<B>-C</B>[<B>e</B>][<B>m</B>|<B>f</B>|<B>F</B>]] [<B>-a</B><I>tmp-directory</I>] [<B>-o</B><I>outfile</I>] [<B>-g</B><I>include-pathname</I>] [<B>-h</B>[<I>headerfile</I>]] [<B>-S</B><I>skeleton</I>] [<B>-H</B><I>header-skeleton</I>] <I>grammar-file</I>...
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION </H2>
+
+Generate a scanner. Based on <B>flex</B> version 2.3.7. See <B><A HREF="http://localhost/cgi-bin/man/man2html?1+flex">flex</A></B>(1) and <B><A HREF="http://localhost/cgi-bin/man/man2html?1+flexdoc">flexdoc</A></B>(1) for details of main functionality. Only changes are reported here.
+<P>
+
+You now generate a C++ class if you are compiling with a C++ compiler. A generated header can be generated, and is made from a skeleton-header. The code skeleton is also more adaptable. It permit you to modify much things only by changing the two skeletons.
+<P>
+
+In plain C, the <B>flex++</B> is compatible with standard <B>flex</B>.
+<P>
+
+If no header is generated, it is in fact merged, instead of included.
+<A NAME="lbAE">&nbsp;</A>
+<H2>OPTIONS </H2>
+
+
+<DL COMPACT>
+<DT><b>-a</b> <i>tmp-directory</i><DD>
+Set directory of temp files .
+<DT><b>-S</b><i>skeleton</i><DD>
+Set filename of code skeleton. Default is <B>flexskel.cc</B>.
+<DT><b>-H</b><i>header-skeleton</i><DD>
+Set filename of header skeleton. Default is <B>flexskel.h</B>.
+<DT><b>-h</b>[<i>header</i>]<DD>
+Set filename of header skeleton. Default is <B>lex.yy.h</B>, or <I>c_basename</I>.h if <B>-o</B>is used and there is no header name, <B>.c</B>, <B>.cc</B>, <B>.C</B>, <B>.cpp</B>, <B>.cxx</B>... options for output files are replaced by <B>.h</B> to generate the header name.
+<DT><b>-g</b><i>includefilename</i><DD>
+change the filename that <B>flex++</B> put in the <B>#include</B> inside the code, when a separate header is generated. Useful when the parameter name of the header contain pathname information that may change.
+
+</DL>
+<A NAME="lbAF">&nbsp;</A>
+<H2>DECLARATIONS </H2>
+
+These are new declarations to put in the declaration section :
+
+<DL COMPACT>
+<DT><b>%name</b> <i>scanner_name</i><DD>
+Declare the name of this scanner. User for C++ class name, and to render many names unique. default is <B>lex</B>. Must be given before <B>%define</B>, or never.
+<DT><b>%define</b> <i>define_name</i> \fIcontent\.\.\.\fP<DD>
+Declare a macro symbol in header and code. The name of the symbol is <B>YY_</B>'<I>scanner_name</I>'<B>_</B>'<I>define_name</I>'. The content if given after, as with #define. Newline can be escaped as with #define. Many symbols are proposed for customisation.
+<DT><b>%header{</b><DD>
+Like <B>%{</B>, but include this text in the header. End with <B>%}</B>. When put in declaration section, the text is added before the definitions. It can be put at the begin of the second section so that the text is added after all definition in the header.
+
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>DECLARATION DEFINE SYMBOLS </H2>
+
+These are the symbols you can define with <B>%define</B> in declaration section, or that are already defined. Remind that they are replaced by a preprocessor <B>#define YY_</B>'<I>scanner_name</I>'<B>_</B>'<I>name</I>.
+
+<DL COMPACT>
+<DT><b>FLEX_SCANNER</b><DD>
+Automaticaly defined in the code. used for conditioanl code. it is effectively defined at the point of the <B>%name</B> directive, or at the point of the <B>%%</B> between section 1 and 2.
+<DT><b>CHAR</b><DD>
+Automaticaly defined in the code. Define the type of char used depending of the 8-bits flag (<B>unsigned char</B> if 8-bit, <B>char</B> if 7-bit). it is effectively defined at the point of the <B>%name</B> directive, or at the point of the <B>%%</B> between section 1 and 2. You cannot use it before.
+<DT><b>FLEX_DEBUG</b><DD>
+Automaticaly defined in the code if debug option <B>-d</B> set. Define the type of char used depending of the 8-bits flag (<B>unsigned char</B> if 8-bit, <B>char</B> if 7-bit). it is effectively defined at the point of the <B>%name</B> directive, or at the point of the <B>%%</B> between section 1 and 2. You cannot use it before.
+<DT><b>DEBUG_FLAG</b><DD>
+The runtime debug flag name. Default is <B>yy_flex_debug</B>. See <B>yy_flex_debug</B> in flex. Used only in debug mode.
+<DT><b>DEBUG_INIT</b><DD>
+The runtime debug flag initial value. Default is <B>1</B>. See <B>yy_flex_debug</B> in flex.
+<DT><b>TEXT</b><DD>
+The scanned text string. default <B>yytext</B>. See <B>yytext</B> in <B>flex</B>.
+<DT><b>LENG</b><DD>
+The scanned text length. default <B>yyleng</B>. See <B>yyleng</B> in <B>flex</B>.
+<DT><b>IN</b><DD>
+The input file pointer. default <B>yyin</B>. See <B>yyin</B> in <B>flex</B>.
+<DT><b>OUT</b><DD>
+The input file pointer. default <B>yyout</B>. See <B>yyout</B> in <B>flex</B>.
+<DT><b>LEX</b><DD>
+The scanner function name. default <B>yylex</B>. See <B>yylex</B> in <B>flex</B>. Replace <B>#define YYDECL</B>.
+<DT><b>LEX_RETURN</b><DD>
+The scanner function return type. default <B>int</B>. See <B>yylex</B> in <B>flex</B>. Replace <B>#define YYDECL</B>.
+<DT><b>LEX_PARAM</b><DD>
+The scanner function parameter list. default <B>void</B>, or empty un old-C. See <B>yylex</B> in <B>flex</B>. Replace <B>#define YYDECL</B>.
+<DT><b>LEX_PARAM_DEF</b><DD>
+The scanner function parameter declaration for old-C. Defined and used only in old-C. Default empty . See <B>yylex</B> in <B>flex</B>. Replace <B>#define YYDECL</B>. For example to pass an <B>int</B>, named <B>x</B>, <B>LEX_PARAM</B>
+
+</DL>
+<P>
+
+is set to <B>x</B>, and <B>LEX_PARAM_DEF</B> to <B>int x ;</B>.
+
+<DL COMPACT>
+<DT><b>RESTART</b><DD>
+The restart function name. default <B>yyrestart</B>. See <B>yyrestart</B> in <B>flex</B>.
+<DT><b>SWITCH_TO_BUFFER</b><DD>
+<DT><b>LOAD_BUFFER_STATE</b><DD>
+<DT><b>CREATE_BUFFER</b><DD>
+<DT><b>DELETE_BUFFER</b><DD>
+<DT><b>INIT_BUFFER</b><DD>
+The buffer control functions names. defaults are <B>yy_switch_to_buffer</B>, <B>yy_load_buffer_state</B>, <B>yy_create_buffer</B>, <B>yy_delete_buffer</B>, <B>yy_init_buffer</B>. See this functions in <B>flex</B>.
+<DT><b>CURRENT_BUFFER</b><DD>
+The name of the pointeur to the current buffer. Without class, it is yy_current_buffer, and the old macro YY_CURRENT_BUFFER is defined to it's value. With class, the default value is YY_CURRENT_BUFFER, and there is no macro YY_CURRENT_BUFFER.
+
+</DL>
+<P>
+
+These are only used if class is generated.
+
+<DL COMPACT>
+<DT><b>CLASS</b><DD>
+The class name. default is the scanner name.
+<DT><b>INHERIT</b><DD>
+The inheritance list. Don't forget the <B>:</B> before, if not empty list.
+<DT><b>MEMBERS</b><DD>
+List of members to add to the class definition, before ending it.
+<DT><b>ECHO</b><DD>
+The scanner echo member function boby. Default to yy_echo. this function is called by the macro ECHO. See <B>ECHO</B> on <B>flex</B>.
+<DT><b>INPUT</b><DD>
+The block input member function . This function is called inside the macro YY_INPUT. It read a block of text to be scanned. Default is to read <B>yyin</B>. See <B>YY_INPUT</B>.
+<DT><b>FATAL_ERROR</b><DD>
+The error message member function . This function is called inside the macro YY_FATAL_ERROR. Default is to write the message to stderr and exit . See <B>YY_FATAL_ERROR</B>.
+<DT><b>WRAP</b><DD>
+The wrap member function . This function is called inside the macro <B>yywrap()</B>. Default is to return 1 . See <B>yywrap()</B> in <B>flex</B>.
+<DT><b>ECHO_PURE</b><DD>
+<DT><b>INPUT_PURE</b><DD>
+<DT><b>FATAL_ERROR_PURE</b><DD>
+<DT><b>WRAP_PURE</b><DD>
+Indicate that the corresponding member function is to be pure. It implys automatically the <I>function</I><B>_NOCODE</B> symbol
+<DT><b>ECHO_NOCODE</b><DD>
+<DT><b>INPUT_NOCODE</b><DD>
+<DT><b>FATAL_ERROR_NOCODE</b><DD>
+<DT><b>WRAP_NOCODE</b><DD>
+Indicate that the corresponding member function is not to be defined in the generated code, but outside by yourself. Activated automaticaly by the <I>function</I><B>_PURE</B> symbols.
+<DT><b>ECHO_CODE</b><DD>
+<DT><b>INPUT_CODE</b><DD>
+<DT><b>FATAL_ERROR_CODE</b><DD>
+<DT><b>WRAP_CODE</b><DD>
+Give the body code of the corresponding member function. default is to implement standard behaviour. Ignored if <I>function</I><B>_PURE</B> or <I>function</I><B>_NOCODE</B> are defined.
+<DT><b>CONSTRUCTOR_PARAM</b><DD>
+List of parameters of the constructor. Dont allows default value.
+<DT><b>CONSTRUCTOR_INIT</b><DD>
+List of initialisation befor constructor call. If not empty dont't forget the <B>:</B> before list of initialisation.
+<DT><b>CONSTRUCTOR_CODE</b><DD>
+Code added after internal initialisations in constructor.
+<DT><b>DESTRUCTOR_CODE</b><DD>
+Code added before internal cleanup in destructor.
+<DT><b>IOSTREAM</b><DD>
+If defined, this flag make flex use the <B>iostream</B> library. The behaviour is much the same, but instead of <B>FILE *</B>, yyin and yyout are <B>istream *</B> and <B>ostream *</B>. they point to <B>cin</B> and <B>cout</B> by default. Debug message and fatal error are printed on <B>cerr</B>. <B>BUFFER</B> refers to <B>istream *</B> instead of <B>FILE *</B>. These values are default, but like with <B>stdio</B> you can change them with the same <B>%define</B>. <B>iostream.h</B> is also included.
+<DT><b>IFILE</b><DD>
+Type of the structure that represent IN file (<B>yyin</B>). Normally <B>FILE</B>, or <B>istream</B> if <B>IOSTREAM</B> is defined. <B>BUFFER</B> function use also pointer to this type.
+<DT><b>IFILE_DEFAULT</b><DD>
+Initial value of <B>IN</B> (yyin). Normally <B>stdin</B>, or <B>&amp;cin</B> if <B>IOSTREAM</B> is defined.
+<DT><b>OFILE</b><DD>
+Type of the structure that represent OUT file (<B>yyout</B>). Normally <B>FILE</B>, or <B>ostream</B> if <B>IOSTREAM</B> is defined.
+<DT><b>OFILE_DEFAULT</b><DD>
+Initial value of <B>OUT</B> (yyout). Normally <B>stdout</B>, or <B>&amp;cout</B> if <B>IOSTREAM</B> is defined.
+<DT><b>ERRFILE</b><DD>
+File handle used to output debug message, and also fatal errors. Default is <B>stderr</B> or <B>cerr</B> if <B>IOSTREAM</B> is defined.
+
+</DL>
+<A NAME="lbAH">&nbsp;</A>
+<H2>OBSOLETED FUNCTIONS </H2>
+
+
+<DL COMPACT>
+<DT><b>yyinput()</b><DD>
+In C++, the member function <B>yyinput()</B> is equivalent to <B>input()</B> that read one char. It is kept for compatibility with old flex behaviour, that replaced in C++ ,the function <B>input()</B> with <B>yyinput()</B> not to colide with stream library. Don't mismatch it with <B>yy_input(char *buf, int &amp;result, int max_size)</B> which read a bloc to be buffered.
+
+</DL>
+<A NAME="lbAI">&nbsp;</A>
+<H2>OBSOLETED PREPROCESSOR SYMBOLS </H2>
+
+if you use new features, the folowing symbols should not be used, though they are proposed. Incoherence may arise if they are defined simultaneously with the new symbol.
+
+<DL COMPACT>
+<DT><b>YYDECL</b><DD>
+In C only. Prefer <B>%define LEX</B>, <B>%define LEX_RETURN</B>, <B>%define LEX_PARAM</B>, <B>%define LEX_PARAM_DEF</B>. Totaly ignored with classes, or if you <B>%define</B> one of these symbols, or the symbol <B>LEX_DEFINED</B>, since it mean you use the new ways to redefine yylex declaration. Never use it if header are generated, since the declared function would be wrong.
+<DT><b>yy_new_buffer</b><DD>
+In C only. Prefer <B>%define CREATE_BUFFER</B>.
+<DT><b>YY_CHAR</b><DD>
+like with old <B>flex</B>. You should better use the <B>%define</B>'ed symbol <B>CHAR</B>, or not use this yourself, since you know if you are 8 or 7-bit. Not defined in separate header.
+<DT><b>FLEX_DEBUG</b><DD>
+Like with old <B>flex</B>. activate trace. prefer the automaticaly added <B>%define DEBUG </B>. Defined if debug option <B>-d</B> set.
+<DT><b>FLEX_SCANNER</b><DD>
+like with old <B>flex</B>. defined in the scanner itself .
+<DT><b>YY_END_TOK</b><DD>
+Like with old <B>flex</B>. Indicate the value returned at end by yylex. Don't redefine it, since it is only informative. Value is 0.
+
+</DL>
+<A NAME="lbAJ">&nbsp;</A>
+<H2>CONSERVED PREPROCESSOR SYMBOLS </H2>
+
+These symbols are kept, and cannot be defined elsewhere, since they control private parameters of the generated parser, or are actually unused. You can <B>#define</B> them to the value you need, or indirectly to the name of a <B>%define</B> generated symbol if you want to be clean.
+
+<DL COMPACT>
+<DT><b>YY_READ_BUF_SIZE</b><DD>
+Size of read buffer (8192). You must undefine it to redefine it after, like like with old <B>flex</B>.
+<DT><b>YY_BUF_SIZE</b><DD>
+Total size of read buffer ( YY_READ_BUF_SIZE *2 ). You must undefine it to redefine it after, except if defined by <B>cpp</B> , like with old <B>flex</B>.
+<DT><b>yyterminate()</b><DD>
+like with old <B>flex</B>. default return YY_NULL, that is 0.
+<DT><b>YY_BREAK</b><DD>
+Like with old <B>flex</B>. Don't use it, it is supported but dangerous.
+<DT><b>YY_NEW_FILE</b><DD>
+Action to continue scanning with the repopened file in yyin. like with old flex. Normally nor to be changed.
+
+</DL>
+<P>
+
+These are used only without classes, and you should redefine corresponding virtual function with classes, instead of the macros themselves.
+
+<DL COMPACT>
+<DT><b>ECHO</b><DD>
+like with old <B>flex</B>. With classes it is mapped to the virtual function yy_echo(), and you should not modify the macro itself. This name can be changed with <B>%define ECHO</B>.
+<DT><b>YY_INPUT</b><DD>
+like with old <B>flex</B>. With classes it use the virtual function yy_input(), and you should not modify the macro itself. This name can be changed with <B>%define INPUT</B>.
+<DT><b>YY_FATAL_ERROR</b><DD>
+like with old <B>flex</B>. With classes it is mapped to the virtual function yy_fatal_error(), and you should not modify the macro itself. This name can be changed with <B>%define FATAL_ERROR</B>.
+<DT><b>yywrap</b><DD>
+like with old <B>flex</B>. With classes it is mapped to the virtual function yy_wrap(), and you should not modify the macro itself. This name can be changed with <B>%define WRAP</B>.
+
+</DL>
+<A NAME="lbAK">&nbsp;</A>
+<H2>OTHER ADDED PREPROCESSOR SYMBOLS </H2>
+
+
+<DL COMPACT>
+<DT><b>YY_USE_CLASS</b><DD>
+indicate that class will be produced. Default if C++.
+
+</DL>
+<A NAME="lbAL">&nbsp;</A>
+<H2>C++ CLASS GENERATED </H2>
+
+To simplify the notation, we note <B>%SYMBOLNAME</B> the preprocessor symbol generated with a <B>%define</B> of this name. In fact see the use of <B>%define</B> for it's real name.
+<P>
+
+Note that there is sometime symbols that differ from only an underscore <B>_</B>, like <B>yywrap</B> and <B>yy_wrap</B>. They are much different. In this case <B>yy_wrap()</B> is a virtual member function, and <B>yywrap()</B> is a macro.
+<A NAME="lbAM">&nbsp;</A>
+<H3>General Class declaration </H3>
+
+// Here is the declaration made in the header
+<P>
+
+class %CLASS %INHERIT
+<P>
+
+{
+<P>
+
+private:/* data */
+<P>
+
+// Secret, don't use.
+<P>
+
+private: /* functions */
+<P>
+
+void yy_initialize();
+<P>
+
+int input();
+<P>
+
+int yyinput() {return input();};
+<P>
+
+void yyunput( %CHAR c, %CHAR *buf_ptr );
+<P>
+
+// Others are secret, don't use.
+<P>
+
+protected:/* non virtual */
+<P>
+
+YY_BUFFER_STATE %CURRENT_BUFFER;
+<P>
+
+void %RESTART ( FILE *input_file );
+<P>
+
+void %SWITCH_TO_BUFFER( YY_BUFFER_STATE new_buffer );
+<P>
+
+void %LOAD_BUFFER_STATE( void );
+<P>
+
+YY_BUFFER_STATE %CREATE_BUFFER( FILE *file, int size );
+<P>
+
+void %DELETE_BUFFER( YY_BUFFER_STATE b );
+<P>
+
+void %INIT_BUFFER( YY_BUFFER_STATE b, FILE *file );
+<P>
+
+protected: /* virtual */
+<P>
+
+// these 4 virtual function may be declared PURE (=0), with the symbols like %ECHO_PURE,...
+<P>
+
+// these 4 virtual function may not be defined in the generated code, with the symbol like %ECHO_NOCODE,...
+<P>
+
+// these 4 virtual function may be defined with another code, with the symbol like ECHO_CODE,...
+<P>
+
+virtual void %ECHO();
+<P>
+
+virtual int %INPUT(char *buf,int &amp;result,int max_size);
+<P>
+
+virtual void %FATAL_ERROR(char *msg);
+<P>
+
+virtual int %WRAP();
+<P>
+
+public:
+<P>
+
+%CHAR *%TEXT;
+<P>
+
+int %LENG;
+<P>
+
+FILE *%IN, *%OUT;
+<P>
+
+%LEX_RETURN %LEX ( %LEX_PARAM);
+<P>
+
+%CLASS(%CONSTRUCTOR_PARAM) ;
+<P>
+
+~%CLASS() ;
+<P>
+
+#if %DEBUG != 0
+<P>
+
+int %DEBUG_FLAG;
+<P>
+
+#endif
+<P>
+
+public: /* added members */
+<P>
+
+%MEMBERS
+<P>
+
+};
+<P>
+
+// this is the code for the virtual function
+<P>
+
+// may be disabled with symbol like ECHO_PURE or ECHO_NOCODE
+<P>
+
+void %CLASS::%ECHO() // echo the current token
+<P>
+
+{%ECHO_CODE}
+<P>
+
+int %CLASS::%INPUT(char * buffer,int &amp;result,int max_size) // read a bloc of text
+<P>
+
+{%INPUT_CODE}
+<P>
+
+void %CLASS::%FATAL_ERROR(char *msg) // print a fatal error
+<P>
+
+{%FATAL_ERROR_CODE}
+<P>
+
+int %CLASS::%WRAP() // decide if we must stop input, or continue
+<P>
+
+{%WRAP_CODE}
+<A NAME="lbAN">&nbsp;</A>
+<H3>Default Class declaration </H3>
+
+// Here is the default declaration made in the header when you %define nothing
+<P>
+
+class lexer
+<P>
+
+{
+<P>
+
+private:/* data */
+<P>
+
+// Secret, don't use.
+<P>
+
+private: /* functions */
+<P>
+
+void yy_initialize();
+<P>
+
+int input();
+<P>
+
+int yyinput() {return input();};
+<P>
+
+void yyunput( unsigned char c, unsigned char *buf_ptr );
+<P>
+
+// Others are secret, don't use.
+<P>
+
+protected:/* non virtual */
+<P>
+
+YY_BUFFER_STATE YY_CURRENT_BUFFER;
+<P>
+
+void yyrestart ( FILE *input_file );
+<P>
+
+void yy_switch_to_buffer( YY_BUFFER_STATE new_buffer );
+<P>
+
+void yy_load_buffer_state( void );
+<P>
+
+YY_BUFFER_STATE yy_create_buffer( FILE *file, int size );
+<P>
+
+void yy_delete_buffer( YY_BUFFER_STATE b );
+<P>
+
+void yy_init_buffer( YY_BUFFER_STATE b, FILE *file );
+<P>
+
+protected: /* virtual */
+<P>
+
+virtual void yy_echo();
+<P>
+
+virtual int yy_input(char *buf,int &amp;result,int max_size);
+<P>
+
+virtual void yy_fatal_error(char *msg);
+<P>
+
+virtual int yy_wrap();
+<P>
+
+public:
+<P>
+
+unsigned char *yytext;
+<P>
+
+int yyleng;
+<P>
+
+FILE *yyin, *yyout;
+<P>
+
+int yylex ( void);
+<P>
+
+lexer() ;
+<P>
+
+~lexer() ;
+<P>
+
+#if YY_lexer_DEBUG != 0
+<P>
+
+int yy_flex_debug;
+<P>
+
+#endif
+<P>
+
+public: /* added members */
+<P>
+
+};
+<P>
+
+// this is the code for the virtual function
+<P>
+
+void lexer::yy_echo() // echo the current token
+<P>
+
+{fwrite( (char *) yytext, yyleng, 1, yyout );}
+<P>
+
+int lexer::yy_input(char * buffer,int &amp;result,int max_size) // read a bloc of text
+<P>
+
+{return result= fread( buffer, 1,max_size, yyin );}
+<P>
+
+void lexer::yy_fatal_error(char *msg) // print a fatal error
+<P>
+
+{fputs( msg, stderr );putc( 'n', stderr );exit( 1 );}
+<P>
+
+int lexer::yy_wrap() // decide if we must stop input, or continue
+<P>
+
+{return 1;}
+<A NAME="lbAO">&nbsp;</A>
+<H2>USAGE </H2>
+
+Should replace <B>flex</B>, because it generate a far more customisable parser, with header, still beeing compatible.
+<P>
+
+You should always use the header facility.
+<P>
+
+Use it with <B>bison++</B> (same author).
+<A NAME="lbAP">&nbsp;</A>
+<H2>EXEMPLES </H2>
+
+flex++ use itself to generate it's scanner. It is full compatible with classic flex.
+<P>
+
+This man page has been produced through a parser made in C++ with this version of <B>flex++</B> and our version of <B>bison++</B> (same author).
+<A NAME="lbAQ">&nbsp;</A>
+<H2>FILES </H2>
+
+
+<DL COMPACT>
+<DT>\fBflexskel\.cc\fP<DD>
+main skeleton.
+<DT>\fBflexskel\.h\fP<DD>
+header skeleton.
+
+</DL>
+<A NAME="lbAR">&nbsp;</A>
+<H2>ENVIRONNEMENT </H2>
+
+<A NAME="lbAS">&nbsp;</A>
+<H2>DIAGNOSTICS </H2>
+
+<A NAME="lbAT">&nbsp;</A>
+<H2>SEE ALSO </H2>
+
+<B><A HREF="http://localhost/cgi-bin/man/man2html?1+flex">flex</A></B>(1),<B><A HREF="http://localhost/cgi-bin/man/man2html?1+flexdoc">flexdoc</A></B>(1),<B>bison++</B>(1).
+<A NAME="lbAU">&nbsp;</A>
+<H2>DOCUMENTATION </H2>
+
+<A NAME="lbAV">&nbsp;</A>
+<H2>BUGS </H2>
+
+Tell us more !
+<P>
+
+Because <B>flex++</B> put a <B>#include</B> of the generated header in the generated code, the header is necessary, and must be reachable by <B>cpp</B>. use the <B>-g</B> option to change the pathname of this file. Problems arise when the header is generated in another directory, or is moved.
+<P>
+
+Parameters are richer than before, and nothing is removed. POSIX compliance can be enforced by not using extensions. If you want to forbide them, there is a good job for you.
+<P>
+
+The grammar file scanner now support any EndOfLine sequence (CR, LF, CRLF), event inside the same file. So dont worry if it accept files from MSDOS, MacIntosh, and UNIX, with neither any message nor any problem. This is not a bug.
+<P>
+
+The automatic <B>%define</B> symbols <B>FLEX_DEBUG</B>, <B>FLEX_SCANNER</B> and <B>CHAR</B>, are added only after the <B>%name</B> directive, or at the <B>%%</B> between section 1 and 2. You cannot use them before, neither in <B>%header{</B>, nor <B>%{</B>. A good practice is to always give a name, and to give it at first. The old <B>#define</B> symbols are still defined at top for backward compatibility.
+<A NAME="lbAW">&nbsp;</A>
+<H2>FUTUR WORKS </H2>
+
+tell us !
+<P>
+
+POSIX compliance. is'nt it good now ?
+<P>
+
+compatibility with <B>flex 2.4</B> ? possible ?
+<A NAME="lbAX">&nbsp;</A>
+<H2>INSTALLATION </H2>
+
+With this install the executable is named flex++. rename it flex if you want, because it could replace <B>flex</B>. Another good name, could ne <B>flex_pp</B> like Dos version use.
+<A NAME="lbAY">&nbsp;</A>
+<H2>TESTS </H2>
+
+<A NAME="lbAZ">&nbsp;</A>
+<H2>AUTHORS </H2>
+
+Alain Coetmeur (<A HREF="mailto:coetmeur@icdc.fr">coetmeur@icdc.fr</A>), R&amp;D department (RDT) , Informatique-CDC, France.
+<A NAME="lbBA">&nbsp;</A>
+<H2>RESTRICTIONS </H2>
+
+The words 'we', and 'us' mean the author and colleages, not GNU. We don't have contacted GNU about this, nowaday. If you're in GNU, we are ready to propose it to you, and you may tell us what you think about.
+<P>
+
+Based on GNU version 2.3.8 of flex. Modified by the author.
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME </A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS </A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION </A><DD>
+<DT><A HREF="#lbAE">OPTIONS </A><DD>
+<DT><A HREF="#lbAF">DECLARATIONS </A><DD>
+<DT><A HREF="#lbAG">DECLARATION DEFINE SYMBOLS </A><DD>
+<DT><A HREF="#lbAH">OBSOLETED FUNCTIONS </A><DD>
+<DT><A HREF="#lbAI">OBSOLETED PREPROCESSOR SYMBOLS </A><DD>
+<DT><A HREF="#lbAJ">CONSERVED PREPROCESSOR SYMBOLS </A><DD>
+<DT><A HREF="#lbAK">OTHER ADDED PREPROCESSOR SYMBOLS </A><DD>
+<DT><A HREF="#lbAL">C++ CLASS GENERATED </A><DD>
+<DL>
+<DT><A HREF="#lbAM">General Class declaration </A><DD>
+<DT><A HREF="#lbAN">Default Class declaration </A><DD>
+</DL>
+<DT><A HREF="#lbAO">USAGE </A><DD>
+<DT><A HREF="#lbAP">EXEMPLES </A><DD>
+<DT><A HREF="#lbAQ">FILES </A><DD>
+<DT><A HREF="#lbAR">ENVIRONNEMENT </A><DD>
+<DT><A HREF="#lbAS">DIAGNOSTICS </A><DD>
+<DT><A HREF="#lbAT">SEE ALSO </A><DD>
+<DT><A HREF="#lbAU">DOCUMENTATION </A><DD>
+<DT><A HREF="#lbAV">BUGS </A><DD>
+<DT><A HREF="#lbAW">FUTUR WORKS </A><DD>
+<DT><A HREF="#lbAX">INSTALLATION </A><DD>
+<DT><A HREF="#lbAY">TESTS </A><DD>
+<DT><A HREF="#lbAZ">AUTHORS </A><DD>
+<DT><A HREF="#lbBA">RESTRICTIONS </A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time:  GMT, April 13, 2002
+</BODY>
+</HTML>

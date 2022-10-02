@@ -1,0 +1,26 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     12 August, 2002
+//
+// Component:   noOpposite.mel
+//
+// Description: Turns OFF the .opposite flag for all shape nodes.
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+global proc noOpposite()
+{
+    string $objects[] = `ls -sl -dag -leaf`;
+    for($object in $objects)
+    {
+        if ( `attributeQuery -node $object -exists "opposite"` )
+        {
+            setAttr ( $object + ".opposite") 0; 
+        }    
+    }
+}

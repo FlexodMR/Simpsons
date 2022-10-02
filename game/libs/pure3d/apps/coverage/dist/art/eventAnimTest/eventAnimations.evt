@@ -1,0 +1,104 @@
+eventanim
+{
+   name bounceEvent
+   count 3
+   framerate 30.0
+   length 31
+   cyclic 1
+
+   eventChannel
+   {
+      address gameSystem  // Where we are sending the event
+
+      event
+      {
+         name bounceStart
+         time 1
+
+         data
+         {
+            int 20
+            string onGround
+         }
+
+      }
+
+      event
+      {
+         name bounceMiddle
+         time 15
+         data
+         {
+            int 20
+            string flying
+         }
+
+      }
+
+      event
+      {
+         name bounceFinish
+         time 28
+
+         data
+         {
+            int 30
+            string flying
+         }
+      }
+
+   }
+}
+
+eventanim
+{
+   name deadEvent
+   count 3
+   framerate 30.0
+   length 31
+   cyclic 1
+
+   eventChannel
+   {
+      address soundSystem  // Where we are sending the event
+
+      event
+      {
+         name deadStart
+         time 1
+
+         data
+         {
+            int 30
+            string dead
+            float 10.0
+         }
+      }
+
+      event
+      {
+         name deadMiddle
+         time 15
+
+         data
+         {
+            int 30
+            string deader
+            float 1.0
+         }
+      }
+
+      event
+      {
+         name deadFinish
+         time 28
+
+         data
+         {
+            int 30
+            string deadest
+            float 1.0
+         }
+      }
+   }
+}

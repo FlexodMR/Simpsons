@@ -1,0 +1,97 @@
+global proc AEmeshTemplate( string $nodeName )
+{
+    editorTemplate -beginScrollLayout;
+
+
+        editorTemplate -beginLayout "Tessellation Attributes";
+
+            editorTemplate -addControl "maxTriangles";
+
+            editorTemplate -addControl "useMaxSubdivisions" 
+                        "checkMeshUseMaxSubd";
+            editorTemplate -addControl "maxSubd";
+
+            editorTemplate -addControl "useMinScreen"
+                        "checkMeshUseMinScreen";
+            editorTemplate -addControl "minScreen";
+
+            editorTemplate -addControl "useMaxUV"
+                        "checkMeshUseMaxUv";
+            editorTemplate -addControl "maxUv";
+
+            editorTemplate -addControl "useMinEdgeLength"
+                        "checkMeshUseMinEdgeLength";
+            editorTemplate -addControl "minEdgeLength";
+
+            editorTemplate -addControl "useMaxEdgeLength"
+                        "checkMeshUseMaxEdgeLength";
+            editorTemplate -addControl "maxEdgeLength";
+
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Mesh Component Display";
+            editorTemplate -beginNoOptimize;
+            editorTemplate -addControl "displayVertices";
+                        //"checkMeshDisplayVertices";
+            editorTemplate -addControl "vertexBackfaceCulling";
+            editorTemplate -addControl "backfaceCulling";
+            editorTemplate -endNoOptimize;
+    
+            editorTemplate -addSeparator;
+
+            editorTemplate -addControl "displayBorders" 
+                        "checkMeshDisplayBorder";
+            editorTemplate -addControl "borderWidth";
+    
+            editorTemplate -addSeparator;
+
+            editorTemplate -addControl "displayEdges";  
+            editorTemplate -beginNoOptimize;
+            editorTemplate -addControl "displayCenter";
+            editorTemplate -addControl "displayTriangles";
+            editorTemplate -addControl "displayUVs";
+            editorTemplate -endNoOptimize;
+    
+            editorTemplate -addSeparator;
+
+            editorTemplate -addControl "displayNormal" 
+                        "checkMeshDisplayNormals";
+            editorTemplate -addControl "normalSize";
+            editorTemplate -addControl "normalType";
+
+            editorTemplate -addSeparator;
+
+            editorTemplate -suppress "displayItemNumbers";
+            editorTemplate -addControl "displayNonPlanar";
+
+            editorTemplate -addControl "materialBlend";
+        editorTemplate -endLayout;
+        editorTemplate -label "Current UV Set" -addControl "currentUVSet";
+
+        // include/call base class/node attributes
+        AEsurfaceShapeTemplate $nodeName;
+
+    // P3D Additions
+        AEp3dPhysicsTemplate $nodeName false;       // false == not transform
+        AEp3dVertexAnimationTemplate $nodeName;
+        AEp3dRenderStatsTemplate $nodeName;
+    // END P3D Additions
+
+        // supressed attributes
+        editorTemplate -suppress "inMesh";
+        editorTemplate -suppress "outMesh";
+        editorTemplate -suppress "cachedInMesh";
+        editorTemplate -suppress "useNumTriangles";
+        editorTemplate -suppress "numTriangles";
+        editorTemplate -suppress "pnts";
+        editorTemplate -suppress "colors";
+        editorTemplate -suppress "colorPerVertex";
+        editorTemplate -suppress "normalPerVertex";
+        editorTemplate -suppress "uvSet";
+        editorTemplate -suppress "normals";
+
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+
+}
+

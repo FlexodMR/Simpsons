@@ -1,0 +1,188 @@
+//---------------------------------------------------------------------------
+// Milhouse
+//---------------------------------------------------------------------------
+
+// skeleton rig
+rig "milhouseRig"
+{
+    skeleton "Motion_Root";
+
+    // roots
+    jointIndex_AIRoot 0;
+    jointIndex_OrientationRoot 0;
+    joint_MotionRoot "Motion_Root";
+    joint_BalanceRoot "Balance_Root";
+    joint_CharacterRoot "Character_Root";
+
+    // balance root
+    maxBalanceRootCompress 0.25;
+
+    // legs
+    leg "left"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 1;
+
+        joint_FKMin "Hip_L";
+        joint_FKMax "Ball_L";
+
+        joint_Thigh "Hip_L";
+        joint_Knee "Knee_L";
+        joint_Ankle "Ankle_L";
+
+        //joint_Effector "Left_Foot";
+        //joint_PoleVector "Left_Knee";
+        //joint_OrientOffset "L_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+
+    leg "right"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 0;
+
+        joint_FKMin "Hip_R";
+        joint_FKMax "Ball_R";
+
+        joint_Thigh "Hip_R";
+        joint_Knee "Knee_R";
+        joint_Ankle "Ankle_R";
+
+        //joint_Effector "Right_Foot";
+        //joint_PoleVector "Right_Knee";
+        //joint_OrientOffset "R_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+};
+
+// bank
+bank "milhouseBank"
+{
+    // reference to skeleton configuration
+    rig "milhouseRig";
+
+    default animation.blendOutTime 0.1;
+    default animation.blendInTime 0.1;
+
+    animation "fall_land"
+    {
+	    animation "mlh_fall_land";
+    };
+   
+    animation "idle0"
+    {
+	    animation "mlh_idle_pee";
+    };
+    animation "idle1"
+    {
+	    animation "mlh_idle_glasses_up";
+    };
+    animation "flail"
+    {
+	    animation "mlh_flail";
+    };
+    animation "get_up"
+    {
+    	    animation "mlh_get_up";
+    };
+    animation "hit_by_car_front"
+    {
+	    animation "mlh_hit_by_car_front";
+    };
+    animation "hit_by_car_back"
+    {
+	    animation "mlh_hit_by_car_back";
+    };
+    animation "run_into_person"
+    {
+	    animation "mlh_run_into_person";
+    };
+    animation "run_into_object"
+    {
+	    animation "mlh_run_into_object";
+    };
+    animation "get_into_car"
+    {
+	    animation "mlh_get_into_car";
+    };
+    animation "get_into_car_open_door"
+    {
+	    animation "mlh_get_into_car_open_door";
+    };
+    animation "get_into_car_close_door"
+    {
+	    animation "mlh_get_into_car_close_door";
+    };
+    animation "get_into_car_high"
+    {
+	    animation "mlh_get_into_car_high";
+    };
+    animation "get_into_car_open_door_high"
+    {
+	    animation "mlh_get_into_car_open_door_high";
+    };
+    animation "get_into_car_close_door_high"
+    {
+	    animation "mlh_get_into_car_close_door_high";
+    };
+    animation "get_out_of_car"
+    {
+	    animation "mlh_get_out_of_car";
+    };
+    animation "get_out_of_car_open_door"
+    {
+	    animation "mlh_get_out_of_car_open_door";
+    };
+    animation "get_out_of_car_close_door"
+    {
+	    animation "mlh_get_out_of_car_close_door";
+    };
+    animation "get_out_of_car_high"
+    {
+	    animation "mlh_get_out_of_car_high";
+    };
+    animation "get_out_of_car_open_door_high"
+    {
+	    animation "mlh_get_out_of_car_open_door_high";
+    };
+    animation "get_out_of_car_close_door_high"
+    {
+	    animation "mlh_get_out_of_car_close_door_high";
+    };
+
+    locomotion4 "milhouseLoco"
+    {
+        idle "mlh_loco_idle_rest";
+
+        blendInTime 0.1;
+        blendOutTime 0.1;
+
+        priority 1;
+
+        acceleration 50;
+        //turningAcceleration 1440;
+        turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        animation "n" 0 "mlh_loco_walk";
+        animation "w" 0 "mlh_loco_walk";
+        animation "s" 0 "mlh_loco_walk";
+        animation "e" 0 "mlh_loco_walk";
+
+        animation "n" 1 "mlh_loco_run";
+        animation "w" 1 "mlh_loco_run";
+        animation "s" 1 "mlh_loco_run";
+        animation "e" 1 "mlh_loco_run";
+    };
+};
+
+puppet "milhousePuppet"
+{
+    bank "milhouseBank";
+};
+
+
+// End of file.

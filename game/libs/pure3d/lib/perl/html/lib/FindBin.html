@@ -1,0 +1,163 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>FindBin - Locate directory of original perl script
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXPORTABLE_VARIABLES">EXPORTABLE VARIABLES</A>
+	<LI><A HREF="#KNOWN_BUGS">KNOWN BUGS</A>
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#REVISION">REVISION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+FindBin - Locate directory of original perl script
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use FindBin;
+ use lib &quot;$FindBin::Bin/../lib&quot;;
+</PRE>
+
+<P>
+
+<PRE> or
+</PRE>
+
+<P>
+
+<PRE> use FindBin qw($Bin);
+ use lib &quot;$Bin/../lib&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Locates the full path to the script bin directory to allow the use of paths
+relative to the bin directory.
+
+
+<P>
+
+This allows a user to setup a directory tree for some software with
+directories &lt;root&gt;/bin and &lt;root&gt;/lib and then the above example will allow the use of modules in the lib
+directory without knowing where the software tree is installed.
+
+
+<P>
+
+If perl is invoked using the <STRONG>-e</STRONG> option or the perl script is read from
+<A HREF="#item_STDIN">STDIN</A> then FindBin sets both <CODE>$Bin</CODE> and <CODE>$RealBin</CODE> to the current directory.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXPORTABLE_VARIABLES">EXPORTABLE VARIABLES
+
+</A></H1>
+<PRE> $Bin         - path to bin directory from where script was invoked
+ $Script      - basename of script from which perl was invoked
+ $RealBin     - $Bin with all links resolved
+ $RealScript  - $Script with all links resolved
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="KNOWN_BUGS">KNOWN BUGS
+
+</A></H1>
+if perl is invoked as
+
+
+<P>
+
+<PRE>   perl filename
+</PRE>
+
+<P>
+
+and <EM>filename</EM> does not have executable rights and a program called <EM>filename</EM>
+exists in the users <CODE>$ENV{PATH}</CODE> which satisfies both <STRONG>-x</STRONG> and <STRONG>-T</STRONG> then FindBin assumes that it was invoked via the <CODE>$ENV{PATH}</CODE>.
+
+
+<P>
+
+Workaround is to invoke perl as
+
+
+<P>
+
+<PRE> perl ./filename
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+Graham Barr &lt;<EM>bodg@tiuk.ti.com</EM>&gt;
+Nick Ing-Simmons &lt;<EM>nik@tiuk.ti.com</EM>&gt;
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995 Graham Barr &amp; Nick Ing-Simmons. All rights reserved.
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="REVISION">REVISION
+
+</A></H1>
+$Revision: 1.4 $
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

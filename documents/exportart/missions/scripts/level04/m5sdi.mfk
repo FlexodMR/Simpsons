@@ -1,0 +1,54 @@
+SelectMission("m5sd");
+
+SetMissionStartCameraName( "mission5camShape" );
+SetMissionStartMulticontName( "mission5cam" );
+SetAnimatedCameraName( "mission5camShape" );
+SetAnimCamMulticontName( "mission5cam" );
+
+SetMissionResetPlayerOutCar("m5_marge_start","m5_carstart");
+SetDynaLoadData("l4z2.p3d;l4r1.p3d;l4r2.p3d;");
+
+AddStage(25);
+	SetMaxTraffic(3);
+	SetHUDIcon("grampa");
+	SetStageMessageIndex(29);
+	AddObjective("talkto");
+		AddNPC("grandpa", "m5_grampa_sd");
+		SetTalkToTarget("grandpa", 0, 0); 
+	CloseObjective();
+CloseStage();
+
+AddStage(1);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis04_05.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_scratch_head" );
+		SetConversationCam( 3, "pc_far" );
+		SetCamBestSide("m5_bestside");
+		SetDialogueInfo("marge","grandpa","pills",0);
+		SetDialoguePositions("m5_marge_start","m5_grampa_sd","m5_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

@@ -1,0 +1,87 @@
+global proc AEpure3dCSPRShaderTemplate ( string $nodeName )
+{
+    AEswatchDisplay $nodeName;
+    editorTemplate -beginScrollLayout;
+    editorTemplate -callCustom AEshaderTypeNew AEshaderTypeReplace "message";
+
+    editorTemplate -beginLayout "Common Material Attributes" -collapse 0; 
+        editorTemplate -label "Diffuse" -addControl "diffuse";
+        editorTemplate -label "Color Map" -addControl "color";
+        editorTemplate -label "Specular Map" -addControl "specularMap";
+        editorTemplate -label "Specular Shininess" -addControl "shininess";
+        editorTemplate -label "Reflection Map" -addControl "reflectMap";
+        editorTemplate -label "Reflectivity" -addControl "smapTrans";
+        editorTemplate -label "Projection Class" -addControl "projectMapID";
+        editorTemplate -label "Ambient" -addControl "ambient";
+        editorTemplate -label "Emissive" -addControl "emissive";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Material Attributes" -collapse true;
+        editorTemplate -addControl "shadeMode";
+        editorTemplate -addControl "blendMode";
+		editorTemplate -addControl "vertexShaderName";
+        editorTemplate -addControl "dynamicallyLit";
+        editorTemplate -addControl "doubleSided";
+        editorTemplate -suppress "zTest";
+        editorTemplate -suppress "zWrite";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Texture Attributes" -collapse true;
+        editorTemplate -addControl "uvMode";
+        editorTemplate -addControl "filterMode";
+        editorTemplate -addControl "alphaTest";
+        editorTemplate -addControl "alphaCompare";
+//        editorTemplate -callCustom AEpure3dCSPRShaderNewACTH AEpure3dCSPRShaderReplaceACTH "alphaCompareThreshold";
+        editorTemplate -suppress "alphaCompareThreshold";
+        editorTemplate -addControl "proceduralXRes";
+        editorTemplate -addControl "proceduralYRes";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Mipmap Control" -collapse true;
+        editorTemplate -label "Generate Mipmaps During Export" -addControl "exportMipmaps";
+        editorTemplate -addControl "mmsharpness";
+        editorTemplate -addControl "mipmapmin";
+        editorTemplate -addControl "mipmapmax";        
+    editorTemplate -endLayout;
+
+    // supressed attributes
+    editorTemplate -suppress "pointCamera";
+    editorTemplate -suppress "normalCamera";
+    editorTemplate -suppress "rayDirection";
+    editorTemplate -suppress "projectMap";
+    editorTemplate -suppress "pMapTrans";
+    editorTemplate -suppress "rMapTrans";
+    editorTemplate -suppress "transparency";
+    editorTemplate -suppress "isLit";
+
+    // include/call base class/node attributes
+    AElambertCommonInclude $nodeName;
+
+    editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+        AEhardwareTextureTemplate $nodeName ("color");
+    editorTemplate -endLayout;
+
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+}
+
+
+global proc AEpure3dCSPRShaderNewACTH( string $attr )
+{
+	global int $gTextColumnWidthIndex;
+
+    string $acthUI = "p3dCSPRShaderActhUI";
+
+    float $acth = `getAttr $attr`;
+
+    p3dColorSwatch( `setParent -q`, { $acth, $acth, $acth }, true, "Alpha Compare Threshold", $gTextColumnWidthIndex, true, false, 2, "", $acthUI );
+
+    AEpure3dCSPRShaderReplaceACTH $attr;
+}
+
+global proc AEpure3dCSPRShaderReplaceACTH( string $attr )
+{
+    string $acthUI = "p3dCSPRShaderActhUI";
+
+    p3dColorSwatch_ConnectControl( $acthUI, $attr );
+}

@@ -1,0 +1,194 @@
+// ////////////////////////////////////////////////////////////////
+//  rootNode
+//
+// Description: Strips the dot-suffix of the specified string.
+//  e.g. "object.attribute" is returned as "object"
+
+proc string rootNode( string $object )
+{
+    string $buffer[];
+    tokenize $object "." $buffer;
+    return $buffer[0];
+}
+
+//===========================================================================
+// getShape
+//===========================================================================
+// Description: Returns the shape node, if any, for the specified transform.
+//
+// Constraints: Considers only a single shape.
+//
+//  Parameters: string $xform: The transform node.
+//
+//      Return: (string): The shape node.
+//
+//===========================================================================
+proc string getShape( string $xform )
+{
+    string $shapes[];
+    
+    $shapes[0] = $xform;
+    
+    string $isTransform[] = `ls -transforms $xform`;
+    
+    if ( `size $isTransform` > 0 )
+    // If given node is not a transform, assume it is a shape 
+    // and pass it through
+    {
+        $shapes = `listRelatives -fullPath -shapes $xform`;
+    }
+    
+    return $shapes[0];
+}
+
+proc int isComponent( string $object )
+{
+    string $buffer[];
+    int $numTokens;
+    $numTokens = `tokenize $object "." $buffer`;
+    if ( $numTokens > 1 )
+        return 1;
+    else
+        return 0;
+}
+
+proc string insertP3dMeshWave( string $mesh )
+{
+    string $p3dMeshWave = "";
+
+//    // Get input feeding .inMesh (there will be 0 or 1)
+//    string $cc[] = `listConnections -plugs true ( $mesh + ".inMesh" )`;
+//
+//    $p3dMeshWave = `createNode "p3dMeshWave"`;
+//    string $connectedFrom = "";
+//
+//    if ( $cc[0] != "" )
+//    {
+//        disconnectAttr $cc[0] ( $mesh + ".inMesh" );
+//        $connectedFrom = $cc[0];
+//    }
+//    else
+//    {
+//        string $dupe[] = `duplicate -name ( $mesh + "_intermediate" ) $mesh`;
+//        $connectedFrom = ( $dupe[0] + ".outMesh" );
+//    }
+//
+//    string $rootNode = rootNode( $connectedFrom );
+//            
+//    connectAttr $connectedFrom ( $p3dMeshWave + ".inMesh" );
+//    connectAttr ( $p3dMeshWave + ".outMesh" ) ( $mesh + ".inMesh" );
+//
+//    connectAttr time1.outTime ( $p3dMeshWave + ".time" );
+//
+//    if ( "mesh" == `nodeType $connectedFrom` )
+//    {
+//        setAttr ( $rootNode + ".intermediateObject" ) true;
+//
+//        // Find UVSet info
+//        string $uvSetNames[] = `polyUVSet -q -auv $rootNode`;
+//        print $uvSetNames;
+//        string $currentUVSet[] = `polyUVSet -q -cuv $rootNode`;
+//        traceMe( $currentUVSet[0] );
+//
+//        for ( $n = 0; $n < `size $uvSetNames`; $n++ )
+//        {
+//            if ( $uvSetNames[$n] == $currentUVSet[0] )
+//            {
+//                connectAttr ( $rootNode + ".uvSet[" + $n + "].uvSetName" ) ( $p3dMeshWave + ".uvSetName" );
+//            }
+//        }
+//    }
+//    else
+//    {
+//        // Is there a default UVSetName provided?
+//        if ( `attributeQuery -node $rootNode -exists "uvSetName"` )
+//        {
+//            connectAttr ( $rootNode + ".uvSetName" ) ( $p3dMeshWave + ".uvSetName" );
+//        }
+//    }
+
+    $p3dMeshWave = `p3dMeshWaveCmd $mesh`;
+
+    return $p3dMeshWave;
+}
+
+global proc p3dMeshWave()
+{
+    string $select[] = `ls -sl`;
+
+    for ( $node in $select )
+    {
+        if ( isComponent( $node ) ) continue;
+
+        $rootNode = rootNode( $node );
+
+        string $shape = getShape( $rootNode );
+
+        if ( "mesh" == `nodeType $shape` )
+        {
+            insertP3dMeshWave( $shape );
+        }
+    }
+}
+
+global proc p3dMeshWaveInstall()
+{
+    string $menus[] = `lsUI -type "menu"`;
+
+    for ( $menu in $menus )
+    {
+        string $menuLabel = `menu -q -label $menu`;
+        if ( $menuLabel == "Edit Polygons" )
+        {
+            string $menuItems[];
+            
+            $menuItems = `menu -q -ia $menu`;
+
+            if ( size( $menuItems ) == 0 )
+            {
+                // Populate the menu by calling its postMenuCommand.
+                string $pmc = `menu -q -pmc $menu`;
+                eval $pmc;
+                $menuItems = `menu -q -ia $menu`;
+            }
+
+            int $bFoundInstall = false;
+            for ( $menuItem in $menuItems )
+            {
+                if ( `menuItem -q -divider $menuItem` ) continue;
+
+                if ( `menuItem -q -label $menuItem` == "Pure3D Mesh Wave" )
+                {
+                    $bFoundInstall = true;
+                    break;
+                }
+            }
+
+            if ( !$bFoundInstall )
+            {
+                setParent -m $menu;
+                menuItem 
+                    -label "Pure3D Mesh Wave"
+                    -c "p3dMeshWave"
+                        p3dMeshWaveItem;
+            }
+
+        }   
+    }
+}
+
+global proc p3dMeshWaveUninstall()
+{
+    string $menuItems[] = `lsUI -type "menuItem"`;
+
+    for ( $item in $menuItems )
+    {
+        if ( `menuItem -q -divider $item` ) continue;
+
+        string $menuLabel = `menuItem -q -label $item`;
+        if ( $menuLabel == "Pure3D Mesh Wave" )
+        {
+            deleteUI $item;
+        }   
+    }
+}

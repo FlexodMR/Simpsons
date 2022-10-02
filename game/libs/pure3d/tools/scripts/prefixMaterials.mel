@@ -1,0 +1,101 @@
+//---------------------------------------------------------------------------
+// Copyright ©2003 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     19 Dec 2003
+//
+// Creator:     Bryan Ewert
+//---------------------------------------------------------------------------
+
+//===========================================================================
+// filepart
+//===========================================================================
+// Description: Returns the file portion from a fully qualified filepath.
+//
+// Constraints: 
+//
+// Parameters:  string $path: The fully qualified filepath.
+//
+// Return:      (string): The file portion of the filepath.
+//
+//===========================================================================
+global proc string filepart( string $path )
+{
+    string $filepart =  match( "[^/\\]*$", $path );
+
+    return $filepart;
+}
+
+//===========================================================================
+// sansExtension
+//===========================================================================
+// Description: Strips any extension from the specified file.
+//
+// Constraints: 
+//
+//  Parameters: string $file: The filename. 
+//
+//      Return: (string) The filename sans extension.
+//
+//===========================================================================
+proc string sansExtension( string $file )
+{
+    string $sans = match ( "^[^\.]*", $file );
+    return $sans;
+}
+
+//===========================================================================
+// sansExtension
+//===========================================================================
+// Description: Finds any underscore pairs ("__") and strips the string
+//              to the portion after the last "__".
+//
+// Constraints: 
+//
+//  Parameters: string $file: The filename. 
+//
+//      Return: (string) The filename sans any chars prior to last "__" pair.
+//              If string has no "__" pair then the original string is 
+//              returned.
+//
+//===========================================================================
+proc string sansPrefix( string $file )
+{
+    string $suffix;
+    while ( ( $suffix = `match "__.*" $file` ) != "" )
+    {
+        while ( `substring $suffix 1 1` == "_" )
+        {
+            $suffix = `substring $suffix 2 (size( $suffix ))`;
+        }
+        
+        $file = $suffix;
+    }
+
+    return $file;
+}
+
+global proc prefixMaterials()
+{
+    string $materials[] = `ls -materials`;
+    
+    string $sn = `file -q -sn`;
+    
+    if ( $sn == "" ) error ( "Scene has no name - Cannot prefix NULL string." );
+    
+    $sn = sansExtension( filepart( $sn ) );
+    
+    for ( $mat in $materials )
+    {
+        if ( ( $mat == "lambert1" ) || ( $mat == "particleCloud1" ) || ( $mat == "shaderGlow1" ) ) continue;
+        
+        string $actualMat = sansPrefix( $mat );
+        
+        string $newName = ( $sn + "__" + $actualMat );
+        
+        rename $mat $newName;
+    }
+}
+
+/*
+source prefixMaterials; prefixMaterials;
+*/

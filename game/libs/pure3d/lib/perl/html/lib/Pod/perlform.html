@@ -1,0 +1,546 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlform - Perl formats
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Format_Variables">Format Variables</A>
+	</UL>
+
+	<LI><A HREF="#NOTES">NOTES</A>
+	<UL>
+
+		<LI><A HREF="#Footers">Footers</A>
+		<LI><A HREF="#Accessing_Formatting_Internals">Accessing Formatting Internals</A>
+	</UL>
+
+	<LI><A HREF="#WARNINGS">WARNINGS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlform - Perl formats
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Perl has a mechanism to help you generate simple reports and charts. To facilitate this, Perl helps you code up your output page close to how it will look when it's printed. It can keep track of things like how many lines are on a page, what page you're on, when to print page headers, etc. Keywords are borrowed from 
+<FONT SIZE=-1>FORTRAN:</FONT> <CODE>format()</CODE> to declare and <CODE>write()</CODE> to execute; see their entries in
+ <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>. Fortunately, the layout is much more legible, more like BASIC's 
+<FONT SIZE=-1>PRINT</FONT> 
+<FONT SIZE=-1>USING</FONT> statement. Think of it as a poor man's <CODE>nroff(1).</CODE>
+
+
+
+<P>
+
+Formats, like packages and subroutines, are declared rather than executed, so they may occur at any point in your program. (Usually it's best to keep them all together though.) They have their own namespace apart from all the other ``types'' in Perl. This means that if you have a function named ``Foo'', it is not the same thing as having a format named ``Foo''. However, the default name for the format associated with a given filehandle is the same as the name of the filehandle. Thus, the default format for 
+<FONT SIZE=-1>STDOUT</FONT> is name 
+<FONT SIZE=-1>``STDOUT'',</FONT> and the default format for filehandle 
+<FONT SIZE=-1>TEMP</FONT> is name 
+<FONT SIZE=-1>``TEMP''.</FONT> They just look the same. They aren't.
+
+
+
+<P>
+
+Output record formats are declared as follows:
+
+
+<P>
+
+<PRE>    format NAME =
+    FORMLIST
+    .
+</PRE>
+
+<P>
+
+If name is omitted, format 
+<FONT SIZE=-1>``STDOUT''</FONT> is defined. 
+<FONT SIZE=-1>FORMLIST</FONT> consists of a sequence of lines, each of which may be one of three types:
+
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+
+<FONT SIZE=-1>A</FONT> comment, indicated by putting a '#' in the first
+column.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+
+<FONT SIZE=-1>A</FONT> ``picture'' line giving the format for one output
+line.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+An argument line supplying values to plug into the previous picture line.
+
+
+<P>
+
+</OL>
+Picture lines are printed exactly as they look, except for certain fields
+that substitute values into the line. Each field in a picture line starts
+with either ``@'' (at) or ``^'' (caret). These lines do not undergo any
+kind of variable interpolation. The at field (not to be confused with the
+array marker @) is the normal kind of field; the other kind, caret fields,
+are used to do rudimentary multi-line text block filling. The length of the
+field is supplied by padding out the field with multiple ``&lt;'', ``&gt;'', or ``|'' characters to specify, respectively, left justification, right
+justification, or centering. If the variable would exceed the width
+specified, it is truncated.
+
+
+<P>
+
+As an alternate form of right justification, you may also use ``#''
+characters (with an optional ``.'') to specify a numeric field. This way
+you can line up the decimal points. If any value supplied for these fields
+contains a newline, only the text up to the newline is printed. Finally,
+the special field ``@*'' can be used for printing multi-line, nontruncated
+values; it should appear by itself on a line.
+
+
+<P>
+
+The values are specified on the following line in the same order as the
+picture fields. The expressions providing the values should be separated by
+commas. The expressions are all evaluated in a list context before the line
+is processed, so a single list expression could produce multiple list
+elements. The expressions may be spread out to more than one line if
+enclosed in braces. If so, the opening brace must be the first token on the
+first line. If an expression evaluates to a number with a decimal part, and
+if the corresponding picture specifies that the decimal part should appear
+in the output (that is, any picture except multiple ``#'' characters <STRONG>without</STRONG> an embedded ``.''), the character used for the decimal point is <STRONG>always</STRONG> determined by the current 
+<FONT SIZE=-1>LC_NUMERIC</FONT> locale. This means that, if, for example,
+the run-time environment happens to specify a German locale, ``,'' will be
+used instead of the default ``.''. See
+<A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A> and <A HREF="#WARNINGS">WARNINGS</A> for more information.
+
+
+<P>
+
+Picture fields that begin with ^ rather than @ are treated specially. With
+a # field, the field is blanked out if the value is undefined. For other
+field types, the caret enables a kind of fill mode. Instead of an arbitrary
+expression, the value supplied must be a scalar variable name that contains
+a text string. Perl puts as much text as it can into the field, and then
+chops off the front of the string so that the next time the variable is
+referenced, more of the text can be printed. (Yes, this means that the
+variable itself is altered during execution of the <CODE>write()</CODE>
+call, and is not returned.) Normally you would use a sequence of fields in
+a vertical stack to print out a block of text. You might wish to end the
+final field with the text ``...'', which will appear in the output if the
+text was too long to appear in its entirety. You can change which
+characters are legal to break on by changing the variable <CODE>$:</CODE> (that's <CODE>$FORMAT_LINE_BREAK_CHARACTERS</CODE> if you're using the
+English module) to a list of the desired characters.
+
+
+<P>
+
+Using caret fields can produce variable length records. If the text to be
+formatted is short, you can suppress blank lines by putting a ``~'' (tilde)
+character anywhere in the line. The tilde will be translated to a space
+upon output. If you put a second tilde contiguous to the first, the line
+will be repeated until all the fields on the line are exhausted. (If you
+use a field of the at variety, the expression you supply had better not
+give the same value every time forever!)
+
+
+<P>
+
+Top-of-form processing is by default handled by a format with the same name as the current filehandle with 
+<FONT SIZE=-1>``_TOP''</FONT> concatenated to it. It's triggered at the top of each page. See
+ <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#write">write</A>.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE> # a report on the /etc/passwd file
+ format STDOUT_TOP =
+                         Passwd File
+ Name                Login    Office   Uid   Gid Home
+ ------------------------------------------------------------------
+ .
+ format STDOUT =
+ @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; @||||||| @&lt;&lt;&lt;&lt;&lt;&lt;@&gt;&gt;&gt;&gt; @&gt;&gt;&gt;&gt; @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+ $name,              $login,  $office,$uid,$gid, $home
+ .
+</PRE>
+
+<P>
+
+<PRE> # a report from a bug report form
+ format STDOUT_TOP =
+                         Bug Reports
+ @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;     @|||         @&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+ $system,                      $%,         $date
+ ------------------------------------------------------------------
+ .
+ format STDOUT =
+ Subject: @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+          $subject
+ Index: @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+        $index,                       $description
+ Priority: @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; Date: @&lt;&lt;&lt;&lt;&lt;&lt;&lt; ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+           $priority,        $date,   $description
+ From: @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+       $from,                         $description
+ Assigned to: @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+              $programmer,            $description
+ ~                                    ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+                                      $description
+ ~                                    ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+                                      $description
+ ~                                    ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+                                      $description
+ ~                                    ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+                                      $description
+ ~                                    ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;...
+                                      $description
+ .
+</PRE>
+
+<P>
+
+It is possible to intermix <CODE>print()s</CODE> with <CODE>write()s</CODE>
+on the same output channel, but you'll have to handle <CODE>$-</CODE> (<CODE>$FORMAT_LINES_LEFT</CODE>) yourself.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Format_Variables">Format Variables
+
+</A></H2>
+The current format name is stored in the variable <CODE>$~</CODE> (<CODE>$FORMAT_NAME</CODE>), and the current top of form format name is in <CODE>$^</CODE> (<CODE>$FORMAT_TOP_NAME</CODE>). The current output page number is stored in <CODE>$%</CODE> (<CODE>$FORMAT_PAGE_NUMBER</CODE>), and the number of lines on the page is in <CODE>$=</CODE> (<CODE>$FORMAT_LINES_PER_PAGE</CODE>). Whether to autoflush output on this handle is stored in <CODE>$|</CODE>
+(<CODE>$OUTPUT_AUTOFLUSH</CODE>). The string output before each top of page (except the first) is stored
+in <A HREF="#item__L">$^L</A> (<CODE>$FORMAT_FORMFEED</CODE>). These variables are set on a per-filehandle basis, so you'll need to
+<CODE>select()</CODE> into a different one to affect them:
+
+
+<P>
+
+<PRE>    select((select(OUTF),
+            $~ = &quot;My_Other_Format&quot;,
+            $^ = &quot;My_Top_Format&quot;
+           )[0]);
+</PRE>
+
+<P>
+
+Pretty ugly, eh? It's a common idiom though, so don't be too surprised when
+you see it. You can at least use a temporary variable to hold the previous
+filehandle: (this is a much better approach in general, because not only
+does legibility improve, you now have intermediary stage in the expression
+to single-step the debugger through):
+
+
+<P>
+
+<PRE>    $ofh = select(OUTF);
+    $~ = &quot;My_Other_Format&quot;;
+    $^ = &quot;My_Top_Format&quot;;
+    select($ofh);
+</PRE>
+
+<P>
+
+If you use the English module, you can even read the variable names:
+
+
+<P>
+
+<PRE>    use English;
+    $ofh = select(OUTF);
+    $FORMAT_NAME     = &quot;My_Other_Format&quot;;
+    $FORMAT_TOP_NAME = &quot;My_Top_Format&quot;;
+    select($ofh);
+</PRE>
+
+<P>
+
+But you still have those funny <CODE>select()s.</CODE> So just use the
+FileHandle module. Now, you can access these special variables using
+lowercase method names instead:
+
+
+<P>
+
+<PRE>    use FileHandle;
+    format_name     OUTF &quot;My_Other_Format&quot;;
+    format_top_name OUTF &quot;My_Top_Format&quot;;
+</PRE>
+
+<P>
+
+Much better!
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTES">NOTES
+
+</A></H1>
+Because the values line may contain arbitrary expressions (for at fields,
+not caret fields), you can farm out more sophisticated processing to other
+functions, like <CODE>sprintf()</CODE> or one of your own. For example:
+
+
+<P>
+
+<PRE>    format Ident =
+        @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+        &amp;commify($n)
+    .
+</PRE>
+
+<P>
+
+To get a real at or caret into the field, do this:
+
+
+<P>
+
+<PRE>    format Ident =
+    I have an @ here.
+            &quot;@&quot;
+    .
+</PRE>
+
+<P>
+
+To center a whole line of text, do something like this:
+
+
+<P>
+
+<PRE>    format Ident =
+    @|||||||||||||||||||||||||||||||||||||||||||||||
+            &quot;Some text line&quot;
+    .
+</PRE>
+
+<P>
+
+There is no builtin way to say ``float this to the right hand side of the
+page, however wide it is.'' You have to specify where it goes. The truly
+desperate can generate their own format on the fly, based on the current
+number of columns, and then <CODE>eval()</CODE> it:
+
+
+<P>
+
+<PRE>    $format  = &quot;format STDOUT = \n&quot;;
+             . '^' . '&lt;' x $cols . &quot;\n&quot;;
+             . '$entry' . &quot;\n&quot;;
+             . &quot;\t^&quot; . &quot;&lt;&quot; x ($cols-8) . &quot;~~\n&quot;;
+             . '$entry' . &quot;\n&quot;;
+             . &quot;.\n&quot;;
+    print $format if $Debugging;
+    eval $format;
+    die $@ if $@;
+</PRE>
+
+<P>
+
+Which would generate a format looking something like this:
+
+
+<P>
+
+<PRE> format STDOUT =
+ ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+ $entry
+         ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;~~
+ $entry
+ .
+</PRE>
+
+<P>
+
+Here's a little program that's somewhat like <CODE>fmt(1):</CODE>
+
+
+<P>
+
+<PRE> format =
+ ^&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; ~~
+ $_
+</PRE>
+
+<P>
+
+<PRE> .
+</PRE>
+
+<P>
+
+<PRE> $/ = '';
+ while (&lt;&gt;) {
+     s/\s*\n\s*/ /g;
+     write;
+ }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Footers">Footers
+
+</A></H2>
+While <CODE>$FORMAT_TOP_NAME</CODE> contains the name of the current header format, there is no corresponding mechanism to automatically do the same thing for a footer. Not knowing how big a format is going to be until you evaluate it is one of the major problems. It's on the 
+<FONT SIZE=-1>TODO</FONT> list.
+
+
+
+<P>
+
+Here's one strategy: If you have a fixed-size footer, you can get footers
+by checking <CODE>$FORMAT_LINES_LEFT</CODE> before each
+<CODE>write()</CODE> and print the footer yourself if necessary.
+
+
+<P>
+
+Here's another strategy: Open a pipe to yourself, using <A HREF="#item_open">open(MYSELF, "|-")</A>
+(see <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#open_">open()</A>) and always <CODE>write()</CODE> to 
+<FONT SIZE=-1>MYSELF</FONT> instead of 
+<FONT SIZE=-1>STDOUT.</FONT> Have your child process massage its 
+<FONT SIZE=-1>STDIN</FONT> to rearrange headers and footers however you like. Not very convenient, but doable.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Accessing_Formatting_Internals">Accessing Formatting Internals
+
+</A></H2>
+For low-level access to the formatting mechanism. you may use
+<CODE>formline()</CODE> and access <A HREF="#item__A">$^A</A> (the <CODE>$ACCUMULATOR</CODE> variable) directly.
+
+
+<P>
+
+For example:
+
+
+<P>
+
+<PRE>    $str = formline &lt;&lt;'END', 1,2,3;
+    @&lt;&lt;&lt;  @|||  @&gt;&gt;&gt;
+    END
+</PRE>
+
+<P>
+
+<PRE>    print &quot;Wow, I just stored `$^A' in the accumulator!\n&quot;;
+</PRE>
+
+<P>
+
+Or to make an <CODE>swrite()</CODE> subroutine which is to
+<CODE>write()</CODE> what <CODE>sprintf()</CODE> is to
+<CODE>printf(),</CODE> do this:
+
+
+<P>
+
+<PRE>    use Carp;
+    sub swrite {
+        croak &quot;usage: swrite PICTURE ARGS&quot; unless @_;
+        my $format = shift;
+        $^A = &quot;&quot;;
+        formline($format,@_);
+        return $^A;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $string = swrite(&lt;&lt;'END', 1, 2, 3);
+ Check me out
+ @&lt;&lt;&lt;  @|||  @&gt;&gt;&gt;
+ END
+    print $string;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="WARNINGS">WARNINGS
+
+</A></H1>
+The lone dot that ends a format can also prematurely end an email message
+passing through a misconfigured Internet mailer (and based on experience,
+such misconfiguration is the rule, not the exception). So when sending
+format code through email, you should indent it so that the format-ending
+dot is not on the left margin; this will prevent email cutoff.
+
+
+<P>
+
+Lexical variables (declared with ``my'') are not visible within a format
+unless the format is declared within the scope of the lexical variable.
+(They weren't visible at all before version 5.001.)
+
+
+<P>
+
+Formats are the only part of Perl which unconditionally use information from a program's locale; if a program's environment specifies an 
+<FONT SIZE=-1>LC_NUMERIC</FONT> locale, it is always used to specify the decimal point character in formatted output. Perl ignores all other aspects of locale handling unless the
+ <CODE>use locale</CODE> pragma is in effect. Formatted output cannot be controlled by <CODE>use locale</CODE> because the pragma is tied to the block structure of the program, and, for
+historical reasons, formats exist outside that block structure. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A> for further discussion of locale handling.
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

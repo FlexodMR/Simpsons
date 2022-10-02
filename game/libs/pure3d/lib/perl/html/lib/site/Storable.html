@@ -1,0 +1,301 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Storable - persistency for perl data structures
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#MEMORY_STORE">MEMORY STORE</A>
+	<LI><A HREF="#SPEED">SPEED</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#WARNING">WARNING</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Storable - persistency for perl data structures
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use Storable;
+        store \%table, 'file';
+        $hashref = retrieve('file');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The Storable package brings you persistency for your perl data structures containing 
+<FONT SIZE=-1>SCALAR,</FONT> 
+<FONT SIZE=-1>ARRAY,</FONT> 
+<FONT SIZE=-1>HASH</FONT> or 
+<FONT SIZE=-1>REF</FONT> objects, i.e. anything that can be convenientely stored to disk and retrieved at a later time.
+
+
+
+<P>
+
+It can be used in the regular procedural way by calling <CODE>store</CODE> with a reference to the object to store, and providing a file name. The
+routine returns <A HREF="#item_undef">undef</A> for 
+<FONT SIZE=-1>I/O</FONT> problems or other internal error, a true value
+otherwise. Serious errors are propagated as a <A HREF="#item_die">die</A> exception.
+
+
+<P>
+
+To retrieve data stored to disk, you use <CODE>retrieve</CODE> with a file name, and the objects stored into that file are recreated into
+memory for you, and a <EM>reference</EM> to the root object is returned. In case an 
+<FONT SIZE=-1>I/O</FONT> error occurred while reading, <A HREF="#item_undef">undef</A> is returned instead. Other serious errors are propagated via <A HREF="#item_die">die</A>.
+
+
+<P>
+
+Since storage is performed recursively, you might want to stuff references
+to objects that share a lot of common data into a single array or hash
+table, and then store that object. That way, when you retrieve back the
+whole thing, the objects will continue to share what they originally
+shared.
+
+
+<P>
+
+At the cost of a slight header overhead, you may store to an already opened
+file descriptor using the <CODE>store_fd</CODE> routine, and retrieve from a file via <CODE>retrieve_fd</CODE>. Those names aren't imported by default, so you will have to do that
+explicitely if you need those routines. The file descriptor name you supply
+must be fully qualified.
+
+
+<P>
+
+You can also store data in network order to allow easy sharing across
+multiple platforms, or when storing on a socket known to be remotely
+connected. The routines to call have an initial <A HREF="#item_n">n</A> prefix for <EM>network</EM>, as in <CODE>nstore</CODE> and <CODE>nstore_fd</CODE>. At retrieval time, your data will be correctly restored so you don't have
+to know whether you're restoring from native or network ordered data.
+
+
+<P>
+
+When using <CODE>retrieve_fd</CODE>, objects are retrieved in sequence, one object (i.e. one recursive tree)
+per associated <CODE>store_fd</CODE>.
+
+
+<P>
+
+If you're more from the object-oriented camp, you can inherit from Storable
+and directly store your objects by invoking <CODE>store</CODE> as a method. The fact that the root of the to-be-stored tree is a blessed
+reference (i.e. an object) is special-cased so that the retrieve does not
+provide a reference to that object but rather the blessed object reference
+itself. (Otherwise, you'd get a reference to that blessed object).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="MEMORY_STORE">MEMORY STORE
+
+</A></H1>
+The Storable engine can also store data into a Perl scalar instead, to later retrieve them. This is mainly used to freeze a complex structure in some safe compact memory place (where it can possibly be sent to another process via some 
+<FONT SIZE=-1>IPC,</FONT> since freezing the structure also serializes it in effect). Later on, and maybe somewhere else, you can thaw the Perl scalar out and recreate the original complex structure in memory.
+
+
+
+<P>
+
+Surprisingly, the routines to be called are named <CODE>freeze</CODE> and <CODE>thaw</CODE>. If you wish to send out the frozen scalar to another machine, use
+<CODE>nfreeze</CODE> instead to get a portable image.
+
+
+<P>
+
+Note that freezing an object structure and immediately thawing it actually
+achieves a deep cloning of that structure. Storable provides you with a <CODE>dclone</CODE> interface which does not create that intermediary scalar but instead
+freezes the structure in some internal memory space and then immediatly
+thaws it out.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SPEED">SPEED
+
+</A></H1>
+The heart of Storable is written in 
+<FONT SIZE=-1>C</FONT> for decent speed. Extra low-level optimization have
+been made when manipulating perl internals, to sacrifice encapsulation for
+the benefit of a greater speed.
+
+
+<P>
+
+Storage is usually faster than retrieval since the latter has to allocate
+the objects from memory and perform the relevant I/Os, whilst the former
+mainly performs I/Os.
+
+
+<P>
+
+On my 
+<FONT SIZE=-1>HP</FONT> 9000/712 machine running 
+<FONT SIZE=-1>HPUX</FONT> 9.03 and with perl 5.004, 
+<FONT SIZE=-1>I</FONT> can store 0.8 Mbyte/s and 
+<FONT SIZE=-1>I</FONT> can retrieve at 0.72 Mbytes/s, approximatively 
+<FONT SIZE=-1>(CPU</FONT> + system time). This was measured with Benchmark and the
+ <EM>Magic: The Gathering</EM>
+database from Tom Christiansen (1.9 Mbytes).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+Here are some code samples showing a possible usage of Storable:
+
+
+<P>
+
+<PRE>        use Storable qw(store retrieve freeze thaw dclone);
+</PRE>
+
+<P>
+
+<PRE>        %color = ('Blue' =&gt; 0.1, 'Red' =&gt; 0.8, 'Black' =&gt; 0, 'White' =&gt; 1);
+</PRE>
+
+<P>
+
+<PRE>        store(\%color, '/tmp/colors') or die &quot;Can't store %a in /tmp/colors!\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>        $colref = retrieve('/tmp/colors');
+        die &quot;Unable to retrieve from /tmp/colors!\n&quot; unless defined $colref;
+        printf &quot;Blue is still %lf\n&quot;, $colref-&gt;{'Blue'};
+</PRE>
+
+<P>
+
+<PRE>        $colref2 = dclone(\%color);
+</PRE>
+
+<P>
+
+<PRE>        $str = freeze(\%color);
+        printf &quot;Serialization of %%color is %d bytes long.\n&quot;, length($str);
+        $colref3 = thaw($str);
+</PRE>
+
+<P>
+
+which prints (on my machine):
+
+
+<P>
+
+<PRE>        Blue is still 0.100000
+        Serialization of %color is 102 bytes long.
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="WARNING">WARNING
+
+</A></H1>
+If you're using references as keys within your hash tables, you're bound to
+disapointment when retrieving your data. Indeed, Perl stringifies
+references used as hash table keys. If you later wish to access the items
+via another reference stringification (i.e. using the same reference that
+was used for the key originally to record the value into the hash table),
+it will work because both references stringify to the same string.
+
+
+<P>
+
+It won't work across a <CODE>store</CODE> and <CODE>retrieve</CODE> operations however, because the addresses in the retrieved objects, which
+are part of the stringified references, will probably differ from the
+original addresses. The topology of your structure is preserved, but not
+hidden semantics like those.
+
+
+<P>
+
+On platforms where it matters, be sure to call <A HREF="#item_binmode">binmode()</A> on the descriptors that you pass to Storable functions.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+You can't store 
+<FONT SIZE=-1>GLOB,</FONT> 
+<FONT SIZE=-1>CODE,</FONT> 
+<FONT SIZE=-1>FORMLINE,</FONT> etc... If you can define semantics for those operations, feel free to enhance Storable so that it can deal with those.
+
+
+
+<P>
+
+The store functions will <A HREF="#item_croak">croak</A> if they run into such references unless you set <CODE>$Storable::forgive_me</CODE> to some <CODE>TRUE</CODE> value. In this case, the fatal message is turned in a warning and some
+meaningless string is stored instead.
+
+
+<P>
+
+Due to the aforementionned optimizations, Storable is at the mercy of perl's internal redesign or structure changes. If that bothers you, you can try convincing Larry that what is used in Storable should be documented and consistently kept in future revisions. As 
+<FONT SIZE=-1>I</FONT> said, you may try.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Raphael Manfredi <EM>&lt;Raphael_Manfredi@grenoble.hp.com&gt;</EM>
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

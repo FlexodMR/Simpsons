@@ -1,0 +1,376 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformCreateTabbedUI.mel
+// Author: Bryan Brandt, Senta Kaiser, Bryan Ewert
+//
+// Description: Main entry point for drawing the p3dDeformer window UI
+//
+
+// 
+// Mel script to set up the tabbed "main window"
+// for the deformer.  This is where it all starts
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+// Constraints: 
+//
+//===========================================================================
+proc float version()
+{
+    return ( 2.0 );
+}
+
+//===========================================================================
+// pluginVersion
+//===========================================================================
+// Description: Returns a float value representing the current version of
+//              the specified plug-in.  This wrapper call 
+//              prevents errors when attempting to assign a version of
+//              "17.9.1" to a float variable.
+//
+// Constraints: Only the major and first minor components of the version
+//              are returned.  For example, if the true version is "17.9.1"
+//              the ".1" component will be ignored.
+//
+//  Parameters: string $mll: Name of the plug-in.
+//
+//      Return: (float): The plug-in version (sans any minor/path revision
+//                       extensions).
+//
+//===========================================================================
+proc float pluginVersion( string $mll )
+{
+    float $version = 0.0;
+
+    if ( `pluginInfo -q -loaded $mll` )
+    {
+        string $tokens[];
+        string $versionStr = `pluginInfo -q -version $mll`;
+        tokenize $versionStr "." $tokens;
+        $versionStr = ( $tokens[0] + "." + $tokens[1] );
+        $version = (float)$versionStr;
+    }
+
+    return $version;
+}
+
+//===========================================================================
+// isPluginValid
+//===========================================================================
+// Description: Determines if the specified plug-in is loaded
+//              AND if it matches the version expected by this script.
+//
+// Constraints: 
+//
+// Return:      TRUE if plug-in is loaded; else FALSE.
+//
+//===========================================================================
+proc int isPluginValid( string $mll )
+{
+    int $isValid = ( version() == pluginVersion( $mll ) );
+
+    return $isValid;
+}
+
+global proc p3dDeformCreateTabbedUI()
+{
+    global int $hilite = 0;
+    string $tabs;
+
+    string $mll = "p3dDeformer.mll";
+    string $winUI = "p3dDeformerUI";
+
+    if ( `window -exists $winUI` )
+        deleteUI -window $winUI;
+
+    //here we go
+    window -t "Pure3D Deformer"
+           -menuBar true
+           -s true
+           -wh 440 300
+                $winUI;
+
+    string $form = `formLayout`;
+
+    if ( isPluginValid ( $mll ) )
+    {
+        window -e -title ( "Pure3D Deformer v" + `pluginInfo -q -version $mll` ) $winUI;
+
+        string $ccCmd = "p3dDeformCallbackMgr(\"ChangeTab\", {})";
+        $tabs = `tabLayout -innerMarginWidth 5 -innerMarginHeight 5 -psc $ccCmd p3dDeformTabLayout`;
+        formLayout -edit
+            -attachForm $tabs "top"    0
+            -attachForm $tabs "left"   0
+            -attachForm $tabs "bottom" 0
+            -attachForm $tabs "right"  0
+                $form;
+
+        string $menuOpt[] = `p3dDeformGetMenuSettings`;
+        string $menuCmd = "evalDeferred( \"p3dDeformCallbackMgr(\\\"WriteSettings\\\", {})\" )";
+        int $hilite = 1;
+        int $reset = 0;
+        int $useMEL = 0;
+        for ($i=0; $i < size($menuOpt); $i+=2)
+        {
+            if ($menuOpt[$i] == "Highlight")
+                $hilite = $menuOpt[$i+1];
+            else if ($menuOpt[$i] == "Reset")
+                $reset = $menuOpt[$i+1];
+            else if ($menuOpt[$i] == "UseMEL")
+                $useMEL = $menuOpt[$i+1];
+            else if ($menuOpt[$i] == "Debug")
+            {	
+                $debug = $menuOpt[$i+1];
+                if($debug) p3dDeformDebug; //turn on debug procs
+            }
+
+        }
+
+        menu -label "Options" -parent $winUI p3dDeformerOptionsMenu;
+            menuItem -parent p3dDeformerOptionsMenu -label "Highlight expression vertices" -c $menuCmd -checkBox $hilite p3dDeformerHighlightMenuItem;
+            menuItem -parent p3dDeformerOptionsMenu -label "Reset to neutral after Set Pose" -c $menuCmd -checkBox $reset p3dDeformerResetNeutralMenuItem;
+            menuItem -parent p3dDeformerOptionsMenu -label "Use MEL to Set Pose and Neutral" -c $menuCmd -checkBox $useMEL p3dDeformerSetPoseMenuItem;
+            menuItem -parent p3dDeformerOptionsMenu -label "Save Expressions to File" -c ("p3dDeformCallbackMgr(\"LoadOrSave\",{\"p3dDeformFileSaverUI\"})") p3dDeformerFileSaveMenu; 
+            menuItem -parent p3dDeformerOptionsMenu -label "Load Expressions from File" -c ("p3dDeformCallbackMgr(\"LoadOrSave\",{\"p3dDeformFileLoaderUI\"})") p3dDeformerFileLoadMenu; 
+
+
+        p3dDeformModellingUI p3dDeformTabLayout;
+
+        //setParent ..;
+
+        p3dDeformAnimationUI p3dDeformTabLayout;
+    }
+    else
+    {
+        string $noUI = ( "Plug-in '" + $mll + "' not loaded or not valid. Expected version " + version() );
+        text -label $noUI;
+        warning $noUI;
+    }
+
+    showWindow $winUI;
+}
+
+
+/*************************************************************************
+// Description:	Called when user clicks Animation or Modelling tab in GUI. 
+// Clicking the tab redraws the correct tablayouts and resets all deformer
+// groups to neutral mesh position.
+//
+// Parameters: none
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformChangeTab() //this gets called after the tab has been switched
+{  
+   string $curTab = `tabLayout -q -st p3dDeformTabLayout`;
+   string $groupList[] = `ls -type p3dDeformExpressionGroup`;
+   string $group;
+   //debug
+   p3dDeformDebugTrace("In p3dDeformChangeTab()");
+   //debug
+  
+   if ($curTab == "p3dDeformExpressionForm")
+   {
+      p3dDeformAnimationUI p3dDeformTabLayout;
+	  for( $group in $groupList)
+	  {
+		   string $mesh = p3dDeformFindInHistory("mesh", 1, $group);
+		   //debug
+		   p3dDeformDebugStr("$mesh = ", $mesh);
+		   //debug
+		   p3dDeformExpressionGroupResetPose $mesh 1;
+
+	  }
+   }
+   if ($curTab == "p3dDeformSetupForm")
+   {
+      p3dDeformDebugTrace("Change tab to modelling UI");
+      p3dDeformModellingUI p3dDeformTabLayout;
+	  
+	  
+	  for( $group in $groupList)
+	  {
+		p3dDeformZeroAll($group);
+	  }
+   }
+   
+   
+}
+
+
+/*************************************************************************
+// Description:	Reads option menu settings from p3dDeformerSettingsv16.txt
+// from the user's script directory (typically C:/Documents and settings...
+//
+// Parameters:
+//
+// Returns: Settings as array of strings
+//
+***************************************************************************/
+
+global proc string[] p3dDeformGetMenuSettings()
+{
+   string $curSettings[];
+   int $i = 0;
+   string $fileLoc = `internalVar -userScriptDir`;  
+   $fileLoc+="p3dDeformerSettingsv16.txt";
+   int $err = catch($fileId = fopen($fileLoc,"r"));
+   
+   if (($fileId == 0) || ($err == 1))
+   {
+      $err = catch($fileId = fopen($fileLoc,"w"));     //couldn't open for reading-try to create it
+      
+      if (($fileId == 0) || ($err == 1))//error opening file
+      {
+         return $curSettings; //file hasn't been written
+      }
+   }
+   
+   string $nextWord = `fgetword $fileId`;
+   while (size ($nextWord ) > 0) 
+   {
+      $curSettings[$i] = $nextWord;         
+      $i++;
+      $nextWord = `fgetword $fileId`;
+   }
+   fclose $fileId;
+   return $curSettings; 
+}
+
+
+
+global proc p3dDeformWriteAllSettings()
+{
+   global int $globalDebugState;
+
+   if (!`menuItem -exists p3dDeformerHighlightMenuItem`)
+   {
+      return;
+   }
+   string $set[];
+   string $fileLoc = `internalVar -userScriptDir`;  
+   $fileLoc+="p3dDeformerSettingsv16.txt";
+   int $err = catch($fileId = fopen($fileLoc,"w"));
+   if (($fileId == 0) || ($err == 1))
+   {
+      return;
+   }
+   int $i = 0;
+   
+   int $hilite = `menuItem -q -cb p3dDeformerHighlightMenuItem`;
+   int $reset = `menuItem -q -cb p3dDeformerResetNeutralMenuItem`;
+   int $useMEL = `menuItem -q -cb p3dDeformerSetPoseMenuItem`;
+
+   $set[0] = "Highlight";
+   $set[1] = $hilite;
+   $set[2] = "Reset";
+   $set[3] = $reset;
+   $set[4] = "UseMEL";
+   $set[5] = $useMEL;
+   $set[6] = "Debug"; //store the current debug state.
+   $set[7] = $globalDebugState;
+
+   for ($i=0; $i < size($set);$i+=2)
+   {
+      fprint $fileId $set[$i];
+      fprint $fileId " ";
+      fprint $fileId $set[$i+1];
+      fprint $fileId " ";
+   }
+   fprint $fileId "\n";
+   
+   fclose $fileId; 
+   
+}
+
+global proc p3dDeformFileSaveGetFileInfo(string $filename, string $fileType)
+{
+   waitCursor -state on;
+   string $meshName[] = `textScrollList -q -si p3dDeformMeshList`;
+   int $retVal;
+   if (size($filename) > 0)
+      catch($retVal= `p3dDeformWriteToFile $meshName[0] $filename`);
+   if ($retVal != 0)
+      confirmDialog -title "Error" -message ("Error writing to file " + $filename) -button "OK" -defaultButton "OK";
+   waitCursor -state off;
+}
+
+global proc p3dDeformFileLoadGetFileInfo(string $filename, string $fileType)
+{
+   waitCursor -state on;
+   string $meshName[] = `textScrollList -q -si p3dDeformMeshList`;
+   int $retVal;
+   if (size($filename) > 0)
+      catch($retVal = `p3dDeformReadFromFile $meshName[0] $filename`);
+   if ($retVal != 0)
+      confirmDialog -title "Error" -message ("Error reading from file " + $filename) -button "OK" -defaultButton "OK";
+   else
+      p3dDeformCreateTabbedUI;
+   waitCursor -state off;
+   
+}
+global proc p3dDeformFileSaverUI()
+{
+   string $file = `fileBrowserDialog -m 1 -fc "p3dDeformFileSaveGetFileInfo" -ft "text" -an "Save"`;
+   deleteUI -window p3dDeformMeshWindow;
+}
+
+global proc p3dDeformFileLoaderUI()
+{
+   string $file = `fileBrowserDialog -m 0 -fc "p3dDeformFileLoadGetFileInfo" -ft "text" -an "Load"`;
+   deleteUI -window p3dDeformMeshWindow;
+}
+
+global proc p3dDeformAskForMesh(string $func)
+{
+   string $allMeshes[] = `ls -type mesh`;
+   string $realMeshes[];
+   if ($func == "p3dDeformFileSaverUI")
+   {
+
+      for ($s in $allMeshes)
+      {
+         string $group = p3dDeformFindInHistory("p3dDeformExpressionGroup", 0, $s);
+         if (size($group) > 0)
+            $realMeshes[size($realMeshes)] = $s;
+      }
+   }
+   else
+   {
+      for ($s in $allMeshes)
+         $realMeshes[size($realMeshes)] = $s;
+   }
+
+
+   if (`window -exists p3dDeformMeshWindow`)
+      deleteUI -window p3dDeformMeshWindow;
+   
+   window -w 340 -h 200 -t "Please select a mesh to load or save" p3dDeformMeshWindow;
+   columnLayout;
+   
+   if (`textScrollList -exists p3dDeformMeshList`)
+      deleteUI -textScrollList p3dDeformMeshList;
+   int $numRows = 10;
+   if (size($realMeshes) > 10)
+      $numRows = size($realMeshes);
+   textScrollList -nr $numRows -dcc $func p3dDeformMeshList;
+   for ($s in $realMeshes)
+   {
+      if (gmatch($s, "*Orig*") == 0)
+         textScrollList -edit -append $s p3dDeformMeshList;
+   }
+
+   button -label "Select Mesh" -command $func;
+   
+   showWindow p3dDeformMeshWindow;
+}
+
+/*
+source p3dDeformCreateTabbedUI.mel
+*/

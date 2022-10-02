@@ -1,0 +1,495 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlapio - perl's IO abstraction interface.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Co_existence_with_stdio">Co-existence with stdio</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlapio - perl's 
+<FONT SIZE=-1>IO</FONT> abstraction interface.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    PerlIO *PerlIO_stdin(void);
+    PerlIO *PerlIO_stdout(void);
+    PerlIO *PerlIO_stderr(void);
+</PRE>
+
+<P>
+
+<PRE>    PerlIO *PerlIO_open(const char *,const char *);
+    int     PerlIO_close(PerlIO *);
+</PRE>
+
+<P>
+
+<PRE>    int     PerlIO_stdoutf(const char *,...)
+    int     PerlIO_puts(PerlIO *,const char *);
+    int     PerlIO_putc(PerlIO *,int);
+    int     PerlIO_write(PerlIO *,const void *,size_t);
+    int     PerlIO_printf(PerlIO *, const char *,...);
+    int     PerlIO_vprintf(PerlIO *, const char *, va_list);
+    int     PerlIO_flush(PerlIO *);
+</PRE>
+
+<P>
+
+<PRE>    int     PerlIO_eof(PerlIO *);
+    int     PerlIO_error(PerlIO *);
+    void    PerlIO_clearerr(PerlIO *);
+</PRE>
+
+<P>
+
+<PRE>    int     PerlIO_getc(PerlIO *);
+    int     PerlIO_ungetc(PerlIO *,int);
+    int     PerlIO_read(PerlIO *,void *,size_t);
+</PRE>
+
+<P>
+
+<PRE>    int     PerlIO_fileno(PerlIO *);
+    PerlIO *PerlIO_fdopen(int, const char *);
+    PerlIO *PerlIO_importFILE(FILE *);
+    FILE   *PerlIO_exportFILE(PerlIO *);
+    FILE   *PerlIO_findFILE(PerlIO *);
+    void    PerlIO_releaseFILE(PerlIO *,FILE *);
+</PRE>
+
+<P>
+
+<PRE>    void    PerlIO_setlinebuf(PerlIO *);
+</PRE>
+
+<P>
+
+<PRE>    long    PerlIO_tell(PerlIO *);
+    int     PerlIO_seek(PerlIO *,off_t,int);
+    int     PerlIO_getpos(PerlIO *,Fpos_t *)
+    int     PerlIO_setpos(PerlIO *,Fpos_t *)
+    void    PerlIO_rewind(PerlIO *);
+</PRE>
+
+<P>
+
+<PRE>    int     PerlIO_has_base(PerlIO *);
+    int     PerlIO_has_cntptr(PerlIO *);
+    int     PerlIO_fast_gets(PerlIO *);
+    int     PerlIO_canset_cnt(PerlIO *);
+</PRE>
+
+<P>
+
+<PRE>    char   *PerlIO_get_ptr(PerlIO *);
+    int     PerlIO_get_cnt(PerlIO *);
+    void    PerlIO_set_cnt(PerlIO *,int);
+    void    PerlIO_set_ptrcnt(PerlIO *,char *,int);
+    char   *PerlIO_get_base(PerlIO *);
+    int     PerlIO_get_bufsiz(PerlIO *);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Perl's source code should use the above functions instead of those defined in 
+<FONT SIZE=-1>ANSI</FONT> C's
+ <EM>stdio.h</EM>,  <EM>perlio.h</EM> will the <CODE>#define</CODE> them to the 
+<FONT SIZE=-1>I/O</FONT> mechanism selected at Configure time.
+
+
+<P>
+
+The functions are modeled on those in <EM>stdio.h</EM>, but parameter order has been ``tidied up a little''.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_PerlIO">PerlIO *
+
+</A></STRONG><DD>
+This takes the place of 
+<FONT SIZE=-1>FILE</FONT> *. Unlike 
+<FONT SIZE=-1>FILE</FONT> * it should be treated as opaque (it is probably safe to assume it is a pointer to something).
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_stdin">PerlIO_stdin(), PerlIO_stdout(), PerlIO_stderr()
+
+</A></STRONG><DD>
+Use these rather than <CODE>stdin</CODE>, <CODE>stdout</CODE>, <CODE>stderr</CODE>. They are written to look like ``function calls'' rather than variables
+because this makes it easier to <EM>make them</EM> function calls if platform cannot export data to loaded modules, or if
+(say) different ``threads'' might have different values.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_open">PerlIO_open(path, mode), PerlIO_fdopen(fd,mode)
+
+</A></STRONG><DD>
+These correspond to <CODE>fopen()/fdopen()</CODE> arguments are the same.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_printf">PerlIO_printf(f,fmt,...), PerlIO_vprintf(f,fmt,a)
+
+</A></STRONG><DD>
+These are is <CODE>fprintf()/vfprintf</CODE> equivalents.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_stdoutf">PerlIO_stdoutf(fmt,...)
+
+</A></STRONG><DD>
+This is <CODE>printf()</CODE> equivalent. printf is #defined to this
+function, so it is (currently) legal to use <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_printf">printf(fmt,...)</A> in perl sources.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_read">PerlIO_read(f,buf,count), PerlIO_write(f,buf,count)
+
+</A></STRONG><DD>
+These correspond to <CODE>fread()</CODE> and <CODE>fwrite().</CODE> Note
+that arguments are different, there is only one ``count'' and order has
+``file'' first.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_close">PerlIO_close(f)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_PerlIO_puts">PerlIO_puts(f,s), PerlIO_putc(f,c)
+
+</A></STRONG><DD>
+These correspond to <CODE>fputs()</CODE> and <CODE>fputc().</CODE> Note
+that arguments have been revised to have ``file'' first.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_ungetc">PerlIO_ungetc(f,c)
+
+</A></STRONG><DD>
+This corresponds to <CODE>ungetc().</CODE> Note that arguments have been
+revised to have ``file'' first.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_getc">PerlIO_getc(f)
+
+</A></STRONG><DD>
+This corresponds to <CODE>getc().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_eof">PerlIO_eof(f)
+
+</A></STRONG><DD>
+This corresponds to <CODE>feof().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_error">PerlIO_error(f)
+
+</A></STRONG><DD>
+This corresponds to <CODE>ferror().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_fileno">PerlIO_fileno(f)
+
+</A></STRONG><DD>
+This corresponds to <CODE>fileno(),</CODE> note that on some platforms, the
+meaning of ``fileno'' may not match Unix.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_clearerr">PerlIO_clearerr(f)
+
+</A></STRONG><DD>
+This corresponds to <CODE>clearerr(),</CODE> i.e., clears 'eof' and 'error'
+flags for the ``stream''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_flush">PerlIO_flush(f)
+
+</A></STRONG><DD>
+This corresponds to <CODE>fflush().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_tell">PerlIO_tell(f)
+
+</A></STRONG><DD>
+This corresponds to <CODE>ftell().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_seek">PerlIO_seek(f,o,w)
+
+</A></STRONG><DD>
+This corresponds to <CODE>fseek().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_getpos">PerlIO_getpos(f,p), PerlIO_setpos(f,p)
+
+</A></STRONG><DD>
+These correspond to <CODE>fgetpos()</CODE> and <CODE>fsetpos().</CODE> If
+platform does not have the stdio calls then they are implemented in terms
+of <CODE>PerlIO_tell()</CODE> and <CODE>PerlIO_seek().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_rewind">PerlIO_rewind(f)
+
+</A></STRONG><DD>
+This corresponds to <CODE>rewind().</CODE> Note may be redefined in terms
+of <CODE>PerlIO_seek()</CODE> at some point.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_tmpfile">PerlIO_tmpfile()
+
+</A></STRONG><DD>
+This corresponds to <CODE>tmpfile(),</CODE> i.e., returns an anonymous
+PerlIO which will automatically be deleted when closed.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Co_existence_with_stdio">Co-existence with stdio
+
+</A></H2>
+There is outline support for co-existence of PerlIO with stdio. Obviously if PerlIO is implemented in terms of stdio there is no problem. However if perlio is implemented on top of (say) sfio then mechanisms must exist to create a 
+<FONT SIZE=-1>FILE</FONT> * which can be passed to library code which is going to use stdio calls.
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_PerlIO_importFILE">PerlIO_importFILE(f,flags)
+
+</A></STRONG><DD>
+Used to get a PerlIO * from a 
+<FONT SIZE=-1>FILE</FONT> *. May need additional arguments, interface under
+review.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_exportFILE">PerlIO_exportFILE(f,flags)
+
+</A></STRONG><DD>
+Given an PerlIO * return a 'native' 
+<FONT SIZE=-1>FILE</FONT> * suitable for passing to code expecting to be compiled and linked with 
+<FONT SIZE=-1>ANSI</FONT> 
+<FONT SIZE=-1>C</FONT>
+ <EM>stdio.h</EM>.
+
+
+<P>
+
+The fact that such a 
+<FONT SIZE=-1>FILE</FONT> * has been 'exported' is recorded, and may affect
+future PerlIO operations on the original PerlIO *.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_findFILE">PerlIO_findFILE(f)
+
+</A></STRONG><DD>
+Returns previously 'exported' 
+<FONT SIZE=-1>FILE</FONT> * (if any). Place holder until interface is fully
+defined.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_releaseFILE">PerlIO_releaseFILE(p,f)
+
+</A></STRONG><DD>
+Calling PerlIO_releaseFILE informs PerlIO that all use of 
+<FONT SIZE=-1>FILE</FONT> * is complete. It is removed from list of 'exported' 
+<FONT SIZE=-1>FILE</FONT> *s, and associated PerlIO * should revert to original behaviour.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_setlinebuf">PerlIO_setlinebuf(f)
+
+</A></STRONG><DD>
+This corresponds to <CODE>setlinebuf().</CODE> Use is deprecated pending
+further discussion. (Perl core uses it <EM>only</EM> when ``dumping'' is has nothing to do with $| auto-flush.)
+
+
+<P>
+
+</DL>
+In addition to user 
+<FONT SIZE=-1>API</FONT> above there is an ``implementation'' interface
+which allows perl to get at internals of PerlIO. The following calls
+correspond to the various FILE_xxx macros determined by Configure. This
+section is really of interest to only those concerned with detailed
+perl-core behaviour or implementing a PerlIO mapping.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_PerlIO_has_cntptr">PerlIO_has_cntptr(f)
+
+</A></STRONG><DD>
+Implementation can return pointer to current position in the ``buffer'' and
+a count of bytes available in the buffer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_get_ptr">PerlIO_get_ptr(f)
+
+</A></STRONG><DD>
+Return pointer to next readable byte in buffer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_get_cnt">PerlIO_get_cnt(f)
+
+</A></STRONG><DD>
+Return count of readable bytes in the buffer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_canset_cnt">PerlIO_canset_cnt(f)
+
+</A></STRONG><DD>
+Implementation can adjust its idea of number of bytes in the buffer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_fast_gets">PerlIO_fast_gets(f)
+
+</A></STRONG><DD>
+Implementation has all the interfaces required to allow perl's fast code to handle 
+<FONT SIZE=-1>&lt;FILE&gt;</FONT> mechanism.
+
+
+
+<P>
+
+<PRE>  PerlIO_fast_gets(f) = PerlIO_has_cntptr(f) &amp;&amp; \
+                        PerlIO_canset_cnt(f) &amp;&amp; \
+                        `Can set pointer into buffer'
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_set_ptrcnt">PerlIO_set_ptrcnt(f,p,c)
+
+</A></STRONG><DD>
+Set pointer into buffer, and a count of bytes still in the buffer. Should
+be used only to set pointer to within range implied by previous calls to <A HREF="#item_PerlIO_get_ptr">PerlIO_get_ptr</A> and <A HREF="#item_PerlIO_get_cnt">PerlIO_get_cnt</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_set_cnt">PerlIO_set_cnt(f,c)
+
+</A></STRONG><DD>
+Obscure - set count of bytes in the buffer. Deprecated. Currently used in
+only doio.c to force count &lt; -1 to -1. Perhaps should be
+PerlIO_set_empty or similar. This call may actually do nothing if ``count''
+is deduced from pointer and a ``limit''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_has_base">PerlIO_has_base(f)
+
+</A></STRONG><DD>
+Implementation has a buffer, and can return pointer to whole buffer and its
+size. Used by perl for <STRONG>-T</STRONG> / <STRONG>-B</STRONG> tests. Other uses would be very obscure...
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_get_base">PerlIO_get_base(f)
+
+</A></STRONG><DD>
+Return <EM>start</EM> of buffer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PerlIO_get_bufsiz">PerlIO_get_bufsiz(f)
+
+</A></STRONG><DD>
+Return <EM>total size</EM> of buffer.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

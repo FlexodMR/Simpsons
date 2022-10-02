@@ -1,0 +1,78 @@
+SelectMission("m3");
+
+SetMissionResetPlayerInCar("m3_frink_carstart");
+SetDynaLoadData("l7z6.p3d;l7r6.p3d;");
+InitLevelPlayerVehicle("frink_v","m3_frink_carstart","OTHER");
+
+//This is a forced car mission
+SetForcedCar();
+
+AddStage(3);
+	RESET_TO_HERE();
+	AddCollectibleStateProp("bombbarrel","m3_barrel_1", 2);
+	//AddNPC("frink", "m3_frink_hide");
+	SetStageMessageIndex(221);
+	SetHUDIcon( "barrel" );
+	AddObjective( "pickupitem" );
+		SetPickupTarget("bombbarrel");
+	CloseObjective();
+	SetStageTime(120);
+	AddCondition("timeout");
+	CloseCondition();
+//	ShowStageComplete();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "frink_v" );
+	CloseCondition();
+CloseStage();
+
+AddStage(1);
+	SetStageMessageIndex(202);
+	SetHUDIcon( "playgrou" );
+	SetMaxTraffic(4);
+	AddObjective( "goto" );
+		//AttachStatePropCollectible( "frink_v", "bombbarrel" );
+		SetDestination( "m2_playground", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(100);
+	AddCondition( "timeout" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "frink_v" );
+	CloseCondition();
+	AddCondition( "keepbarrel", 1 );
+	CloseCondition();
+	//SetFadeOut( 1.0);
+	//SwapInDefaultCar();
+	//SetSwapDefaultCarLocator("m3_carstart");
+	//SetSwapForcedCarLocator("m3_frink_carstart");
+	//SetSwapPlayerLocator("m3_homer_start");
+	ShowStageComplete();
+	SetCompletionDialog("beam");
+CloseStage();
+
+AddStage("final");
+	SetStageMessageIndex(219);
+	SetHUDIcon( "ufo" );
+	AddObjective("destroyboss");
+		AddCondition("damage");
+		SetObjTargetBoss("Planet Express Ship");
+	CloseObjective();
+	AddCondition( "keepbarrel", 2 );
+	CloseCondition();
+	AddStageTime(10);
+	AddCondition("timeout");
+	CloseCondition();
+	SetCompletionDialog("toxic");
+CloseStage();
+
+CloseMission();
+

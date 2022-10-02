@@ -1,0 +1,118 @@
+==============================================================================
+ Foundation Technologies - RadBuild - Release Notes:
+==============================================================================
+
+------------------------------------------------------------------------------
+Version:	
+Date:       	Pending
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+Version:    12-11-2002
+Date:       November 12, 2002
+------------------------------------------------------------------------------
+Nov 12, 2002 PS
+    * Eric turned on some warnings in the GCN build. This causes some warnings
+      in radcore. These will be fixed in the next release.
+
+------------------------------------------------------------------------------
+Version:    29-10-2002
+Date:       October 29, 2002
+------------------------------------------------------------------------------
+Oct 28, 2002 PS
+    * Added in Sony's `other' library (handles the real-time-clock).
+
+------------------------------------------------------------------------------
+Version:	3.6 
+Date:       	September 17, 2002
+------------------------------------------------------------------------------
+Sept 16, 2002 JT
+	* allow using SN linker as alternative linker for PS2EE build. To use SN
+	  linker, user must add "PS2LINKER = SNLINKER" to your application makefile.
+	  It **will** speed up linking time.
+
+Aug 26, 2002 JT
+	* fixed all warning not properly disabled/enabled in Metrowerk PS2/GCN
+	  build.
+	* added rules to build .vcl and .dsm assembly files.
+
+
+------------------------------------------------------------------------------
+Version:	3.5 
+Date:           August 6, 2002 (FTech 3.5)
+------------------------------------------------------------------------------
+July 15, 2002 JT
+	* using perl.exe to fix dependency list instead of sed.exe, perl is not
+	  required to be installed on the client computer.
+	* few other minor issues, -Wall is enabled, map is disabled, and etc.
+
+
+June 21, 2002 PS
+	* fixed typo in config.ps2, some flags are now on.
+
+------------------------------------------------------------------------------
+Version:	3.4
+Date:       June 17, 2002 (FTech 3.4)
+------------------------------------------------------------------------------
+
+June 10, 2002 JT
+	* LINKERCMDFILE variable is added to files.txt,
+	  PS2ee: default is $(SONY)/lib/app.cmd
+	  GCN: default is $(DOLPHIN_SDK_ROOT)/include/dolphin/eppc.$(DOLPHIN_PLATFORM).lcf
+	  To modify default value, uncomment out client template files.txt where
+	  LINKERCMDFILE = ...
+June 7, 2002 PS
+	* Changed order of rules to put .cpp first. Supposed to speed up build.
+
+May 29, 2002 PS
+	* Turned on -Winline in config.ps2
+
+May 23, 2002 PS
+    * Legal version of SN doesn't include the proper libg. So while it doesn't
+      hurt to leave the new lines in, it doesn't help anymore either. Should
+      be fixed after we hear back from SN.
+
+May 23, 2002 PS
+    * Added libc.a and libg.a IN THAT ORDER! Normally libc.a is implicitly
+      linked, but raddebug.hpp now uses functions from libg.a. Since libg.a
+      overrides libc.a, putting it first makes certain that we use only take
+      what we need from libg.a, and use libc.a otherwise.
+
+------------------------------------------------------------------------------
+Version:	3.3
+Date:       May 8, 2002 (FTech 3.3)
+------------------------------------------------------------------------------
+
+April 29, 2002 RWS
+
+    * Added a 'clientclean' target that lets clients specify what to do in
+      a clean build.  (Get rid of crt0.o file in ps2ee build)
+
+------------------------------------------------------------------------------
+Version:	3.2
+Date:		April 3, 2002 (FTech 3.2)
+------------------------------------------------------------------------------
+
+April 3, 2002 RWS
+
+    * Added section to config.gcn that to deal with GBox, GDEV, etc. libraries.
+      If the target hardware does not require the installatios of these libs,
+      they will not be required by the build process and will be stubbed out.
+
+------------------------------------------------------------------------------
+Version:	3.1
+Date:		
+------------------------------------------------------------------------------
+
+March 1, 2002 RWS
+
+    * Created these release notes, ClientTemplates, and usage notes
+
+    * Separated build into a compile and link step.  Old client makefiles
+      can still invoke the ALL target to complete both steps.  New client
+      makefiles can invoke compile and link targets individually.  This
+      allows client makefiles to easily include precompile and prelink
+      steps to their builds.
+
+
+

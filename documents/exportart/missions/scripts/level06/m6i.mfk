@@ -1,0 +1,61 @@
+SelectMission("m6");
+
+SetMissionResetPlayerInCar("m6_carstart");
+SetDynaLoadData("l6z4.p3d;l6r3.p3d;l6r4.p3d;");
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(0, "final"); // destroy the laser stands
+	RESET_TO_HERE();
+	SetStageMessageIndex(93);
+	SetHUDIcon( "lasersta" );
+	AddObjective("delivery");
+		AddCollectible("m7_lasers1","lasrstnd");
+		AddCollectible("m7_lasers2","lasrstnd");
+		AddCollectible("m7_lasers3","lasrstnd");
+		AddCollectible("m7_lasers4","lasrstnd");
+		AddCollectible("m7_lasers5","lasrstnd");
+		AddCollectible("m7_lasers6","lasrstnd");
+		AddCollectible("m7_lasers7","lasrstnd");
+		AddCollectible("m7_lasers8","lasrstnd");
+		AddCollectible("m7_lasers9","lasrstnd");
+		AddCollectible("m7_lasers10","lasrstnd");
+		AddCollectible("m7_lasers11","lasrstnd");
+		AddCollectible("m7_lasers12","lasrstnd");
+		AddCollectible("m7_lasers13","lasrstnd");
+		AddCollectible("m7_lasers14","lasrstnd");
+		AddCollectible("m7_lasers15","lasrstnd");
+		AddCollectible("m7_lasers16","lasrstnd");
+		AddCollectible("m7_lasers17","lasrstnd");
+		AddCollectible("m7_lasers18","lasrstnd");
+		AddCollectible("m7_lasers19","lasrstnd");
+		AddCollectible("m7_lasers20","lasrstnd");
+		AddCollectible("m7_lasers21","lasrstnd");
+		AddCollectible("m7_lasers22","lasrstnd");
+		AddCollectible("m7_lasers23","lasrstnd");
+		AddCollectible("m7_lasers24","lasrstnd");
+		AddCollectible("m7_lasers25","lasrstnd");
+		SetCollectibleEffect("lsrexpld");
+	CloseObjective();
+	SetStageTime(100);
+	AddCondition("timeout");
+		SetHitNRun();
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "scorp_v" );
+	CloseCondition();
+	SetCompletionDialog("showgirl","krusty");
+CloseStage();
+
+CloseMission();
+
+

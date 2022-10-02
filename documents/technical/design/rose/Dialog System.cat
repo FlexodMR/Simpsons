@@ -1,0 +1,2828 @@
+
+(object Petal
+    version    	44
+    _written   	"Rose 7.0.9420.17"
+    charSet    	0)
+
+(object Class_Category "Dialog System"
+    is_unit    	TRUE
+    is_loaded  	TRUE
+    attributes 	(list Attribute_Set
+	(object Attribute
+	    tool       	"sc"
+	    name       	"SourceControlSpec"
+	    value      	"-- using Perforce --"))
+    quid       	"3CA8DAE70361"
+    exportControl 	"Public"
+    logical_models 	(list unit_reference_list
+	(object Class "DialogCoordinator"
+	    quid       	"3CA3C934024E"
+	    documentation 	"The main interface class for the dialog system.  It listens for game events and cues the appropriate line of dialog.  Objects representing lines or sets of lines are obtained from the SpeechCoordinator, and are passed to the DialogPriorityQueue, which determines when playback is ready to begin."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CA8DB120295"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E"))
+	    operations 	(list Operations
+		(object Operation "SwitchOffDialog"
+		    quid       	"3CABC434011C"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "SwitchOnDialog"
+		    quid       	"3CABDD4802ED"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "Initialize"
+		    quid       	"3CB39B260209"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "Conversation"
+	    quid       	"3CAB9C8D020C"
+	    documentation 	"Conversation objects aggregate groups of DialogLine objects which are intended to be played without interruption, like a conversation.  Hence the name."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CB25B2C0086"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::PlayableDialog"
+		    quidu      	"3CB25A8B0054")))
+	(object Class "DialogPriorityQueue"
+	    quid       	"3CAB9C9502C7"
+	    documentation 	"Responsible for managing the outstanding dialog playback requests.  When the DialogCoordinator needs to play dialog, it hands the PlayableDialog object off, and the DialogPriorityQueue determines if it can be played, or if it should wait until some other dialog completes.  When a PlayableDialog is ready for playback, it gets handed to the SimpsonsSoundPlayer."
+	    operations 	(list Operations
+		(object Operation "KillEverything"
+		    quid       	"3CABCF8700A9"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "AddPlayableDialog"
+		    quid       	"3CB518C00170"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "ConeOfSilenceTracker"
+	    quid       	"3CABA5C200C5"
+	    documentation 	"The logic component that tries to keep low-priority dialog from playing when higher-priority dialog is forthcoming.  I suspect this will be a bit of a grab-bag of heuristics and trigger volumes.  For example, we may want to stifle dialog in a timed mission with less than three seconds left, so that we'll be free to play a mission-ending line without waiting or cutting off the lower-priority line.  In an A->B mission, we might put a trigger volume around the destination instead.  It depends on what kind of missions we have."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CB261420065"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E"))
+	    operations 	(list Operations
+		(object Operation "IsDialogAllowed"
+		    quid       	"3CB518EE0058"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "DialogLine"
+	    quid       	"3CABA5F20289"
+	    documentation 	"Atomic unit of dialog.  A DialogLine object represents a complete line of dialog spoken by a single character."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CB25B2E0103"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::PlayableDialog"
+		    quidu      	"3CB25A8B0054")))
+	(object Class "DialogList"
+	    quid       	"3CABA6150047"
+	    documentation 	"Maintains the list of dialog lines and conversations (which group multiple dialog lines, and potentially link conversations to other conversations that occur later)."
+	    operations 	(list Operations
+		(object Operation "Initialize"
+		    quid       	"3CB3A54302F6"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "GetDialogType"
+		    quid       	"3CB3AE3701CA"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "GetDialogList"
+		    quid       	"3CB3AE8B02E5"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "FindPlayableDialog"
+		    quid       	"3CB518280073"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "DeferredConversationList"
+	    quid       	"3CAD12AD0092"
+	    documentation 	"Contains a set of Conversation objects that we might want to give priority in selection at a later point.  For example, if we select a particular mission-start conversation from a set of possibilities, it might have a matching mission-end conversation we'd want to play later.  That mission-end conversation would be placed in this list, and would be searched for by the DialogCoordinator when the mission-end event is received.")
+	(object Class "DialogSelectionGroup"
+	    quid       	"3CB25A0F037E"
+	    documentation 	"Represents a set of dialog lines or conversations that can be randomly selected without affecting gameplay.  For example, if Homer had three generic lines for playback whenever he is hit by a car, and all three can be substituted for each other freely, then those lines would be grouped by a DialogSelectionGroup object."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CB3AC9102FB"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::SelectableDialog"
+		    quidu      	"3CB3AC5C0173")))
+	(object Class "PlayableDialog"
+	    quid       	"3CB25A8B0054"
+	    documentation 	"Abstract base class for the basic unit of dialog playback.  A PlayableDialog object represents a piece of dialog which is to be played without interruption (unless it gets booted by a higher-priority PlayableDialog)."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CB3AC94005B"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::SelectableDialog"
+		    quidu      	"3CB3AC5C0173"))
+	    abstract   	TRUE)
+	(object Class "SelectableDialog"
+	    quid       	"3CB3AC5C0173"
+	    documentation 	"Abstract base class for groups of one or more lines of dialog, any of which can be selected randomly in response to a single sound event."
+	    operations 	(list Operations
+		(object Operation "SelectDialog"
+		    quid       	"3CB5188403A1"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0))
+	    abstract   	TRUE)
+	(object Class "ConversationMatcher"
+	    quid       	"3D73DACA0091"
+	    documentation 	"Takes sound resource names which form individual dialog lines and groups them into the intended conversations.")
+	(object Association "$UNNAMED$0"
+	    quid       	"3CABA5FC00C4"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$1"
+		    quid       	"3CABA5FC026A"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::Conversation"
+		    quidu      	"3CAB9C8D020C"
+		    client_cardinality 	(value cardinality "0..n")
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$2"
+		    quid       	"3CABA5FC0279"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogPriorityQueue"
+		    quidu      	"3CAB9C9502C7")))
+	(object Association "$UNNAMED$3"
+	    quid       	"3CABA5FE019F"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$4"
+		    quid       	"3CABA5FE02C8"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogLine"
+		    quidu      	"3CABA5F20289"
+		    client_cardinality 	(value cardinality "0..n")
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$5"
+		    quid       	"3CABA5FE02C9"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogPriorityQueue"
+		    quidu      	"3CAB9C9502C7")))
+	(object Association "$UNNAMED$6"
+	    quid       	"3CABA6000151"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$7"
+		    quid       	"3CABA6000325"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogLine"
+		    quidu      	"3CABA5F20289"
+		    client_cardinality 	(value cardinality "2..n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$8"
+		    quid       	"3CABA6000326"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::Conversation"
+		    quidu      	"3CAB9C8D020C"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$9"
+	    quid       	"3CABA6370382"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$10"
+		    quid       	"3CABA6380140"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::Conversation"
+		    quidu      	"3CAB9C8D020C"
+		    client_cardinality 	(value cardinality "n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$11"
+		    quid       	"3CABA6380141"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogList"
+		    quidu      	"3CABA6150047"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$12"
+	    quid       	"3CABA64B0353"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$13"
+		    quid       	"3CABA64C0065"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogPriorityQueue"
+		    quidu      	"3CAB9C9502C7"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$14"
+		    quid       	"3CABA64C0066"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogCoordinator"
+		    quidu      	"3CA3C934024E"
+		    is_navigable 	TRUE
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$15"
+	    quid       	"3CABA6520315"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$16"
+		    quid       	"3CABA6530130"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogList"
+		    quidu      	"3CABA6150047"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$17"
+		    quid       	"3CABA6530140"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogCoordinator"
+		    quidu      	"3CA3C934024E"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$18"
+	    quid       	"3CABA65B0324"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$19"
+		    quid       	"3CABA65C0075"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::ConeOfSilenceTracker"
+		    quidu      	"3CABA5C200C5"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$20"
+		    quid       	"3CABA65C0076"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogPriorityQueue"
+		    quidu      	"3CAB9C9502C7"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$21"
+	    quid       	"3CABA6C0012F"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$22"
+		    quid       	"3CABA6C10016"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogLine"
+		    quidu      	"3CABA5F20289"
+		    client_cardinality 	(value cardinality "n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$23"
+		    quid       	"3CABA6C10017"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogList"
+		    quidu      	"3CABA6150047"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$24"
+	    quid       	"3CABCFB60126"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$25"
+		    quid       	"3CABCFB6026E"
+		    supplier   	"Logical View::Model::Sound Manager::SimpsonsSoundPlayer"
+		    quidu      	"3CA102FB00FA"
+		    client_cardinality 	(value cardinality "n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$26"
+		    quid       	"3CABCFB6027D"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogCoordinator"
+		    quidu      	"3CA3C934024E"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$27"
+	    quid       	"3CAD12BC019B"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$28"
+		    quid       	"3CAD12BC02A5"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DeferredConversationList"
+		    quidu      	"3CAD12AD0092"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$29"
+		    quid       	"3CAD12BC02B5"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogCoordinator"
+		    quidu      	"3CA3C934024E"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$30"
+	    quid       	"3CAD12D300B1"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$31"
+		    quid       	"3CAD12D40024"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::Conversation"
+		    quidu      	"3CAB9C8D020C"
+		    client_cardinality 	(value cardinality "0..n")
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$32"
+		    quid       	"3CAD12D40025"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DeferredConversationList"
+		    quidu      	"3CAD12AD0092")))
+	(object Association "$UNNAMED$33"
+	    quid       	"3CB25A56013D"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$34"
+		    quid       	"3CB25A560247"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogSelectionGroup"
+		    quidu      	"3CB25A0F037E"
+		    client_cardinality 	(value cardinality "n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$35"
+		    quid       	"3CB25A560257"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogList"
+		    quidu      	"3CABA6150047"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$36"
+	    quid       	"3CB25A99011F"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$37"
+		    quid       	"3CB25A990277"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::PlayableDialog"
+		    quidu      	"3CB25A8B0054"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$38"
+		    quid       	"3CB25A990278"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogSelectionGroup"
+		    quidu      	"3CB25A0F037E"
+		    client_cardinality 	(value cardinality "1..n")
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$39"
+	    quid       	"3CB25AB90314"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$40"
+		    quid       	"3CB25ABA0074"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::Conversation"
+		    quidu      	"3CAB9C8D020C"
+		    client_cardinality 	(value cardinality "0..n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$41"
+		    quid       	"3CB25ABA0084"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::PlayableDialog"
+		    quidu      	"3CB25A8B0054"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$42"
+	    quid       	"3CB25AC9017E"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$43"
+		    quid       	"3CB25AC90333"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogLine"
+		    quidu      	"3CABA5F20289"
+		    client_cardinality 	(value cardinality "0..n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$44"
+		    quid       	"3CB25AC90343"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::PlayableDialog"
+		    quidu      	"3CB25A8B0054"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$45"
+	    quid       	"3CB25AEC00B4"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$46"
+		    quid       	"3CB25AEC0315"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::PlayableDialog"
+		    quidu      	"3CB25A8B0054"
+		    client_cardinality 	(value cardinality "0..n")
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$47"
+		    quid       	"3CB25AEC0316"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogPriorityQueue"
+		    quidu      	"3CAB9C9502C7")))
+	(object Association "$UNNAMED$48"
+	    quid       	"3CB260C302D4"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$49"
+		    quid       	"3CB260C40053"
+		    supplier   	"Logical View::Model::Sound Manager::SimpsonsSoundPlayer"
+		    quidu      	"3CA102FB00FA"
+		    client_cardinality 	(value cardinality "1..n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$50"
+		    quid       	"3CB260C40063"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogPriorityQueue"
+		    quidu      	"3CAB9C9502C7"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$51"
+	    quid       	"3CB3AC8301F1"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$52"
+		    quid       	"3CB3AC830339"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::SelectableDialog"
+		    quidu      	"3CB3AC5C0173"
+		    client_cardinality 	(value cardinality "n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$53"
+		    quid       	"3CB3AC83033A"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogList"
+		    quidu      	"3CABA6150047"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$54"
+	    quid       	"3D73DADC012D"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$55"
+		    quid       	"3D73DADC01D9"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::ConversationMatcher"
+		    quidu      	"3D73DACA0091"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$56"
+		    quid       	"3D73DADC01E9"
+		    supplier   	"Logical View::Model::Sound Manager::Dialog System::DialogList"
+		    quidu      	"3CABA6150047"
+		    is_aggregate 	TRUE)))
+	(object Mechanism @1
+	    logical_models 	(list unit_reference_list
+		(object Object "$UNNAMED$57"
+		    quid       	"3CB39A47037C"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB39B2D010F"
+			    supplier   	"$UNNAMED$58"
+			    quidu      	"3CB39A4F0253"
+			    messages   	(list Messages
+				(object Message "Initialize( )"
+				    quid       	"3CB39B2D0110"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1"
+				    ordinal    	0
+				    quidu      	"3CB39B260209"))))
+		    class      	"Logical View::Model::Sound Manager::SoundManager"
+		    quidu      	"3C9A490602B7"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$58"
+		    quid       	"3CB39A4F0253"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB3A53B03B2"
+			    supplier   	"$UNNAMED$59"
+			    quidu      	"3CB39B3A02C5"
+			    messages   	(list Messages
+				(object Message "Initialize( )"
+				    quid       	"3CB3A53B03B3"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1"
+				    ordinal    	1
+				    quidu      	"3CB3A54302F6"))))
+		    class      	"Logical View::Model::Sound Manager::Dialog System::DialogCoordinator"
+		    quidu      	"3CA3C934024E"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$59"
+		    quid       	"3CB39B3A02C5"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB3ADE700FE"
+			    supplier   	"$UNNAMED$60"
+			    quidu      	"3CB3ADCB02E2"
+			    messages   	(list Messages
+				(object Message "GetResourceManager( )"
+				    quid       	"3CB3ADE700FF"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1.1"
+				    ordinal    	2
+				    quidu      	"3C9BC21B005A")))
+			(object Link
+			    quid       	"3CB3AE0200A1"
+			    supplier   	"$UNNAMED$61"
+			    quidu      	"3CB3ADEE013C"
+			    messages   	(list Messages
+				(object Message "FindAllResources( )"
+				    quid       	"3CB3AE0200A2"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1.2"
+				    ordinal    	3
+				    quidu      	"3CB381A40218")))
+			(object Link
+			    quid       	"3CB3AE3000B1"
+			    supplier   	"$UNNAMED$59"
+			    quidu      	"3CB39B3A02C5"
+			    messages   	(list Messages
+				(object Message "GetDialogType( )"
+				    quid       	"3CB3AE3000B2"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1.3"
+				    ordinal    	4
+				    quidu      	"3CB3AE3701CA")
+				(object Message "GetDialogList( )"
+				    quid       	"3CB3AEC20269"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"2"
+				    ordinal    	5
+				    quidu      	"3CB3AE8B02E5")))
+			(object Link
+			    quid       	"3CB3B1BA0353"
+			    supplier   	"TypicalLine"
+			    quidu      	"3CB3B1A60239"
+			    messages   	(list Messages
+				(object Message "<<create>>"
+				    quid       	"3CB3B1BA0354"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"3"
+				    ordinal    	6))))
+		    class      	"Logical View::Model::Sound Manager::Dialog System::DialogList"
+		    quidu      	"3CABA6150047"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$60"
+		    quid       	"3CB3ADCB02E2"
+		    class      	"Logical View::View::Sound Rendering System::daSoundRenderingManager"
+		    quidu      	"3C8E9CCF0390"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$61"
+		    quid       	"3CB3ADEE013C"
+		    class      	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager"
+		    quidu      	"3C8D35B40339"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "TypicalLine"
+		    quid       	"3CB3B1A60239"
+		    class      	"Logical View::Model::Sound Manager::Dialog System::DialogLine"
+		    quidu      	"3CABA5F20289"
+		    persistence 	"Transient"
+		    multi      	FALSE)))
+	(object Mechanism @2
+	    logical_models 	(list unit_reference_list
+		(object Object "$UNNAMED$62"
+		    quid       	"3CB517B20090"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB517C70042"
+			    supplier   	"$UNNAMED$63"
+			    quidu      	"3CB517BD01B9"
+			    messages   	(list Messages
+				(object Message "HandleEvent( )"
+				    quid       	"3CB517C70043"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1"
+				    ordinal    	0
+				    quidu      	"3CA108DD00A8"))))
+		    class      	"Logical View::Model::Event Manager::EventManager"
+		    quidu      	"3C9A480000F5"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$63"
+		    quid       	"3CB517BD01B9"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB5180C01DA"
+			    supplier   	"$UNNAMED$64"
+			    quidu      	"3CB517E40081"
+			    messages   	(list Messages
+				(object Message "FindPlayableDialog( )"
+				    quid       	"3CB5180C01DB"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1"
+				    ordinal    	1
+				    quidu      	"3CB518280073"))))
+		    class      	"Logical View::Model::Sound Manager::Dialog System::DialogCoordinator"
+		    quidu      	"3CA3C934024E"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$64"
+		    quid       	"3CB517E40081"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB518660372"
+			    supplier   	"$UNNAMED$64"
+			    quidu      	"3CB517E40081")
+			(object Link
+			    quid       	"3CB5187902D6"
+			    supplier   	"$UNNAMED$65"
+			    quidu      	"3CB518580372"
+			    messages   	(list Messages
+				(object Message "SelectDialog( )"
+				    quid       	"3CB5187902D7"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1.1"
+				    ordinal    	2
+				    quidu      	"3CB5188403A1")))
+			(object Link
+			    quid       	"3CB518B8022B"
+			    supplier   	"$UNNAMED$66"
+			    quidu      	"3CB518970027"
+			    messages   	(list Messages
+				(object Message "AddPlayableDialog( )"
+				    quid       	"3CB518B8022C"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1.2"
+				    ordinal    	3
+				    quidu      	"3CB518C00170"))))
+		    class      	"Logical View::Model::Sound Manager::Dialog System::DialogList"
+		    quidu      	"3CABA6150047"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$65"
+		    quid       	"3CB518580372"
+		    class      	"Logical View::Model::Sound Manager::Dialog System::SelectableDialog"
+		    quidu      	"3CB3AC5C0173"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$66"
+		    quid       	"3CB518970027"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB518E80038"
+			    supplier   	"$UNNAMED$67"
+			    quidu      	"3CB518D903D2"
+			    messages   	(list Messages
+				(object Message "IsDialogAllowed( )"
+				    quid       	"3CB518E80039"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1.2.1"
+				    ordinal    	4
+				    quidu      	"3CB518EE0058")))
+			(object Link
+			    quid       	"3CB519120318"
+			    supplier   	"$UNNAMED$68"
+			    quidu      	"3CB5190301CF"
+			    messages   	(list Messages
+				(object Message "CreatePlayer( )"
+				    quid       	"3CB519120319"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1.2.2"
+				    ordinal    	5
+				    quidu      	"3CA10612019B")
+				(object Message "Play(SoundID)"
+				    quid       	"3CB5191B0162"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1.2.3"
+				    ordinal    	6
+				    quidu      	"3CA106380331"))))
+		    class      	"Logical View::Model::Sound Manager::Dialog System::DialogPriorityQueue"
+		    quidu      	"3CAB9C9502C7"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$67"
+		    quid       	"3CB518D903D2"
+		    class      	"Logical View::Model::Sound Manager::Dialog System::ConeOfSilenceTracker"
+		    quidu      	"3CABA5C200C5"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$68"
+		    quid       	"3CB5190301CF"
+		    class      	"Logical View::Model::Sound Manager::SimpsonsSoundPlayer"
+		    quidu      	"3CA102FB00FA"
+		    persistence 	"Transient"
+		    multi      	FALSE))))
+    logical_presentations 	(list unit_reference_list
+	(object ClassDiagram "Main"
+	    quid       	"3CA8DB020276"
+	    title      	"Main"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	50
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object ClassView "Class" "Logical View::Model::Event Manager::EventListener" @3
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1424, 208)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@3
+			location   	(1229, 128)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	390
+			justify    	0
+			label      	"EventListener")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A4819020E"
+		    width      	408
+		    height     	184
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::Conversation" @4
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(768, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@4
+			location   	(634, 173)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	268
+			justify    	0
+			label      	"Conversation")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CAB9C8D020C"
+		    width      	286
+		    height     	126
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::DialogLine" @5
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1632, 1952)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@5
+			location   	(1522, 1901)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	220
+			justify    	0
+			label      	"DialogLine")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CABA5F20289"
+		    width      	238
+		    height     	126
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::Conversation" @6
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1168, 1952)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@6
+			location   	(1034, 1901)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	268
+			justify    	0
+			label      	"Conversation")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CAB9C8D020C"
+		    width      	286
+		    height     	126
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$6" @7
+		    location   	(1411, 1952)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CABA6000151"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$7" @8
+			    Parent_View 	@7
+			    location   	(419, 832)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CABA6000325"
+			    client     	@7
+			    supplier   	@5
+			    line_style 	0
+			    label      	(object SegLabel @9
+				Parent_View 	@8
+				location   	(1455, 2007)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"2..n"
+				pctDist    	0.445545
+				height     	55
+				orientation 	1))
+			(object RoleView "$UNNAMED$8" @10
+			    Parent_View 	@7
+			    location   	(419, 832)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CABA6000326"
+			    client     	@7
+			    supplier   	@6
+			    line_style 	0)))
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::DeferredConversationList" @11
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(768, 560)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@11
+			location   	(527, 509)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	482
+			justify    	0
+			label      	"DeferredConversationList")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CAD12AD0092"
+		    width      	500
+		    height     	126
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$30" @12
+		    location   	(768, 391)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CAD12D300B1"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$31" @13
+			    Parent_View 	@12
+			    location   	(224, 7)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CAD12D40024"
+			    client     	@12
+			    supplier   	@4
+			    line_style 	0
+			    label      	(object SegLabel @14
+				Parent_View 	@13
+				location   	(838, 349)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"0..n"
+				pctDist    	0.410526
+				height     	70
+				orientation 	1))
+			(object RoleView "$UNNAMED$32" @15
+			    Parent_View 	@12
+			    location   	(224, 7)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CAD12D40025"
+			    client     	@12
+			    supplier   	@11
+			    line_style 	0)))
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::DialogSelectionGroup" @16
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(672, 1632)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@16
+			location   	(458, 1581)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	428
+			justify    	0
+			label      	"DialogSelectionGroup")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB25A0F037E"
+		    width      	446
+		    height     	126
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::ConeOfSilenceTracker" @17
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(2096, 864)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@17
+			location   	(1877, 813)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	438
+			justify    	0
+			label      	"ConeOfSilenceTracker")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CABA5C200C5"
+		    width      	456
+		    height     	126
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::PlayableDialog" @18
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1424, 1632)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@18
+			location   	(1274, 1580)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	300
+			justify    	0
+			label      	"PlayableDialog")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB25A8B0054"
+		    width      	318
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$36" @19
+		    location   	(1079, 1632)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB25A99011F"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$37" @20
+			    Parent_View 	@19
+			    location   	(599, 160)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB25A990277"
+			    client     	@19
+			    supplier   	@18
+			    line_style 	0)
+			(object RoleView "$UNNAMED$38" @21
+			    Parent_View 	@19
+			    location   	(599, 160)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB25A990278"
+			    client     	@19
+			    supplier   	@16
+			    line_style 	0
+			    label      	(object SegLabel @22
+				Parent_View 	@21
+				location   	(1195, 1583)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"1..n"
+				pctDist    	-0.636364
+				height     	50
+				orientation 	1))))
+		(object InheritView "" @23
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB25B2C0086"
+		    client     	@6
+		    supplier   	@18
+		    line_style 	0)
+		(object InheritView "" @24
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB25B2E0103"
+		    client     	@5
+		    supplier   	@18
+		    line_style 	0)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::SimpsonsSoundPlayer" @25
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(2096, 1104)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@25
+			location   	(1872, 1024)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	448
+			justify    	0
+			label      	"SimpsonsSoundPlayer")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CA102FB00FA"
+		    width      	466
+		    height     	184
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::DialogPriorityQueue" @26
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1424, 864)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@26
+			location   	(1227, 812)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	394
+			justify    	0
+			label      	"DialogPriorityQueue")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CAB9C9502C7"
+		    width      	412
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$18" @27
+		    location   	(1748, 864)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CABA65B0324"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$19" @28
+			    Parent_View 	@27
+			    location   	(516, 16)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CABA65C0075"
+			    client     	@27
+			    supplier   	@17
+			    line_style 	0)
+			(object RoleView "$UNNAMED$20" @29
+			    Parent_View 	@27
+			    location   	(516, 16)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CABA65C0076"
+			    client     	@27
+			    supplier   	@26
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$45" @30
+		    location   	(1424, 1247)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB25AEC00B4"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$46" @31
+			    Parent_View 	@30
+			    location   	(240, 367)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB25AEC0315"
+			    client     	@30
+			    supplier   	@18
+			    line_style 	0
+			    label      	(object SegLabel @32
+				Parent_View 	@31
+				location   	(1494, 1483)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"0..n"
+				pctDist    	0.736364
+				height     	70
+				orientation 	0))
+			(object RoleView "$UNNAMED$47" @33
+			    Parent_View 	@30
+			    location   	(240, 367)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB25AEC0316"
+			    client     	@30
+			    supplier   	@26
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$48" @34
+		    location   	(1733, 974)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB260C302D4"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$49" @35
+			    Parent_View 	@34
+			    location   	(517, 94)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB260C40053"
+			    client     	@34
+			    supplier   	@25
+			    line_style 	0
+			    label      	(object SegLabel @36
+				Parent_View 	@35
+				location   	(1795, 1049)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"1..n"
+				pctDist    	0.610003
+				height     	50
+				orientation 	1))
+			(object RoleView "$UNNAMED$50" @37
+			    Parent_View 	@34
+			    location   	(517, 94)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB260C40063"
+			    client     	@34
+			    supplier   	@26
+			    line_style 	0)))
+		(object ClassView "Class" "Logical View::Model::Event Manager::EventListener" @38
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(2096, 560)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@38
+			location   	(1935, 485)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	322
+			justify    	0
+			label      	"EventListener")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A4819020E"
+		    width      	340
+		    height     	174
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @39
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB261420065"
+		    client     	@17
+		    supplier   	@38
+		    line_style 	0)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::DialogCoordinator" @40
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1424, 560)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@40
+			location   	(1243, 508)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	362
+			justify    	0
+			label      	"DialogCoordinator")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CA3C934024E"
+		    width      	380
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @41
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CA8DB120295"
+		    client     	@40
+		    supplier   	@3
+		    line_style 	0)
+		(object AssociationViewNew "$UNNAMED$27" @42
+		    location   	(1125, 560)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CAD12BC019B"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$28" @43
+			    Parent_View 	@42
+			    location   	(229, 0)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CAD12BC02A5"
+			    client     	@42
+			    supplier   	@11
+			    line_style 	0)
+			(object RoleView "$UNNAMED$29" @44
+			    Parent_View 	@42
+			    location   	(229, 0)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CAD12BC02B5"
+			    client     	@42
+			    supplier   	@40
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$12" @45
+		    location   	(1424, 711)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CABA64B0353"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$13" @46
+			    Parent_View 	@45
+			    location   	(224, 135)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CABA64C0065"
+			    client     	@45
+			    supplier   	@26
+			    line_style 	0)
+			(object RoleView "$UNNAMED$14" @47
+			    Parent_View 	@45
+			    location   	(224, 135)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CABA64C0066"
+			    client     	@45
+			    supplier   	@40
+			    line_style 	0)))
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::SelectableDialog" @48
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1072, 1360)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@48
+			location   	(904, 1279)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	336
+			justify    	0
+			label      	"SelectableDialog")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB3AC5C0173"
+		    compartment 	(object Compartment
+			Parent_View 	@48
+			location   	(904, 1340)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	TRUE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			icon_style 	"Icon"
+			fill_color 	13434879
+			anchor     	2
+			nlines     	2
+			max_width  	303)
+		    width      	354
+		    height     	186
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @49
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB3AC9102FB"
+		    client     	@16
+		    supplier   	@48
+		    line_style 	0)
+		(object InheritView "" @50
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB3AC94005B"
+		    client     	@18
+		    supplier   	@48
+		    line_style 	0)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::DialogList" @51
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(688, 1136)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@51
+			location   	(584, 1085)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	208
+			justify    	0
+			label      	"DialogList")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CABA6150047"
+		    width      	226
+		    height     	126
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$15" @52
+		    location   	(1054, 848)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CABA6520315"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$16" @53
+			    Parent_View 	@52
+			    location   	(222, 272)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CABA6530130"
+			    client     	@52
+			    supplier   	@51
+			    line_style 	0)
+			(object RoleView "$UNNAMED$17" @54
+			    Parent_View 	@52
+			    location   	(222, 272)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CABA6530140"
+			    client     	@52
+			    supplier   	@40
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$51" @55
+		    location   	(854, 1232)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB3AC8301F1"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$52" @56
+			    Parent_View 	@55
+			    location   	(374, 80)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB3AC830339"
+			    client     	@55
+			    supplier   	@48
+			    line_style 	0
+			    label      	(object SegLabel @57
+				Parent_View 	@56
+				location   	(933, 1216)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"n"
+				pctDist    	0.900000
+				height     	54
+				orientation 	0))
+			(object RoleView "$UNNAMED$53" @58
+			    Parent_View 	@55
+			    location   	(374, 80)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB3AC83033A"
+			    client     	@55
+			    supplier   	@51
+			    line_style 	0)))
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Dialog System::ConversationMatcher" @59
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(320, 1136)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@59
+			location   	(205, 1060)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	230
+			justify    	0
+			label      	"ConversationMatcher")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D73DACA0091"
+		    width      	248
+		    height     	176
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$54" @60
+		    location   	(509, 1136)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D73DADC012D"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$55" @61
+			    Parent_View 	@60
+			    location   	(29, -16)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3D73DADC01D9"
+			    client     	@60
+			    supplier   	@59
+			    line_style 	0)
+			(object RoleView "$UNNAMED$56" @62
+			    Parent_View 	@60
+			    location   	(29, -16)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3D73DADC01E9"
+			    client     	@60
+			    supplier   	@51
+			    line_style 	0)))))
+	(object InteractionDiagram "Dialog System Initialization"
+	    mechanism_ref 	@1
+	    quid       	"3CB39A3A03D9"
+	    title      	"Dialog System Initialization"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	50
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object InterObjView "$UNNAMED$57" @63
+		    location   	(256, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@63
+			location   	(256, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	286
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB39A47037C"
+		    width      	304
+		    height     	1141
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @64
+			location   	(256, 400)
+			line_color 	3342489
+			InterObjView 	@63
+			height     	876
+			y_coord    	816
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$58" @65
+		    location   	(672, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@65
+			location   	(672, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	336
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB39A4F0253"
+		    width      	354
+		    height     	1141
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @66
+			location   	(672, 432)
+			line_color 	3342489
+			InterObjView 	@65
+			height     	832
+			y_coord    	772
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$59" @67
+		    location   	(1104, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@67
+			location   	(1104, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	360
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB39B3A02C5"
+		    width      	378
+		    height     	1141
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @68
+			location   	(1104, 480)
+			line_color 	3342489
+			InterObjView 	@67
+			height     	724
+			y_coord    	664
+			Nested     	FALSE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @69
+			location   	(1104, 816)
+			line_color 	3342489
+			InterObjView 	@67
+			height     	382
+			y_coord    	322
+			Nested     	TRUE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @70
+			location   	(1104, 816)
+			line_color 	3342489
+			InterObjView 	@67
+			height     	376
+			y_coord    	316
+			Nested     	TRUE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @71
+			location   	(1104, 960)
+			line_color 	3342489
+			InterObjView 	@67
+			height     	60
+			y_coord    	0
+			Nested     	TRUE))
+		(object InterObjView "$UNNAMED$60" @72
+		    location   	(1616, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@72
+			location   	(1616, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	514
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB3ADCB02E2"
+		    width      	532
+		    height     	1141
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @73
+			location   	(1616, 544)
+			line_color 	3342489
+			InterObjView 	@72
+			height     	60
+			y_coord    	0
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$61" @74
+		    location   	(2192, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@74
+			location   	(2192, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	506
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB3ADEE013C"
+		    width      	524
+		    height     	1141
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @75
+			location   	(2192, 688)
+			line_color 	3342489
+			InterObjView 	@74
+			height     	60
+			y_coord    	0
+			Nested     	FALSE))
+		(object InterObjView "TypicalLine" @76
+		    location   	(2656, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@76
+			location   	(2656, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	282
+			justify    	0
+			label      	"TypicalLine")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB3B1A60239"
+		    width      	300
+		    height     	1141
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @77
+			location   	(2656, 1072)
+			line_color 	3342489
+			InterObjView 	@76
+			height     	60
+			y_coord    	0
+			Nested     	FALSE))
+		(object InterMessView "" @78
+		    location   	(544, 432)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @79
+			Parent_View 	@78
+			location   	(464, 384)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB39B2D0110"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	194
+			justify    	0
+			label      	"Initialize( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@63
+		    supplier   	@65
+		    Focus_Src  	@64
+		    Focus_Entry 	@66
+		    origin     	(271, 432)
+		    terminus   	(656, 432)
+		    ordinal    	0)
+		(object InterMessView "" @80
+		    location   	(16, 480)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @81
+			Parent_View 	@80
+			location   	(880, 432)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB3A53B03B3"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	194
+			justify    	0
+			label      	"Initialize( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@65
+		    supplier   	@67
+		    Focus_Src  	@66
+		    Focus_Entry 	@68
+		    origin     	(687, 480)
+		    terminus   	(1088, 480)
+		    ordinal    	1)
+		(object InterMessView "" @82
+		    location   	(1360, 544)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @83
+			Parent_View 	@82
+			location   	(1360, 496)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB3ADE700FF"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	441
+			justify    	0
+			label      	"GetResourceManager( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@67
+		    supplier   	@72
+		    Focus_Src  	@68
+		    Focus_Entry 	@73
+		    origin     	(1119, 544)
+		    terminus   	(1600, 544)
+		    ordinal    	2)
+		(object InterMessView "" @84
+		    location   	(1648, 688)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @85
+			Parent_View 	@84
+			location   	(1904, 640)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB3AE0200A2"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	366
+			justify    	0
+			label      	"FindAllResources( )"
+			pctDist    	0.743614
+			height     	49
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@67
+		    supplier   	@74
+		    Focus_Src  	@68
+		    Focus_Entry 	@75
+		    origin     	(1119, 688)
+		    terminus   	(2176, 688)
+		    ordinal    	3)
+		(object SelfMessView "" @86
+		    location   	(16, 816)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @87
+			Parent_View 	@86
+			location   	(1312, 768)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB3AE3000B2"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	313
+			justify    	0
+			label      	"GetDialogType( )"
+			pctDist    	1.260000
+			height     	48
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@67
+		    supplier   	@67
+		    Focus_Src  	@68
+		    Focus_Entry 	@69
+		    origin     	(1120, 816)
+		    terminus   	(1270, 816)
+		    ordinal    	4)
+		(object SelfMessView "" @88
+		    location   	(16, 960)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @89
+			Parent_View 	@88
+			location   	(1296, 912)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB3AEC20269"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	291
+			justify    	0
+			label      	"GetDialogList( )"
+			pctDist    	1.180000
+			height     	49
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@67
+		    supplier   	@67
+		    Focus_Src  	@70
+		    Focus_Entry 	@71
+		    origin     	(1120, 960)
+		    terminus   	(1270, 960)
+		    ordinal    	5)
+		(object InterMessView "" @90
+		    location   	(1888, 1072)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @91
+			Parent_View 	@90
+			location   	(2432, 1024)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB3B1BA0354"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	223
+			justify    	0
+			label      	"<<create>>"
+			pctDist    	0.862590
+			height     	49
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@67
+		    supplier   	@76
+		    Focus_Src  	@70
+		    Focus_Entry 	@77
+		    origin     	(1119, 1072)
+		    terminus   	(2640, 1072)
+		    ordinal    	6)))
+	(object InteractionDiagram "Event Triggers Dialog"
+	    mechanism_ref 	@2
+	    quid       	"3CB5179602E1"
+	    title      	"Event Triggers Dialog"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	0
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object InterObjView "$UNNAMED$62" @92
+		    location   	(256, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@92
+			location   	(256, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	282
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB517B20090"
+		    width      	300
+		    height     	1109
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @93
+			location   	(256, 416)
+			line_color 	3342489
+			InterObjView 	@92
+			height     	828
+			y_coord    	768
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$63" @94
+		    location   	(624, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@94
+			location   	(624, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	336
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB517BD01B9"
+		    width      	354
+		    height     	1109
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @95
+			location   	(624, 416)
+			line_color 	3342489
+			InterObjView 	@94
+			height     	768
+			y_coord    	708
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$64" @96
+		    location   	(1072, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@96
+			location   	(1072, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	360
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB517E40081"
+		    width      	378
+		    height     	1109
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @97
+			location   	(1072, 496)
+			line_color 	3342489
+			InterObjView 	@96
+			height     	628
+			y_coord    	568
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$65" @98
+		    location   	(1472, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@98
+			location   	(1472, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	328
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB518580372"
+		    width      	346
+		    height     	1109
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @99
+			location   	(1472, 560)
+			line_color 	3342489
+			InterObjView 	@98
+			height     	60
+			y_coord    	0
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$66" @100
+		    location   	(1904, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@100
+			location   	(1904, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	372
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB518970027"
+		    width      	390
+		    height     	1109
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @101
+			location   	(1904, 656)
+			line_color 	3342489
+			InterObjView 	@100
+			height     	408
+			y_coord    	348
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$67" @102
+		    location   	(2352, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@102
+			location   	(2352, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	422
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB518D903D2"
+		    width      	440
+		    height     	1109
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @103
+			location   	(2352, 704)
+			line_color 	3342489
+			InterObjView 	@102
+			height     	60
+			y_coord    	0
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$68" @104
+		    location   	(2848, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@104
+			location   	(2848, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	436
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB5190301CF"
+		    width      	454
+		    height     	1109
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @105
+			location   	(2848, 816)
+			line_color 	3342489
+			InterObjView 	@104
+			height     	60
+			y_coord    	0
+			Nested     	FALSE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @106
+			location   	(2848, 944)
+			line_color 	3342489
+			InterObjView 	@104
+			height     	60
+			y_coord    	0
+			Nested     	FALSE))
+		(object InterMessView "" @107
+		    location   	(16, 416)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @108
+			Parent_View 	@107
+			location   	(432, 368)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB517C70043"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	273
+			justify    	0
+			label      	"HandleEvent( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@92
+		    supplier   	@94
+		    Focus_Src  	@93
+		    Focus_Entry 	@95
+		    origin     	(271, 416)
+		    terminus   	(608, 416)
+		    ordinal    	0)
+		(object InterMessView "" @109
+		    location   	(816, 496)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @110
+			Parent_View 	@109
+			location   	(848, 448)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB5180C01DB"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	394
+			justify    	0
+			label      	"FindPlayableDialog( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@94
+		    supplier   	@96
+		    Focus_Src  	@95
+		    Focus_Entry 	@97
+		    origin     	(639, 496)
+		    terminus   	(1056, 496)
+		    ordinal    	1)
+		(object InterMessView "" @111
+		    location   	(1280, 560)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @112
+			Parent_View 	@111
+			location   	(1264, 512)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB5187902D7"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	276
+			justify    	0
+			label      	"SelectDialog( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@96
+		    supplier   	@98
+		    Focus_Src  	@97
+		    Focus_Entry 	@99
+		    origin     	(1087, 560)
+		    terminus   	(1456, 560)
+		    ordinal    	2)
+		(object InterMessView "" @113
+		    location   	(16, 656)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @114
+			Parent_View 	@113
+			location   	(1696, 608)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB518B8022C"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	388
+			justify    	0
+			label      	"AddPlayableDialog( )"
+			pctDist    	0.759051
+			height     	47
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@96
+		    supplier   	@100
+		    Focus_Src  	@97
+		    Focus_Entry 	@101
+		    origin     	(1087, 656)
+		    terminus   	(1888, 656)
+		    ordinal    	3)
+		(object InterMessView "" @115
+		    location   	(16, 704)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @116
+			Parent_View 	@115
+			location   	(2128, 656)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB518E80039"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	332
+			justify    	0
+			label      	"IsDialogAllowed( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@100
+		    supplier   	@102
+		    Focus_Src  	@101
+		    Focus_Entry 	@103
+		    origin     	(1919, 704)
+		    terminus   	(2336, 704)
+		    ordinal    	4)
+		(object InterMessView "" @117
+		    location   	(16, 816)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @118
+			Parent_View 	@117
+			location   	(2608, 768)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB519120319"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	282
+			justify    	0
+			label      	"CreatePlayer( )"
+			pctDist    	0.754655
+			height     	47
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@100
+		    supplier   	@104
+		    Focus_Src  	@101
+		    Focus_Entry 	@105
+		    origin     	(1919, 816)
+		    terminus   	(2832, 816)
+		    ordinal    	5)
+		(object InterMessView "" @119
+		    location   	(2384, 944)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @120
+			Parent_View 	@119
+			location   	(2608, 896)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB5191B0162"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	269
+			justify    	0
+			label      	"Play(SoundID)"
+			pctDist    	0.754655
+			height     	47
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@100
+		    supplier   	@104
+		    Focus_Src  	@101
+		    Focus_Entry 	@106
+		    origin     	(1919, 944)
+		    terminus   	(2832, 944)
+		    ordinal    	6)))))

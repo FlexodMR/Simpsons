@@ -1,0 +1,587 @@
+<?xml version='1.0'?>
+<Page>
+    <Version value="0"></Version>
+    <Resolution width="640" height="480"></Resolution>
+    <Resources>
+        <Images>
+            <Image name="greystar" data="images\rewards\greystar.png"></Image>
+            <Image name="carstar" data="images\rewards\carstar.png"></Image>
+            <Image name="halfstar" data="images\rewards\halfstar.png"></Image>
+            <Image name="Larrow1" data="images\rewards\Larrow1.png"></Image>
+            <Image name="Rarrow0" data="images\rewards\Rarrow0.png"></Image>
+            <Image name="Rarrow1" data="images\rewards\Rarrow1.png"></Image>
+            <Image name="Larrow0" data="images\rewards\Larrow0.png"></Image>
+            <Image name="auxX" data="images\auxX.png"></Image>
+        </Images>
+        <MovieClips></MovieClips>
+        <Pure3dFiles>
+            <Pure3dFile name="3Dmodel" data="pure3d\_stubs\dummy.p3d" Pure3dInventoryName="dummy" Pure3dCameraName="Pedestal_Camera" Pure3dAnimationName=""></Pure3dFile>
+            <Pure3dFile name="rewardbg" data="pure3d\_stubs\dummy.p3d" Pure3dInventoryName="dummy" Pure3dCameraName="Pedestal_Camera" Pure3dAnimationName=""></Pure3dFile>
+            <Pure3dFile name="rewardfg" data="pure3d\rewardfg.p3d" Pure3dInventoryName="PurchaseScene" Pure3dCameraName="Pedestal_Camera" Pure3dAnimationName=""></Pure3dFile>
+        </Pure3dFiles>
+        <TextBibles>
+            <TextBible name="srr2" data="txtbible\srr2.p3d" inventoryName="srr2"></TextBible>
+        </TextBibles>
+        <TextStyles>
+            <TextStyle name="font0_16" data="fonts\font0_16.p3d" inventoryName="boulder_16"></TextStyle>
+            <TextStyle name="font1_14" data="fonts\font1_14.p3d" inventoryName="Tt2001m__14"></TextStyle>
+            <TextStyle name="font0_24" data="fonts\font0_24.p3d" inventoryName="boulder_24"></TextStyle>
+        </TextStyles>
+    </Resources>
+    <Layers>
+        <Layer Name="Foreground" Visible="true" Editable="true" Alpha="255">
+            <DrawingElements>
+                <Group Name="3DModel" Alpha="255">
+                    <DrawingElements>
+                        <Pure3dObject Name="RewardBG">
+                            <Position x="0" y="0"></Position>
+                            <Dimension width="640" height="480"></Dimension>
+                            <Justification vertical="top" horizontal="left"></Justification>
+                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <Pure3dFile name="rewardbg"></Pure3dFile>
+                        </Pure3dObject>
+                        <Pure3dObject Name="RewardFG">
+                            <Position x="0" y="0"></Position>
+                            <Dimension width="640" height="480"></Dimension>
+                            <Justification vertical="top" horizontal="left"></Justification>
+                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <Pure3dFile name="rewardfg"></Pure3dFile>
+                        </Pure3dObject>
+                        <Pure3dObject Name="PreviewWindow">
+                            <Position x="0" y="0"></Position>
+                            <Dimension width="640" height="480"></Dimension>
+                            <Justification vertical="top" horizontal="left"></Justification>
+                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <Pure3dFile name="3Dmodel"></Pure3dFile>
+                        </Pure3dObject>
+                        <Polygon Name="PreviewLightCover">
+                            <Translucency value="normal"></Translucency>
+                            <Vertexes>
+                                <Vertex>
+                                    <Position x="-120" y="0"></Position>
+                                    <Colour red="0" green="0" blue="0" alpha="255"></Colour>
+                                </Vertex>
+                                <Vertex>
+                                    <Position x="-120" y="530"></Position>
+                                    <Colour red="0" green="0" blue="0" alpha="255"></Colour>
+                                </Vertex>
+                                <Vertex>
+                                    <Position x="760" y="530"></Position>
+                                    <Colour red="0" green="0" blue="0" alpha="255"></Colour>
+                                </Vertex>
+                                <Vertex>
+                                    <Position x="760" y="0"></Position>
+                                    <Colour red="0" green="0" blue="0" alpha="255"></Colour>
+                                </Vertex>
+                            </Vertexes>
+                        </Polygon>
+                    </DrawingElements>
+                </Group>
+                <Group Name="VehicleStats" Alpha="255">
+                    <DrawingElements>
+                        <Polygon Name="StatsOverlay">
+                            <Translucency value="normal"></Translucency>
+                            <Vertexes>
+                                <Vertex>
+                                    <Position x="-120" y="0"></Position>
+                                    <Colour red="0" green="0" blue="0" alpha="192"></Colour>
+                                </Vertex>
+                                <Vertex>
+                                    <Position x="-120" y="530"></Position>
+                                    <Colour red="0" green="0" blue="0" alpha="192"></Colour>
+                                </Vertex>
+                                <Vertex>
+                                    <Position x="760" y="530"></Position>
+                                    <Colour red="0" green="0" blue="0" alpha="192"></Colour>
+                                </Vertex>
+                                <Vertex>
+                                    <Position x="760" y="0"></Position>
+                                    <Colour red="0" green="0" blue="0" alpha="192"></Colour>
+                                </Vertex>
+                            </Vertexes>
+                        </Polygon>
+                        <Group Name="Stability" Alpha="255">
+                            <DrawingElements>
+                                <Group Name="Sta_Stars" Alpha="255">
+                                    <DrawingElements>
+                                        <MultiSprite Name="Sta_Stars4">
+                                            <Position x="365" y="171"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Sta_Stars3">
+                                            <Position x="335" y="171"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Sta_Stars2">
+                                            <Position x="305" y="171"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Sta_Stars1">
+                                            <Position x="275" y="171"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Sta_Stars0">
+                                            <Position x="245" y="171"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                    </DrawingElements>
+                                </Group>
+                                <Text Name="Stability">
+                                    <Position x="270" y="200"></Position>
+                                    <Dimension width="100" height="18"></Dimension>
+                                    <Justification vertical="top" horizontal="centre"></Justification>
+                                    <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                    <Translucency value="normal"></Translucency>
+                                    <Rotation value="0.000000"></Rotation>
+                                    <TextStyle name="font1_14"></TextStyle>
+                                    <Shadow enabled="false" red="0" green="0" blue="0" alpha="128" x="-1" y="-2"></Shadow>
+                                    <String textBible="srr2" stringId="STABILITY"></String>
+                                </Text>
+                            </DrawingElements>
+                        </Group>
+                        <Group Name="Toughness" Alpha="255">
+                            <DrawingElements>
+                                <Group Name="Tou_Stars" Alpha="255">
+                                    <DrawingElements>
+                                        <MultiSprite Name="Tou_Stars4">
+                                            <Position x="365" y="217"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Tou_Stars3">
+                                            <Position x="335" y="217"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Tou_Stars2">
+                                            <Position x="305" y="217"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Tou_Stars1">
+                                            <Position x="275" y="217"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Tou_Stars0">
+                                            <Position x="245" y="217"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                    </DrawingElements>
+                                </Group>
+                                <Text Name="Toughness">
+                                    <Position x="270" y="246"></Position>
+                                    <Dimension width="100" height="18"></Dimension>
+                                    <Justification vertical="top" horizontal="centre"></Justification>
+                                    <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                    <Translucency value="normal"></Translucency>
+                                    <Rotation value="0.000000"></Rotation>
+                                    <TextStyle name="font1_14"></TextStyle>
+                                    <Shadow enabled="false" red="0" green="0" blue="0" alpha="128" x="-1" y="-2"></Shadow>
+                                    <String textBible="srr2" stringId="TOUGHNESS"></String>
+                                </Text>
+                            </DrawingElements>
+                        </Group>
+                        <Group Name="Acceleration" Alpha="255">
+                            <DrawingElements>
+                                <Group Name="Acc_Stars" Alpha="255">
+                                    <DrawingElements>
+                                        <MultiSprite Name="Acc_Stars4">
+                                            <Position x="365" y="263"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Acc_Stars3">
+                                            <Position x="335" y="263"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Acc_Stars2">
+                                            <Position x="305" y="263"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Acc_Stars1">
+                                            <Position x="275" y="263"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Acc_Stars0">
+                                            <Position x="245" y="263"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                    </DrawingElements>
+                                </Group>
+                                <Text Name="Acceleration">
+                                    <Position x="270" y="292"></Position>
+                                    <Dimension width="100" height="18"></Dimension>
+                                    <Justification vertical="top" horizontal="centre"></Justification>
+                                    <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                    <Translucency value="normal"></Translucency>
+                                    <Rotation value="0.000000"></Rotation>
+                                    <TextStyle name="font1_14"></TextStyle>
+                                    <Shadow enabled="false" red="0" green="0" blue="0" alpha="128" x="-1" y="-2"></Shadow>
+                                    <String textBible="srr2" stringId="ACCELERATION"></String>
+                                </Text>
+                            </DrawingElements>
+                        </Group>
+                        <Group Name="Speed" Alpha="255">
+                            <DrawingElements>
+                                <Group Name="Spe_Stars" Alpha="255">
+                                    <DrawingElements>
+                                        <MultiSprite Name="Spe_Stars4">
+                                            <Position x="365" y="309"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Spe_Stars3">
+                                            <Position x="335" y="309"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Spe_Stars2">
+                                            <Position x="305" y="309"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Spe_Stars1">
+                                            <Position x="275" y="309"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                        <MultiSprite Name="Spe_Stars0">
+                                            <Position x="245" y="309"></Position>
+                                            <Dimension width="30" height="30"></Dimension>
+                                            <Justification vertical="centre" horizontal="centre"></Justification>
+                                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                            <Translucency value="normal"></Translucency>
+                                            <Rotation value="0.000000"></Rotation>
+                                            <CurrentIndex value="0"></CurrentIndex>
+                                            <Images>
+                                                <Image name="greystar"></Image>
+                                                <Image name="halfstar"></Image>
+                                                <Image name="carstar"></Image>
+                                            </Images>
+                                        </MultiSprite>
+                                    </DrawingElements>
+                                </Group>
+                                <Text Name="Speed">
+                                    <Position x="270" y="338"></Position>
+                                    <Dimension width="100" height="18"></Dimension>
+                                    <Justification vertical="top" horizontal="centre"></Justification>
+                                    <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                                    <Translucency value="normal"></Translucency>
+                                    <Rotation value="0.000000"></Rotation>
+                                    <TextStyle name="font1_14"></TextStyle>
+                                    <Shadow enabled="false" red="0" green="0" blue="0" alpha="128" x="-1" y="-2"></Shadow>
+                                    <String textBible="srr2" stringId="SPEED"></String>
+                                </Text>
+                            </DrawingElements>
+                        </Group>
+                    </DrawingElements>
+                </Group>
+                <Group Name="Locked" Alpha="255">
+                    <DrawingElements>
+                        <Text Name="ToPurchase">
+                            <Position x="200" y="110"></Position>
+                            <Dimension width="240" height="27"></Dimension>
+                            <Justification vertical="top" horizontal="centre"></Justification>
+                            <Colour red="255" green="255" blue="0" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <TextStyle name="font0_24"></TextStyle>
+                            <Shadow enabled="true" red="0" green="0" blue="0" alpha="192" x="3" y="-3"></Shadow>
+                            <String textBible="srr2" stringId="TO_PURCHASE"></String>
+                        </Text>
+                        <Text Name="Price">
+                            <Position x="200" y="140"></Position>
+                            <Dimension width="240" height="27"></Dimension>
+                            <Justification vertical="top" horizontal="centre"></Justification>
+                            <Colour red="255" green="255" blue="0" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <TextStyle name="font0_24"></TextStyle>
+                            <Shadow enabled="true" red="0" green="0" blue="0" alpha="192" x="3" y="-3"></Shadow>
+                            <String textBible="srr2" stringId="COINS"></String>
+                        </Text>
+                    </DrawingElements>
+                </Group>
+                <Group Name="Arrows" Alpha="255">
+                    <DrawingElements>
+                        <MultiSprite Name="RightArrow">
+                            <Position x="460" y="240"></Position>
+                            <Dimension width="40" height="40"></Dimension>
+                            <Justification vertical="centre" horizontal="centre"></Justification>
+                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <CurrentIndex value="0"></CurrentIndex>
+                            <Images>
+                                <Image name="Rarrow0"></Image>
+                                <Image name="Rarrow1"></Image>
+                            </Images>
+                        </MultiSprite>
+                        <MultiSprite Name="LeftArrow">
+                            <Position x="140" y="240"></Position>
+                            <Dimension width="40" height="40"></Dimension>
+                            <Justification vertical="centre" horizontal="centre"></Justification>
+                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <CurrentIndex value="0"></CurrentIndex>
+                            <Images>
+                                <Image name="Larrow0"></Image>
+                                <Image name="Larrow1"></Image>
+                            </Images>
+                        </MultiSprite>
+                    </DrawingElements>
+                </Group>
+                <Group Name="ToggleView" Alpha="255">
+                    <DrawingElements>
+                        <MultiText Name="ToggleView">
+                            <Position x="115" y="82"></Position>
+                            <Dimension width="170" height="16"></Dimension>
+                            <Justification vertical="top" horizontal="left"></Justification>
+                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <TextStyle name="font1_14"></TextStyle>
+                            <Shadow enabled="true" red="0" green="0" blue="0" alpha="192" x="2" y="-2"></Shadow>
+                            <CurrentIndex value="0"></CurrentIndex>
+                            <Strings>
+                                <String textBible="srr2" stringId="VIEW_STATS"></String>
+                                <String textBible="srr2" stringId="VIEW_MODEL"></String>
+                            </Strings>
+                        </MultiText>
+                        <Sprite Name="ToggleView">
+                            <Position x="80" y="75"></Position>
+                            <Dimension width="30" height="30"></Dimension>
+                            <Justification vertical="top" horizontal="left"></Justification>
+                            <Colour red="255" green="255" blue="255" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <Image name="auxX"></Image>
+                        </Sprite>
+                    </DrawingElements>
+                </Group>
+                <Group Name="PreviewName" Alpha="255">
+                    <DrawingElements>
+                        <MultiText Name="PreviewNameDummy">
+                            <Position x="60" y="375"></Position>
+                            <Dimension width="520" height="27"></Dimension>
+                            <Justification vertical="top" horizontal="centre"></Justification>
+                            <Colour red="255" green="255" blue="255" alpha="0"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <TextStyle name="font0_24"></TextStyle>
+                            <Shadow enabled="false" red="0" green="0" blue="0" alpha="192" x="2" y="-2"></Shadow>
+                            <CurrentIndex value="0"></CurrentIndex>
+                            <Strings>
+                                <String textBible="srr2" stringId="SPACE"></String>
+                                <String textBible="srr2" stringId="SPACE"></String>
+                            </Strings>
+                        </MultiText>
+                        <MultiText Name="PreviewName">
+                            <Position x="60" y="375"></Position>
+                            <Dimension width="520" height="27"></Dimension>
+                            <Justification vertical="top" horizontal="centre"></Justification>
+                            <Colour red="255" green="255" blue="0" alpha="255"></Colour>
+                            <Translucency value="normal"></Translucency>
+                            <Rotation value="0.000000"></Rotation>
+                            <TextStyle name="font0_24"></TextStyle>
+                            <Shadow enabled="true" red="0" green="0" blue="0" alpha="192" x="3" y="-3"></Shadow>
+                            <CurrentIndex value="0"></CurrentIndex>
+                            <Strings>
+                                <String textBible="srr2" stringId="SPACE"></String>
+                            </Strings>
+                        </MultiText>
+                    </DrawingElements>
+                </Group>
+            </DrawingElements>
+        </Layer>
+    </Layers>
+</Page>

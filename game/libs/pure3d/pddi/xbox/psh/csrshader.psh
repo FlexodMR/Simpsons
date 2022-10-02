@@ -1,0 +1,19 @@
+// CPR: 
+// Colour, Specular(coloured), Reflection(spherical)
+
+xps.1.1    // Xbox pixel shader
+
+tex t0				;base map
+tex t1				;specular map
+tex t2				;reflection map
+
+mul r0.rgb, v0.rgb, t0.rgb			;Base colour
+ + mul r0.a, c0.a, t0.a
+mad r0, v1, t1, r0		;Specular colour
+mad r0, t2, t1.a, r0	;reflection map, modulated with alpha from specular
+
+;don't do specular or again, but still do fog.
+;final color = s0*s1 + (1-s0)*s2 + s3, 
+xfc fog.a, r0, fog.rgb, zero, zero, zero, r0
+
+

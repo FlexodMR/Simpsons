@@ -1,0 +1,44 @@
+//===========================================================================
+// findNegativeScale
+//===========================================================================
+// Description: Identifies and selects transforms that have negative
+//              scaling.
+//
+//              To use: Simply run the script.  If any transforms with
+//              negative scale are found then the object will be selected 
+//              and a warning will be echoed to the Script Editor; e.g.:
+//
+//              // Warning: pSphere2 has negative scaling: { 1, 1, -1 } //
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (string[]): The list of objects with negative scaling.
+//
+//===========================================================================
+global proc string[] findNegativeScale()
+{
+    string $transforms[] = `ls -transforms`;
+    float $scale[3];
+    string $badScale[];
+    
+    for ( $transform in $transforms )
+    {
+        $scale = `xform -q -r -scale $transform`;
+        
+        if ( $scale[0] < 0.0 || $scale[1] < 0.0 || $scale[2] < 0.0 )
+        {
+            $badScale[`size $badScale`] = $transform;
+            warning ( $transform + " has negative scaling: { " 
+            + $scale[0] + ", " + $scale[1] + ", " + $scale[2] + " }" );
+        }
+    }
+    
+    if ( `size $badScale` > 0 )
+    {
+        select -r $badScale;
+    }
+
+    return $badScale;
+}

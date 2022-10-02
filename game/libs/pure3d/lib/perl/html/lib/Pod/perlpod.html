@@ -1,0 +1,426 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlpod - plain old documentation
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#Embedding_Pods_in_Perl_Modules">Embedding Pods in Perl Modules</A>
+	<LI><A HREF="#Common_Pod_Pitfalls">Common Pod Pitfalls</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlpod - plain old documentation
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> pod-to-whatever translator reads a pod file
+paragraph by paragraph, and translates it to the appropriate output format.
+There are three kinds of paragraphs:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+
+<FONT SIZE=-1>A</FONT> verbatim paragraph, distinguished by being indented (that is, it starts with space or tab). It should be reproduced exactly, with tabs assumed to be on 8-column boundaries. There are no special formatting escapes, so you can't italicize or anything like that. 
+<FONT SIZE=-1>A</FONT> \ means \, and nothing else.
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+
+<FONT SIZE=-1>A</FONT> command. All command paragraphs start with ``='',
+followed by an identifier, followed by arbitrary text that the command can
+use however it pleases. Currently recognized commands are
+
+
+<P>
+
+<PRE>    =head1 heading
+    =head2 heading
+    =item text
+    =over N
+    =back
+    =cut
+    =pod
+    =for X
+    =begin X
+    =end X
+</PRE>
+
+<P>
+
+The ``=pod'' directive does nothing beyond telling the compiler to lay off
+parsing code through the next ``=cut''. It's useful for adding another
+paragraph to the doc if you're mixing up code and pod a lot.
+
+
+<P>
+
+Head1 and head2 produce first and second level headings, with the text in
+the same paragraph as the ``=headn'' directive forming the heading
+description.
+
+
+<P>
+
+Item, over, and back require a little more explanation: ``=over'' starts a
+section specifically for the generation of a list using ``=item'' commands.
+At the end of your list, use ``=back'' to end it. You will probably want to
+give ``4'' as the number to ``=over'', as some formatters will use this for
+indentation. This should probably be a default. Note also that there are
+some basic rules to using =item: don't use them outside of an =over/=back
+block, use at least one inside an =over/=back block, you don't _have_ to
+include the =back if the list just runs off the document, and perhaps most
+importantly, keep the items consistent: either use ``=item *'' for all of
+them, to produce bullets, or use ``=item 1.'', ``=item 2.'', etc., to
+produce numbered lists, or use ``=item foo'', ``=item bar'', etc., i.e.,
+things that looks nothing like bullets or numbers. If you start with
+bullets or numbers, stick with them, as many formatters use the first
+``=item'' type to decide how to format the list.
+
+
+<P>
+
+For, begin, and end let you include sections that are not interpreted as pod text, but passed directly to particular formatters. 
+<FONT SIZE=-1>A</FONT> formatter that can utilize that format will use the section, otherwise it will be completely ignored. The directive ``=for'' specifies that the entire next paragraph is in the format indicated by the first word after ``=for'', like this:
+
+
+
+<P>
+
+<PRE> =for html &lt;br&gt;
+  &lt;p&gt; This is a raw HTML paragraph &lt;/p&gt;
+</PRE>
+
+<P>
+
+The paired commands ``=begin'' and ``=end'' work very similarly to
+``=for'', but instead of only accepting a single paragraph, all text from
+``=begin'' to a paragraph with a matching ``=end'' are treated as a
+particular format.
+
+
+<P>
+
+Here are some examples of how to use these:
+
+
+<P>
+
+<PRE> =begin html
+</PRE>
+
+<P>
+
+<PRE> &lt;br&gt;Figure 1.&lt;IMG SRC=&quot;figure1.png&quot;&gt;&lt;br&gt;
+</PRE>
+
+<P>
+
+<PRE> =end html
+</PRE>
+
+<P>
+
+<PRE> =begin text
+</PRE>
+
+<P>
+
+<PRE>   ---------------
+   |  foo        |
+   |        bar  |
+   ---------------
+</PRE>
+
+<P>
+
+<PRE> ^^^^ Figure 1. ^^^^
+</PRE>
+
+<P>
+
+<PRE> =end text
+</PRE>
+
+<P>
+
+Some format names that formatters currently are known to accept include
+``roff'', ``man'', ``latex'', ``tex'', ``text'', and ``html''. (Some
+formatters will treat some of these as synonyms.)
+
+
+<P>
+
+And don't forget, when using any command, that the command lasts up until
+the end of the <STRONG>paragraph</STRONG>, not the line. Hence in the examples below, you can see the empty lines
+after each command to end its paragraph.
+
+
+<P>
+
+Some examples of lists include:
+
+
+<P>
+
+<PRE> =over 4
+</PRE>
+
+<P>
+
+<PRE> =item *
+</PRE>
+
+<P>
+
+<PRE> First item
+</PRE>
+
+<P>
+
+<PRE> =item *
+</PRE>
+
+<P>
+
+<PRE> Second item
+</PRE>
+
+<P>
+
+<PRE> =back
+</PRE>
+
+<P>
+
+<PRE> =over 4
+</PRE>
+
+<P>
+
+<PRE> =item Foo()
+</PRE>
+
+<P>
+
+<PRE> Description of Foo function
+</PRE>
+
+<P>
+
+<PRE> =item Bar()
+</PRE>
+
+<P>
+
+<PRE> Description of Bar function
+</PRE>
+
+<P>
+
+<PRE> =back
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+An ordinary block of text. It will be filled, and maybe even justified.
+Certain interior sequences are recognized both here and in commands:
+
+
+<P>
+
+<PRE>    I&lt;text&gt;     italicize text, used for emphasis or variables
+    B&lt;text&gt;     embolden text, used for switches and programs
+    S&lt;text&gt;     text contains non-breaking spaces
+    C&lt;code&gt;     literal code
+    L&lt;name&gt;     A link (cross reference) to name
+                    L&lt;name&gt;             manual page
+                    L&lt;name/ident&gt;       item in manual page
+                    L&lt;name/&quot;sec&quot;&gt;       section in other manual page
+                    L&lt;&quot;sec&quot;&gt;            section in this manual page
+                                        (the quotes are optional)
+                    L&lt;/&quot;sec&quot;&gt;           ditto
+    F&lt;file&gt;     Used for filenames
+    X&lt;index&gt;    An index entry
+    Z&lt;&gt;         A zero-width character
+    E&lt;escape&gt;   A named character (very similar to HTML escapes)
+                    E&lt;lt&gt;               A literal &lt;
+                    E&lt;gt&gt;               A literal &gt;
+                    (these are optional except in other interior
+                     sequences and when preceded by a capital letter)
+                    E&lt;n&gt;                Character number n (probably in ASCII)
+                    E&lt;html&gt;             Some non-numeric HTML entity, such
+                                        as E&lt;Agrave&gt;
+</PRE>
+
+<P>
+
+</UL>
+That's it. The intent is simplicity, not power. 
+<FONT SIZE=-1>I</FONT> wanted paragraphs to look like paragraphs (block format), so that they stand out visually, and so that 
+<FONT SIZE=-1>I</FONT> could run them through fmt easily to reformat them (that's 
+<FONT SIZE=-1>F7</FONT> in my version of
+ <STRONG>vi</STRONG>). 
+<FONT SIZE=-1>I</FONT> wanted the translator (and not me) to worry about whether `` or ' is a left quote or a right quote within filled text, and 
+<FONT SIZE=-1>I</FONT> wanted it to leave the quotes alone, dammit, in verbatim mode, so 
+<FONT SIZE=-1>I</FONT> could slurp in a working program, shift it over 4 spaces, and have it print out, er, verbatim. And presumably in a constant width font.
+
+
+
+<P>
+
+In particular, you can leave things like this verbatim in your text:
+
+
+<P>
+
+<PRE>    Perl
+    FILEHANDLE
+    $variable
+    function()
+    manpage(3r)
+</PRE>
+
+<P>
+
+Doubtless a few other commands or sequences will need to be added along the
+way, but I've gotten along surprisingly well with just these.
+
+
+<P>
+
+Note that I'm not at all claiming this to be sufficient for producing a
+book. I'm just trying to make an idiot-proof common source for nroff, TeX,
+and other markup languages, as used for online documentation. Translators
+exist for <STRONG>pod2man</STRONG>  (that's for <CODE>nroff(1)</CODE> and <CODE>troff(1)),</CODE>
+<STRONG>pod2html</STRONG>, <STRONG>pod2latex</STRONG>, and <STRONG>pod2fm</STRONG>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Embedding_Pods_in_Perl_Modules">Embedding Pods in Perl Modules
+
+</A></H1>
+You can embed pod documentation in your Perl scripts. Start your documentation with a ``=head1'' command at the beginning, and end it with a ``=cut'' command. Perl will ignore the pod text. See any of the supplied library modules for examples. If you're going to put your pods at the end of the file, and you're using an 
+<FONT SIZE=-1>__END__</FONT> or 
+<FONT SIZE=-1>__DATA__</FONT> cut mark, make sure to put an empty line there before the first pod directive.
+
+
+
+<P>
+
+<PRE>    __END__
+</PRE>
+
+<P>
+
+<PRE>    =head1 NAME
+</PRE>
+
+<P>
+
+<PRE>    modern - I am a modern module
+</PRE>
+
+<P>
+
+If you had not had that empty line there, then the translators wouldn't
+have seen it.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Common_Pod_Pitfalls">Common Pod Pitfalls
+
+</A></H1>
+<UL>
+<LI><STRONG></STRONG>
+Pod translators usually will require paragraphs to be separated by
+completely empty lines. If you have an apparently empty line with some
+spaces on it, this can cause odd formatting.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Translators will mostly add wording around a 
+<FONT SIZE=-1>L</FONT>&lt;&gt; link, so that
+<CODE>L&lt;foo(1)&gt;</CODE> becomes ``the <EM>foo</EM>(1) manpage'', for example (see
+<STRONG>pod2man</STRONG> for details). Thus, you shouldn't write things like <CODE>the
+L&lt;foo&gt; manpage</CODE>, if you want the translated document to read sensibly.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+The script <EM>pod/checkpods.PL</EM> in the Perl source distribution provides skeletal checking for lines that
+look empty but aren't
+<STRONG>only</STRONG>, but is there as a placeholder until someone writes Pod::Checker. The best
+way to check your pod is to pass it through one or more translators and
+proofread the result, or print out the result and proofread that. Some of
+the problems found may be bugs in the translators, which you may or may not
+wish to work around.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<EM>pod2man</EM> and <A HREF="/n|/perl/html/./lib/Pod/perlsyn.html#PODs_Embedded_Documentation">PODs: Embedded Documentation</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Larry Wall
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

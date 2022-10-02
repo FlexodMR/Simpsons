@@ -1,0 +1,195 @@
+//---------------------------------------------------------------------------
+// opd
+//---------------------------------------------------------------------------
+
+// skeleton rig
+rig "oldpedestrianRig"
+{
+    skeleton "Motion_Root";
+
+    // roots
+    jointIndex_AIRoot 0;
+    jointIndex_OrientationRoot 0;
+    joint_MotionRoot "Motion_Root";
+    joint_BalanceRoot "Balance_Root";
+    joint_CharacterRoot "Character_Root";
+
+    // balance root
+    maxBalanceRootCompress 0.25;
+
+    // legs
+    leg "left"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 1;
+
+        joint_FKMin "Hip_L";
+        joint_FKMax "Ball_L";
+
+        joint_Thigh "Hip_L";
+        joint_Knee "Knee_L";
+        joint_Ankle "Ankle_L";
+
+        //joint_Effector "Left_Foot";
+        //joint_PoleVector "Left_Knee";
+        //joint_OrientOffset "L_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+
+    leg "right"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 0;
+
+        joint_FKMin "Hip_R";
+        joint_FKMax "Ball_R";
+
+        joint_Thigh "Hip_R";
+        joint_Knee "Knee_R";
+        joint_Ankle "Ankle_R";
+
+        //joint_Effector "Right_Foot";
+        //joint_PoleVector "Right_Knee";
+        //joint_OrientOffset "R_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+};
+
+// bank
+bank "oldpedestrianBank"
+{
+    // reference to skeleton configuration
+    rig "oldpedestrianRig";
+
+	default animation.blendOutTime 0.1;
+	default animation.blendInTime 0.1;
+
+
+	animation "hit_by_car_front"
+	{
+		animation "opd_hit_by_car_front";
+	};
+
+	
+	animation "flail"
+	{
+		animation "opd_flail";
+	};
+
+	animation "get_up"
+	{
+		animation "opd_get_up";
+	};
+
+	animation "hit_by_car_back"
+	{
+		animation "opd_hit_by_car_back";
+	};
+
+	
+	animation "dodge"
+	{
+		animation "opd_dodge";
+	};
+
+	
+	animation "near_miss_angry"
+	{
+		animation "opd_near_miss_angry";
+	};
+
+	animation "run_into_person"
+	{
+		animation "opd_run_into_person";
+	};
+
+    locomotion4 "opdLoco"
+    {
+        idle "opd_loco_idle_rest";
+        blendInTime 0.1;
+        blendOutTime 0.1;
+
+        priority 1;
+
+        acceleration 50;
+        //turningAcceleration 1440;
+        turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        animation "n" 0 "opd_loco_walk";
+        animation "w" 0 "opd_loco_walk";
+        animation "s" 0 "opd_loco_walk";
+        animation "e" 0 "opd_loco_walk";
+
+	animation "n" 1 "opd_loco_run";
+        animation "w" 1 "opd_loco_run";
+        animation "s" 1 "opd_loco_run";
+        animation "e" 1 "opd_loco_run";
+
+	//animation "n" 2 "opd_loco_dash";
+        //animation "w" 2 "opd_loco_dash";
+        //animation "s" 2 "opd_loco_dash";
+        //animation "e" 2 "opd_loco_dash";
+    };
+    //locomotion4 "carLoco"
+    //{
+        //idle "opd_in_car_idle";
+
+        //blendInTime 0.1;
+        //blendOutTime 0.1;
+
+        //priority 1;
+
+        //acceleration 50;
+        //turningAcceleration 1440;
+        //turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        //animation "n" 0 "opd_in_car_idle";
+        //animation "w" 0 "opd_in_car_idle";
+        //animation "s" 0 "opd_in_car_idle";
+        //animation "e" 0 "opd_in_car_idle";
+
+        //animation "n" 1 "opd_in_car_idle";
+        //animation "w" 1 "opd_in_car_idle";
+        //animation "s" 1 "opd_in_car_idle";
+        //animation "e" 1 "opd_in_car_idle";
+    //};
+    //locomotion4 "carHighLoco"
+    //{
+        //idle "opd_in_car_idle_high";
+
+        //blendInTime 0.1;
+        //blendOutTime 0.1;
+
+        //priority 1;
+
+        //acceleration 50;
+        //turningAcceleration 1440;
+        //turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        //animation "n" 0 "opd_in_car_idle_high";
+        //animation "w" 0 "opd_in_car_idle_high";
+        //animation "s" 0 "opd_in_car_idle_high";
+        //animation "e" 0 "opd_in_car_idle_high";
+
+        //animation "n" 1 "opd_in_car_idle_high";
+        //animation "w" 1 "opd_in_car_idle_high";
+        //animation "s" 1 "opd_in_car_idle_high";
+        //animation "e" 1 "opd_in_car_idle_high";
+    //};
+};
+
+puppet "oldpedestrianPuppet"
+{
+    bank "oldpedestrianBank";
+};
+
+
+// End of file.

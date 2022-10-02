@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding = "Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.00"
+	Name="build"
+	SccProjectName="build"
+	SccAuxPath=""
+	SccLocalPath="."
+	SccProvider="MSSCCI:Perforce SCM"
+	Keyword="MakeFileProj">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory=".\Debug"
+			IntermediateDirectory=".\Debug"
+			ConfigurationType="10"
+			UseOfMFC="0">
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory=".\Release"
+			IntermediateDirectory=".\Release"
+			ConfigurationType="10"
+			UseOfMFC="0">
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+		</Configuration>
+	</Configurations>
+	<Files>
+		<Filter
+			Name="gamecube"
+			Filter="">
+			<File
+				RelativePath="..\gamecube\files.txt">
+			</File>
+			<File
+				RelativePath=".\gamecube">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Building GameCube Viewer..."
+						CommandLine="cd ..\gamecube
+build d"
+						Outputs="..\..\dist\p3dviewg.elf"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\gamecube_clean">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Cleaning GameCube Viewer..."
+						CommandLine="cd ..\gamecube
+build d clean"
+						Outputs=".\gamecube"/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="ps2"
+			Filter="">
+			<File
+				RelativePath="..\ps2\files.txt">
+			</File>
+			<File
+				RelativePath=".\ps2">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Building PS2 Viewer..."
+						CommandLine="cd ..\ps2
+build t"
+						Outputs="..\..\dist\p3dview.elf"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\ps2_clean">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Cleaning PS2 Viewer..."
+						CommandLine="cd ..\ps2
+build t clean"
+						Outputs=".\ps2"/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<File
+			RelativePath=".\xbox">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Building XBox Viewer..."
+					CommandLine="cd ..\xbox
+msdev p3dview.dsw /MAKE &quot;p3dview - XBox Debug&quot;"
+					Outputs="..\..\dist\p3dview.xbe"/>
+			</FileConfiguration>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

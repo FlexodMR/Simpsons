@@ -1,0 +1,195 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>LWP::RobotUA - A class for Web Robots
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_ua_LWP_RobotUA_new_agent_n">$ua = LWP::RobotUA->new($agent_name, $from, [$rules])</A>
+		<LI><A HREF="#_ua_delay_minutes_">$ua->delay([$minutes])</A>
+		<LI><A HREF="#_ua_rules_rules_">$ua->rules([$rules])</A>
+		<LI><A HREF="#_ua_no_visits_netloc_">$ua->no_visits($netloc)</A>
+		<LI><A HREF="#_ua_host_wait_netloc_">$ua->host_wait($netloc)</A>
+		<LI><A HREF="#_ua_as_string">$ua->as_string</A>
+	</UL>
+
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+LWP::RobotUA - 
+<FONT SIZE=-1>A</FONT> class for Web Robots
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  require LWP::RobotUA;
+  $ua = new LWP::RobotUA 'my-robot/0.1', 'me@foo.com';
+  $ua-&gt;delay(10);  # be very nice, go slowly
+  ...
+  # just use it just like a normal LWP::UserAgent
+  $res = $ua-&gt;request($req);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This class implements a user agent that is suitable for robot applications.
+Robots should be nice to the servers they visit. They should consult the <EM>robots.txt</EM> file to ensure that they are welcomed and they should not send too frequent
+requests.
+
+
+<P>
+
+But, before you consider writing a robot take a look at
+&lt;URL:http://info.webcrawler.com/mak/projects/robots/robots.html&gt;.
+
+
+<P>
+
+When you use a <EM>LWP::RobotUA</EM> as your user agent, then you do not really have to think about these things
+yourself. Just send requests as you do when you are using a normal <EM>LWP::UserAgent</EM> and this special agent will make sure you are nice.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+The LWP::RobotUA is a sub-class of LWP::UserAgent and implements the same
+methods. The <CODE>use_alarm()</CODE> method also desides whether we will
+wait if a request is tried too early (if true), or will return an error
+response (if false).
+
+
+<P>
+
+In addition these methods are provided:
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_LWP_RobotUA_new_agent_n">$ua = LWP::RobotUA->new($agent_name, $from, [$rules])
+
+</A></H2>
+Your robot's name and the mail address of the human responsible for the
+robot (i.e. you) is required by the constructor.
+
+
+<P>
+
+Optionally it allows you to specify the <EM>WWW::RobotRules</EM> object to use.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_delay_minutes_">$ua->delay([$minutes])
+
+</A></H2>
+Set the minimum delay between requests to the same server. The default is 1
+minute.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_rules_rules_">$ua->rules([$rules])
+
+</A></H2>
+Set/get which <EM>WWW::RobotRules</EM> object to use. 
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_no_visits_netloc_">$ua->no_visits($netloc)
+
+</A></H2>
+Returns the number of documents fetched from this server host.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_host_wait_netloc_">$ua->host_wait($netloc)
+
+</A></H2>
+Returns the number of seconds you must wait before you can make a new
+request to this host.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_as_string">$ua->as_string
+
+</A></H2>
+Returns a text that describe the state of the 
+<FONT SIZE=-1>UA.</FONT> Mainly useful for debugging.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/LWP/UserAgent.html">UserAgent</A>, <A HREF="/n|/perl/html/./lib/site/WWW/RobotRules.html">RobotRules</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gisle Aas &lt;<A HREF="MAILTO:aas@sn.no>">aas@sn.no></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

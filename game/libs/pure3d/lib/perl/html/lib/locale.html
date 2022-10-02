@@ -1,0 +1,64 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>locale - Perl pragma to use and avoid POSIX locales for built-in operations
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+locale - Perl pragma to use and avoid 
+<FONT SIZE=-1>POSIX</FONT> locales for built-in operations
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    @x = sort @y;       # ASCII sorting order
+    {
+        use locale;
+        @x = sort @y;   # Locale-defined sorting order
+    }
+    @x = sort @y;       # ASCII sorting order again
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This pragma tells the compiler to enable (or disable) the use of 
+<FONT SIZE=-1>POSIX</FONT> locales for built-in operations 
+<FONT SIZE=-1>(LC_CTYPE</FONT> for regular expressions, and 
+<FONT SIZE=-1>LC_COLLATE</FONT> for string comparison). Each ``use locale'' or ``no locale'' affects statements to the end of the enclosing 
+<FONT SIZE=-1>BLOCK.</FONT>
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

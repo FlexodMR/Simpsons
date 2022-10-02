@@ -1,0 +1,79 @@
+//**************************************************************************************************
+//  Procedure Name:
+//    p3dBillboardObject_Install()
+//
+//  Description:
+//    Sets up the optic effects command buttons in P3DBillboardObjectTools shelf
+//
+//  Input Arguments:
+//    None.
+//
+//  Return Value:
+//    None.
+//**************************************************************************************************
+global proc p3dBillboardObject_Install()
+{
+   source p3dBillboardObjectTools;
+ 
+   // BUG FIX: Do NOT create Shelf if Shelf UI is hidden!
+   //          The Shelf may already exist in Maya's Preferences
+   //          but be deferred until the Shelf UI is visible,
+   //          and a clash will result if a duplicate is made.
+   // BUG FIX: Do NOT attempt if without UI.
+   if ( !`about -batch` && isUIComponentVisible( "Shelf" ) )
+   {
+       if (`shelfLayout -exists "P3DBillboardObjectTools"`==0)
+       {
+          addNewShelfTab "P3DBillboardObjectTools";
+       }
+
+       string $buttons[] = `shelfLayout -q -ca P3DBillboardObjectTools`;
+       int $create_quad_exists = 0;
+       int $create_quad_group_exists = 0;
+
+       int $i;
+       for ($i = 0;
+            ($i < size($buttons)) &&
+            (($create_quad_exists == 0) || 
+            ($create_quad_group_exists == 0));
+            $i++)
+       {
+          string $command = `shelfButton -q -c $buttons[$i]`;
+
+          //remove old shelf buttons
+          if ($command == "P3DCreateBillboardQuad")
+          {
+             deleteUI $buttons[$i];
+          }
+
+          //add shelf buttons
+          if ($command == "p3dBillboardObject_CreateBillboardQuad")
+          {
+             $create_quad_exists = 1;
+          }
+          if ($command == "p3dBillboardObject_CreateBillboardQuadGroup")
+          {
+             $create_quad_group_exists = 1;
+          }
+       }
+
+       if (!$create_quad_exists)
+       {
+          shelfButton -c   "p3dBillboardObject_CreateBillboardQuad" 
+                      -p   "P3DBillboardObjectTools"
+                      -i1  "p3dBillboardQuad.bmp" 
+                      -ann "Create P3D Billboard Quad"
+                      -l   "P3DCreateBillboardQuadButton";
+       }
+       if (!$create_quad_group_exists)
+       {
+          shelfButton -c   "p3dBillboardObject_CreateBillboardQuadGroup" 
+                      -p   "P3DBillboardObjectTools"
+                      -i1  "p3dBillboardQuadGroup.bmp" 
+                      -ann "Create P3D Billboard Quad Group"
+                      -l   "P3DCreateBillboardQuadGroupButton";
+       }
+    }
+}
+
+// End of file.

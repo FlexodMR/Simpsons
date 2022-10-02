@@ -1,0 +1,492 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>ExtUtils::Embed - Utilities for embedding Perl in C/C++ applications
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#_EXPORT">@EXPORT</A>
+	<LI><A HREF="#FUNCTIONS">FUNCTIONS</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+ExtUtils::Embed - Utilities for embedding Perl in 
+<FONT SIZE=-1>C/C++</FONT> applications
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> perl -MExtUtils::Embed -e xsinit 
+ perl -MExtUtils::Embed -e ldopts 
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+ExtUtils::Embed provides utility functions for embedding a Perl interpreter and extensions in your 
+<FONT SIZE=-1>C/C++</FONT> applications. Typically, an application
+ <STRONG>Makefile</STRONG> will invoke ExtUtils::Embed functions while building your application.  
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="_EXPORT">@EXPORT
+
+</A></H1>
+ExtUtils::Embed exports the following functions:
+
+
+<P>
+
+<CODE>xsinit(),</CODE> <CODE>ldopts(),</CODE> <CODE>ccopts(),</CODE>
+<CODE>perl_inc(),</CODE> <CODE>ccflags(),</CODE> <CODE>ccdlflags(),</CODE>
+<CODE>xsi_header(),</CODE> <CODE>xsi_protos(),</CODE>
+<CODE>xsi_body()</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="FUNCTIONS">FUNCTIONS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_xsinit">xsinit()
+
+</A></STRONG><DD>
+Generate 
+<FONT SIZE=-1>C/C++</FONT> code for the 
+<FONT SIZE=-1>XS</FONT> initializer function.
+
+
+
+<P>
+
+When invoked as <CODE>`perl -MExtUtils::Embed -e xsinit --`</CODE>
+the following options are recognized:
+
+
+<P>
+
+<STRONG>-o</STRONG>  &lt;output filename&gt; (Defaults to <STRONG>perlxsi.c</STRONG>)
+
+
+<P>
+
+<STRONG>-o STDOUT</STRONG> will print to 
+<FONT SIZE=-1>STDOUT.</FONT>
+
+
+<P>
+
+<STRONG>-std</STRONG> (Write code for extensions that are linked with the current Perl.)
+
+
+<P>
+
+Any additional arguments are expected to be names of modules to generate
+code for.
+
+
+<P>
+
+When invoked with parameters the following are accepted and optional:
+
+
+<P>
+
+<A HREF="#item_xsinit">xsinit($filename,$std,[@modules])</A>
+
+
+
+
+<P>
+
+Where,
+
+
+<P>
+
+<STRONG>$filename</STRONG> is equivalent to the <STRONG>-o</STRONG> option.
+
+
+<P>
+
+<STRONG>$std</STRONG> is boolean, equivalent to the <STRONG>-std</STRONG> option.  
+
+
+<P>
+
+<STRONG>[@modules]</STRONG> is an array ref, same as additional arguments mentioned above.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Examples">Examples
+
+</A></STRONG><DD>
+<PRE> perl -MExtUtils::Embed -e xsinit -- -o xsinit.c Socket
+</PRE>
+
+<P>
+
+This will generate code with an <STRONG>xs_init</STRONG> function that glues the perl <STRONG>Socket::bootstrap</STRONG> function to the 
+<FONT SIZE=-1>C</FONT> <STRONG>boot_Socket</STRONG> function and writes it to a file named ``xsinit.c''.
+
+
+<P>
+
+Note that <STRONG>DynaLoader</STRONG> is a special case where it must call <STRONG>boot_DynaLoader</STRONG> directly.
+
+
+<P>
+
+<PRE> perl -MExtUtils::Embed -e xsinit
+</PRE>
+
+<P>
+
+This will generate code for linking with <STRONG>DynaLoader</STRONG> and each static extension found in <STRONG>$Config{static_ext}</STRONG>. The code is written to the default file name <STRONG>perlxsi.c</STRONG>.
+
+
+<P>
+
+<PRE> perl -MExtUtils::Embed -e xsinit -- -o xsinit.c -std DBI DBD::Oracle
+</PRE>
+
+<P>
+
+Here, code is written for all the currently linked extensions along with
+code for <STRONG>DBI</STRONG> and <STRONG>DBD::Oracle</STRONG>.
+
+
+<P>
+
+If you have a working <STRONG>DynaLoader</STRONG> then there is rarely any need to statically link in any other extensions.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ldopts">ldopts()
+
+</A></STRONG><DD>
+Output arguments for linking the Perl library and extensions to your
+application.
+
+
+<P>
+
+When invoked as <CODE>`perl -MExtUtils::Embed -e ldopts --`</CODE>
+the following options are recognized:
+
+
+<P>
+
+<STRONG>-std</STRONG> 
+
+ 
+
+
+<P>
+
+Output arguments for linking the Perl library and any extensions linked
+with the current Perl.
+
+
+<P>
+
+<STRONG>-I</STRONG>  &lt;path1:path2&gt;
+
+
+
+
+<P>
+
+Search path for ModuleName.a archives. Default path is <STRONG>@INC</STRONG>. Library archives are expected to be found as 
+<STRONG>/some/path/auto/ModuleName/ModuleName.a</STRONG>
+For example, when looking for <STRONG>Socket.a</STRONG> relative to a search path, we should find <STRONG>auto/Socket/Socket.a</STRONG>  
+
+  
+
+
+<P>
+
+When looking for <STRONG>DBD::Oracle</STRONG> relative to a search path, we should find <STRONG>auto/DBD/Oracle/Oracle.a</STRONG>
+
+
+
+
+<P>
+
+Keep in mind, you can always supply <STRONG>/my/own/path/ModuleName.a</STRONG>
+as an additional linker argument.
+
+
+<P>
+
+<STRONG>--</STRONG>    &lt;list of linker args&gt;
+
+
+
+
+<P>
+
+Additional linker arguments to be considered.
+
+
+<P>
+
+Any additional arguments found before the <STRONG>--</STRONG> token are expected to be names of modules to generate code for.
+
+
+<P>
+
+When invoked with parameters the following are accepted and optional:
+
+
+<P>
+
+<A HREF="#item_ldopts">ldopts($std,[@modules],[@link_args],$path)</A>
+
+
+
+
+<P>
+
+Where,
+
+
+<P>
+
+<STRONG>$std</STRONG> is boolean, equivalent to the <STRONG>-std</STRONG> option.  
+
+
+<P>
+
+<STRONG>[@modules]</STRONG> is equivalent to additional arguments found before the <STRONG>--</STRONG> token.
+
+
+<P>
+
+<STRONG>[@link_args]</STRONG> is equivalent to arguments found after the <STRONG>--</STRONG> token.
+
+
+<P>
+
+<STRONG>$path</STRONG> is equivalent to the <STRONG>-I</STRONG> option.
+
+
+<P>
+
+In addition, when ldopts is called with parameters, it will return the argument string rather than print it to 
+<FONT SIZE=-1>STDOUT.</FONT>
+
+
+
+<P>
+
+<DT><STRONG>Examples
+
+</A></STRONG><DD>
+<PRE> perl -MExtUtils::Embed -e ldopts
+</PRE>
+
+<P>
+
+This will print arguments for linking with <STRONG>libperl.a</STRONG>, <STRONG>DynaLoader</STRONG> and extensions found in <STRONG>$Config{static_ext}</STRONG>. This includes libraries found in <STRONG>$Config{libs}</STRONG> and the first ModuleName.a library for each extension that is found by
+searching <STRONG>@INC</STRONG> or the path specifed by the <STRONG>-I</STRONG> option. In addition, when ModuleName.a is found, additional linker
+arguments are picked up from the <STRONG>extralibs.ld</STRONG> file in the same directory.
+
+
+<P>
+
+<PRE> perl -MExtUtils::Embed -e ldopts -- -std Socket
+</PRE>
+
+<P>
+
+This will do the same as the above example, along with printing additional
+arguments for linking with the <STRONG>Socket</STRONG> extension.
+
+
+<P>
+
+<PRE> perl -MExtUtils::Embed -e ldopts -- DynaLoader
+</PRE>
+
+<P>
+
+This will print arguments for linking with just the <STRONG>DynaLoader</STRONG> extension and <STRONG>libperl.a</STRONG>.
+
+
+<P>
+
+<PRE> perl -MExtUtils::Embed -e ldopts -- -std Msql -- -L/usr/msql/lib -lmsql
+</PRE>
+
+<P>
+
+Any arguments after the second '--' token are additional linker arguments
+that will be examined for potential conflict. If there is no conflict, the
+additional arguments will be part of the output.  
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_inc">perl_inc()
+
+</A></STRONG><DD>
+For including perl header files this function simply prints:
+
+
+<P>
+
+<PRE> -I$Config{archlibexp}/CORE  
+</PRE>
+
+<P>
+
+So, rather than having to say:
+
+
+<P>
+
+<PRE> perl -MConfig -e 'print &quot;-I$Config{archlibexp}/CORE&quot;'
+</PRE>
+
+<P>
+
+Just say:
+
+
+<P>
+
+<PRE> perl -MExtUtils::Embed -e perl_inc
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_ccflags">ccflags(), ccdlflags()
+
+</A></STRONG><DD>
+These functions simply print $Config{ccflags} and $Config{ccdlflags}
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ccopts">ccopts()
+
+</A></STRONG><DD>
+This function combines <CODE>perl_inc(),</CODE> <CODE>ccflags()</CODE> and
+<CODE>ccdlflags()</CODE> into one.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xsi_header">xsi_header()
+
+</A></STRONG><DD>
+This function simply returns a string defining the same <STRONG>EXTERN_C</STRONG> macro as
+<STRONG>perlmain.c</STRONG> along with #including <STRONG>perl.h</STRONG> and <STRONG>EXTERN.h</STRONG>.  
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xsi_protos">xsi_protos(@modules)
+
+</A></STRONG><DD>
+This function returns a string of <STRONG>boot_$ModuleName</STRONG> prototypes for each @modules.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xsi_body">xsi_body(@modules)
+
+</A></STRONG><DD>
+This function returns a string of calls to <STRONG>newXS()</STRONG> that glue the module <STRONG>bootstrap</STRONG>
+function to <STRONG>boot_ModuleName</STRONG> for each @modules.
+
+
+<P>
+
+<STRONG>xsinit()</STRONG> uses the xsi_* functions to generate most of it's code.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+For examples on how to use <STRONG>ExtUtils::Embed</STRONG> for building 
+<FONT SIZE=-1>C/C++</FONT> applications with embedded perl, see the eg/
+directory and <A HREF="/n|/perl/html/./lib/Pod/perlembed.html#">the perlembed manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Pod/perlembed.html#">the perlembed manpage</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Doug MacEachern &lt;<EM>dougm@osf.org</EM>&gt;
+
+
+
+
+<P>
+
+Based on ideas from Tim Bunce &lt;<EM>Tim.Bunce@ig.co.uk</EM>&gt; and
+<STRONG>minimod.pl</STRONG> by Andreas Koenig &lt;<EM>k@anna.in-berlin.de</EM>&gt; and Tim Bunce.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

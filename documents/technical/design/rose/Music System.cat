@@ -1,0 +1,458 @@
+
+(object Petal
+    version    	44
+    _written   	"Rose 7.0.9420.17"
+    charSet    	0)
+
+(object Class_Category "Music System"
+    is_unit    	TRUE
+    is_loaded  	TRUE
+    attributes 	(list Attribute_Set
+	(object Attribute
+	    tool       	"sc"
+	    name       	"SourceControlSpec"
+	    value      	"-- using Perforce --"))
+    quid       	"3CA8CF8C01E0"
+    exportControl 	"Public"
+    logical_models 	(list unit_reference_list
+	(object Class "MusicPlayer"
+	    quid       	"3C9A6BCD027D"
+	    documentation 	
+|Responsible for playing background music in the game.
+|
+|Right now, I've got this as an EventListener subclass on the assumption that this might be expanded to handle interactive music.  If not, then the base class may not be needed.
+	    
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3C9A6C1B0162"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E"))
+	    used_nodes 	(list uses_relationship_list
+		(object Uses_Relationship
+		    quid       	"3CB38A8101A8"
+		    supplier   	"Logical View::Model::Sound Manager::Music System::PlayList"
+		    quidu      	"3C9A6CB50151"))
+	    operations 	(list Operations
+		(object Operation "LoadPlayList"
+		    quid       	"3C9BAFBA00A5"
+		    parameters 	(list Parameters
+			(object Parameter "PlayListEnum"
+			    quid       	"3C9BAFFE01DD"))
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "Initialize"
+		    quid       	"3CB37EC403DF"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "AddPlayList"
+		    quid       	"3CB3896302BB"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "PlayList"
+	    quid       	"3C9A6CB50151"
+	    documentation 	"List of songs to play.  Multiple sets are required since the song set might vary by level or character."
+	    realized_interfaces 	(list realize_rel_list
+		(object Realize_Relationship
+		    quid       	"3CB37402003F"
+		    supplier   	"Logical View::Model::Sound Manager::Music System::IPlayList"
+		    quidu      	"3CB373F80129"))
+	    operations 	(list Operations
+		(object Operation "CreatePlayList"
+		    quid       	"3CB388DA0096"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "AddToStaticList"
+		    quid       	"3CB389BA0165"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "IPlayList"
+	    quid       	"3CB373F80129"
+	    documentation 	"Interface for PlayList class.  Required by RadScript."
+	    stereotype 	"Interface")
+	(object Mechanism @1
+	    logical_models 	(list unit_reference_list
+		(object Object "static"
+		    quid       	"3CB3881D01FA"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB389230162"
+			    supplier   	"TypicalPlayList"
+			    quidu      	"3CB3882E012F"
+			    messages   	(list Messages
+				(object Message "<<create>>"
+				    quid       	"3CB389230163"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1"
+				    ordinal    	1))))
+		    class      	"Logical View::Model::Sound Manager::Music System::PlayList"
+		    quidu      	"3C9A6CB50151"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "TypicalPlayList"
+		    quid       	"3CB3882E012F"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB389C80231"
+			    supplier   	"TypicalPlayList"
+			    quidu      	"3CB3882E012F"
+			    messages   	(list Messages
+				(object Message "AddToStaticList( )"
+				    quid       	"3CB389C80232"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1.1"
+				    ordinal    	2
+				    quidu      	"3CB389BA0165"))))
+		    class      	"Logical View::Model::Sound Manager::Music System::PlayList"
+		    quidu      	"3C9A6CB50151"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "radFactory"
+		    quid       	"3CB388BD01AE"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB3891B027B"
+			    supplier   	"static"
+			    quidu      	"3CB3881D01FA"
+			    messages   	(list Messages
+				(object Message "CreatePlayList( )"
+				    quid       	"3CB3891B027C"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1"
+				    ordinal    	0
+				    quidu      	"3CB388DA0096"))))
+		    persistence 	"Transient"
+		    multi      	FALSE))))
+    logical_presentations 	(list unit_reference_list
+	(object ClassDiagram "Main"
+	    quid       	"3CA8CFA502F9"
+	    title      	"Main"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	472
+	    origin_y   	250
+	    items      	(list diagram_item_list
+		(object ClassView "Class" "Logical View::Model::Event Manager::EventListener" @2
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1024, 640)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@2
+			location   	(832, 560)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	390
+			justify    	0
+			label      	"EventListener")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A4819020E"
+		    width      	408
+		    height     	184
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Music System::MusicPlayer" @3
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1024, 1008)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@3
+			location   	(896, 960)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	266
+			justify    	0
+			label      	"MusicPlayer")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A6BCD027D"
+		    width      	284
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @4
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9A6C1B0162"
+		    client     	@3
+		    supplier   	@2
+		    line_style 	0)))
+	(object InteractionDiagram "Music System Initialization"
+	    mechanism_ref 	@1
+	    quid       	"3CB37E840303"
+	    title      	"Music System Initialization"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	0
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object InterObjView "static" @5
+		    location   	(736, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@5
+			location   	(736, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	282
+			justify    	0
+			label      	"static")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB3881D01FA"
+		    width      	300
+		    height     	723
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @6
+			location   	(736, 448)
+			line_color 	3342489
+			InterObjView 	@5
+			height     	350
+			y_coord    	290
+			Nested     	FALSE))
+		(object InterObjView "TypicalPlayList" @7
+		    location   	(1152, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@7
+			location   	(1152, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	282
+			justify    	0
+			label      	"TypicalPlayList")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB3882E012F"
+		    width      	300
+		    height     	723
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @8
+			location   	(1152, 544)
+			line_color 	3342489
+			InterObjView 	@7
+			height     	194
+			y_coord    	134
+			Nested     	FALSE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @9
+			location   	(1152, 672)
+			line_color 	3342489
+			InterObjView 	@7
+			height     	60
+			y_coord    	0
+			Nested     	TRUE))
+		(object InterObjView "radFactory" @10
+		    location   	(320, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@10
+			location   	(320, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	282
+			justify    	0
+			label      	"radFactory")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB388BD01AE"
+		    width      	300
+		    height     	723
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @11
+			location   	(320, 400)
+			line_color 	3342489
+			InterObjView 	@10
+			height     	458
+			y_coord    	398
+			Nested     	FALSE))
+		(object InterMessView "" @12
+		    location   	(560, 448)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @13
+			Parent_View 	@12
+			location   	(528, 400)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB3891B027C"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	313
+			justify    	0
+			label      	"CreatePlayList( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@10
+		    supplier   	@5
+		    Focus_Src  	@11
+		    Focus_Entry 	@6
+		    origin     	(335, 448)
+		    terminus   	(720, 448)
+		    ordinal    	0)
+		(object InterMessView "" @14
+		    location   	(1040, 544)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @15
+			Parent_View 	@14
+			location   	(944, 496)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB389230163"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	223
+			justify    	0
+			label      	"<<create>>"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@5
+		    supplier   	@7
+		    Focus_Src  	@6
+		    Focus_Entry 	@8
+		    origin     	(751, 544)
+		    terminus   	(1136, 544)
+		    ordinal    	1)
+		(object SelfMessView "" @16
+		    location   	(16, 672)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @17
+			Parent_View 	@16
+			location   	(1344, 608)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB389C80232"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	335
+			justify    	0
+			label      	"AddToStaticList( )"
+			pctDist    	1.173333
+			height     	63
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@7
+		    supplier   	@7
+		    Focus_Src  	@8
+		    Focus_Entry 	@9
+		    origin     	(1168, 672)
+		    terminus   	(1318, 672)
+		    ordinal    	2)))))

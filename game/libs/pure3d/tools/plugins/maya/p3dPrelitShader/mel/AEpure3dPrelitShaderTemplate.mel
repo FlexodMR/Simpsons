@@ -1,0 +1,80 @@
+global proc AEprelightNew ()
+{
+   setUITemplate -pst attributeEditorTemplate;
+   button -l "Prelight" -c "PrelightShader" prelightbutton;
+   setUITemplate -ppt;
+}
+
+global proc AEprelightReplace ()
+{
+    button -e -c "PrelightShader" prelightbutton;
+}
+
+global proc AEpure3dPrelitShaderTemplate ( string $nodeName )
+{
+   AEswatchDisplay $nodeName;
+   editorTemplate -beginScrollLayout;
+   editorTemplate -callCustom AEshaderTypeNew AEshaderTypeReplace "message";
+
+   editorTemplate -beginLayout "Common Material Attributes" -collapse 0; 
+      editorTemplate -label "Texture" -addControl "color";
+      editorTemplate -label "Transparency" -addControl "transparency";
+      editorTemplate -callCustom "AEprelightNew" "AEprelightReplace";
+   editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Material Attributes" -collapse true;
+        editorTemplate -label "Alpha Blend" -addControl "blendMode";
+        editorTemplate  -addControl "doubleSided";
+        editorTemplate -suppress "zTest";
+        editorTemplate -suppress "zWrite";
+    editorTemplate -endLayout;
+
+   editorTemplate -beginLayout "P3D Texture Attributes" -collapse true;
+      editorTemplate -addControl "proceduralXRes";
+      editorTemplate -addControl "proceduralYRes";
+   editorTemplate -endLayout;
+
+   editorTemplate -beginLayout "P3D Mipmap Control" -collapse true;
+        editorTemplate -label "Generate Mipmaps During Export" -addControl "exportMipmaps";
+        editorTemplate -addControl "mipmapmin";
+        editorTemplate -addControl "mipmapmax";        
+   editorTemplate -endLayout;
+
+    // supressed attributes
+   editorTemplate -suppress "pointCamera";
+   editorTemplate -suppress "normalCamera";
+   editorTemplate -suppress "rayDirection";
+   editorTemplate -suppress "vertexShaderName";
+   editorTemplate -suppress "shaderExport";
+   editorTemplate -suppress "shaderAttributes";
+   editorTemplate -suppress "shaderTextureAttributes";
+   editorTemplate -suppress "shaderTexturePlugs";
+   editorTemplate -suppress "shaderTextureAlphaPlugs";
+   editorTemplate -suppress "xHighRenderRegion";
+   editorTemplate -suppress "yHighRenderRegion";
+   editorTemplate -suppress "mmsharpness";
+   editorTemplate -suppress "alphaTest";
+    editorTemplate -suppress "L";
+	editorTemplate -suppress "K";     
+
+
+   // include/call base class/node attributes
+   AElambertCommonInclude $nodeName;
+
+   editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+      AEhardwareTextureTemplate $nodeName ("color");
+   editorTemplate -endLayout;
+
+   editorTemplate -addExtraControls;
+   editorTemplate -endScrollLayout;
+}
+
+
+global proc PrelightShader ()
+{
+   // select objects
+   hyperShade -objects `ls -sl`;
+   
+   // prelight
+   polyGeoSampler -sf 1 -su;
+}

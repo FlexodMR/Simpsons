@@ -1,0 +1,101 @@
+SelectMission("bm1");
+
+SetMissionResetPlayerInCar("bm1_carstart");
+SetDynaLoadData("l6r1.p3d;l6z1.p3d;l6z2.p3d;");
+
+UsePedGroup(1);
+
+//AddStage(0);
+//	RESET_TO_HERE();
+//	SetStageMessageIndex(180);
+//	SetHUDIcon( "kburger" );
+//	AddObjective( "goto" );
+//		AddStageVehicle("wiggu_v","bm1_wiggum_carstart","NULL","Missions\level06\BM1dest.con", "wiggum");
+//		SetDestination( "bm_krustyburger", "carsphere");
+//		//SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//	ShowStageComplete();
+//CloseStage();
+
+AddStage(0);
+    SetPresentationBitmap( "art/frontend/dynaload/images/mis06_08.p3d" );
+	RESET_TO_HERE();
+	SetStageMessageIndex(124);
+	SetHUDIcon( "wiggu_v" );
+	AddStageVehicle("wiggu_v","bm1_wiggum_carstart","target","Missions\level06\BM1dest.con", "wiggum");
+//	ActivateVehicle("wiggu_v","NULL","target");
+	SetVehicleAIParams( "wiggu_v", 10, 20 ); //  random shortcuts
+	SetStageAITargetCatchupParams( "wiggu_v", 50, 100);
+
+	AddStageWaypoint( "bm1_wiggum_path1" );
+	AddStageWaypoint( "bm1_wiggum_path19" );
+	AddObjective("dump");
+		SetObjTargetVehicle("wiggu_v");
+		AddCollectible("bm1_evidence","i_folder");
+	CloseObjective();
+	SetStageTime(120);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(60);
+	SetHUDIcon( "snake" );
+	AddObjective("talkto");
+		SetTalkToTarget("snake", 0, 0); 
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetDialogueInfo("bart","snake","porkbag",0);
+		SetCamBestSide( "bm1_bestside" );
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(247);
+	SetHUDIcon( "bowlera" );
+	AddObjective("goto");
+		AddStageVehicle("cMilk","bm1_milk","NULL","Missions\level06\BM1dest2.con");
+		SetDestination( "bm_bowlerama", "carsphere");
+		//SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(150);
+	SetHUDIcon( "milk_v" );
+	ActivateVehicle("cMilk","NULL","target");
+	SetVehicleAIParams( "cMilk", -10, -9 ); //  no shortcuts
+	AddStageWaypoint( "bm1_milk_path1" );
+	AddStageWaypoint( "bm1_milk_path4" );
+	AddObjective("destroy");
+		SetObjTargetVehicle("cMilk");
+	CloseObjective();
+	SetStageTime(180);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(60);
+	SetHUDIcon( "snake" );
+	AddObjective( "talkto" );
+		SetTalkToTarget("snake", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0, "final");
+	AddObjective("dialogue");
+		SetDialogueInfo("bart","snake","deal",0);
+		SetCamBestSide( "bm1_bestside" );
+	CloseObjective();
+CloseStage();
+
+CloseMission();

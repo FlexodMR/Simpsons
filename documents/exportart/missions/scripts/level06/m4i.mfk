@@ -1,0 +1,91 @@
+SelectMission("m4");
+
+SetMissionResetPlayerInCar("m4_carstart");
+SetDynaLoadData("l6z5.p3d;l6r4.p3d;l6r5.p3d;l6r5_dam.p3d;");
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(3);
+	RESET_TO_HERE();
+	SetStageMessageIndex(245);
+	SetHUDIcon( "duff" );
+	AddObjective( "goto" );
+		AddStageVehicle("cDuff","m4_duff_carstart","NULL","Missions\level06\M4dump.con");
+		SetDestination( "m4_brewery", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(45);
+	AddCondition( "timeout" );
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(140);
+	SetHUDIcon( "lasercra" );
+	ActivateVehicle("cDuff","NULL","target");
+	SetVehicleAIParams( "cDuff", -10, -9 ); //  <=== name, min, max; 0,1 = really dumb, no shortcuts
+//SetStageAIRaceCatchupParams( 
+//	STAGEVEHICLENAME,
+//      ALONGROADDISTFROMPLAYER_TO_APPLYMAXCATCHUP, // default = 80
+//      FRACTIONPLAYERSPEED_MINCATCHUP,   // default = 0.5
+//      FRACTIONPLAYERSPEED_NOCATCHUP,    // default = 1.1
+//      FRACTIONPLAYERSPEED_MAXCATCHUP )  // default = 1.7	AddStageWaypoint( "m7_smithers_race1" );
+//SetStageAITargetCatchupParams( "cDuff", 20, 70);
+	SetStageAITargetCatchupParams( "cDuff", 50, 100);
+
+	AddStageWaypoint( "m4_laser_path7" );
+	AddStageWaypoint( "m4_laser_path14" );
+	AddStageWaypoint( "m4_laser_path1" );
+	AddObjective("dump");
+		SetObjTargetVehicle("cDuff");
+		AddCollectible("m4_laser1","laserbox_crate");
+		AddCollectible("m4_laser2","laserbox_crate");
+		AddCollectible("m4_laser3","laserbox_crate");
+		AddCollectible("m4_laser4","laserbox_crate");
+		AddCollectible("m4_laser5","laserbox_crate");
+		AddCollectible("m4_laser6","laserbox_crate");
+		SetCollectibleEffect("bonestorm_explosion");
+	CloseObjective();
+	AddStageTime(120);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(211);
+	SetHUDIcon( "duff" );
+	AddObjective( "goto" );
+		SetDestination( "m4_brewery", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddStageTime(40);
+	AddCondition( "timeout" );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0, "final");
+	SetStageMessageIndex(133);
+	SetHUDIcon( "lasergun" );
+	AddObjective("goto", "niether");
+		SetDestination("m4_lasergun", "lasergun");
+		TurnGotoDialogOff();
+	CloseObjective();
+	AddStageTime(30);
+	AddCondition( "timeout" );
+	CloseCondition();
+	SetCompletionDialog("sellout");
+CloseStage();
+
+CloseMission();
+
+

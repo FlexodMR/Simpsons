@@ -1,0 +1,249 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Tune|Win32">
+      <Configuration>Tune</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName>
+    </SccProjectName>
+    <SccAuxPath />
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProvider>
+    </SccProvider>
+    <ProjectGuid>{60778B7D-0909-46D2-896F-8805097224A3}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Tune|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Tune|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Tune|Win32'">
+    <OutDir>.\Tune\</OutDir>
+    <IntDir>.\Tune\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Tune|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>../../../radmath;../../../pure3d;../../../radcore/inc;../../inc;../../src;..\..\..\radcontent\inc;..\..\..\..\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_LIB;SCROOBY_RUNTIME;RAD_PC;RAD_WIN32;RAD_TUNE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>.\Tune/ScroobyLib.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Tune/</AssemblerListingLocation>
+      <ObjectFileName>.\Tune/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Tune/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>..\..\lib\scroobywt.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x1009</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../../radmath;../../../pure3d;../../../radcore/inc;../../inc;../../src;..\..\..\radcontent\inc;..\..\..\..\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_LIB;SCROOBY_RUNTIME;RAD_PC;RAD_WIN32;RAD_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>.\Debug/ScroobyLib.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>..\..\lib\scroobywd.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x1009</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>../../../radmath;../../../pure3d;../../../radcore/inc;../../inc;../../src;..\..\..\radcontent\inc;..\..\..\..\code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;SCROOBY_RUNTIME;RAD_PC;RAD_WIN32;RAD_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>.\Release/ScroobyLib.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>..\..\lib\scroobywr.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x1009</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\FeApp.cpp" />
+    <ClCompile Include="..\..\src\FeBoundedDrawable.cpp" />
+    <ClCompile Include="..\..\src\FeDrawable.cpp" />
+    <ClCompile Include="..\..\src\FeEntity.cpp" />
+    <ClCompile Include="..\..\src\FeGroup.cpp" />
+    <ClCompile Include="..\..\src\FeLanguage.cpp" />
+    <ClCompile Include="..\..\src\FeLayer.cpp" />
+    <ClCompile Include="..\..\src\FeMovie.cpp" />
+    <ClCompile Include="..\..\src\FeOwner.cpp" />
+    <ClCompile Include="..\..\src\FePage.cpp" />
+    <ClCompile Include="..\..\src\FeParent.cpp" />
+    <ClCompile Include="..\..\src\FePolygon.cpp" />
+    <ClCompile Include="..\..\src\FeProject.cpp" />
+    <ClCompile Include="..\..\src\FePure3dObject.cpp" />
+    <ClCompile Include="..\..\src\FeScreen.cpp" />
+    <ClCompile Include="..\..\src\FeSprite.cpp" />
+    <ClCompile Include="..\..\src\FeText.cpp" />
+    <ClCompile Include="..\..\src\FeTextBible.cpp" />
+    <ClCompile Include="..\..\src\FeTextStyle.cpp" />
+    <ClCompile Include="..\..\src\scrooby\App.cpp" />
+    <ClCompile Include="..\..\src\FeChunkHandler.cpp" />
+    <ClCompile Include="..\..\src\FeLoaders.cpp" />
+    <ClCompile Include="..\..\src\utility\BufferReader.cpp" />
+    <ClCompile Include="..\..\src\xml\XMLParser.cpp" />
+    <ClCompile Include="..\..\src\xml\XMLTree.cpp" />
+    <ClCompile Include="..\..\src\utility\AsyncFileLoader.cpp" />
+    <ClCompile Include="..\..\src\utility\EnumConversion.cpp" />
+    <ClCompile Include="..\..\src\utility\debugMessages.cpp" />
+    <ClCompile Include="..\..\src\tLinearTable.cpp" />
+    <ClCompile Include="..\..\src\ResourceManager\FeResourceManager.cpp" />
+    <ClCompile Include="..\..\Src\strings\UnicodeString.cpp" />
+    <ClCompile Include="..\..\src\strings\pcstring.cpp" />
+    <ClCompile Include="..\..\src\strings\stricmp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\FeApp.h" />
+    <ClInclude Include="..\..\src\FeBoundedDrawable.h" />
+    <ClInclude Include="..\..\src\FeCharMap.h" />
+    <ClInclude Include="..\..\src\FeDrawable.h" />
+    <ClInclude Include="..\..\src\FeEntity.h" />
+    <ClInclude Include="..\..\src\FeGroup.h" />
+    <ClInclude Include="..\..\src\FeLanguage.h" />
+    <ClInclude Include="..\..\src\FeLayer.h" />
+    <ClInclude Include="..\..\src\FeMovie.h" />
+    <ClInclude Include="..\..\src\FeOwner.h" />
+    <ClInclude Include="..\..\src\FePage.h" />
+    <ClInclude Include="..\..\src\FeParent.h" />
+    <ClInclude Include="..\..\src\FePolygon.h" />
+    <ClInclude Include="..\..\src\FeProject.h" />
+    <ClInclude Include="..\..\src\FePure3dObject.h" />
+    <ClInclude Include="..\..\src\FeScreen.h" />
+    <ClInclude Include="..\..\src\FeSprite.h" />
+    <ClInclude Include="..\..\src\FeText.h" />
+    <ClInclude Include="..\..\src\FeTextBible.h" />
+    <ClInclude Include="..\..\src\FeTextStyle.h" />
+    <ClInclude Include="..\..\inc\App.h" />
+    <ClInclude Include="..\..\inc\BoundedDrawable.h" />
+    <ClInclude Include="..\..\inc\Drawable.h" />
+    <ClInclude Include="..\..\inc\Enums.h" />
+    <ClInclude Include="..\..\inc\Group.h" />
+    <ClInclude Include="..\..\inc\Layer.h" />
+    <ClInclude Include="..\..\inc\Movie.h" />
+    <ClInclude Include="..\..\inc\Owner.h" />
+    <ClInclude Include="..\..\inc\Page.h" />
+    <ClInclude Include="..\..\inc\Polygon.h" />
+    <ClInclude Include="..\..\inc\Project.h" />
+    <ClInclude Include="..\..\inc\Pure3dObject.h" />
+    <ClInclude Include="..\..\inc\ResourceManager.h" />
+    <ClInclude Include="..\..\inc\Screen.h" />
+    <ClInclude Include="..\..\inc\Scrooby.hpp" />
+    <ClInclude Include="..\..\inc\Sprite.h" />
+    <ClInclude Include="..\..\inc\Text.h" />
+    <ClInclude Include="..\..\inc\TextBible.h" />
+    <ClInclude Include="..\..\src\FeChunkHandler.h" />
+    <ClInclude Include="..\..\src\FeLoadTags.h" />
+    <ClInclude Include="..\..\src\FeLoaders.h" />
+    <ClInclude Include="..\..\src\utility\BufferReader.h" />
+    <ClInclude Include="..\..\src\xml\XMLParser.h" />
+    <ClInclude Include="..\..\src\xml\XMLTree.h" />
+    <ClInclude Include="..\..\src\utility\AsyncFileLoader.h" />
+    <ClInclude Include="..\..\src\utility\EnumConversion.h" />
+    <ClInclude Include="..\..\src\utility\debugMessages.h" />
+    <ClInclude Include="..\..\src\utility\memory.h" />
+    <ClInclude Include="..\..\src\utility\rVector.hpp" />
+    <ClInclude Include="..\..\src\tLinearTable.h" />
+    <ClInclude Include="..\..\src\ResourceManager\FeResourceManager.h" />
+    <ClInclude Include="..\..\src\strings\pcstring.h" />
+    <ClInclude Include="..\..\src\strings\stricmp.h" />
+    <ClInclude Include="..\..\src\strings\unicodeString.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

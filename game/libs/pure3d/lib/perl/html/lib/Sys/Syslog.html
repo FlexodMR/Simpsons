@@ -1,0 +1,200 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>syslog - Perl interface to the UNIX syslog(3) calls
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#DEPENDENCIES">DEPENDENCIES</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Sys::Syslog, openlog, closelog, setlogmask, syslog - Perl interface to the 
+<FONT SIZE=-1>UNIX</FONT> <CODE>syslog(3)</CODE> calls
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Sys::Syslog;
+</PRE>
+
+<P>
+
+<PRE>    openlog $ident, $logopt, $facility;
+    syslog $priority, $format, @args;
+    $oldmask = setlogmask $mask_priority;
+    closelog;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Sys::Syslog is an interface to the 
+<FONT SIZE=-1>UNIX</FONT> <A HREF="#item_syslog">syslog(3)</A> program. Call <A HREF="#item_syslog">syslog()</A> with a string priority and a list of <A HREF="#item_printf">printf()</A> args just like <A HREF="#item_syslog">syslog(3)</A>.
+
+
+<P>
+
+Syslog provides the functions:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_openlog">openlog $ident, $logopt, $facility
+
+</A></STRONG><DD>
+<EM>$ident</EM> is prepended to every message.
+<EM>$logopt</EM> contains one or more of the words <EM>pid</EM>, <EM>ndelay</EM>, <EM>cons</EM>, <EM>nowait</EM>.
+<EM>$facility</EM> specifies the part of the system
+
+
+<P>
+
+<DT><STRONG><A NAME="item_syslog">syslog $priority, $format, @args
+
+</A></STRONG><DD>
+If <EM>$priority</EM> permits, logs <EM>($format, @args)</EM>
+printed as by <A HREF="#item_printf">printf(3V)</A>, with the addition that <EM>%m</EM>
+is replaced with <CODE>"$!"</CODE> (the latest error message).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_setlogmask">setlogmask $mask_priority
+
+</A></STRONG><DD>
+Sets log mask <EM>$mask_priority</EM> and returns the old mask.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_setlogsock">setlogsock $sock_type
+ 
+Sets the socket type to be used for the next call to
+openlog() or syslog().
+ 
+A value of 'unix' will connect to the UNIX domain socket returned
+by _PATH_LOG in syslog.ph.  A value of 'inet' will connect
+to an INET socket returned by getservbyname().
+Any other value croaks.
+
+</A></STRONG><DD>
+The default is for the 
+<FONT SIZE=-1>INET</FONT> socket to be used.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_closelog">closelog
+
+</A></STRONG><DD>
+Closes the log file.
+
+
+<P>
+
+</DL>
+Note that <A HREF="#item_openlog">openlog</A> now takes three arguments, just like <A HREF="#item_openlog">openlog(3)</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+<PRE>    openlog($program, 'cons,pid', 'user');
+    syslog('info', 'this is another test');
+    syslog('mail|warning', 'this is a better test: %d', time);
+    closelog();
+</PRE>
+
+<P>
+
+<PRE>    syslog('debug', 'this is the last test');
+</PRE>
+
+<P>
+
+<PRE>    setlogsock('unix');
+    openlog(&quot;$program $$&quot;, 'ndelay', 'user');
+    syslog('notice', 'fooprogram: this is really done');
+</PRE>
+
+<P>
+
+<PRE>    setlogsock('inet');
+    $! = 55;
+    syslog('info', 'problem was %m'); # %m == $! in syslog(3)
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DEPENDENCIES">DEPENDENCIES
+
+</A></H1>
+<STRONG>Sys::Syslog</STRONG> needs <EM>syslog.ph</EM>, which can be created with <A HREF="#item_h2ph">h2ph</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<EM>syslog(3)</EM>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Christiansen &lt;<EM>tchrist@perl.com</EM>&gt; and Larry Wall &lt;<EM>larry@wall.org</EM>&gt;. 
+<FONT SIZE=-1>UNIX</FONT> domain sockets added by Sean Robinson &lt;<EM>robinson_s@sc.maricopa.edu</EM>&gt;
+with support from Tim Bunce <A
+HREF="MAILTO:<Tim.Bunce@ig.co.uk>"><Tim.Bunce@ig.co.uk></A> and the
+perl5-porters mailing list.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

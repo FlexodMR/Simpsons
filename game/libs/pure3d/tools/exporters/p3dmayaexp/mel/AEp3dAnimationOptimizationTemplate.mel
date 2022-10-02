@@ -1,0 +1,216 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     09 September, 2002
+//
+// Component:   AEp3dAnimationOptimization.mel
+//
+// Description: Maya Attribute Editor Template: Animation Optimization
+//              controls, added to transform nodes.
+//
+//              See AEtransformP3dRevision.mel
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+// To expose p3dFrameLayoutEx()
+source p3dFrameLayout;
+
+
+global proc AEp3dAnimationOptimizationTemplate( string $attr, int $isTransform )
+{
+    // Don't use editorTemplate for layout .. use p3dFrameLayout instead.
+
+        editorTemplate -callCustom 
+            ( "AEp3dAnimationOptimizationNew " + $isTransform )
+            ( "AEp3dAnimationOptimizationReplace " + $isTransform )
+                "";
+
+        // See p3dtags.mel -> p3dTransformTags() //
+        editorTemplate -suppress "p3dUseCustomAnimOptimization";
+        editorTemplate -suppress "p3dAnimOptThresholdPos";
+        editorTemplate -suppress "p3dAnimOptThresholdRot";
+        editorTemplate -suppress "p3dAnimOptThresholdColour";
+        editorTemplate -suppress "p3dAnimOptThresholdFloat";
+        editorTemplate -suppress "p3dAnimOptThresholdVector";
+
+
+    editorTemplate -endLayout;
+    
+}
+
+global proc AEp3dAnimationOptimizationNew( int $isTransform, string $node )
+{
+    // This template is built for all Transform and all Shape nodes.
+    // Consequently, instances of these Attribute Editor controls are created
+    // for EVERY node type.  In order to maintain communication with
+    // the AE panel it is necessary to prefix the control names with the
+    // nodeType currently displayed.
+    string $rootNode = `match "[^\.]*" $node`;
+    string $nodeType = `nodeType $rootNode`;
+
+    string $animOptimizationUI = ( $nodeType + "animOptimizationUI" );
+
+    string $animOptimizationFrameUI = ( $nodeType + "animOptimizationFrameUI" );
+    string $animOptimizationHideUI = ( $nodeType + "animOptimizationHideUI" );
+    string $animOptimizationEnableUI = ( $nodeType + "animOptimizationEnableUI" );
+
+    string $hasAnimOptimizationUI = ( $nodeType + "hasAnimOptimizationUI" );
+
+    string $animOptimizationThresholdPositionUI = ( $nodeType + "animOptimizationThresholdPositionUI" );
+    string $animOptimizationThresholdRotationUI = ( $nodeType + "animOptimizationThresholdRotationUI" );
+
+    string $animOptimizationThresholdColourUI = ( $nodeType + "animOptimizationThresholdColourUI" );
+    string $animOptimizationThresholdFloatUI  = ( $nodeType + "animOptimizationThresholdFloatUI" );
+    string $animOptimizationThresholdVectorUI  = ( $nodeType + "animOptimizationThresholdVectorUI" );
+
+	global int $gTextColumnWidthIndex;
+    int $fieldWidth = 72;
+    int $precision = 6;
+    
+    string $url[] = p3dFrameLayoutEx( "Pure3D Animation Optimization", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Exporter/animOptimization.html", true, true, $animOptimizationUI );
+
+    columnLayout -adj true $animOptimizationHideUI;
+
+        checkBoxGrp -label "" -label1 "Use Custom Animation Optimization" $hasAnimOptimizationUI;
+
+        separator -height 8;
+
+        columnLayout $animOptimizationEnableUI;
+
+            if ( $isTransform )
+            {
+                if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdPos"` )
+                {
+                    rowLayout -nc 2 -columnWidth 1 $gTextColumnWidthIndex -columnWidth 2 $fieldWidth -columnOffset2 2 2;
+                        text -label "Position Threshold" -align "right";
+                        floatField -precision $precision $animOptimizationThresholdPositionUI;
+                        setParent ..;
+                }
+
+                if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdRot"` )
+                {
+                    rowLayout -nc 2 -columnWidth 1 $gTextColumnWidthIndex -columnWidth 2 $fieldWidth -columnOffset2 2 2;
+                        text -label "Rotation Threshold" -align "right";
+                        floatField -precision $precision $animOptimizationThresholdRotationUI;
+                        setParent ..;
+                }
+            }
+
+            else
+            {
+                if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdFloat"` )
+                {
+                    rowLayout -nc 2 -columnWidth 1 $gTextColumnWidthIndex -columnWidth 2 $fieldWidth -columnOffset2 2 2;
+                        text -label "Channel Threshold (1 DOF)" -align "right";
+                        floatField -precision $precision $animOptimizationThresholdFloatUI;
+                        setParent ..;
+                }
+
+                if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdVector"` )
+                {
+                    rowLayout -nc 2 -columnWidth 1 $gTextColumnWidthIndex -columnWidth 2 $fieldWidth -columnOffset2 2 2;
+                        text -label "Vector Threshold (3 DOF)" -align "right";
+                        floatField -precision $precision $animOptimizationThresholdVectorUI;
+                        setParent ..;
+                }
+
+                if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdColour"` )
+                {
+                    rowLayout -nc 2 -columnWidth 1 $gTextColumnWidthIndex -columnWidth 2 $fieldWidth -columnOffset2 2 2;
+                        text -label "Colour Threshold" -align "right";
+                        floatField -precision $precision $animOptimizationThresholdColourUI;
+                        setParent ..;
+                }
+            }
+
+            setParent ..;
+
+        setParent ..;
+
+    PopP3dFrameLayout( $url );
+
+    AEp3dAnimationOptimizationReplace $isTransform $node;
+}
+
+global proc AEp3dAnimationOptimizationReplace( int $isTransform, string $node )
+{
+    // This template is built for all Transform and all Shape nodes.
+    // Consequently, instances of these Attribute Editor controls are created
+    // for EVERY node type.  In order to maintain communication with
+    // the AE panel it is necessary to prefix the control names with the
+    // nodeType currently displayed.
+    string $rootNode = `match "[^\.]*" $node`;
+    string $nodeType = `nodeType $rootNode`;
+
+    string $animOptimizationUI = ( $nodeType + "animOptimizationUI" );
+
+    string $animOptimizationFrameUI = ( $nodeType + "animOptimizationFrameUI" );
+    string $animOptimizationHideUI = ( $nodeType + "animOptimizationHideUI" );
+    string $animOptimizationEnableUI = ( $nodeType + "animOptimizationEnableUI" );
+
+    string $hasAnimOptimizationUI = ( $nodeType + "hasAnimOptimizationUI" );
+
+    string $animOptimizationThresholdPositionUI = ( $nodeType + "animOptimizationThresholdPositionUI" );
+    string $animOptimizationThresholdRotationUI = ( $nodeType + "animOptimizationThresholdRotationUI" );
+
+    string $animOptimizationThresholdColourUI = ( $nodeType + "animOptimizationThresholdColourUI" );
+    string $animOptimizationThresholdFloatUI  = ( $nodeType + "animOptimizationThresholdFloatUI" );
+    string $animOptimizationThresholdVectorUI  = ( $nodeType + "animOptimizationThresholdVectorUI" );
+
+    int $vaExists = `attributeQuery -node $rootNode -exists "p3dUseCustomAnimOptimization"`;
+
+    formLayout -e
+        -visible $vaExists
+        -manage $vaExists
+            $animOptimizationUI;
+
+    if ( $vaExists )
+    {
+        connectControl -index 2 $hasAnimOptimizationUI ( $node + "p3dUseCustomAnimOptimization" );
+        checkBoxGrp -e
+            -cc ( "columnLayout -e -enable (#1) " + $animOptimizationEnableUI )
+                $hasAnimOptimizationUI;
+
+        if ( $isTransform )
+        {
+            // ---------  Position  -------------------
+            if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdPos"` )
+            {
+                connectControl $animOptimizationThresholdPositionUI ( $node + "p3dAnimOptThresholdPos" );
+            }
+
+            // ---------  Rotation  -------------------
+            if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdRot"` )
+            {
+                connectControl $animOptimizationThresholdRotationUI ( $node + "p3dAnimOptThresholdRot" );
+            }
+        }
+
+        else
+        {
+            // ---------  Channels  -------------------
+            if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdFloat"` )
+            {
+                connectControl $animOptimizationThresholdFloatUI ( $node + "p3dAnimOptThresholdFloat" );
+            }
+
+            if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdVector"` )
+            {
+                connectControl $animOptimizationThresholdVectorUI ( $node + "p3dAnimOptThresholdVector" );
+            }
+
+            if ( `attributeQuery -node $rootNode -exists "p3dAnimOptThresholdColour"` )
+            {
+                connectControl $animOptimizationThresholdColourUI ( $node + "p3dAnimOptThresholdColour" );
+            }
+        }
+
+        int $enable = `getAttr ( $node + "p3dUseCustomAnimOptimization" )`;
+        columnLayout -e -enable $enable $animOptimizationEnableUI;
+    }
+
+}

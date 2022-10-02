@@ -1,0 +1,2167 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Date::Manip - date manipulation routines
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#ROUTINES">ROUTINES</A>
+	<LI><A HREF="#TIMEZONES">TIMEZONES</A>
+	<LI><A HREF="#BUSINESS_MODE">BUSINESS MODE</A>
+	<LI><A HREF="#CUSTOMIZING_DATE_MANIP">CUSTOMIZING DATE::MANIP</A>
+	<LI><A HREF="#BACKWARDS_INCOMPATIBILITIES">BACKWARDS INCOMPATIBILITIES</A>
+	<LI><A HREF="#COMMON_PROBLEMS">COMMON PROBLEMS</A>
+	<LI><A HREF="#KNOWN_PROBLEMS">KNOWN PROBLEMS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Date::Manip - date manipulation routines
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use Date::Manip;
+</PRE>
+
+<P>
+
+<PRE> $date=&amp;ParseDate(\@args)
+ $date=&amp;ParseDate($string)
+ $date=&amp;ParseDate(\$string)
+</PRE>
+
+<P>
+
+<PRE> @date=&amp;UnixDate($date,@format)
+ $date=&amp;UnixDate($date,@format)
+</PRE>
+
+<P>
+
+<PRE> $delta=&amp;ParseDateDelta(\@args)
+ $delta=&amp;ParseDateDelta($string)
+ $delta=&amp;ParseDateDelta(\$string)
+</PRE>
+
+<P>
+
+<PRE> $d=&amp;DateCalc($d1,$d2,$errref,$del)
+</PRE>
+
+<P>
+
+<PRE> $date=&amp;Date_SetTime($date,$hr,$min,$sec)
+ $date=&amp;Date_SetTime($date,$time)
+</PRE>
+
+<P>
+
+<PRE> $date=&amp;Date_GetPrev($date,$dow,$today,$hr,$min,$sec)
+ $date=&amp;Date_GetPrev($date,$dow,$today,$time)
+</PRE>
+
+<P>
+
+<PRE> $date=&amp;Date_GetNext($date,$dow,$today,$hr,$min,$sec)
+ $date=&amp;Date_GetNext($date,$dow,$today,$time)
+</PRE>
+
+<P>
+
+<PRE> &amp;Date_Init()
+ &amp;Date_Init(&quot;VAR=VAL&quot;,...)
+</PRE>
+
+<P>
+
+<PRE> $version=&amp;DateManipVersion
+</PRE>
+
+<P>
+
+<PRE> $flag=&amp;Date_IsWorkDay($date [,$flag]);
+</PRE>
+
+<P>
+
+<PRE> $date=&amp;Date_NextWorkDay($date,$off [,$time]);
+ $date=&amp;Date_PrevWorkDay($date,$off [,$time]);
+</PRE>
+
+<P>
+
+The following routines are used by the above routines (though they can also be called directly). Make sure that <A HREF="#item__y">$y</A> is entered as the full 4 digit year (it will die if a 2 digit years is entered). Most (if not all) of the information below can be gotten from UnixDate which is really the way 
+<FONT SIZE=-1>I</FONT> intended it to be gotten.
+
+
+
+<P>
+
+<PRE> $day=&amp;Date_DayOfWeek($m,$d,$y)
+ $secs=&amp;Date_SecsSince1970($m,$d,$y,$h,$mn,$s)
+ $secs=&amp;Date_SecsSince1970GMT($m,$d,$y,$h,$mn,$s)
+ $days=&amp;Date_DaysSince999($m,$d,$y)
+ $day=&amp;Date_DayOfYear($m,$d,$y)
+ $days=&amp;Date_DaysInYear($y)
+ $wkno=&amp;Date_WeekOfYear($m,$d,$y,$first)
+ $flag=&amp;Date_LeapYear($y)
+ $day=&amp;Date_DaySuffix($d)
+ $tz=&amp;Date_TimeZone()
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This is a set of routines designed to make any common date/time
+manipulation easy to do. Operations such as comparing two times,
+calculating a time a given amount of time from another, or parsing
+international times are all easily done.
+
+
+<P>
+
+Date::Manip deals only with the Gregorian calendar (the one currently in use). The Julian calendar defined leap years as every 4th year. The Gregorian calendar improved this by making every 100th year 
+<FONT SIZE=-1>NOT</FONT> a leap year, unless it was also the 400th year. The Gregorian calendar has been extrapolated back to the year 1000 
+<FONT SIZE=-1>AD</FONT> and forward to the year 9999 
+<FONT SIZE=-1>AD.</FONT> Note that in historical context, the Julian calendar was in use until 1582 when the Gregorian calendar was adopted by the Catholic church. Protestant countries did not accept it until later; Germany and Netherlands in 1698, British Empire in 1752, Russia in 1918. Note that the Gregorian calendar is itself imperfect. Each year is on average 26 seconds too long, which means that every 3,323 years, a day should be removed from the calendar. No attempt is made to correct for that.
+
+
+
+<P>
+
+Date::Manip is therefore not equipped to truly deal with historacle dates,
+but should be able to perform (virtually) any operation dealing with a
+modern time and date.
+
+
+<P>
+
+Among other things, Date::Manip allow you to:
+
+
+<P>
+
+1. Enter a date and be able to choose any format conveniant
+
+
+<P>
+
+2. Compare two dates, entered in widely different formats to determine
+which is earlier
+
+
+<P>
+
+3. Extract any information you want from 
+<FONT SIZE=-1>ANY</FONT> date using a format string similar to the Unix
+date command
+
+
+<P>
+
+4. Determine the amount of time between two dates
+
+
+<P>
+
+5. Add a time offset to a date to get a second date (i.e. determine the
+date 132 days ago or 2 years and 3 months after Jan 2, 1992)
+
+
+<P>
+
+6. Work with dates with dates using international formats (foreign month
+names, 12-10-95 referring to October rather than December, etc.).
+
+
+<P>
+
+Each of these tasks is trivial (one or two lines at most) with this
+package.
+
+
+<P>
+
+Although the word date is used extensively here, it is actually somewhat misleading. Date::Manip works with the full date 
+<FONT SIZE=-1>AND</FONT> time (year, month, day, hour, minute, second).
+
+
+
+<P>
+
+In the documentation below, 
+<FONT SIZE=-1>US</FONT> formats are used, but in most (if not all) cases, a
+non-English equivalent will work equally well.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+1. Parsing a date from any conveniant format
+
+
+<P>
+
+<PRE>  $date=&amp;ParseDate(&quot;today&quot;);
+  $date=&amp;ParseDate(&quot;1st thursday in June 1992&quot;);
+  $date=&amp;ParseDate(&quot;05-10-93&quot;);
+  $date=&amp;ParseDate(&quot;12:30 Dec 12th 1880&quot;);
+  $date=&amp;ParseDate(&quot;8:00pm december tenth&quot;);
+  if (! $date) {
+    # Error in the date
+  }
+</PRE>
+
+<P>
+
+2. Compare two dates
+
+
+<P>
+
+<PRE>  $date1=&amp;ParseDate($string1);
+  $date2=&amp;ParseDate($string2);
+  if ($date1 lt $date2) {
+    # date1 is earlier
+  } else {
+    # date2 is earlier (or the two dates are identical)
+  }
+</PRE>
+
+<P>
+
+3. Extract information from a date.
+
+
+<P>
+
+<PRE>  print &amp;UnixDate(&quot;today&quot;,&quot;The time is now %T on %b %e, %Y.&quot;);
+  =&gt;  &quot;The time is now 13:24:08 on Feb  3, 1996.&quot;
+</PRE>
+
+<P>
+
+4. The amount of time between two dates.
+
+
+<P>
+
+<PRE>  $date1=&amp;ParseDate($string1);
+  $date2=&amp;ParseDate($string2);
+  $delta=&amp;DateCalc($date1,$date2,\$err);
+  =&gt; 0:0:DD:HH:MM:SS   the days, hours, minutes, and seconds between the two
+  $delta=&amp;DateCalc($date1,$date2,\$err,1);
+  =&gt; YY:MM:DD:HH:MM:SS  the years, months, etc. between the two
+</PRE>
+
+<P>
+
+<PRE>  Read the documentation below for an explanation of the difference.
+</PRE>
+
+<P>
+
+5. To determine a date a given offset from another.
+
+
+<P>
+
+<PRE>  $date=&amp;DateCalc(&quot;today&quot;,&quot;+ 3hours 12minutes 6 seconds&quot;,\$err);
+  $date=&amp;DateCalc(&quot;12 hours ago&quot;,&quot;12:30 6Jan90&quot;,\$err);
+</PRE>
+
+<P>
+
+<PRE>  It even works with business days:
+</PRE>
+
+<P>
+
+<PRE>  $date=&amp;DateCalc(&quot;today&quot;,&quot;+ 3 business days&quot;,\$err);
+</PRE>
+
+<P>
+
+6. To work with dates in another language.
+
+
+<P>
+
+<PRE>  &amp;Date_Init(&quot;Language=French&quot;,&quot;DateFormat=non-US&quot;);
+  $date=&amp;ParseDate(&quot;1er decembre 1990&quot;);
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>NOTE:</FONT> Some date forms do not work as well in languages other than English, but this is not because DateManip is incapable of doing so (almost nothing in this module is language dependent). It is simply that 
+<FONT SIZE=-1>I</FONT> do not have the correct translation available for some words. If there is a date form that works in English but does not work in a language you need, let me know and if you can provide me the translation, 
+<FONT SIZE=-1>I</FONT> will fix DateManip.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ROUTINES">ROUTINES
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_ParseDate">ParseDate
+
+</A></STRONG><DD>
+<PRE> $date=&amp;ParseDate(\@args)
+ $date=&amp;ParseDate($string)
+ $date=&amp;ParseDate(\$string)
+</PRE>
+
+<P>
+
+This takes an array or a string containing a date and parses it. When the
+date is included as an array (for example, the arguments to a program) the
+array should contain a valid date in the first one or more elements
+(elements after a valid date are ignored). Elements containing a valid date
+are shifted from the array. The largest possible number of elements which
+can be correctly interpreted as a valid date are always used. If a string
+is entered rather than an array, that string is tested for a valid date.
+The string is unmodified, even if passed in by reference.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> date actually includes 2 parts: date and time. 
+<FONT SIZE=-1>A</FONT> time must include hours and minutes and can optionally include seconds, fractional seconds, an am/pm type string, and a timezone. For example:
+
+
+
+<P>
+
+<PRE>     HH:MN  [Zone]
+     HH:MN:SS  [Zone]
+     HH:MN am  [Zone]
+     HH:MN:SS am  [Zone]
+     HH:MN:SS:SSSS  [Zone]
+     HH:MN:SS.SSSS am [Zone]
+</PRE>
+
+<P>
+
+Hours can be written using 1 or 2 digits when the time follows the date and
+is separated from the date with spaces or some other separator. Any time
+there is no space separating the time from a date and the part of the date
+immediately preceding the hour is a digit, 2 digits must be used for the
+hours.
+
+
+<P>
+
+Fractional seconds are also supported in parsing but the fractional part is
+discarded.
+
+
+<P>
+
+Timezones always appear after the time and must be separated from all other
+parts of the time/date by spaces. For now, only rudimentary timezone
+handling is done. At the time the date is parsed, it is converted to a
+specific time zone (which defaults to whatever time zone you are in, but
+this can be overridden using the Date_Init routine described below). After
+that, the time zone is never used. Once converted, information about the
+time zone is no longer stored or used.
+
+
+<P>
+
+See the section below on TIMEZONEs for a list of all defined timezone
+names.
+
+
+<P>
+
+Spaces in the date are almost always optional when there is absolutely no
+ambiguity if they are not present. Years can be entered as 2 or 4 digits,
+days and months as 1 or 2 digits. Both days and months must include 2
+digits whenver they are immediately adjacent to another part of the date or
+time Valid formats for a full date and time (and examples of how Dec 10,
+1965 at 9:00 pm might appear) are: DateTime Date=YYMMDD 1965121021:00:00
+65121021:00
+
+
+<P>
+
+<PRE>  Date Time
+  Date%Time
+    Date=mm%dd, mm%dd%YY     12/10/65 21:00
+                             12 10 1965 9:00pm
+    Date=mmm%dd, mmm%dd%YY   December-10-65-9:00:00pm
+    Date=dd%mmm, dd%mmm%YY   10/December/65 9:00:00pm
+</PRE>
+
+<P>
+
+<PRE>  Date Time
+    Date=mmmdd, mmmdd YY,    Dec10 65 9:00:00 pm
+         mmmDDYY, mmm DDYY   December 10 1965 9:00pm
+</PRE>
+
+<P>
+
+<PRE>    Date=ddmmm, ddmmm YY, ddmmmYY, dd mmmYY
+                             10Dec65 9:00:00 pm     10 December 1965 9:00pm
+</PRE>
+
+<P>
+
+<PRE>  TimeDate
+  Time Date
+  Time%Date
+    Date=mm%dd, mm%dd%YY     9:00pm 12.10.65      21:00 12/10/1965
+    Date=mmm%dd, mmm%dd%YY   9:00pm December/10/65
+    Date=dd%mmm, dd%mmm%YY   9:00pm 10-December-65  21:00/10/Dec/65
+</PRE>
+
+<P>
+
+<PRE>  TimeDate
+  Time Date
+    Date=mmmdd, mmmdd YY, mmmDDYY
+                             21:00:00DeCeMbEr10
+    Date=ddmmm, ddmmm YY, ddmmmYY, dd mmmYY
+                             21:00 10Dec95
+</PRE>
+
+<P>
+
+Miscellaneous other allowed formats are: which dofw in mmm [at time] which dofw in mmm 
+<FONT SIZE=-1>YY</FONT> [at time] ``first sunday in june 1996 at 14:00''
+
+
+
+<P>
+
+<PRE>  dofw week num [in YY] [at time]   &quot;sunday week 22 in 1995&quot;
+  which dofw [in YY] [at time]      &quot;22nd sunday in 1996 at noon&quot;
+  dofw which week [in YY] [at time] &quot;sunday 22nd week in 1996&quot;
+  next/last dofw [at time]          &quot;next friday at noon&quot;
+  in num weeks [at time]            &quot;in 3 weeks at 12:00&quot;
+  num weeks ago [at time]           &quot;3 weeks ago&quot;
+  dofw in num week [at time]        &quot;Friday in 2 weeks&quot;
+  in num weeks on dofw [at time]    &quot;in 2 weeks on friday&quot;
+  dofw num week ago [at time]       &quot;Friday 2 weeks ago&quot;
+  num week ago dofw [at time]       &quot;2 weeks ago friday&quot;
+</PRE>
+
+<P>
+
+In addition, the following strings are recognized: today now (synonym for
+today) yesterday (exactly 24 hours before now) tomorrow (exactly 24 hours
+from now) noon (12:00:00) midnight (00:00:00)
+
+
+<P>
+
+<PRE> %       One of the valid date separators: - . / or whitespace (the same
+         character must be used for all occurences of a single date)
+         example: mm%dd%YY works for 1-1-95, 1 1 95, or 1/1/95
+ YY      year in 2 or 4 digit format
+ MM      two digit month (01 to 12)
+ mm      one or two digit month (1 to 12 or 01 to 12)
+ mmm     month name or 3 character abbreviation
+ DD      two digit day (01 to 31)
+ dd      one or two digit day (1 to 31 or 01 to 31)
+ HH      one or two digit hour in 12 or 24 hour mode (0 to 23 or 00 to 23)
+ MN      two digit minutes (00 to 59)
+ SS      two digit seconds (00 to 59)
+ which   one of the strings (first-fifth, 1st-5th, or last)
+ dofw    either the 3 character abbreviation or full name of a day of
+         the week
+</PRE>
+
+<P>
+
+Some things to note:
+
+
+<P>
+
+All strings are case insensitive. ``December'' and ``DEceMBer'' both work.
+
+
+<P>
+
+When a part of the date is not given, defaults are used: year defaults to
+current year; hours, minutes, seconds to 00.
+
+
+<P>
+
+In the above, the mm%dd formats can be switched to dd%mm by calling
+Date_Init and telling it to use a non-US date format.
+
+
+<P>
+
+All ``Date Time'' and ``DateTime'' type formats allow the word ``at'' in
+them (i.e. Jan 12 at 12:00) (and at can replace the space). So the
+following are both acceptable: ``Jan 12at12:00'' and ``Jan 12 at 12:00''.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> time is usually entered in 24 hour mode. It can be
+followed by ``am'' or ``pm'' to force it to be read in in 12 hour mode.
+
+
+<P>
+
+The year may be entered as 2 or 4 digits. If entered as 2 digits, it is
+taken to be the year in the range CurrYear-89 to CurrYear+10. So, if the
+current year is 1996, the range is [1907 to 2006] so entering the year 00
+refers to 2000, 05 to 2005, but 07 refers to 1907. Use 4 digit years to
+avoid confusion!
+
+
+<P>
+
+Any number of spaces or tabs can be used anyhere whitespace is appropriate.
+
+
+<P>
+
+Dates are always checked to make sure they are valid.
+
+
+<P>
+
+In all of the formats, the day of week (``Friday'') can be entered anywhere
+in the date and it will be checked for accuracy. In other words, ``Tue Jul
+16 1996 13:17:00'' will work but ``Jul 16 1996 Wednesday 13:17:00'' will
+not (because Jul 16, 1996 is Tuesday, not Wednesday). Note that depending
+on where the weekday comes, it may give unexpected results when used in
+array context. For example, the date (``Jun'',``25'',``Sun'',``1990'')
+would return June 25 of the current year since Jun 25, 1990 is not Sunday.
+
+
+<P>
+
+The times ``12:00 am'', ``12:00 pm'', and ``midnight'' are not well defined. For good or bad, 
+<FONT SIZE=-1>I</FONT> use the following convention in Date::Manip: midnight = 12:00am = 00:00:00 noon = 12:00pm = 12:00:00 and the day goes from 00:00:00 to 23:59:59. In otherwords, midnight is the beginning of a day rather than the end of one. At midnight on July 5, July 5 has just begun. The time 24:00:00 is 
+<FONT SIZE=-1>NOT</FONT> allowed.
+
+
+
+<P>
+
+The format of the date returned is 
+<FONT SIZE=-1>YYYYMMDDHH:MM:SS.</FONT> The advantage of this time format is
+that two times can be compared using simple string comparisons to find out
+which is later. Also, it is readily understood by a human. Alternate forms
+can be used if that is more conveniant. See Date_Init below and the config
+variable Internal.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_UnixDate">UnixDate
+
+</A></STRONG><DD>
+<PRE> @date=&amp;UnixDate($date,@format)
+ $date=&amp;UnixDate($date,@format)
+</PRE>
+
+<P>
+
+This takes a date and a list of strings containing formats roughly identical to the format strings used by the 
+<FONT SIZE=-1>UNIX</FONT> <CODE>date(1)</CODE> command. Each format is parsed and an array of strings corresponding to each format is returned.
+
+
+
+<P>
+
+<CODE>$date</CODE> must be of the form produced by &amp;ParseDate.
+
+
+<P>
+
+The format options are:
+
+
+<P>
+
+<PRE> Year
+     %y     year                     - 00 to 99
+     %Y     year                     - 0001 to 9999
+ Month, Week
+     %m     month of year            - 01 to 12
+     %f     month of year            - &quot; 1&quot; to &quot;12&quot;
+     %b,%h  month abbreviation       - Jan to Dec
+     %B     month name               - January to December
+     %U     week of year, Sunday
+            as first day of week     - 00 to 53
+     %W     week of year, Monday
+            as first day of week     - 00 to 53
+ Day
+     %j     day of the year          - 001 to 366
+     %d     day of month             - 01 to 31
+</PRE>
+
+<P>
+
+<PRE>     %e     day of month             - &quot; 1&quot; to &quot;31&quot;
+     %v     weekday abbreviation     - &quot; S&quot;,&quot; M&quot;,&quot; T&quot;,&quot; W&quot;,&quot;Th&quot;,&quot; F&quot;,&quot;Sa&quot;
+     %a     weekday abbreviation     - Sun to Sat
+     %A     weekday name             - Sunday to Saturday
+     %w     day of week              - 0 (Sunday) to 6
+     %E     day of month with suffix - 1st, 2nd, 3rd...
+ Hour
+     %H     hour                     - 00 to 23
+     %k     hour                     - &quot; 0&quot; to &quot;23&quot;
+     %i     hour                     - &quot; 1&quot; to &quot;12&quot;
+     %I     hour                     - 01 to 12
+     %p     AM or PM
+ Minute, Second, Timezone
+     %M     minute                   - 00 to 59
+     %S     second                   - 00 to 59
+     %s     seconds from Jan 1, 1970 GMT
+                                     - negative if before 1/1/1970
+     %o     seconds from Jan 1, 1970 in the current time zone
+     %z,%Z  timezone (3 characters)  - &quot;EDT&quot;
+ Date, Time
+     %c     %a %b %e %H:%M:%S %Y     - Fri Apr 28 17:23:15 1995
+     %C,%u  %a %b %e %H:%M:%S %z %Y  - Fri Apr 28 17:25:57 EDT 1995
+     %g     %a, %d %b %Y %H:%M:%S %z - Fri, 28 Apr 1995 17:23:15 EDT
+     %D,%x  %m/%d/%y                 - 04/28/95
+     %l     date in ls(1) format
+              %b %e $H:$M            - Apr 28 17:23  (if within 6 months)
+              %b %e  %Y              - Apr 28  1993  (otherwise)
+     %r     %I:%M:%S %p              - 05:39:55 PM
+     %R     %H:%M                    - 17:40
+     %T,%X  %H:%M:%S                 - 17:40:58
+     %V     %m%d%H%M%y               - 0428174095
+     %Q     %Y%m%d                   - 19961025
+     %q     %Y%m%d%H%M%S             - 19961025174058
+     %P     %Y%m%d%H%M%S             - 1996102517:40:58
+     %F     %A, %B %e, %Y            - Sunday, January  1, 1996
+ Other formats
+     %n     insert a newline character
+     %t     insert a tab character
+     %%     insert a `%' character
+     %+     insert a `+' character
+ The following formats are currently unused but may be used in the future:
+     GJKLNO 1234567890 !@#$^&amp;*()_|-=\`[];',./~{}:&lt;&gt;?
+ They currently insert the character following the %, but may (and probably
+ will) change in the future as new formats are requested.
+</PRE>
+
+<P>
+
+If a lone percent is the final character in a format, it is ignored.
+
+
+<P>
+
+Note that the ls format applies to date within the past 
+<FONT SIZE=-1>OR</FONT> future 6 months!
+
+
+<P>
+
+Note that the <A HREF="#item__s">%s</A> format was introduced in version
+5.07. Prior to that, <A HREF="#item__s">%s</A> referred to the seconds
+since 1/1/70. This was moved to <CODE>%o</CODE> in 5.07.
+
+
+<P>
+
+This routine is loosely based on date.pl (version 3.2) by Terry McGonigal.
+No code was used, but most of his formats were.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ParseDateDelta">ParseDateDelta
+
+</A></STRONG><DD>
+<PRE> $delta=&amp;ParseDateDelta(\@args)
+ $delta=&amp;ParseDateDelta($string)
+ $delta=&amp;ParseDateDelta(\$string)
+</PRE>
+
+<P>
+
+This takes an array and shifts a valid delta date (an amount of time) from the array. Recognized deltas are of the form: +Yy +Mm +Ww +Dd +Hh +MNmn +Ss examples: +4 hours +3mn -2second + 4 hr 3 minutes -2 4 hour + 3 min -2 s 
+<FONT SIZE=-1>+Y:+M:+D:+H:+MN:+S</FONT> examples: 0:0:0:4:3:-2 +4:3:-2 mixed format examples: 4 hour 3:-2
+
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> field in the format +Yy is a sign, a number, and a
+string specifying the type of field. The sign is ``+'', ``-'', or absent
+(defaults to the next larger element). The valid strings specifying the
+field type are: y: y, yr, year, years m: m, mon, month, months w: w, wk,
+ws, wks, week, weeks d: d, day, days h: h, hr, hour, hours mn: mn, min,
+minute, minutes s: s, sec, second, seconds
+
+
+<P>
+
+Also, the ``s'' string may be omitted. The sign, number, and string may all
+be separated from each other by any number of whitespaces.
+
+
+<P>
+
+In the date, all fields must be given in the order: y m d h mn s. Any number of them may be omitted provided the rest remain in the correct order. In the 2nd (colon) format, from 2 to 6 of the fields may be given. For example 
+<FONT SIZE=-1>+D:+H:+MN:+S</FONT> may be given to specify only four of the fields. In any case, both the 
+<FONT SIZE=-1>MN</FONT> and 
+<FONT SIZE=-1>S</FONT> field may be present. No spaces may be present in the colon format.
+
+
+
+<P>
+
+Deltas may also be given as a combination of the two formats. For example, the following is valid: +Yy 
+<FONT SIZE=-1>+D:+H:+MN:+S.</FONT> Again, all fields must be given in the correct order.
+
+
+
+<P>
+
+The word ``in'' may be prepended to the delta (``in 5 years'') and the word
+``ago'' may be appended (``6 months ago''). The ``in'' is completely
+ignored. The ``ago'' has the affect of reversing all signs that appear in
+front of the components of the delta. I.e. ``-12 yr 6 mon ago'' is
+identical to ``+12yr +6mon'' (don't forget that there is an impled minus
+sign in front of the 6 because when no sign is explicitely given, it
+carries the previously entered sign).
+
+
+<P>
+
+The ``week'' field does not occur in the colon separated delta. The reason for this is to maintain backward compatibility with previous versions of Date::Manip. Parsing of weeks was only added in version 5.07. At this point, rather than change the internal format of the delta to 
+<FONT SIZE=-1>``Y:M:W:D:H:MN:S'',</FONT> 
+<FONT SIZE=-1>I</FONT> simply added the weeks to the days (1 week = 7 days) in order to be compatible with previous versions. So, they are not parsed in the colon format, only in the first format. Hopefully, this will not result in too much confusion.
+
+
+
+<P>
+
+One thing is worth noting. The year/month and day/hour/min/sec parts are returned in a ``normalized'' form. That is, the signs are adjusted so as to be all positive or all negative. For example, ``+ 2 day - 2hour'' does not return ``0:0:2:-2:0:0''. It returns ``+0:0:1:22:0:0'' (1 day 22 hours which is equivalent). 
+<FONT SIZE=-1>I</FONT> find (and 
+<FONT SIZE=-1>I</FONT> think most others agree) that this is a more useful form.
+
+
+
+<P>
+
+Since the year/month and day/hour/min/sec parts must be normalized
+separately there is the possibility that the sign of the two parts will be
+different. So, the delta ``+ 2years -10 months - 2 days + 2 hours''
+produces the delta ``+1:2:-1:22:0:0''.
+
+
+<P>
+
+For backwards compatibility, it is possible to include a sign for all
+elements that is output. See the configuration variable DeltaSigns below.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DateCalc">DateCalc
+
+</A></STRONG><DD>
+<PRE> $d=&amp;DateCalc($d1,$d2,\$err [,$mode])
+</PRE>
+
+<P>
+
+This takes two dates, deltas, or one of each and performs the appropriate calculation with them. Dates must be in the format given by <A HREF="#item__ParseDate">&ParseDate</A> and or must be a string which can be parsed as a date. Deltas must be in the format returned by <A HREF="#item__ParseDateDelta">&ParseDateDelta</A> or must be a string that can be parsed as a delta. Two deltas add together to form a third delta. 
+<FONT SIZE=-1>A</FONT> date and a delta returns a 2nd date. Two dates return a delta (the difference between the two dates).
+
+
+
+<P>
+
+Note that in many cases, it is somewhat ambiguous what the delta actually refers to. Although it is 
+<FONT SIZE=-1>ALWAYS</FONT> known how many months in a year, hours in a day, etc., it is 
+<FONT SIZE=-1>NOT</FONT> known how many days form a month. As a result, the part of the delta containing month/year and the part with sec/min/hr/day must be treated separately. For example, ``Mar 31, 12:00:00'' plus a delta of 1month 2days would yield ``May 2 12:00:00''. The year/month is first handled while keeping the same date. Mar 31 plus one month is Apr 31 (but since Apr only has 30 days, it becomes Apr 30). Apr 30 + 2 days is May 2. As a result, in the case where two dates are entered, the resulting delta can take on two different forms. By default ($mode=0), an absolutely correct delta (ignoring daylight savings time) is returned in days, hours, minutes, and seconds.
+
+
+
+<P>
+
+If <CODE>$mode</CODE> is 1, the math is done using an approximate mode
+where a delta is returned using years and months as well. The year and
+month part is calculated first followed by the rest. For example, the two
+dates ``Mar 12 1995'' and ``Apr 13 1995'' would have an exact delta of ``31
+days'' but in the approximate mode, it would be returned as ``1 month 1
+day''. Also, ``Mar 31'' and ``Apr 30'' would have deltas of ``30 days'' or
+``1 month'' (since Apr 31 doesn't exist, it drops down to Apr 30).
+Approximate mode is a more human way of looking at things (you'd say 1
+month and 2 days more often then 33 days), but it is less meaningful in
+terms of absolute time. In approximate mode <CODE>$d1</CODE> and
+<CODE>$d2</CODE> must be dates. If either or both is a delta, the
+calculation is done in exact mode.
+
+
+<P>
+
+If <CODE>$mode</CODE> is 2, a business mode is used. That is, the
+calculation is done using business days, ignoring holidays, weekends, etc.
+In order to correctly use this mode, a config file must exist which
+contains the section defining holidays (see documentation on the config
+file below). The config file can also define the work week and the hours of
+the work day, so it is possible to have different config files for
+different businesses.
+
+
+<P>
+
+For example, if a config file defines the workday as 08:00 to 18:00, a
+workweek consisting of Mon-Sat, and the standard (American) holidays, then
+from Tuesday at 12:00 to the following Monday at 14:00 is 5 days and 2
+hours. If the ``end'' of the day is reached in a calculation, it
+autmoatically switches to the next day. So, Tuesday at 12:00 plus 6 hours
+is Wednesday at 08:00 (provided Wed is not a holiday). Also, a date that is
+not during a workday automatically becomes the start of the next workday.
+So, Sunday 12:00 and Monday at 03:00 both automatically becomes Monday at
+08:00 (provided Monday is not a holiday). In business mode, any combination
+of date and delta may be entered, but a delta should not contain a year or
+month field (weeks are fine though).
+
+
+<P>
+
+See below for some additional comments about business mode calculations.
+
+
+<P>
+
+Any other non-nil value of <CODE>$mode</CODE> is treated as $mode=1
+(approximate mode).
+
+
+<P>
+
+The mode can be automatically set in the dates/deltas passed by including a
+key word somewhere in it. For example, in English, if the word
+``approximately'' is found in either of the date/delta arguments,
+approximate mode is forced. Likewise, if the word ``business'' or
+``exactly'' appears, business/exact mode is forced (and <CODE>$mode</CODE>
+is ignored). So, the two following are equivalent:
+
+
+<P>
+
+<PRE>   $date=&amp;DateCalc(&quot;today&quot;,&quot;+ 2 business days&quot;,\$err);
+   $date=&amp;DateCalc(&quot;today&quot;,&quot;+ 2 days&quot;,\$err,2);
+</PRE>
+
+<P>
+
+Note that if the keyword method is used instead of passing in $mode, it is important that the keyword actually appear in the argument passed in to DateCalc. The following will 
+<FONT SIZE=-1>NOT</FONT> work:
+
+
+
+<P>
+
+<PRE>   $delta=&amp;ParseDateDelta(&quot;+ 2 business days&quot;);
+   $today=&amp;ParseDate(&quot;today&quot;);
+   $date=&amp;DateCalc($today,$delta,\$err);
+</PRE>
+
+<P>
+
+because the mode keyword is removed from a date/delta by the parse
+routines, and the mode is reset each time a parse routine is called. Since
+DateCalc parses both of its arguments, whatever mode was previously set is
+ignored.
+
+
+<P>
+
+<CODE>$err</CODE> is set to: 1 is returned if <CODE>$d1</CODE> is not a
+delta or date 2 is returned if <CODE>$d2</CODE> is not a delta or date 3 is
+returned if the date is outside the years 1000 to 9999
+
+
+<P>
+
+Nothing is returned if an error occurs.
+
+
+<P>
+
+When a delta is returned, the signs such that it is strictly positive or
+strictly negative (``1 day - 2 hours'' would never be returned for
+example). The only time when this cannot be enforced is when two deltas
+with a year/month component are entered. In this case, only the signs on
+the day/hour/min/sec part are standardized.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_SetTime">Date_SetTime
+
+</A></STRONG><DD>
+<PRE> $date=&amp;Date_SetTime($date,$hr,$min,$sec)
+ $date=&amp;Date_SetTime($date,$time)
+</PRE>
+
+<P>
+
+This takes a date sets the time in that date. For example, to get the time
+for 7:30 tomorrow, use the lines:
+
+
+<P>
+
+<PRE>   $date=&amp;ParseDate(&quot;tomorrow&quot;)
+   $date=&amp;Date_SetTime($date,&quot;7:30&quot;)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_GetPrev">Date_GetPrev
+
+</A></STRONG><DD>
+<PRE> $date=&amp;Date_GetPrev($date,$dow, $curr [,$hr,$min,$sec])
+ $date=&amp;Date_GetPrev($date,$dow, $curr [,$time])
+ $date=&amp;Date_GetPrev($date,undef,$curr,$hr,$min,$sec)
+ $date=&amp;Date_GetPrev($date,undef,$curr,$time)
+</PRE>
+
+<P>
+
+If <CODE>$dow</CODE> is defined, it is a day of week (a string such as ``Fri'' or a number from 0 to 6). The date of the previous <CODE>$dow</CODE> is returned. If <CODE>$date</CODE> falls on this day of week, the date returned will be <CODE>$date</CODE> (if <CODE>$curr</CODE> is non-zero) or a week earlier (if <CODE>$curr</CODE> is 0). If a time is passed in (either as separate hours, minutes, seconds or as a time in 
+<FONT SIZE=-1>HH:MM:SS</FONT> or 
+<FONT SIZE=-1>HH:MM</FONT> format), the time on this date is set to it. The following examples should illustrate the use of Date_GetPrev:
+
+
+
+<P>
+
+<PRE>    date                   dow    curr  time            returns
+    Fri Nov 22 18:15:00    Thu    0     12:30           Thu Nov 21 12:30:00
+    Fri Nov 22 18:15:00    Fri    0     12:30           Fri Nov 15 12:30:00
+    Fri Nov 22 18:15:00    Fri    1     12:30           Fri Nov 22 12:30:00
+</PRE>
+
+<P>
+
+If <CODE>$dow</CODE> is undefined, then a time must be entered, and the
+date returned is the previous occurence of this time. If <CODE>$curr</CODE>
+is non-zero, the current time is returned if it matches the criteria passed
+in. In other words, the time returned is the last time that a digital clock
+(in 24 hour mode) would have displayed the time you pass in. If you define
+hours, minutes and seconds default to 0 and you might jump back as much as
+an entire day. If hours are undefined, you are looking for the last time
+the minutes/seconds appeared on the digital clock, so at most, the time
+will jump back one hour.
+
+
+<P>
+
+<PRE>    date               curr  hr     min    sec      returns
+    Nov 22 18:15:00    0/1   18     undef  undef    Nov 22 18:00:00
+    Nov 22 18:15:00    0/1   18     30     0        Nov 21 18:30:00
+    Nov 22 18:15:00    0     18     15     undef    Nov 21 18:15:00
+    Nov 22 18:15:00    1     18     15     undef    Nov 22 18:15:00
+    Nov 22 18:15:00    0     undef  15     undef    Nov 22 17:15:00
+    Nov 22 18:15:00    1     undef  15     undef    Nov 22 18:15:00
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_GetNext">Date_GetNext
+
+</A></STRONG><DD>
+<PRE> $date=&amp;Date_GetNext($date,$dow, $curr [,$hr,$min,$sec])
+ $date=&amp;Date_GetNext($date,$dow, $curr [,$time])
+ $date=&amp;Date_GetNext($date,undef,$curr,$hr,$min,$sec)
+ $date=&amp;Date_GetNext($date,undef,$curr,$time)
+</PRE>
+
+<P>
+
+Similar to Date_GetPrev.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_DayOfWeek">Date_DayOfWeek
+
+</A></STRONG><DD>
+<PRE> $day=&amp;Date_DayOfWeek($m,$d,$y);
+</PRE>
+
+<P>
+
+Returns the day of the week (0 for Sunday, 6 for Saturday). Dec 31, 0999
+was Tuesday.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_SecsSince1970">Date_SecsSince1970
+
+</A></STRONG><DD>
+<PRE> $secs=&amp;Date_SecsSince1970($m,$d,$y,$h,$mn,$s)
+</PRE>
+
+<P>
+
+Returns the number of seconds since Jan 1, 1970 00:00 (negative if date is
+earlier).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_SecsSince1970GMT">Date_SecsSince1970GMT
+
+</A></STRONG><DD>
+<PRE> $secs=&amp;Date_SecsSince1970GMT($m,$d,$y,$h,$mn,$s)
+</PRE>
+
+<P>
+
+Returns the number of seconds since Jan 1, 1970 00:00 
+<FONT SIZE=-1>GMT</FONT> (negative if date is earlier). If CurrTZ is 
+<FONT SIZE=-1>``IGNORE'',</FONT> the number will be identical to Date_SecsSince1970 (i.e. the date given will be treated as being in 
+<FONT SIZE=-1>GMT).</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_DaysSince999">Date_DaysSince999
+
+</A></STRONG><DD>
+<PRE> $days=&amp;Date_DaysSince999($m,$d,$y)
+</PRE>
+
+<P>
+
+Returns the number of days since Dec 31, 0999.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_DayOfYear">Date_DayOfYear
+
+</A></STRONG><DD>
+<PRE> $day=&amp;Date_DayOfYear($m,$d,$y);
+</PRE>
+
+<P>
+
+Returns the day of the year (001 to 366)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_DaysInYear">Date_DaysInYear
+
+</A></STRONG><DD>
+<PRE> $days=&amp;Date_DaysInYear($y);
+</PRE>
+
+<P>
+
+Returns the number of days in the year (365 or 366)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_WeekOfYear">Date_WeekOfYear
+
+</A></STRONG><DD>
+<PRE> $wkno=&amp;Date_WeekOfYear($m,$d,$y,$first);
+</PRE>
+
+<P>
+
+Figure out week number. <CODE>$first</CODE> is the first day of the week
+which is usually 0 (Sunday) or 1 (Monday), but could be any number between
+0 and 6 in practice.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_LeapYear">Date_LeapYear
+
+</A></STRONG><DD>
+<PRE> $flag=&amp;Date_LeapYear($y);
+</PRE>
+
+<P>
+
+Returns 1 if the argument is a leap year Written by David Muir Sharnoff <A
+HREF="MAILTO:<muir@idiom.com>"><muir@idiom.com></A>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_DaySuffix">Date_DaySuffix
+
+</A></STRONG><DD>
+<PRE> $day=&amp;Date_DaySuffix($d);
+</PRE>
+
+<P>
+
+Add `st', `nd', `rd', `th' to a date (ie 1st, 22nd, 29th). Works for
+international dates.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_TimeZone">Date_TimeZone
+
+</A></STRONG><DD>
+<PRE> $tz=&amp;Date_TimeZone
+</PRE>
+
+<P>
+
+This returns a timezone. It looks in the following places for a timezone in
+the following order:
+
+
+<P>
+
+<PRE>   $ENV{TZ}
+   $main::TZ
+   unix 'date' command
+   /etc/TIMEZONE
+</PRE>
+
+<P>
+
+If it's not found in any of those places, an error occurs:
+
+
+<P>
+
+<PRE>   ERROR: Date::Manip unable to determine TimeZone.
+</PRE>
+
+<P>
+
+Date_TimeZone is able to read zones of the format 
+<FONT SIZE=-1>PST8PDT</FONT> (see 
+<FONT SIZE=-1>TIMEZONES</FONT> documentation below).
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_ConvTZ">Date_ConvTZ
+
+</A></STRONG><DD>
+<PRE> $date=&amp;Date_ConvTZ($date,$from)
+ $date=&amp;Date_ConvTZ($date,$from,$to)
+</PRE>
+
+<P>
+
+This converts a date (which 
+<FONT SIZE=-1>MUST</FONT> be in the format returned by ParseDate) from one
+timezone to another. The behavior of Date_ConvTZ depends on whether it is
+called with 2 or 3 arguments.
+
+
+<P>
+
+If it is called with 2 arguments, <CODE>$date</CODE> is assumed to be in timezone given in <CODE>$from</CODE> and it is converted to the timzone specified by the config variable ConvTZ. If ConvTZ is set to 
+<FONT SIZE=-1>``IGNORE'',</FONT> no conversion is done and <CODE>$date</CODE> is returned unmodified (see documentation on ConvTZ below). This form is most often used internally by the Date::Manip module. The 3 argument form is of more use to most users.
+
+
+
+<P>
+
+If Date_ConvTZ is called with 3 arguments, the config variable ConvTZ is ignored and <CODE>$date</CODE> is given in the timezone <CODE>$from</CODE> and is converted to the timzone $to. If <CODE>$from</CODE> is not given, it defaults to the working timezone. 
+<FONT SIZE=-1>NOTE:</FONT> As in all other cases, the <CODE>$date</CODE> returned from Date_ConvTZ has no timezone information included as part of it, so calling UnixDate with the ``%z'' format will return the timezone that Date::Manip is working in (usually the local timezone).
+
+
+
+<P>
+
+Example: To convert 2/2/96 noon 
+<FONT SIZE=-1>PST</FONT> to 
+<FONT SIZE=-1>CST</FONT> (regardless of what timezone you are in, do the following:
+
+
+
+<P>
+
+<PRE> $date=&amp;ParseDate(&quot;2/2/96 noon&quot;);
+ $date=&amp;Date_ConvTZ($date,&quot;PST&quot;,&quot;CST&quot;);
+</PRE>
+
+<P>
+
+Both timezones 
+<FONT SIZE=-1>MUST</FONT> be in one of the formst listed below in the section 
+<FONT SIZE=-1>TIMEZONES.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_Init">Date_Init
+
+</A></STRONG><DD>
+<PRE> $flag=&amp;Date_Init();
+ $flag=&amp;Date_Init(&quot;VAR=VAL&quot;,&quot;VAR=VAL&quot;,...);
+</PRE>
+
+<P>
+
+Normally, it is not necessary to explicitely call Date_Init. The first time
+any of the other routines are called, Date_Init will be called to set
+everything up. If for some reason you want to change the configuration of
+Date::Manip, you can pass the appropriate string or strings into Date_Init
+to reinitizize things.
+
+
+<P>
+
+The strings to pass in are of the form 
+<FONT SIZE=-1>``VAR=VAL''.</FONT> Any number may be included and they can come in any order. 
+<FONT SIZE=-1>VAR</FONT> may be any configuration variable. 
+<FONT SIZE=-1>A</FONT> list of all configuaration variables is given in the section 
+<FONT SIZE=-1>CUSTOMIZING</FONT> 
+<FONT SIZE=-1>DATE::MANIP</FONT> below. 
+<FONT SIZE=-1>VAL</FONT> is any allowed value for that variable. For example, to switch from English to French and use non-US format (so that 12/10 is Oct 12), do the following:
+
+
+
+<P>
+
+<PRE>  &amp;Date_Init(&quot;Language=French&quot;,&quot;DateFormat=nonUS&quot;);
+</PRE>
+
+<P>
+
+Note that the usage of Date_Init changed with version 5.07. The old calling
+convention is allowed but is depreciated.
+
+
+<P>
+
+If you change timezones in the middle of using Date::Manip, comparing dates
+from before the switch to dates from after the switch will produce
+incorrect results.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_IsWorkDay">Date_IsWorkDay
+
+</A></STRONG><DD>
+<PRE>  $flag=&amp;Date_IsWorkDay($date [,$flag]);
+</PRE>
+
+<P>
+
+This returns 1 if <CODE>$date</CODE> is a work day. If <CODE>$flag</CODE>
+is non-zero, the time is checked to see if it falls within work hours.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_NextWorkDay">Date_NextWorkDay
+
+</A></STRONG><DD>
+<PRE>  $date=&amp;Date_NextWorkDay($date,$off [,$time]);
+</PRE>
+
+<P>
+
+Finds the day <CODE>$off</CODE> work days from now. If <A
+HREF="#item__time">$time</A> is passed in, we must also take into account
+the time of day.
+
+
+<P>
+
+If <A HREF="#item__time">$time</A> is not passed in, day 0 is today (if
+today is a workday) or the next work day if it isn't. In any case, the time
+of day is unaffected.
+
+
+<P>
+
+If <A HREF="#item__time">$time</A> is passed in, day 0 is now (if now is
+part of a workday) or the start of the very next work day.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Date_PrevWorkDay">Date_PrevWorkDay
+
+</A></STRONG><DD>
+<PRE>  $date=&amp;Date_PrevWorkDay($date,$off [,$time]);
+</PRE>
+
+<P>
+
+Similar to Date_NextWorkDay.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DateManipVersion">DateManipVersion
+
+</A></STRONG><DD>
+<PRE>  $version=&amp;DateManipVersion
+</PRE>
+
+<P>
+
+Returns the version of Date::Manip.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="TIMEZONES">TIMEZONES
+
+</A></H1>
+The following timezone names are currently understood (and can be used in parsing dates). These are zones defined in 
+<FONT SIZE=-1>RFC</FONT> 822.
+
+
+
+<P>
+
+<PRE>    Universal:  GMT, UT
+    US zones :  EST, EDT, CST, CDT, MST, MDT, PST, PDT
+    Military :  A to Z (except J)
+    Other    :  +HHMM or -HHMM
+</PRE>
+
+<P>
+
+In addition, the following timezone abbreviations are also accepted. In a few cases, the same abbreviation is used for two different timezones (for example, 
+<FONT SIZE=-1>NST</FONT> stands for Newfoundland Standare -0330 and North Sumatra +0630). In these cases, only 1 of the two is available. The one preceded by a ``#'' sign is 
+<FONT SIZE=-1>NOT</FONT> available but is documented here for completeness. This list of zones comes from the Time::Zone module by Graham Barr, David Muir Sharnoff, and Paul Foley.
+
+
+
+<P>
+
+<PRE>      IDLW    -1200    International Date Line West
+      NT      -1100    Nome
+      HST     -1000    Hawaii Standard
+      CAT     -1000    Central Alaska
+      AHST    -1000    Alaska-Hawaii Standard
+      YST     -0900    Yukon Standard
+      HDT     -0900    Hawaii Daylight
+      YDT     -0800    Yukon Daylight
+      PST     -0800    Pacific Standard
+      PDT     -0700    Pacific Daylight
+      MST     -0700    Mountain Standard
+      MDT     -0600    Mountain Daylight
+      CST     -0600    Central Standard
+      CDT     -0500    Central Daylight
+      EST     -0500    Eastern Standard
+      EDT     -0400    Eastern Daylight
+      AST     -0400    Atlantic Standard
+     #NST     -0330    Newfoundland Standard       nst=North Sumatra    +0630
+      NFT     -0330    Newfoundland
+     #GST     -0300    Greenland Standard          gst=Guam Standard    +1000
+      BST     -0300    Brazil Standard             bst=British Summer   +0100
+      ADT     -0300    Atlantic Daylight
+      NDT     -0230    Newfoundland Daylight
+      AT      -0200    Azores
+      WAT     -0100    West Africa
+      GMT     +0000    Greenwich Mean
+      UT      +0000    Universal (Coordinated)
+      UTC     +0000    Universal (Coordinated)
+      WET     +0000    Western European
+      CET     +0100    Central European
+      FWT     +0100    French Winter
+      MET     +0100    Middle European
+      MEWT    +0100    Middle European Winter
+      SWT     +0100    Swedish Winter
+     #BST     +0100    British Summer              bst=Brazil standard  -0300
+      EET     +0200    Eastern Europe, USSR Zone 1
+      FST     +0200    French Summer
+      MEST    +0200    Middle European Summer
+      SST     +0200    Swedish Summer              sst=South Sumatra    +0700
+      BT      +0300    Baghdad, USSR Zone 2
+      IT      +0330    Iran
+      ZP4     +0400    USSR Zone 3
+      ZP5     +0500    USSR Zone 4
+      IST     +0530    Indian Standard
+      ZP6     +0600    USSR Zone 5
+      NST     +0630    North Sumatra               nst=Newfoundland Std -0330
+      WAST    +0700    West Australian Standard
+     #SST     +0700    South Sumatra, USSR Zone 6  sst=Swedish Summer   +0200
+      JT      +0730    Java (3pm in Cronusland!)
+      CCT     +0800    China Coast, USSR Zone 7
+      WADT    +0800    West Australian Daylight
+      JST     +0900    Japan Standard, USSR Zone 8
+      CAST    +0930    Central Australian Standard
+      EAST    +1000    Eastern Australian Standard
+      GST     +1000    Guam Standard, USSR Zone 9  gst=Greenland Std    -0300
+      CADT    +1030    Central Australian Daylight
+      EADT    +1100    Eastern Australian Daylight
+      IDLE    +1200    International Date Line East
+      NZST    +1200    New Zealand Standard
+      NZT     +1200    New Zealand
+      NZDT    +1300    New Zealand Daylight
+</PRE>
+
+<P>
+
+Others can be added in the future upon request.
+
+
+<P>
+
+DateManip needs to be able to determine the local timezone. It can do this by certain things such as the 
+<FONT SIZE=-1>TZ</FONT> environment variable (see Date_TimeZone documentation above) or useing the 
+<FONT SIZE=-1>TZ</FONT> config variable (described below). In either case, the timezone can be of the form 
+<FONT SIZE=-1>STD#DST</FONT> (for example 
+<FONT SIZE=-1>EST5EDT).</FONT> Both the standard and daylight savings time abbreviations must be in the table above in order for this to work. Also, this form may 
+<FONT SIZE=-1>NOT</FONT> be used when parsing a date as there is no way to determine whether the date is in daylight saving time or not. The following forms are also available and are treated similar to the 
+<FONT SIZE=-1>STD#DST</FONT> forms:
+
+
+
+<P>
+
+<PRE>      US/Pacific
+      US/Mountain
+      US/Central
+      US/Eastern
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUSINESS_MODE">BUSINESS MODE
+
+</A></H1>
+Anyone using business mode is going to notice a few quirks about it which should be explained. When 
+<FONT SIZE=-1>I</FONT> designed business mode, 
+<FONT SIZE=-1>I</FONT> had in mind what 
+<FONT SIZE=-1>UPS</FONT> tells me when they say 2 day delivery, or what the local business which promises 1 business day turnaround really means.
+
+
+
+<P>
+
+If you do a business day calculation (with the workday set to 9:00-5:00),
+you will get the following:
+
+
+<P>
+
+<PRE>   Saturday at noon + 1 business day = Tuesday at 9:00
+   Saturday at noon - 1 business day = Friday at 9:00
+</PRE>
+
+<P>
+
+What does this mean?
+
+
+<P>
+
+We have a business that works 9-5 and they have a drop box so 
+<FONT SIZE=-1>I</FONT> can drop things off over the weekend and they promise 1 business day turnaround. If 
+<FONT SIZE=-1>I</FONT> drop something off Friday night, Saturday, or Sunday, it doesn't matter. They're going to get started on it Monday morning. It'll be 1 business day to finish the job, so the earliest 
+<FONT SIZE=-1>I</FONT> can expect it to be done is around 17:00 Monday or 9:00 Tuesday morning. Unfortunately, there is some ambiguity as to what day 17:00 really falls on, similar to the ambiguity that occurs when you ask what day midnight falls on. Although it's not the only answer, Date::Manip treats midnight as the beginning of a day rather than the end of one. In the same way, 17:00 is equivalent to 9:00 the next day and any time the date calculations encounter 17:00, it automatically switch to 9:00 the next day. Although this introduces some quirks, 
+<FONT SIZE=-1>I</FONT> think this is justified. You just have to treat 9:00 as being ambiguous (in the same way you treat midnight as being ambiguous).
+
+
+
+<P>
+
+Equivalently, if 
+<FONT SIZE=-1>I</FONT> want a job to be finished on Saturday (despite the fact that 
+<FONT SIZE=-1>I</FONT> cannot pick it up since the business is closed), 
+<FONT SIZE=-1>I</FONT> have to drop it off no later than Friday at 9:00. That gives them a full business day to finish it off. Of course, 
+<FONT SIZE=-1>I</FONT> could just as easily drop it off at 17:00 Thursday, or any time between then and 9:00 Friday. Again, it's a matter of treating 9:00 as ambiguous.
+
+
+
+<P>
+
+So, in case the business date calculations ever produce results that you find confusing, 
+<FONT SIZE=-1>I</FONT> believe the solution is to write a wrapper which, whenever it sees a date with the time of exactly 9:00, it treats it specially (depending on what you want.
+
+
+
+<P>
+
+So Saturday + 1 business day = Tuesday at 9:00 (which means anything from
+Monday 17:00 to Tuesday 9:00), but Monday at 9:01 + 1 business day =
+Tuesday at 9:01 which is exact.
+
+
+<P>
+
+If this is not exactly what you have in mind, don't use the DateCalc
+routine. You can probably get whatever behavior you want using the routines
+Date_IsWorkDay, Date_NextWorkDay, and Date_PrevWorkDay described above.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CUSTOMIZING_DATE_MANIP">CUSTOMIZING DATE::MANIP
+
+</A></H1>
+There are a number of variables which can be used to customize the way
+Date::Manip behaves. There are also several ways to set these variables.
+
+
+<P>
+
+At the top of the Manip.pm file, there is a section which contains all
+customization variables. These provide the default values.
+
+
+<P>
+
+These can be overridden in a global config file if one is present (this file is optional). If the GlobalCnf variable is set in the Manip.pm file, it contains the full path to a config file. If the file exists, it's values will override those set in the Manip.pm file. 
+<FONT SIZE=-1>A</FONT> sample config file is included with the Date::Manip distribution. Modify it as appropriate and copy it to some appropriate directory and set the GlobalCnf variable in the Manip.pm file.
+
+
+
+<P>
+
+Each user can have a personal config file which is of the same form as the
+global config file. The variables PersonalCnf and PersonalCnfPath set the
+name and search path for the personal config file.
+
+
+<P>
+
+Finally, any variables passed in through Date_Init override all other
+values.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> config file can be composed of several sections
+(though only 2 of them are currently used). The first section sets
+configuration varibles. Lines in this section are of the form:
+
+
+<P>
+
+<PRE>   VARIABLE = VALUE
+</PRE>
+
+<P>
+
+For example, to make the default language French, include the line:
+
+
+<P>
+
+<PRE>   Language = French
+</PRE>
+
+<P>
+
+Only variables described below may be used. Blank lines and lines beginning
+with a pound sign (#) are ignored. All spaces are optional and strings are
+case insensitive.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> line which starts with an asterix (*) designates a
+new section. The only section currently used is the Holiday section. All
+lines are of the form:
+
+
+<P>
+
+<PRE>   DATE = HOLIDAY
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>HOLIDAY</FONT> is the name of the holiday (or it can be blank
+in which case the day will still be treated as a holiday... for example the
+day after Thanksgiving or Christmas is often a work holiday though neither
+are named).
+
+
+<P>
+
+
+<FONT SIZE=-1>DATE</FONT> is a string which can be parsed to give a valid
+date in any year. It can be of the form
+
+
+<P>
+
+<PRE>   Date
+   Date + Delta
+   Date - Delta
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> valid holiday section would be:
+
+
+<P>
+
+<PRE>   *Holiday
+</PRE>
+
+<P>
+
+<PRE>   1/1                             = New Year's Day
+   third Monday in Feb             = Presidents' Day
+   fourth Thu in Nov               = Thanksgiving
+</PRE>
+
+<P>
+
+<PRE>   # The Friday after Thanksgiving is an unnamed holiday most places
+   fourth Thu in Nov + 1 day       =
+</PRE>
+
+<P>
+
+In a Date + Delta or Date - Delta string, you can use business mode by
+including the appropriate string (see documentation on DateCalc) in the
+Date or Delta. So (in English), the first workday before Christmas could be
+defined as:
+
+
+<P>
+
+<PRE>   12/25 - 1 business day          =
+</PRE>
+
+<P>
+
+All Date::Manip variables which can be used are described in the following
+section.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_IgnoreGlobalCnf">IgnoreGlobalCnf
+
+</A></STRONG><DD>
+If this variable is used (any value is ignored), the global config file is
+not read. It must be present in the initial call to Date_Init or the global
+config file will be read.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_EraseHolidays">EraseHolidays
+
+</A></STRONG><DD>
+If this variable is used (any value is ignored), the current list of defined holidays is erased. 
+<FONT SIZE=-1>A</FONT> new set will be set the next time a config file is read in.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PersonalCnf">PersonalCnf
+
+</A></STRONG><DD>
+This variable can be passed into Date_Init to read a different personal
+configuration file. It can also be included in the global config file to
+define where personal config files live.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PersonalCnfPath">PersonalCnfPath
+
+</A></STRONG><DD>
+Used in the same way as the PersonalCnf option. You can use tilde (~)
+expansions when defining the path.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Language">Language
+
+</A></STRONG><DD>
+Date::Manip can be used to parse dates in many different languages.
+Currently, it is configured to read English, Swedish, and French dates, but
+others can be added easily. Language is set to the language used to parse
+dates.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DateFormat">DateFormat
+
+</A></STRONG><DD>
+Different countries look at the date 12/10/96 as Dec 10 or Oct 12. In the United States, the first is most common, but this certainly doesn't hold true for other countries. Setting DateFormat to 
+<FONT SIZE=-1>``US''</FONT> forces the first behavior (Dec 10). Setting DateFormat to anything else forces the second behavior (Oct 12).
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_TZ">TZ
+
+</A></STRONG><DD>
+Date::Manip is able to understand some timezones (and others will be added in the future). At the very least, all zones defined in 
+<FONT SIZE=-1>RFC</FONT> 822 are supported. Currently supported zones are listed in the 
+<FONT SIZE=-1>TIMEZONES</FONT> section above and all timezones should be entered as one of them.
+
+
+
+<P>
+
+Date::Manip must be able to determine the timezone the user is in. It does
+this by looking in the following places:
+
+
+<P>
+
+<PRE>   the environment variable TZ
+   the variable $main::TZ
+   the file /etc/TIMEZONE
+   the 5th element of the unix &quot;date&quot; command (not available on NT machines)
+</PRE>
+
+<P>
+
+At least one of these should contain a timezone in one of the supported forms. If it doesn't, the 
+<FONT SIZE=-1>TZ</FONT> variable must be set to contain the local timezone in the appropriate form.
+
+
+
+<P>
+
+The 
+<FONT SIZE=-1>TZ</FONT> variable will override the other methods of
+determining the timezone, so it should probably be left blank if any of the
+other methods will work. Otherwise, you will have to modify the variable
+every time you switch to/from daylight savings time.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ConvTZ">ConvTZ
+
+</A></STRONG><DD>
+All date comparisons and calculations must be done in a single time zone in
+order for them to work correctly. So, when a date is parsed, it should be
+converted to a specific timezone. This allows dates to easily be compared
+and manipulated as if they are all in a single timezone.
+
+
+<P>
+
+The ConvTZ variable determines which timezone should be used to store dates in. If it is left blank, all dates are converted to the local timezone (see the 
+<FONT SIZE=-1>TZ</FONT> variable above). If it is set to one of the timezones listed above, all dates are converted to this timezone. Finally, if it is set to the string 
+<FONT SIZE=-1>``IGNORE'',</FONT> all timezone information is ignored as the dates are read in (in this case, the two dates ``1/1/96 12:00 
+<FONT SIZE=-1>GMT''</FONT> and ``1/1/96 12:00 
+<FONT SIZE=-1>EST''</FONT> would be treated as identical).
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Internal">Internal
+
+</A></STRONG><DD>
+When a date is parsed using ParseDate, that date is stored in an internal
+format which is understood by the Date::Manip routines UnixDate and
+DateCalc. Originally, the format used to store the date internally was:
+
+
+<P>
+
+<PRE>   YYYYMMDDHH:MN:SS
+</PRE>
+
+<P>
+
+It has been suggested that 
+<FONT SIZE=-1>I</FONT> remove the colons (:) to shorten this to:
+
+
+<P>
+
+<PRE>   YYYYMMDDHHMNSS
+</PRE>
+
+<P>
+
+The main advantage of this is that some databases are colon delimited which
+makes storing date from Date::Manip tedious.
+
+
+<P>
+
+In order to maintain backwards compatibility, the Internal varialbe was
+introduced. Set it to 0 (to use the old format) or 1 (to use the new
+format).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FirstDay">FirstDay
+
+</A></STRONG><DD>
+It is sometimes necessary to know what day of week is regarded as first. By default, this is set to sunday, but many countries and people will prefer monday (and in a few cases, a different day may be desired). Set the FirstDay variable to be the first day of the week (0=sunday to 6=saturday). Incidentally, monday should be chosen as the default to be in complete accordance with 
+<FONT SIZE=-1>ISO</FONT> 8601.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_WorkWeekBeg">WorkWeekBeg, WorkWeekEnd
+
+</A></STRONG><DD>
+The first and last days of the work week. By default, monday and friday.
+WorkWeekBeg must come before WorkWeekEnd numerically. The days are numbered
+from 0 (sunday) to 6 (saturday). There is no way to handle an odd work week
+of Thu to Mon for example.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_WorkDay24Hr">WorkDay24Hr
+
+</A></STRONG><DD>
+If this is non-nil, a work day is treated as being 24 hours long. The
+WorkDayBeg and WorkDayEnd variables are ignored in this case.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_WorkDayBeg">WorkDayBeg, WorkDayEnd
+
+</A></STRONG><DD>
+The times when the work day starts and ends. WorkDayBeg must come before WorkDayEnd (i.e. there is no way to handle the night shift where the work day starts one day and ends another). Also, the workday 
+<FONT SIZE=-1>MUST</FONT> be more than one hour long (of course, if this isn't the case, let me know... 
+<FONT SIZE=-1>I</FONT> want a job there!).
+
+
+
+<P>
+
+The time in both can be in any valid time format (including international
+formats), but seconds will be ignored.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DeltaSigns">DeltaSigns
+
+</A></STRONG><DD>
+Prior to Date::Manip version 5.07, a negative delta would put negative
+signs in front of every component (i.e. ``0:0:-1:-3:0:-4''). By default,
+5.07 changes this behavior to print only 1 or two signs in front of the
+year and day elements (even if these elements might be zero) and the sign
+for year/month and day/hour/minute/second are the same. Setting this
+variable to non-zero forces deltas to be stored with a sign in front of
+every element (including elements equal to 0).
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="BACKWARDS_INCOMPATIBILITIES">BACKWARDS INCOMPATIBILITIES
+
+</A></H1>
+For the most part, Date::Manip has remained backward compatible at every
+release. There have been a few minor incompatibilities introduced at
+various stages.
+
+
+<P>
+
+Version 5.07 introduced 2 minor incompatibilities. In the UnixDate command, the ``%s'' format changed. In version 5.06, ``%s'' returned the number of seconds since Jan 1, 1970 in the current timezone. In 5.07, it returns the number of seconds since Jan 1, 1970 
+<FONT SIZE=-1>GMT.</FONT> The ``%o'' format was added to return what ``%s'' previously did.
+
+
+
+<P>
+
+Also in 5.07, the format for the deltas returned by ParseDateDelta changed.
+Previously, each element of a delta had a sign attached to it
+(+1:+2:+3:+4:+5:+6). The new format removes all unnecessary signs by
+default (+1:2:3:4:5:6). Also, because of the way deltas are normalized (see
+documentation on ParseDateDelta), at most two signs are included. For
+backwards compatibility, the config variable DeltaSigns was added. If set
+to 1, all deltas include all 6 signs.
+
+
+<P>
+
+Finally, in 5.07 the format of the Date_Init calling arguments changed. The
+old method
+
+
+<P>
+
+<PRE>  &amp;Date_Init($language,$format,$tz,$convtz);
+</PRE>
+
+<P>
+
+is still supported, but this support will likely disappear in the future.
+Use the new calling format instead:
+
+
+<P>
+
+<PRE>  &amp;Date_Init(&quot;var=val&quot;,&quot;var=val&quot;,...);
+</PRE>
+
+<P>
+
+One more important incompatibility is projected for ParseDate in the next major release of Date::Manip. The next release will support full 
+<FONT SIZE=-1>ISO</FONT> 8601 date formats including the format 
+<FONT SIZE=-1>YY-MM-DD.</FONT> The current version of ParseDate supports the format 
+<FONT SIZE=-1>MM-DD-YY,</FONT> which is commonly used in the 
+<FONT SIZE=-1>US,</FONT> but is not part of any standard. Unfortunately, there is no way to unambiguously look at a date of the format 
+<FONT SIZE=-1>XX-XX-XX</FONT> and determine whether it is 
+<FONT SIZE=-1>YY-MM-DD</FONT> or 
+<FONT SIZE=-1>MM-DD-YY.</FONT> As a result, the 
+<FONT SIZE=-1>MM-DD-YY</FONT> format will no longer be supported in favor of the 
+<FONT SIZE=-1>YY-MM-DD</FONT> format. The 
+<FONT SIZE=-1>MM/DD/YY</FONT> and 
+<FONT SIZE=-1>MM-DD-YYYY</FONT> formats 
+<FONT SIZE=-1>WILL</FONT> still be supported!
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COMMON_PROBLEMS">COMMON PROBLEMS
+
+</A></H1>
+Perhaps the most common problem occurs when you get the error:
+
+
+<P>
+
+<PRE>   Error: Date::Manip unable to determine TimeZone.
+</PRE>
+
+<P>
+
+Date::Manip tries hard to determine the local timezone, but on some machines, it cannot do this (especially those without a unix date command... i.e. Microsoft Windows systems). To fix this, just set the 
+<FONT SIZE=-1>TZ</FONT> variable, either at the top of the Manip.pm file, or in the DateManip.cnf file. 
+<FONT SIZE=-1>I</FONT> suggest using the form 
+<FONT SIZE=-1>``EST5EDT''</FONT> so you don't have to change it every 6 months when going to or from daylight savings time.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="KNOWN_PROBLEMS">KNOWN PROBLEMS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_Daylight">Daylight Savings Times
+
+</A></STRONG><DD>
+Date::Manip does not handle daylight savings time, though it does handle timezones to a certain extent. Converting from 
+<FONT SIZE=-1>EST</FONT> to 
+<FONT SIZE=-1>PST</FONT> works fine. Going from 
+<FONT SIZE=-1>EST</FONT> to 
+<FONT SIZE=-1>PDT</FONT> is unreliable.
+
+
+
+<P>
+
+The following examples are run in the winter of the 
+<FONT SIZE=-1>US</FONT> East coast (i.e. in the 
+<FONT SIZE=-1>EST</FONT> timezone).
+
+
+
+<P>
+
+<PRE>        print UnixDate(ParseDate(&quot;6/1/97 noon&quot;),&quot;%u&quot;),&quot;\n&quot;;
+        =&gt; Sun Jun  1 12:00:00 EST 1997
+</PRE>
+
+<P>
+
+June 1 
+<FONT SIZE=-1>EST</FONT> does not exist. June 1st is during 
+<FONT SIZE=-1>EDT.</FONT> It should print:
+
+
+
+<P>
+
+<PRE>        =&gt; Sun Jun  1 00:00:00 EDT 1997
+</PRE>
+
+<P>
+
+Even explicitely adding the timezone doesn't fix things (if anything, it
+makes them worse):
+
+
+<P>
+
+<PRE>        print UnixDate(ParseDate(&quot;6/1/97 noon EDT&quot;),&quot;%u&quot;),&quot;\n&quot;;
+        =&gt; Sun Jun  1 11:00:00 EST 1997
+</PRE>
+
+<P>
+
+Date::Manip converts everything to the current timezone 
+<FONT SIZE=-1>(EST</FONT> in this case).
+
+
+<P>
+
+Related problems occur when trying to do date calculations over a timezone
+change. These calculations may be off by an hour.
+
+
+<P>
+
+Also, if you are running a script which uses Date::Manip over a period of
+time which starts in one time zone and ends in another (i.e. it switches
+form Daylight Savings Time to Standard Time or vice versa), many things may
+be wrong (especially elapsed time).
+
+
+<P>
+
+
+<FONT SIZE=-1>I</FONT> hope to fix these problems in the next release so that it would convert everything to the current zones 
+<FONT SIZE=-1>(EST</FONT> or 
+<FONT SIZE=-1>EDT).</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Sorting">Sorting Problems
+
+</A></STRONG><DD>
+If you use Date::Manip to sort a number of dates, you must call Date_Init
+either explicitely, or by way of some other Date::Manip routine before it
+is used in the sort. For example, the following code fails:
+
+
+<P>
+
+<PRE>   use Date::Manip;
+   # &amp;Date_Init;
+   sub sortDate {
+       my($date1, $date2);
+       $date1 = &amp;ParseDate($a);
+       $date2 = &amp;ParseDate($b);
+       return ($date1 cmp $date2);
+   }
+   @date = (&quot;Fri 16 Aug 96&quot;,
+            &quot;Mon 19 Aug 96&quot;,
+            &quot;Thu 15 Aug 96&quot;);
+   @i=sort sortDate @dates;
+</PRE>
+
+<P>
+
+but if you uncomment the Date_Init line, it works. The reason for this is that the first time you call Date_Init, it initializes a number of items used by Date::Manip. Some of these are sorted. It turns out that perl (5.003 and earlier) has a bug in it which does not allow a sort within a sort. The next version (5.004) may fix this. For now, the best thing to do is to call Date_Init explicitely. 
+<FONT SIZE=-1>NOTE:</FONT> This is an extremely inefficient way to sort data. Instead, you should translate the dates to the Date::Manip internal format, sort them using a normal string comparison, and then convert them back to the format desired using UnixDate.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_RCS">RCS Control
+
+</A></STRONG><DD>
+If you try to put Date::Manip under 
+<FONT SIZE=-1>RCS</FONT> control, you are going to have problems. Apparently, 
+<FONT SIZE=-1>RCS</FONT> replaces strings of the form ``$Date...$'' with the current date. This form occurs all over in Date::Manip. Since very few people will ever have a desire to do this (and 
+<FONT SIZE=-1>I</FONT> don't use 
+<FONT SIZE=-1>RCS),</FONT> 
+<FONT SIZE=-1>I</FONT> have not worried about it.
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Sullivan Beck <A HREF="MAILTO:(beck@qtp.ufl.edu)">(beck@qtp.ufl.edu)</A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

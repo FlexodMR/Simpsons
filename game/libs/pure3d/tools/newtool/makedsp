@@ -1,0 +1,24 @@
+#!/bin/perl
+
+use FindBin;     # we can look for files relative to script
+
+$toolname = shift;
+$template = shift;
+
+$template = "$FindBin::Bin/$template.dsp";
+open(TEMPLATE, $template) || die "Can't open $template";
+
+open(DSP, ">$toolname.dsp") || die "Can't open $toolname.dsp";
+
+print "Creating $toolname.dsp\n";
+
+while(<TEMPLATE>)
+{
+  s/%NAME%/$toolname/g;
+  print DSP;
+}
+
+print "Done.\n";
+
+close DSP;
+close TEMPLATE;

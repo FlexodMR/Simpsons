@@ -1,0 +1,166 @@
+//**************************************************************************************************
+//  Procedure Name:
+//    P3dSetupExporterShelf()
+//
+//  Description:
+//    Sets up the particles system command buttons in P3DParticleTools shelf
+//
+//  Input Arguments:
+//    None.
+//
+//  Return Value:
+//    None.
+//**************************************************************************************************
+global proc p3dMayaExporterInstallCommand()
+{
+   source p3dexpoptsgui;
+   source p3dMayaExporterTools;
+
+   // BUG FIX: Do NOT create Shelf if Shelf UI is hidden!
+   //          The Shelf may already exist in Maya's Preferences
+   //          but be deferred until the Shelf UI is visible,
+   //          and a clash will result if a duplicate is made.
+   // BUG FIX: Do NOT attempt if without UI.
+   if ( !`about -batch` && isUIComponentVisible( "Shelf" ) )
+   {
+       if (`shelfLayout -exists "P3DExporterTools"`==0)
+       {
+          addNewShelfTab "P3DExporterTools";
+       }
+
+       string $buttons[] = `shelfLayout -q -ca P3DExporterTools`;
+       int $export_selection_exists = 0;
+       int $export_scene_exists = 0;
+       int $view_selection_exists = 0;
+       int $view_scene_exists = 0;
+       int $view_prefs_exists = 0;
+       int $export_prefs_exists = 0;
+       int $add_export_setting_exists = 0;
+       int $delete_export_setting_exists = 0;
+
+       int $i;
+       for ($i = 0;
+            ($i < size($buttons)) &&
+            (($export_selection_exists == 0) ||
+             ($export_scene_exists == 0) ||
+             ($view_selection_exists == 0) ||
+             ($view_scene_exists == 0) ||
+             ($view_prefs_exists == 0) ||
+             ($export_prefs_exists == 0) ||
+             ($add_export_setting_exists == 0) ||
+             ($delete_export_setting_exists == 0));
+            $i++)
+       {
+          string $command = `shelfButton -q -c $buttons[$i]`;
+          string $label = `shelfButton -q -l $buttons[$i]`;
+
+          if ($label == "P3DExportSelectionButton")
+          {
+             $export_selection_exists = 1;
+          }
+          else if ($label == "P3DExportSceneButton")
+          {
+             $export_scene_exists = 1;
+          }
+          else if ($label == "P3DViewSelectionButton")
+          {
+             $view_selection_exists = 1;
+          }
+          else if ($label == "P3DViewSceneButton")
+          {
+             $view_scene_exists = 1;
+          }
+          else if ($label == "P3DViewPrefsButton")
+          {
+             $view_prefs_exists = 1;
+          }
+          else if ($label == "P3DExportPrefsButton")
+          {
+             $export_prefs_exists = 1;
+          }
+          else if ($label == "P3DAddExportSettingButton")
+          {
+             $add_export_setting_exists = 1;
+          }
+          else if ($label == "P3DDeleteExportSettingButton")
+          {
+             $delete_export_setting_exists = 1;
+          }
+       }
+
+       if (!$export_selection_exists)
+       {
+          shelfButton -c   "P3DExportSelection" 
+                      -p   "P3DExporterTools"
+                      -i1  "p3dExportSelection.bmp" 
+                      -ann "P3D Export Selection"
+                      -l   "P3DExportSelectionButton";
+       }
+       if (!$export_scene_exists)
+       {
+          shelfButton -c   "P3DExportScene" 
+                      -p   "P3DExporterTools"
+                      -i1  "p3dExportScene.bmp" 
+                      -ann "P3D Export Scene"
+                      -l   "P3DExportSceneButton";
+       }
+
+       if (!$view_selection_exists)
+       {
+          shelfButton -c   "P3DViewSelection" 
+                      -p   "P3DExporterTools"
+                      -i1  "p3dViewSelection.bmp" 
+                      -ann "P3D View Selection"
+                      -l   "P3DViewSelectionButton";
+       }
+       if (!$view_scene_exists)
+       {
+          shelfButton -c   "P3DViewScene" 
+                      -p   "P3DExporterTools"
+                      -i1  "p3dViewScene.bmp" 
+                      -ann "P3D View Scene"
+                      -l   "P3DViewSceneButton";
+       }
+       if (!$view_prefs_exists)
+       {
+          shelfButton -c   "P3DViewPrefs" 
+                      -p   "P3DExporterTools"
+                      -i1  "p3dViewPrefs.bmp" 
+                      -ann "P3D View Prefs"
+                      -l   "P3DViewPrefsButton";
+       }
+       if (!$export_prefs_exists)
+       {
+          shelfButton -c   "P3DExportPrefs" 
+                      -p   "P3DExporterTools"
+                      -i1  "p3dExportPrefs.bmp" 
+                      -ann "P3D Export Prefs"
+                      -l   "P3DExportPrefsButton";
+       }
+       if (!$add_export_setting_exists)
+       {
+          shelfButton -c   "P3DDisplayAddExporterSettingDialog" 
+                      -p   "P3DExporterTools"
+                      -i1  "p3dAddExportSetting.bmp" 
+                      -ann "P3D Add Export Setting"
+                      -l   "P3DAddExportSettingButton";
+       }
+       if (!$delete_export_setting_exists)
+       {
+          shelfButton -c   "P3DDisplayDeleteExporterSettingDialog" 
+                      -p   "P3DExporterTools"
+                      -i1  "p3dDeleteExportSetting.bmp" 
+                      -ann "P3D Delete Export Setting"
+                      -l   "P3DDeleteExportSettingButton";
+       }
+    }
+}
+
+
+global proc p3dMayaExporterInstall()
+{
+   evalDeferred "p3dMayaExporterInstallCommand";
+}
+
+
+// End of file.

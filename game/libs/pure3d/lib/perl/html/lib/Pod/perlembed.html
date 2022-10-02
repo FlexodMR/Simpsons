@@ -1,0 +1,1754 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlembed - how to embed perl in your C program
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#PREAMBLE">PREAMBLE</A>
+		<LI><A HREF="#ROADMAP">ROADMAP</A>
+		<LI><A HREF="#Compiling_your_C_program">Compiling your C program</A>
+		<LI><A HREF="#Adding_a_Perl_interpreter_to_you">Adding a Perl interpreter to your C program</A>
+		<LI><A HREF="#Calling_a_Perl_subroutine_from_y">Calling a Perl subroutine from your C program</A>
+		<LI><A HREF="#Evaluating_a_Perl_statement_from">Evaluating a Perl statement from your C program</A>
+		<LI><A HREF="#Performing_Perl_pattern_matches_">Performing Perl pattern matches and substitutions from your C program</A>
+		<LI><A HREF="#Fiddling_with_the_Perl_stack_fro">Fiddling with the Perl stack from your C program</A>
+		<LI><A HREF="#Maintaining_a_persistent_interpr">Maintaining a persistent interpreter</A>
+		<LI><A HREF="#Maintaining_multiple_interpreter">Maintaining multiple interpreter instances</A>
+		<LI><A HREF="#Using_Perl_modules_which_themse">Using Perl modules, which themselves use C libraries, from your C program</A>
+	</UL>
+
+	<LI><A HREF="#Embedding_Perl_under_Win32">Embedding Perl under Win32</A>
+	<LI><A HREF="#MORAL">MORAL</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlembed - how to embed perl in your 
+<FONT SIZE=-1>C</FONT> program
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="PREAMBLE">PREAMBLE
+
+</A></H2>
+Do you want to:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Use">Use C from Perl?
+
+</A></STRONG><DD>
+Read <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A> and <A HREF="/n|/perl/html/./lib/Pod/perlxs.html#">the perlxs manpage</A>.
+
+
+<P>
+
+<DT><STRONG>Use a Unix program from Perl?
+
+</A></STRONG><DD>
+Read about back-quotes and about <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_system">system</A> and <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_exec">exec</A> in <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>.
+
+
+<P>
+
+<DT><STRONG>Use Perl from Perl?
+
+</A></STRONG><DD>
+Read about <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#do">do</A> and <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#eval">eval</A> and <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#require">require</A>
+and <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#use">use</A>.
+
+
+<P>
+
+<DT><STRONG>Use C from C?
+
+</A></STRONG><DD>
+Rethink your design.
+
+
+<P>
+
+<DT><STRONG>Use Perl from C?
+
+</A></STRONG><DD>
+Read on...
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="ROADMAP">ROADMAP
+
+</A></H2>
+<A HREF="#Compiling_your_C_program">Compiling your C program</A>
+
+
+
+
+<P>
+
+There's one example in each of the nine sections:
+
+
+<P>
+
+<A HREF="#Adding_a_Perl_interpreter_to_you">Adding a Perl interpreter to your C program</A>
+
+
+
+
+<P>
+
+<A HREF="#Calling_a_Perl_subroutine_from_y">Calling a Perl subroutine from your C program</A>
+
+
+
+
+<P>
+
+<A HREF="#Evaluating_a_Perl_statement_from">Evaluating a Perl statement from your C program</A>
+
+
+
+
+<P>
+
+<A HREF="#Performing_Perl_pattern_matches_">Performing Perl pattern matches and substitutions from your C program</A>
+
+
+
+
+<P>
+
+<A HREF="#Fiddling_with_the_Perl_stack_fro">Fiddling with the Perl stack from your C program</A>
+
+
+
+
+<P>
+
+<A HREF="#Maintaining_a_persistent_interpr">Maintaining a persistent interpreter</A>
+
+
+
+
+<P>
+
+<A HREF="#Maintaining_multiple_interpreter">Maintaining multiple interpreter instances</A>
+
+
+
+
+<P>
+
+<A HREF="#Using_Perl_modules_which_themse">Using Perl modules, which themselves use C libraries, from your C program</A>
+
+
+
+
+<P>
+
+<A HREF="#Embedding_Perl_under_Win32">Embedding Perl under Win32</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Compiling_your_C_program">Compiling your C program
+
+</A></H2>
+If you have trouble compiling the scripts in this documentation, you're not alone. The cardinal rule: 
+<FONT SIZE=-1>COMPILE</FONT> 
+<FONT SIZE=-1>THE</FONT> 
+<FONT SIZE=-1>PROGRAMS</FONT> 
+<FONT SIZE=-1>IN</FONT> 
+<FONT SIZE=-1>EXACTLY</FONT> 
+<FONT SIZE=-1>THE</FONT> 
+<FONT SIZE=-1>SAME</FONT> 
+<FONT SIZE=-1>WAY</FONT> 
+<FONT SIZE=-1>THAT</FONT> 
+<FONT SIZE=-1>YOUR</FONT> 
+<FONT SIZE=-1>PERL</FONT> 
+<FONT SIZE=-1>WAS</FONT> 
+<FONT SIZE=-1>COMPILED.</FONT> (Sorry for yelling.)
+
+
+
+<P>
+
+Also, every 
+<FONT SIZE=-1>C</FONT> program that uses Perl must link in the <EM>perl library</EM>. What's that, you ask? Perl is itself written in 
+<FONT SIZE=-1>C;</FONT> the perl library is the collection of compiled 
+<FONT SIZE=-1>C</FONT> programs that were used to create your perl executable (
+<EM>/usr/bin/perl</EM> or equivalent). (Corollary: you can't use Perl from your 
+<FONT SIZE=-1>C</FONT> program unless Perl has been compiled on your
+machine, or installed properly--that's why you shouldn't blithely copy Perl
+executables from machine to machine without also copying the
+<EM>lib</EM> directory.)
+
+
+<P>
+
+When you use Perl from 
+<FONT SIZE=-1>C,</FONT> your 
+<FONT SIZE=-1>C</FONT> program will--usually--allocate, ``run'', and deallocate a
+ <EM>PerlInterpreter</EM> object, which is defined by the perl library.
+
+
+<P>
+
+If your copy of Perl is recent enough to contain this documentation
+(version 5.002 or later), then the perl library (and <EM>EXTERN.h</EM> and
+<EM>perl.h</EM>, which you'll also need) will reside in a directory that looks like this:
+
+
+<P>
+
+<PRE>    /usr/local/lib/perl5/your_architecture_here/CORE
+</PRE>
+
+<P>
+
+or perhaps just
+
+
+<P>
+
+<PRE>    /usr/local/lib/perl5/CORE
+</PRE>
+
+<P>
+
+or maybe something like
+
+
+<P>
+
+<PRE>    /usr/opt/perl5/CORE
+</PRE>
+
+<P>
+
+Execute this statement for a hint about where to find 
+<FONT SIZE=-1>CORE:</FONT>
+
+
+<P>
+
+<PRE>    perl -MConfig -e 'print $Config{archlib}'
+</PRE>
+
+<P>
+
+Here's how you'd compile the example in the next section,
+<A HREF="#Adding_a_Perl_interpreter_to_you">Adding a Perl interpreter to your C program</A>, on my Linux box:
+
+
+<P>
+
+<PRE>    % gcc -O2 -Dbool=char -DHAS_BOOL -I/usr/local/include
+    -I/usr/local/lib/perl5/i586-linux/5.003/CORE
+    -L/usr/local/lib/perl5/i586-linux/5.003/CORE
+    -o interp interp.c -lperl -lm
+</PRE>
+
+<P>
+
+(That's all one line.) On my 
+<FONT SIZE=-1>DEC</FONT> Alpha running 5.003_05, the incantation is a bit
+different:
+
+
+<P>
+
+<PRE>    % cc -O2 -Olimit 2900 -DSTANDARD_C -I/usr/local/include
+    -I/usr/local/lib/perl5/alpha-dec_osf/5.00305/CORE
+    -L/usr/local/lib/perl5/alpha-dec_osf/5.00305/CORE -L/usr/local/lib
+    -D__LANGUAGE_C__ -D_NO_PROTO -o interp interp.c -lperl -lm
+</PRE>
+
+<P>
+
+How can you figure out what to add? Assuming your Perl is post-5.001,
+execute a <CODE>perl -V</CODE> command and pay special attention to the ``cc'' and ``ccflags''
+information.
+
+
+<P>
+
+You'll have to choose the appropriate compiler (<EM>cc</EM>, <EM>gcc</EM>, et al.) for your machine: <CODE>perl -MConfig -e 'print $Config{cc}'</CODE> will tell you what to use.
+
+
+<P>
+
+You'll also have to choose the appropriate library directory (<EM>/usr/local/lib/...</EM>) for your machine. If your compiler complains that certain functions are
+undefined, or that it can't locate
+<EM>-lperl</EM>, then you need to change the path following the <A HREF="#item__L">-L</A>. If it complains that it can't find <EM>EXTERN.h</EM> and <EM>perl.h</EM>, you need to change the path following the <CODE>-I</CODE>.
+
+
+<P>
+
+You may have to add extra libraries as well. Which ones? Perhaps those
+printed by
+
+
+<P>
+
+<PRE>   perl -MConfig -e 'print $Config{libs}'
+</PRE>
+
+<P>
+
+Provided your perl binary was properly configured and installed the
+<STRONG>ExtUtils::Embed</STRONG> module will determine all of this information for you:
+
+
+<P>
+
+<PRE>   % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+</PRE>
+
+<P>
+
+If the <STRONG>ExtUtils::Embed</STRONG> module isn't part of your Perl distribution, you can retrieve it from <A
+HREF="http://www.perl.com/perl/CPAN/modules/by-module/ExtUtils::Embed.">http://www.perl.com/perl/CPAN/modules/by-module/ExtUtils::Embed.</A>
+(If this documentation came from your Perl distribution, then you're
+running 5.004 or better and you already have it.)
+
+
+<P>
+
+The <STRONG>ExtUtils::Embed</STRONG> kit on 
+<FONT SIZE=-1>CPAN</FONT> also contains all source code for the examples in
+this document, tests, additional examples and other information you may
+find useful.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Adding_a_Perl_interpreter_to_you">Adding a Perl interpreter to your C program
+
+</A></H2>
+In a sense, perl (the 
+<FONT SIZE=-1>C</FONT> program) is a good example of embedding Perl (the
+language), so I'll demonstrate embedding with <EM>miniperlmain.c</EM>, from the source distribution. Here's a bastardized, nonportable version
+of <EM>miniperlmain.c</EM> containing the essentials of embedding:
+
+
+<P>
+
+<PRE>    #include &lt;EXTERN.h&gt;               /* from the Perl distribution     */
+    #include &lt;perl.h&gt;                 /* from the Perl distribution     */
+</PRE>
+
+<P>
+
+<PRE>    static PerlInterpreter *my_perl;  /***    The Perl interpreter    ***/
+</PRE>
+
+<P>
+
+<PRE>    int main(int argc, char **argv, char **env)
+    {
+        my_perl = perl_alloc();
+        perl_construct(my_perl);
+        perl_parse(my_perl, NULL, argc, argv, (char **)NULL);
+        perl_run(my_perl);
+        perl_destruct(my_perl);
+        perl_free(my_perl);
+    }
+</PRE>
+
+<P>
+
+Notice that we don't use the <CODE>env</CODE> pointer. Normally handed to
+<A HREF="/n|/perl/html/./lib/Pod/perlguts.html#item_perl_parse">perl_parse</A> as its final argument, <CODE>env</CODE> here is replaced by
+<A HREF="#item_NULL">NULL</A>, which means that the current environment will be used.
+
+
+<P>
+
+Now compile this program (I'll call it <EM>interp.c</EM>) into an executable:
+
+
+<P>
+
+<PRE>    % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+</PRE>
+
+<P>
+
+After a successful compilation, you'll be able to use <EM>interp</EM> just like perl itself:
+
+
+<P>
+
+<PRE>    % interp
+    print &quot;Pretty Good Perl \n&quot;;
+    print &quot;10890 - 9801 is &quot;, 10890 - 9801;
+    &lt;CTRL-D&gt;
+    Pretty Good Perl
+    10890 - 9801 is 1089
+</PRE>
+
+<P>
+
+or
+
+
+<P>
+
+<PRE>    % interp -e 'printf(&quot;%x&quot;, 3735928559)'
+    deadbeef
+</PRE>
+
+<P>
+
+You can also read and execute Perl statements from a file while in the midst of your 
+<FONT SIZE=-1>C</FONT> program, by placing the filename in
+ <EM>argv[1]</EM> before calling <EM>perl_run()</EM>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Calling_a_Perl_subroutine_from_y">Calling a Perl subroutine from your C program
+
+</A></H2>
+To call individual Perl subroutines, you can use any of the <STRONG>perl_call_*</STRONG>
+functions documented in the <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A> manpage. In this example we'll use <EM>perl_call_argv</EM>.
+
+
+<P>
+
+That's shown below, in a program I'll call <EM>showtime.c</EM>.
+
+
+<P>
+
+<PRE>    #include &lt;EXTERN.h&gt;
+    #include &lt;perl.h&gt;
+</PRE>
+
+<P>
+
+<PRE>    static PerlInterpreter *my_perl;
+</PRE>
+
+<P>
+
+<PRE>    int main(int argc, char **argv, char **env)
+    {
+        char *args[] = { NULL };
+        my_perl = perl_alloc();
+        perl_construct(my_perl);
+</PRE>
+
+<P>
+
+<PRE>        perl_parse(my_perl, NULL, argc, argv, NULL);
+</PRE>
+
+<P>
+
+<PRE>        /*** skipping perl_run() ***/
+</PRE>
+
+<P>
+
+<PRE>        perl_call_argv(&quot;showtime&quot;, G_DISCARD | G_NOARGS, args);
+</PRE>
+
+<P>
+
+<PRE>        perl_destruct(my_perl);
+        perl_free(my_perl);
+    }
+</PRE>
+
+<P>
+
+where <EM>showtime</EM> is a Perl subroutine that takes no arguments (that's the
+<EM>G_NOARGS</EM>) and for which I'll ignore the return value (that's the
+<EM>G_DISCARD</EM>). Those flags, and others, are discussed in <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+I'll define the <EM>showtime</EM> subroutine in a file called <EM>showtime.pl</EM>:
+
+
+<P>
+
+<PRE>    print &quot;I shan't be printed.&quot;;
+</PRE>
+
+<P>
+
+<PRE>    sub showtime {
+        print time;
+    }
+</PRE>
+
+<P>
+
+Simple enough. Now compile and run:
+
+
+<P>
+
+<PRE>    % cc -o showtime showtime.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+</PRE>
+
+<P>
+
+<PRE>    % showtime showtime.pl
+    818284590
+</PRE>
+
+<P>
+
+yielding the number of seconds that elapsed between January 1, 1970 (the beginning of the Unix epoch), and the moment 
+<FONT SIZE=-1>I</FONT> began writing this sentence.
+
+
+
+<P>
+
+In this particular case we don't have to call <EM>perl_run</EM>, but in general it's considered good practice to ensure proper
+initialization of library code, including execution of all object <A HREF="#item_DESTROY">DESTROY</A> methods and package <A HREF="#item_END_">END {}</A> blocks.
+
+
+<P>
+
+If you want to pass arguments to the Perl subroutine, you can add strings
+to the <A HREF="#item_NULL">NULL</A>-terminated <CODE>args</CODE> list passed to
+<EM>perl_call_argv</EM>. For other data types, or to examine return values, you'll need to
+manipulate the Perl stack. That's demonstrated in the last section of this
+document: <A HREF="#Fiddling_with_the_Perl_stack_fro">Fiddling with the Perl stack from your C program</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Evaluating_a_Perl_statement_from">Evaluating a Perl statement from your C program
+
+</A></H2>
+Perl provides two 
+<FONT SIZE=-1>API</FONT> functions to evaluate pieces of Perl code. These
+are <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#perl_eval_sv_">perl_eval_sv()</A> and <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#perl_eval_pv_">perl_eval_pv()</A>.
+
+
+<P>
+
+Arguably, these are the only routines you'll ever need to execute snippets of Perl code from within your 
+<FONT SIZE=-1>C</FONT> program. Your code can be as long as you wish; it can contain multiple statements; it can employ
+
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#use">use</A>, <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#require">require</A> and <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#do">do</A> to include external Perl files.
+
+
+<P>
+
+<EM>perl_eval_pv()</EM> lets us evaluate individual Perl strings, and then extract variables for coercion into 
+<FONT SIZE=-1>C</FONT> types. The following program,
+
+<EM>string.c</EM>, executes three Perl strings, extracting an <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_int">int</A> from the first, a <CODE>float</CODE> from the second, and a <CODE>char *</CODE> from the third.
+
+
+<P>
+
+<PRE>   #include &lt;EXTERN.h&gt;
+   #include &lt;perl.h&gt;
+   
+   static PerlInterpreter *my_perl;
+   
+   main (int argc, char **argv, char **env)
+   {
+       char *embedding[] = { &quot;&quot;, &quot;-e&quot;, &quot;0&quot; };
+   
+       my_perl = perl_alloc();
+       perl_construct( my_perl );
+   
+       perl_parse(my_perl, NULL, 3, embedding, NULL);
+       perl_run(my_perl);
+   
+       /** Treat $a as an integer **/
+       perl_eval_pv(&quot;$a = 3; $a **= 2&quot;, TRUE);
+       printf(&quot;a = %d\n&quot;, SvIV(perl_get_sv(&quot;a&quot;, FALSE)));
+   
+       /** Treat $a as a float **/
+       perl_eval_pv(&quot;$a = 3.14; $a **= 2&quot;, TRUE);
+       printf(&quot;a = %f\n&quot;, SvNV(perl_get_sv(&quot;a&quot;, FALSE)));
+   
+       /** Treat $a as a string **/
+       perl_eval_pv(&quot;$a = 'rekcaH lreP rehtonA tsuJ'; $a = reverse($a);&quot;, TRUE);
+       printf(&quot;a = %s\n&quot;, SvPV(perl_get_sv(&quot;a&quot;, FALSE), na));
+   
+       perl_destruct(my_perl);
+       perl_free(my_perl);
+   }
+</PRE>
+
+<P>
+
+All of those strange functions with <EM>sv</EM> in their names help convert Perl scalars to 
+<FONT SIZE=-1>C</FONT> types. They're described in <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A>.
+
+
+<P>
+
+If you compile and run <EM>string.c</EM>, you'll see the results of using
+<EM>SvIV()</EM> to create an <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_int">int</A>, <EM>SvNV()</EM> to create a <CODE>float</CODE>, and
+<EM>SvPV()</EM> to create a string:
+
+
+<P>
+
+<PRE>   a = 9
+   a = 9.859600
+   a = Just Another Perl Hacker
+</PRE>
+
+<P>
+
+In the example above, we've created a global variable to temporarily store
+the computed value of our eval'd expression. It is also possible and in
+most cases a better strategy to fetch the return value from <EM>perl_eval_pv</EM> instead. Example:
+
+
+<P>
+
+<PRE>   ...
+   SV *val = perl_eval_pv(&quot;reverse 'rekcaH lreP rehtonA tsuJ'&quot;, TRUE);
+   printf(&quot;%s\n&quot;, SvPV(val,na));
+   ...
+</PRE>
+
+<P>
+
+This way, we avoid namespace pollution by not creating global variables and
+we've simplified our code as well.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Performing_Perl_pattern_matches_">Performing Perl pattern matches and substitutions from your C program
+
+</A></H2>
+The <EM>perl_eval_sv()</EM> function lets us evaluate chunks of Perl code, so we can define some
+functions that use it to ``specialize'' in matches and substitutions: <EM>match()</EM>, <EM>substitute()</EM>, and <EM>matches()</EM>.
+
+
+<P>
+
+<PRE>   char match(SV *string, char *pattern);
+</PRE>
+
+<P>
+
+Given a string and a pattern (e.g., <CODE>m/clasp/</CODE> or <CODE>/\b\w*\b/</CODE>, which in your 
+<FONT SIZE=-1>C</FONT> program might appear as ``/\\b\\w*\\b/''),
+<CODE>match()</CODE> returns 1 if the string matches the pattern and 0
+otherwise.
+
+
+<P>
+
+<PRE>   int substitute(SV **string, char *pattern);
+</PRE>
+
+<P>
+
+Given a pointer to an <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#item_SV">SV</A> and an <CODE>=~</CODE> operation (e.g.,
+<CODE>s/bob/robert/g</CODE> or <CODE>tr[A-Z][a-z]</CODE>), <CODE>substitute()</CODE> modifies the string within the <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#item_AV">AV</A> at according to the operation, returning the number of substitutions made.
+
+
+<P>
+
+<PRE>   int matches(SV *string, char *pattern, AV **matches);
+</PRE>
+
+<P>
+
+Given an <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#item_SV">SV</A>, a pattern, and a pointer to an empty <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#item_AV">AV</A>, <CODE>matches()</CODE> evaluates <CODE>$string =~ $pattern</CODE> in an array context, and fills in <EM>matches</EM> with the array elements, returning the number of matches found.
+
+
+<P>
+
+Here's a sample program, <EM>match.c</EM>, that uses all three (long lines have been wrapped here):
+
+
+<P>
+
+<PRE> #include &lt;EXTERN.h&gt;
+ #include &lt;perl.h&gt;
+ 
+ /** my_perl_eval_sv(code, error_check)
+ ** kinda like perl_eval_sv(), 
+ ** but we pop the return value off the stack 
+ **/
+ SV* my_perl_eval_sv(SV *sv, I32 croak_on_error)
+ {
+     dSP;
+     SV* retval;
+ 
+     PUSHMARK(sp);
+     perl_eval_sv(sv, G_SCALAR);
+ 
+     SPAGAIN;
+     retval = POPs;
+     PUTBACK;
+ 
+     if (croak_on_error &amp;&amp; SvTRUE(GvSV(errgv)))
+        croak(SvPVx(GvSV(errgv), na));
+ 
+     return retval;
+ }
+ 
+ /** match(string, pattern)
+ **
+ ** Used for matches in a scalar context.
+ **
+ ** Returns 1 if the match was successful; 0 otherwise.
+ **/
+ 
+ I32 match(SV *string, char *pattern)
+ {
+     SV *command = newSV(0), *retval;
+ 
+     sv_setpvf(command, &quot;my $string = '%s'; $string =~ %s&quot;,
+              SvPV(string,na), pattern);
+ 
+     retval = my_perl_eval_sv(command, TRUE);
+     SvREFCNT_dec(command);
+ 
+     return SvIV(retval);
+ }
+ 
+ /** substitute(string, pattern)
+ **
+ ** Used for =~ operations that modify their left-hand side (s/// and tr///)
+ **
+ ** Returns the number of successful matches, and
+ ** modifies the input string if there were any.
+ **/
+ 
+ I32 substitute(SV **string, char *pattern)
+ {
+     SV *command = newSV(0), *retval;
+ 
+     sv_setpvf(command, &quot;$string = '%s'; ($string =~ %s)&quot;,
+              SvPV(*string,na), pattern);
+ 
+     retval = my_perl_eval_sv(command, TRUE);
+     SvREFCNT_dec(command);
+ 
+     *string = perl_get_sv(&quot;string&quot;, FALSE);
+     return SvIV(retval);
+ }
+ 
+ /** matches(string, pattern, matches)
+ **
+ ** Used for matches in an array context.
+ **
+ ** Returns the number of matches,
+ ** and fills in **matches with the matching substrings
+ **/
+ 
+ I32 matches(SV *string, char *pattern, AV **match_list)
+ {
+     SV *command = newSV(0);
+     I32 num_matches;
+ 
+     sv_setpvf(command, &quot;my $string = '%s'; @array = ($string =~ %s)&quot;,
+              SvPV(string,na), pattern);
+ 
+     my_perl_eval_sv(command, TRUE);
+     SvREFCNT_dec(command);
+ 
+     *match_list = perl_get_av(&quot;array&quot;, FALSE);
+     num_matches = av_len(*match_list) + 1; /** assume $[ is 0 **/
+ 
+     return num_matches;
+ }
+ 
+ main (int argc, char **argv, char **env)
+ {
+     PerlInterpreter *my_perl = perl_alloc();
+     char *embedding[] = { &quot;&quot;, &quot;-e&quot;, &quot;0&quot; };
+     AV *match_list;
+     I32 num_matches, i;
+     SV *text = newSV(0);
+ 
+     perl_construct(my_perl);
+     perl_parse(my_perl, NULL, 3, embedding, NULL);
+ 
+     sv_setpv(text, &quot;When he is at a convenience store and the bill comes to some amount like 76 cents, Maynard is aware that there is something he *should* do, something that will enable him to get back a quarter, but he has no idea *what*.  He fumbles through his red squeezey changepurse and gives the boy three extra pennies with his dollar, hoping that he might luck into the correct amount.  The boy gives him back two of his own pennies and then the big shiny quarter that is his prize. -RICHH&quot;);
+ 
+     if (match(text, &quot;m/quarter/&quot;)) /** Does text contain 'quarter'? **/
+        printf(&quot;match: Text contains the word 'quarter'.\n\n&quot;);
+     else
+        printf(&quot;match: Text doesn't contain the word 'quarter'.\n\n&quot;);
+ 
+     if (match(text, &quot;m/eighth/&quot;)) /** Does text contain 'eighth'? **/
+        printf(&quot;match: Text contains the word 'eighth'.\n\n&quot;);
+     else
+        printf(&quot;match: Text doesn't contain the word 'eighth'.\n\n&quot;);
+ 
+     /** Match all occurrences of /wi../ **/
+     num_matches = matches(text, &quot;m/(wi..)/g&quot;, &amp;match_list);
+     printf(&quot;matches: m/(wi..)/g found %d matches...\n&quot;, num_matches);
+ 
+     for (i = 0; i &lt; num_matches; i++)
+        printf(&quot;match: %s\n&quot;, SvPV(*av_fetch(match_list, i, FALSE),na));
+     printf(&quot;\n&quot;);
+ 
+     /** Remove all vowels from text **/
+     num_matches = substitute(&amp;text, &quot;s/[aeiou]//gi&quot;);
+     if (num_matches) {
+        printf(&quot;substitute: s/[aeiou]//gi...%d substitutions made.\n&quot;,
+               num_matches);
+        printf(&quot;Now text is: %s\n\n&quot;, SvPV(text,na));
+     }
+ 
+     /** Attempt a substitution **/
+     if (!substitute(&amp;text, &quot;s/Perl/C/&quot;)) {
+        printf(&quot;substitute: s/Perl/C...No substitution made.\n\n&quot;);
+     }
+ 
+     SvREFCNT_dec(text);
+     perl_destruct_level = 1;
+     perl_destruct(my_perl);
+     perl_free(my_perl);
+ }
+</PRE>
+
+<P>
+
+which produces the output (again, long lines have been wrapped here)
+
+
+<P>
+
+<PRE>   match: Text contains the word 'quarter'.
+</PRE>
+
+<P>
+
+<PRE>   match: Text doesn't contain the word 'eighth'.
+</PRE>
+
+<P>
+
+<PRE>   matches: m/(wi..)/g found 2 matches...
+   match: will
+   match: with
+</PRE>
+
+<P>
+
+<PRE>   substitute: s/[aeiou]//gi...139 substitutions made.
+   Now text is: Whn h s t  cnvnnc str nd th bll cms t sm mnt lk 76 cnts,
+   Mynrd s wr tht thr s smthng h *shld* d, smthng tht wll nbl hm t gt bck
+   qrtr, bt h hs n d *wht*.  H fmbls thrgh hs rd sqzy chngprs nd gvs th by
+   thr xtr pnns wth hs dllr, hpng tht h mght lck nt th crrct mnt.  Th by gvs
+   hm bck tw f hs wn pnns nd thn th bg shny qrtr tht s hs prz. -RCHH
+</PRE>
+
+<P>
+
+<PRE>   substitute: s/Perl/C...No substitution made.
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Fiddling_with_the_Perl_stack_fro">Fiddling with the Perl stack from your C program
+
+</A></H2>
+When trying to explain stacks, most computer science textbooks mumble something about spring-loaded columns of cafeteria plates: the last thing you pushed on the stack is the first thing you pop off. That'll do for our purposes: your 
+<FONT SIZE=-1>C</FONT> program will push some arguments onto ``the Perl stack'', shut its eyes while some magic happens, and then pop the results--the return value of your Perl subroutine--off the stack.
+
+
+
+<P>
+
+First you'll need to know how to convert between 
+<FONT SIZE=-1>C</FONT> types and Perl types, with <CODE>newSViv()</CODE>
+and <CODE>sv_setnv()</CODE> and <CODE>newAV()</CODE> and all their friends.
+They're described in <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A>.
+
+
+<P>
+
+Then you'll need to know how to manipulate the Perl stack. That's described
+in <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+Once you've understood those, embedding Perl in 
+<FONT SIZE=-1>C</FONT> is easy.
+
+
+<P>
+
+Because 
+<FONT SIZE=-1>C</FONT> has no builtin function for integer exponentiation,
+let's make Perl's ** operator available to it (this is less useful than it
+sounds, because Perl implements ** with C's <EM>pow()</EM> function). First I'll create a stub exponentiation function in <EM>power.pl</EM>:
+
+
+<P>
+
+<PRE>    sub expo {
+        my ($a, $b) = @_;
+        return $a ** $b;
+    }
+</PRE>
+
+<P>
+
+Now I'll create a 
+<FONT SIZE=-1>C</FONT> program, <EM>power.c</EM>, with a function
+<EM>PerlPower()</EM> that contains all the perlguts necessary to push the two arguments into <EM>expo()</EM> and to pop the return value out. Take a deep breath...
+
+
+<P>
+
+<PRE>    #include &lt;EXTERN.h&gt;
+    #include &lt;perl.h&gt;
+</PRE>
+
+<P>
+
+<PRE>    static PerlInterpreter *my_perl;
+</PRE>
+
+<P>
+
+<PRE>    static void
+    PerlPower(int a, int b)
+    {
+      dSP;                            /* initialize stack pointer      */
+      ENTER;                          /* everything created after here */
+      SAVETMPS;                       /* ...is a temporary variable.   */
+      PUSHMARK(sp);                   /* remember the stack pointer    */
+      XPUSHs(sv_2mortal(newSViv(a))); /* push the base onto the stack  */
+      XPUSHs(sv_2mortal(newSViv(b))); /* push the exponent onto stack  */
+      PUTBACK;                      /* make local stack pointer global */
+      perl_call_pv(&quot;expo&quot;, G_SCALAR); /* call the function             */
+      SPAGAIN;                        /* refresh stack pointer         */
+                                    /* pop the return value from stack */
+      printf (&quot;%d to the %dth power is %d.\n&quot;, a, b, POPi);
+      PUTBACK;
+      FREETMPS;                       /* free that return value        */
+      LEAVE;                       /* ...and the XPUSHed &quot;mortal&quot; args.*/
+    }
+</PRE>
+
+<P>
+
+<PRE>    int main (int argc, char **argv, char **env)
+    {
+      char *my_argv[] = { &quot;&quot;, &quot;power.pl&quot; };
+</PRE>
+
+<P>
+
+<PRE>      my_perl = perl_alloc();
+      perl_construct( my_perl );
+</PRE>
+
+<P>
+
+<PRE>      perl_parse(my_perl, NULL, 2, my_argv, (char **)NULL);
+      perl_run(my_perl);
+</PRE>
+
+<P>
+
+<PRE>      PerlPower(3, 4);                      /*** Compute 3 ** 4 ***/
+</PRE>
+
+<P>
+
+<PRE>      perl_destruct(my_perl);
+      perl_free(my_perl);
+    }
+</PRE>
+
+<P>
+
+Compile and run:
+
+
+<P>
+
+<PRE>    % cc -o power power.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+</PRE>
+
+<P>
+
+<PRE>    % power
+    3 to the 4th power is 81.
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Maintaining_a_persistent_interpr">Maintaining a persistent interpreter
+
+</A></H2>
+When developing interactive and/or potentially long-running applications,
+it's a good idea to maintain a persistent interpreter rather than
+allocating and constructing a new interpreter multiple times. The major
+reason is speed: since Perl will only be loaded into memory once.
+
+
+<P>
+
+However, you have to be more cautious with namespace and variable scoping
+when using a persistent interpreter. In previous examples we've been using
+global variables in the default package <CODE>main</CODE>. We knew exactly what code would be run, and assumed we could avoid
+variable collisions and outrageous symbol table growth.
+
+
+<P>
+
+Let's say your application is a server that will occasionally run Perl code
+from some arbitrary file. Your server has no way of knowing what code it's
+going to run. Very dangerous.
+
+
+<P>
+
+If the file is pulled in by <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#item_perl_parse">perl_parse()</A>, compiled into a newly constructed interpreter, and subsequently cleaned
+out with
+<A HREF="/n|/perl/html/./lib/Pod/perlguts.html#item_perl_destruct">perl_destruct()</A> afterwards, you're shielded from most namespace troubles.
+
+
+<P>
+
+One way to avoid namespace collisions in this scenario is to translate the
+filename into a guaranteed-unique package name, and then compile the code
+into that package using <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#eval">eval</A>. In the example below, each file will only be compiled once. Or, the
+application might choose to clean out the symbol table associated with the
+file after it's no longer needed. Using <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#perl_call_argv">perl_call_argv</A>, We'll call the subroutine <CODE>Embed::Persistent::eval_file</CODE> which lives in the file <CODE>persistent.pl</CODE> and pass the filename and boolean cleanup/cache flag as arguments.
+
+
+<P>
+
+Note that the process will continue to grow for each file that it uses. In
+addition, there might be <CODE>AUTOLOAD</CODE>ed subroutines and other conditions that cause Perl's symbol table to grow.
+You might want to add some logic that keeps track of the process size, or
+restarts itself after a certain number of requests, to ensure that memory
+consumption is minimized. You'll also want to scope your variables with <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#my">my</A> whenever possible.
+
+
+<P>
+
+<PRE> package Embed::Persistent;
+ #persistent.pl
+</PRE>
+
+<P>
+
+<PRE> use strict;
+ use vars '%Cache';
+</PRE>
+
+<P>
+
+<PRE> sub valid_package_name {
+     my($string) = @_;
+     $string =~ s/([^A-Za-z0-9\/])/sprintf(&quot;_%2x&quot;,unpack(&quot;C&quot;,$1))/eg;
+     # second pass only for words starting with a digit
+     $string =~ s|/(\d)|sprintf(&quot;/_%2x&quot;,unpack(&quot;C&quot;,$1))|eg;
+</PRE>
+
+<P>
+
+<PRE>     # Dress it up as a real package name
+     $string =~ s|/|::|g;
+     return &quot;Embed&quot; . $string;
+ }
+</PRE>
+
+<P>
+
+<PRE> #borrowed from Safe.pm
+ sub delete_package {
+     my $pkg = shift;
+     my ($stem, $leaf);
+</PRE>
+
+<P>
+
+<PRE>     no strict 'refs';
+     $pkg = &quot;main::$pkg\::&quot;;    # expand to full symbol table name
+     ($stem, $leaf) = $pkg =~ m/(.*::)(\w+::)$/;
+</PRE>
+
+<P>
+
+<PRE>     my $stem_symtab = *{$stem}{HASH};
+</PRE>
+
+<P>
+
+<PRE>     delete $stem_symtab-&gt;{$leaf};
+ }
+</PRE>
+
+<P>
+
+<PRE> sub eval_file {
+     my($filename, $delete) = @_;
+     my $package = valid_package_name($filename);
+     my $mtime = -M $filename;
+     if(defined $Cache{$package}{mtime}
+        &amp;&amp;
+        $Cache{$package}{mtime} &lt;= $mtime)
+     {
+        # we have compiled this subroutine already,
+        # it has not been updated on disk, nothing left to do
+        print STDERR &quot;already compiled $package-&gt;handler\n&quot;;
+     }
+     else {
+        local *FH;
+        open FH, $filename or die &quot;open '$filename' $!&quot;;
+        local($/) = undef;
+        my $sub = &lt;FH&gt;;
+        close FH;
+</PRE>
+
+<P>
+
+<PRE>        #wrap the code into a subroutine inside our unique package
+        my $eval = qq{package $package; sub handler { $sub; }};
+        {
+            # hide our variables within this block
+            my($filename,$mtime,$package,$sub);
+            eval $eval;
+        }
+        die $@ if $@;
+</PRE>
+
+<P>
+
+<PRE>        #cache it unless we're cleaning out each time
+        $Cache{$package}{mtime} = $mtime unless $delete;
+     }
+</PRE>
+
+<P>
+
+<PRE>     eval {$package-&gt;handler;};
+     die $@ if $@;
+</PRE>
+
+<P>
+
+<PRE>     delete_package($package) if $delete;
+</PRE>
+
+<P>
+
+<PRE>     #take a look if you want
+     #print Devel::Symdump-&gt;rnew($package)-&gt;as_string, $/;
+ }
+</PRE>
+
+<P>
+
+<PRE> 1;
+</PRE>
+
+<P>
+
+<PRE> __END__
+</PRE>
+
+<P>
+
+<PRE> /* persistent.c */
+ #include &lt;EXTERN.h&gt;
+ #include &lt;perl.h&gt;
+</PRE>
+
+<P>
+
+<PRE> /* 1 = clean out filename's symbol table after each request, 0 = don't */
+ #ifndef DO_CLEAN
+ #define DO_CLEAN 0
+ #endif
+</PRE>
+
+<P>
+
+<PRE> static PerlInterpreter *perl = NULL;
+</PRE>
+
+<P>
+
+<PRE> int
+ main(int argc, char **argv, char **env)
+ {
+     char *embedding[] = { &quot;&quot;, &quot;persistent.pl&quot; };
+     char *args[] = { &quot;&quot;, DO_CLEAN, NULL };
+     char filename [1024];
+     int exitstatus = 0;
+</PRE>
+
+<P>
+
+<PRE>     if((perl = perl_alloc()) == NULL) {
+        fprintf(stderr, &quot;no memory!&quot;);
+        exit(1);
+     }
+     perl_construct(perl);
+</PRE>
+
+<P>
+
+<PRE>     exitstatus = perl_parse(perl, NULL, 2, embedding, NULL);
+</PRE>
+
+<P>
+
+<PRE>     if(!exitstatus) {
+        exitstatus = perl_run(perl);
+</PRE>
+
+<P>
+
+<PRE>        while(printf(&quot;Enter file name: &quot;) &amp;&amp; gets(filename)) {
+</PRE>
+
+<P>
+
+<PRE>            /* call the subroutine, passing it the filename as an argument */
+            args[0] = filename;
+            perl_call_argv(&quot;Embed::Persistent::eval_file&quot;,
+                           G_DISCARD | G_EVAL, args);
+</PRE>
+
+<P>
+
+<PRE>            /* check $@ */
+            if(SvTRUE(GvSV(errgv)))
+                fprintf(stderr, &quot;eval error: %s\n&quot;, SvPV(GvSV(errgv),na));
+        }
+     }
+</PRE>
+
+<P>
+
+<PRE>     perl_destruct_level = 0;
+     perl_destruct(perl);
+     perl_free(perl);
+     exit(exitstatus);
+ }
+</PRE>
+
+<P>
+
+Now compile:
+
+
+<P>
+
+<PRE> % cc -o persistent persistent.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+</PRE>
+
+<P>
+
+Here's a example script file:
+
+
+<P>
+
+<PRE> #test.pl
+ my $string = &quot;hello&quot;;
+ foo($string);
+</PRE>
+
+<P>
+
+<PRE> sub foo {
+     print &quot;foo says: @_\n&quot;;
+ }
+</PRE>
+
+<P>
+
+Now run:
+
+
+<P>
+
+<PRE> % persistent
+ Enter file name: test.pl
+ foo says: hello
+ Enter file name: test.pl
+ already compiled Embed::test_2epl-&gt;handler
+ foo says: hello
+ Enter file name: ^C
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Maintaining_multiple_interpreter">Maintaining multiple interpreter instances
+
+</A></H2>
+Some rare applications will need to create more than one interpreter during
+a session. Such an application might sporadically decide to release any
+resources associated with the interpreter.
+
+
+<P>
+
+The program must take care to ensure that this takes place <EM>before</EM>
+the next interpreter is constructed. By default, the global variable
+<CODE>perl_destruct_level</CODE> is set to <CODE></CODE>, since extra cleaning isn't needed when a program has only one
+interpreter.
+
+
+<P>
+
+Setting <CODE>perl_destruct_level</CODE> to <CODE>1</CODE> makes everything squeaky clean:
+
+
+<P>
+
+<PRE> perl_destruct_level = 1;
+</PRE>
+
+<P>
+
+<PRE> while(1) {
+     ...
+     /* reset global variables here with perl_destruct_level = 1 */
+     perl_construct(my_perl);
+     ...
+     /* clean and reset _everything_ during perl_destruct */
+     perl_destruct(my_perl);
+     perl_free(my_perl);
+     ...
+     /* let's go do it again! */
+ }
+</PRE>
+
+<P>
+
+When <EM>perl_destruct()</EM> is called, the interpreter's syntax parse tree and symbol tables are
+cleaned up, and global variables are reset.
+
+
+<P>
+
+Now suppose we have more than one interpreter instance running at the same
+time. This is feasible, but only if you used the
+<CODE>-DMULTIPLICITY</CODE> flag when building Perl. By default, that sets
+<CODE>perl_destruct_level</CODE> to <CODE>1</CODE>.
+
+
+<P>
+
+Let's give it a try:
+
+
+<P>
+
+<PRE> #include &lt;EXTERN.h&gt;
+ #include &lt;perl.h&gt;
+</PRE>
+
+<P>
+
+<PRE> /* we're going to embed two interpreters */
+ /* we're going to embed two interpreters */
+</PRE>
+
+<P>
+
+<PRE> #define SAY_HELLO &quot;-e&quot;, &quot;print qq(Hi, I'm $^X\n)&quot;
+</PRE>
+
+<P>
+
+<PRE> int main(int argc, char **argv, char **env)
+ {
+     PerlInterpreter
+         *one_perl = perl_alloc(),
+         *two_perl = perl_alloc();
+     char *one_args[] = { &quot;one_perl&quot;, SAY_HELLO };
+     char *two_args[] = { &quot;two_perl&quot;, SAY_HELLO };
+</PRE>
+
+<P>
+
+<PRE>     perl_construct(one_perl);
+     perl_construct(two_perl);
+</PRE>
+
+<P>
+
+<PRE>     perl_parse(one_perl, NULL, 3, one_args, (char **)NULL);
+     perl_parse(two_perl, NULL, 3, two_args, (char **)NULL);
+</PRE>
+
+<P>
+
+<PRE>     perl_run(one_perl);
+     perl_run(two_perl);
+</PRE>
+
+<P>
+
+<PRE>     perl_destruct(one_perl);
+     perl_destruct(two_perl);
+</PRE>
+
+<P>
+
+<PRE>     perl_free(one_perl);
+     perl_free(two_perl);
+ }
+</PRE>
+
+<P>
+
+Compile as usual:
+
+
+<P>
+
+<PRE> % cc -o multiplicity multiplicity.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+</PRE>
+
+<P>
+
+Run it, Run it:
+
+
+<P>
+
+<PRE> % multiplicity
+ Hi, I'm one_perl
+ Hi, I'm two_perl
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Using_Perl_modules_which_themse">Using Perl modules, which themselves use C libraries, from your C program
+
+</A></H2>
+If you've played with the examples above and tried to embed a script that <EM>use()</EM>s a Perl module (such as <EM>Socket</EM>) which itself uses a 
+<FONT SIZE=-1>C</FONT> or 
+<FONT SIZE=-1>C++</FONT> library, this probably happened:
+
+
+
+<P>
+
+<PRE> Can't load module Socket, dynamic loading not available in this perl.
+  (You may need to build a new perl executable which either supports
+  dynamic loading or has the Socket module statically linked into it.)
+</PRE>
+
+<P>
+
+What's wrong?
+
+
+<P>
+
+Your interpreter doesn't know how to communicate with these extensions on its own. 
+<FONT SIZE=-1>A</FONT> little glue will help. Up until now you've been calling
+ <EM>perl_parse()</EM>, handing it 
+<FONT SIZE=-1>NULL</FONT> for the second argument:
+
+
+<P>
+
+<PRE> perl_parse(my_perl, NULL, argc, my_argv, NULL);
+</PRE>
+
+<P>
+
+That's where the glue code can be inserted to create the initial contact between Perl and linked 
+<FONT SIZE=-1>C/C++</FONT> routines. Let's take a look some pieces of
+ <EM>perlmain.c</EM>
+to see how Perl does this:
+
+
+<P>
+
+<PRE> #ifdef __cplusplus
+ #  define EXTERN_C extern &quot;C&quot;
+ #else
+ #  define EXTERN_C extern
+ #endif
+</PRE>
+
+<P>
+
+<PRE> static void xs_init _((void));
+</PRE>
+
+<P>
+
+<PRE> EXTERN_C void boot_DynaLoader _((CV* cv));
+ EXTERN_C void boot_Socket _((CV* cv));
+</PRE>
+
+<P>
+
+<PRE> EXTERN_C void
+ xs_init()
+ {
+        char *file = __FILE__;
+        /* DynaLoader is a special case */
+        newXS(&quot;DynaLoader::boot_DynaLoader&quot;, boot_DynaLoader, file);
+        newXS(&quot;Socket::bootstrap&quot;, boot_Socket, file);
+ }
+</PRE>
+
+<P>
+
+Simply put: for each extension linked with your Perl executable (determined
+during its initial configuration on your computer or when adding a new
+extension), a Perl subroutine is created to incorporate the extension's
+routines. Normally, that subroutine is named
+<EM>Module::bootstrap()</EM> and is invoked when you say <EM>use Module</EM>. In turn, this hooks into an 
+<FONT SIZE=-1>XSUB,</FONT> <EM>boot_Module</EM>, which creates a Perl counterpart for each of the extension's XSUBs. Don't
+worry about this part; leave that to the <EM>xsubpp</EM> and extension authors. If your extension is dynamically loaded, DynaLoader
+creates <EM>Module::bootstrap()</EM>
+for you on the fly. In fact, if you have a working DynaLoader then there is
+rarely any need to link in any other extensions statically.
+
+
+<P>
+
+Once you have this code, slap it into the second argument of <EM>perl_parse()</EM>:
+
+
+<P>
+
+<PRE> perl_parse(my_perl, xs_init, argc, my_argv, NULL);
+</PRE>
+
+<P>
+
+Then compile:
+
+
+<P>
+
+<PRE> % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+</PRE>
+
+<P>
+
+<PRE> % interp
+   use Socket;
+   use SomeDynamicallyLoadedModule;
+</PRE>
+
+<P>
+
+<PRE>   print &quot;Now I can use extensions!\n&quot;'
+</PRE>
+
+<P>
+
+<STRONG>ExtUtils::Embed</STRONG> can also automate writing the <EM>xs_init</EM> glue code.
+
+
+<P>
+
+<PRE> % perl -MExtUtils::Embed -e xsinit -- -o perlxsi.c
+ % cc -c perlxsi.c `perl -MExtUtils::Embed -e ccopts`
+ % cc -c interp.c  `perl -MExtUtils::Embed -e ccopts`
+ % cc -o interp perlxsi.o interp.o `perl -MExtUtils::Embed -e ldopts`
+</PRE>
+
+<P>
+
+Consult <A HREF="/n|/perl/html/./lib/Pod/perlxs.html#">the perlxs manpage</A> and <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A> for more details.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Embedding_Perl_under_Win32">Embedding Perl under Win32
+
+</A></H1>
+At the time of this writing, there are two versions of Perl which run under Win32. Interfacing to Activeware's Perl library is quite different from the examples in this documentation, as significant changes were made to the internal Perl 
+<FONT SIZE=-1>API.</FONT> However, it is possible to embed Activeware's Perl runtime, see the Perl for Win32 
+<FONT SIZE=-1>FAQ:</FONT> <A HREF="http://www.perl.com/perl/faq/win32/Perl_for_Win32_FAQ.html">http://www.perl.com/perl/faq/win32/Perl_for_Win32_FAQ.html</A>
+
+
+
+<P>
+
+With the ``official'' Perl version 5.004 or higher, all the examples within
+this documentation will compile and run untouched, although, the build
+process is slightly different between Unix and Win32.  
+
+
+<P>
+
+For starters, backticks don't work under the Win32 native command shell! The ExtUtils::Embed kit on 
+<FONT SIZE=-1>CPAN</FONT> ships with a script called
+
+<STRONG>genmake</STRONG>, which generates a simple makefile to build a program from a single 
+<FONT SIZE=-1>C</FONT> source file. It can be used like so:
+
+
+<P>
+
+<PRE> C:\ExtUtils-Embed\eg&gt; perl genmake interp.c
+ C:\ExtUtils-Embed\eg&gt; nmake
+ C:\ExtUtils-Embed\eg&gt; interp -e &quot;print qq{I'm embedded in Win32!\n}&quot;
+</PRE>
+
+<P>
+
+You may wish to use a more robust environment such as the 
+<FONT SIZE=-1>MS</FONT> Developer stdio. In this case, to generate
+perlxsi.c run:
+
+
+<P>
+
+<PRE> perl -MExtUtils::Embed -e xsinit
+</PRE>
+
+<P>
+
+Create a new project, Insert -&gt; Files into Project: perlxsi.c, perl.lib,
+and your own source files, e.g. interp.c. Typically you'll find perl.lib in <STRONG>C:\perl\lib\CORE</STRONG>, if not, you should see the <STRONG>CORE</STRONG>
+directory relative to <CODE>perl -V:archlib</CODE>. The studio will also need this path so it knows where to find Perl
+include files. This path can be added via the Tools -&gt; Options -&gt;
+Directories menu. Finnally, select Build -&gt; Build interp.exe and you're
+ready to go!
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="MORAL">MORAL
+
+</A></H1>
+You can sometimes <EM>write faster code</EM> in 
+<FONT SIZE=-1>C,</FONT> but you can always <EM>write code faster</EM> in Perl. Because you can use each from the other, combine them as you wish.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Jon Orwant and &lt;<EM>orwant@tpj.com</EM>&gt; and Doug MacEachern &lt;<EM>dougm@osf.org</EM>&gt;, with small contributions from Tim Bunce, Tom Christiansen, Hallvard
+Furuseth, Dov Grobgeld, and Ilya Zakharevich.
+
+
+<P>
+
+Check out Doug's article on embedding in Volume 1, Issue 4 of The Perl Journal. Info about 
+<FONT SIZE=-1>TPJ</FONT> is available from <A HREF="http://tpj.com.">http://tpj.com.</A>
+
+
+
+<P>
+
+July 17, 1997
+
+
+<P>
+
+Some of this material is excerpted from Jon Orwant's book: <EM>Perl 5
+Interactive</EM>, Waite Group Press, 1996 
+<FONT SIZE=-1>(ISBN</FONT> 1-57169-064-6) and appears courtesy of Waite
+Group Press.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 
+<FONT SIZE=-1>(C)</FONT> 1995, 1996, 1997 Doug MacEachern and Jon Orwant.
+All Rights Reserved.
+
+
+<P>
+
+Although destined for release with the standard Perl distribution, this
+document is not public domain, nor is any of Perl and its documentation.
+Permission is granted to freely distribute verbatim copies of this document
+provided that no modifications outside of formatting be made, and that this
+notice remain intact. You are permitted and encouraged to use its code and
+derivatives thereof in your own source code for fun or for profit as you
+see fit.
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

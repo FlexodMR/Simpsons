@@ -1,0 +1,26 @@
+PRINT Interior 00 (Springfield Elementary)
+PRINT ====================================
+
+DEPEND gens.p3d track.p3d lights.p3d wb_data.p3d
+
+TEMPLATE statics gens.p3d I00_statics.p3d
+TEMPLATE terrain track.p3d I00_track.p3d
+TEMPLATE intersect track.p3d I00_intersect.p3d
+
+COMMAND p3djoin lights.p3d wb_data.p3d -o I00_env.p3d
+COMMAND p3djoin I00_track.p3d I00_statics.p3d -o I00_region.p3d
+COMMAND p3d2dsg I00_region.p3d -o I00_dsg.p3d
+COMMAND p3dsort -s I00_dsg.p3d -o I00_dsg.p3d
+COMMAND p3djoin I00_dsg.p3d I00_env.p3d -o I00.p3d 
+
+COMMAND p3djoin I00_statics.p3d I00_intersect.p3d -o I00_tree.p3d 
+
+COMMAND p3d2dsg -i I00_intersect.p3d -o I00_intersect.p3d
+
+STORE I00_tree.p3d I00_tree.p3d
+
+#Join the Intersects with the interiors
+COMMAND I00_intersect.p3d I00.p3d -o I00.p3d 
+
+STORE I00.p3d I00.p3d
+

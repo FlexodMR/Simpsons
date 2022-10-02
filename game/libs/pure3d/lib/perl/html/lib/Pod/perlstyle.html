@@ -1,0 +1,439 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlstyle - Perl style guide
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlstyle - Perl style guide
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Each programmer will, of course, have his or her own preferences in regards
+to formatting, but there are some general guidelines that will make your
+programs easier to read, understand, and maintain.
+
+
+<P>
+
+The most important thing is to run your programs under the <STRONG>-w</STRONG>
+flag at all times. You may turn it off explicitly for particular portions
+of code via the <CODE>$^W</CODE> variable if you must. You should also always run under <CODE>use strict</CODE> or know the reason why not. The <CODE>use sigtrap</CODE> and even <CODE>use diagnostics</CODE> pragmas may also prove useful.
+
+
+<P>
+
+Regarding aesthetics of code lay out, about the only thing Larry cares strongly about is that the closing curly brace of a multi-line 
+<FONT SIZE=-1>BLOCK</FONT> should line up with the keyword that started the construct. Beyond that, he has other preferences that aren't so strong:
+
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+4-column indent.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Opening curly on same line as keyword, if possible, otherwise line up.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Space before the opening curly of a multi-line 
+<FONT SIZE=-1>BLOCK.</FONT>
+
+
+<P>
+
+<LI><STRONG></STRONG>
+One-line 
+<FONT SIZE=-1>BLOCK</FONT> may be put on one line, including curlies.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+No space before the semicolon.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Semicolon omitted in ``short'' one-line 
+<FONT SIZE=-1>BLOCK.</FONT>
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Space around most operators.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Space around a ``complex'' subscript (inside brackets).
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Blank lines between chunks that do different things.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Uncuddled elses.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+No space between function name and its opening parenthesis.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Space after each comma.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Long lines broken after an operator (except ``and'' and ``or'').
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Space after last parenthesis matching on current line.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Line up corresponding items vertically.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Omit redundant punctuation as long as clarity doesn't suffer.
+
+
+<P>
+
+</UL>
+Larry has his reasons for each of these things, but he doesn't claim that
+everyone else's mind works the same as his does.
+
+
+<P>
+
+Here are some other more substantive style issues to think about:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+Just because you <EM>CAN</EM> do something a particular way doesn't mean that you <EM>SHOULD</EM> do it that way. Perl is designed to give you several ways to do anything,
+so consider picking the most readable one. For instance
+
+
+<P>
+
+<PRE>    open(FOO,$foo) || die &quot;Can't open $foo: $!&quot;;
+</PRE>
+
+<P>
+
+is better than
+
+
+<P>
+
+<PRE>    die &quot;Can't open $foo: $!&quot; unless open(FOO,$foo);
+</PRE>
+
+<P>
+
+because the second way hides the main point of the statement in a modifier.
+On the other hand
+
+
+<P>
+
+<PRE>    print &quot;Starting analysis\n&quot; if $verbose;
+</PRE>
+
+<P>
+
+is better than
+
+
+<P>
+
+<PRE>    $verbose &amp;&amp; print &quot;Starting analysis\n&quot;;
+</PRE>
+
+<P>
+
+because the main point isn't whether the user typed <STRONG>-v</STRONG> or not.
+
+
+<P>
+
+Similarly, just because an operator lets you assume default arguments
+doesn't mean that you have to make use of the defaults. The defaults are
+there for lazy systems programmers writing one-shot programs. If you want
+your program to be readable, consider supplying the argument.
+
+
+<P>
+
+Along the same lines, just because you <EM>CAN</EM> omit parentheses in many places doesn't mean that you ought to:
+
+
+<P>
+
+<PRE>    return print reverse sort num values %array;
+    return print(reverse(sort num (values(%array))));
+</PRE>
+
+<P>
+
+When in doubt, parenthesize. At the very least it will let some poor
+schmuck bounce on the % key in <STRONG>vi</STRONG>.
+
+
+<P>
+
+Even if you aren't in doubt, consider the mental welfare of the person who
+has to maintain the code after you, and who will probably put parentheses
+in the wrong place.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Don't go through silly contortions to exit a loop at the top or the bottom,
+when Perl provides the <A HREF="#item_last">last</A> operator so you can exit in the middle. Just ``outdent'' it a little to
+make it more visible:
+
+
+<P>
+
+<PRE>    LINE:
+        for (;;) {
+            statements;
+          last LINE if $foo;
+            next LINE if /^#/;
+            statements;
+        }
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+Don't be afraid to use loop labels--they're there to enhance readability as
+well as to allow multilevel loop breaks. See the previous example.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Avoid using <CODE>grep()</CODE> (or <CODE>map())</CODE> or `backticks` in a
+void context, that is, when you just throw away their return values. Those
+functions all have return values, so use them. Otherwise use a
+<CODE>foreach()</CODE> loop or the <CODE>system()</CODE> function instead.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+For portability, when using features that may not be implemented on every
+machine, test the construct in an eval to see if it fails. If you know what
+version or patchlevel a particular feature was implemented, you can test <CODE>$]</CODE> (<CODE>$PERL_VERSION</CODE> in <A HREF="#item_English">English</A>) to see if it will be there. The <A HREF="#item_Config">Config</A> module will also let you interrogate values determined by the <STRONG>Configure</STRONG> program when Perl was installed.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Choose mnemonic identifiers. If you can't remember what mnemonic means,
+you've got a problem.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+While short identifiers like <CODE>$gotit</CODE> are probably ok, use underscores to separate words. It is generally easier to read <CODE>$var_names_like_this</CODE> than $VarNamesLikeThis, especially for non-native speakers of English. It's also a simple rule that works consistently with 
+<FONT SIZE=-1>VAR_NAMES_LIKE_THIS.</FONT>
+
+
+
+<P>
+
+Package names are sometimes an exception to this rule. Perl informally
+reserves lowercase module names for ``pragma'' modules like <A HREF="#item_integer">integer</A> and
+<A HREF="#item_strict">strict</A>. Other modules should begin with a capital letter and use mixed case, but
+probably without underscores due to limitations in primitive file systems'
+representations of module names as files that must fit into a few sparse
+bytes.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+You may find it helpful to use letter case to indicate the scope or nature
+of a variable. For example:
+
+
+<P>
+
+<PRE>    $ALL_CAPS_HERE   constants only (beware clashes with perl vars!)
+    $Some_Caps_Here  package-wide global/static
+    $no_caps_here    function scope my() or local() variables
+</PRE>
+
+<P>
+
+Function and method names seem to work best as all lowercase. E.g., $obj-&gt;<CODE>as_string().</CODE>
+
+
+<P>
+
+You can use a leading underscore to indicate that a variable or function
+should not be used outside the package that defined it.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+If you have a really hairy regular expression, use the <A HREF="#item__x">/x</A> modifier and put in some whitespace to make it look a little less like line
+noise. Don't use slash as a delimiter when your regexp has slashes or
+backslashes.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Use the new ``and'' and ``or'' operators to avoid having to parenthesize
+list operators so much, and to reduce the incidence of punctuation
+operators like <CODE>&&</CODE> and <CODE>||</CODE>. Call your subroutines as if they were functions or list operators to
+avoid excessive ampersands and parentheses.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Use here documents instead of repeated <CODE>print()</CODE> statements.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Line up corresponding things vertically, especially if it'd be too long to
+fit on one line anyway.
+
+
+<P>
+
+<PRE>    $IDX = $ST_MTIME;
+    $IDX = $ST_ATIME       if $opt_u;
+    $IDX = $ST_CTIME       if $opt_c;
+    $IDX = $ST_SIZE        if $opt_s;
+</PRE>
+
+<P>
+
+<PRE>    mkdir $tmpdir, 0700 or die &quot;can't mkdir $tmpdir: $!&quot;;
+    chdir($tmpdir)      or die &quot;can't chdir $tmpdir: $!&quot;;
+    mkdir 'tmp',   0777 or die &quot;can't mkdir $tmpdir/tmp: $!&quot;;
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+Always check the return codes of system calls. Good error messages should go to 
+<FONT SIZE=-1>STDERR,</FONT> include which program caused the problem, what the failed system call and arguments were, and 
+<FONT SIZE=-1>VERY</FONT> 
+<FONT SIZE=-1>IMPORTANT)</FONT> should contain the standard system error message for what went wrong. Here's a simple but sufficient example:
+
+
+
+<P>
+
+<PRE>    opendir(D, $dir)     or die &quot;can't opendir $dir: $!&quot;;
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+Line up your translations when it makes sense:
+
+
+<P>
+
+<PRE>    tr [abc]
+       [xyz];
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+Think about reusability. Why waste brainpower on a one-shot when you might
+want to do something like it again? Consider generalizing your code.
+Consider writing a module or object class. Consider making your code run
+cleanly with <CODE>use strict</CODE> and <STRONG>-w</STRONG> in effect. Consider giving away your code. Consider changing your whole
+world view. Consider... oh, never mind.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Be consistent.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Be nice.
+
+
+<P>
+
+</UL>
+</DL>
+    </BODY>
+
+    </HTML>

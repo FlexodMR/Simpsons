@@ -1,0 +1,720 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::NNTP - NNTP Client class
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#Extension_methods">Extension methods</A>
+	</UL>
+
+	<LI><A HREF="#UNSUPPORTED">UNSUPPORTED</A>
+	<LI><A HREF="#DEFINITIONS">DEFINITIONS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::NNTP - 
+<FONT SIZE=-1>NNTP</FONT> Client class
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Net::NNTP;
+    
+    $nntp = Net::NNTP-&gt;new(&quot;some.host.name&quot;);
+    $nntp-&gt;quit;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>Net::NNTP</CODE> is a class implementing a simple 
+<FONT SIZE=-1>NNTP</FONT> client in Perl as described in 
+<FONT SIZE=-1>RFC977.</FONT>
+ <CODE>Net::NNTP</CODE> inherits its communication methods from <CODE>Net::Cmd</CODE>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ( [ HOST ] [, OPTIONS ])
+
+</A></STRONG><DD>
+This is the constructor for a new Net::NNTP object. <CODE>HOST</CODE> is the name of the remote host to which a 
+<FONT SIZE=-1>NNTP</FONT> connection is required. If not given two
+environment variables are checked, first <CODE>NNTPSERVER</CODE> then
+<CODE>NEWSHOST</CODE>, then <CODE>Net::Config</CODE> is checked, and if a host is not found then <CODE>news</CODE> is used.
+
+
+<P>
+
+<A HREF="#item_OPTIONS">OPTIONS</A> are passed in a hash like fashion, using key and value pairs. Possible
+options are:
+
+
+<P>
+
+<STRONG>Timeout</STRONG> - Maximum time, in seconds, to wait for a response from the 
+<FONT SIZE=-1>NNTP</FONT> server, a value of zero will cause all 
+<FONT SIZE=-1>IO</FONT> operations to block. (default: 120)
+
+
+
+<P>
+
+<STRONG>Debug</STRONG> - Enable the printing of debugging information to 
+<FONT SIZE=-1>STDERR</FONT>
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+Unless otherwise stated all methods return either a <EM>true</EM> or <EM>false</EM>
+value, with <EM>true</EM> meaning that the operation was a success. When a method states that it
+returns a value, failure will be returned as <EM>undef</EM> or an empty list.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_article">article ( [ MSGID|MSGNUM ] )
+
+</A></STRONG><DD>
+Retrieve the header, a blank line, then the body (text) of the specified
+article. 
+
+
+<P>
+
+If no arguments are passed then the current article in the current
+newsgroup is returned.
+
+
+<P>
+
+<CODE>MSGNUM</CODE> is a numeric id of an article in the current newsgroup, and will change the
+current article pointer.
+<CODE>MSGID</CODE> is the message id of an article as shown in that article's header. It is
+anticipated that the client will obtain the <CODE>MSGID</CODE> from a list provided by the <A HREF="#item_newnews">newnews</A>
+command, from references contained within another article, or from the
+message-id provided in the response to some other commands.
+
+
+<P>
+
+Returns a reference to an array containing the article.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_body">body ( [ MSGID|MSGNUM ] )
+
+</A></STRONG><DD>
+Retrieve the body (text) of the specified article. 
+
+
+<P>
+
+Takes the same arguments as <A HREF="#item_article">article</A>
+
+
+
+
+<P>
+
+Returns a reference to an array containing the body of the article.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_head">head ( [ MSGID|MSGNUM ] )
+
+</A></STRONG><DD>
+Retrieve the header of the specified article. 
+
+
+<P>
+
+Takes the same arguments as <A HREF="#item_article">article</A>
+
+
+
+
+<P>
+
+Returns a reference to an array containing the header of the article.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_nntpstat">nntpstat ( [ MSGID|MSGNUM ] )
+
+</A></STRONG><DD>
+The <A HREF="#item_nntpstat">nntpstat</A> command is similar to the <A HREF="#item_article">article</A> command except that no text is returned. When selecting by message number
+within a group, the <A HREF="#item_nntpstat">nntpstat</A> command serves to set the ``current article pointer'' without sending text.
+
+
+<P>
+
+Using the <A HREF="#item_nntpstat">nntpstat</A> command to select by message-id is valid but of questionable value, since a
+selection by message-id does <STRONG>not</STRONG> alter the ``current article pointer''.
+
+
+<P>
+
+Returns the message-id of the ``current article''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_group">group ( [ GROUP ] )
+
+</A></STRONG><DD>
+Set and/or get the current group. If <CODE>GROUP</CODE> is not given then information is returned on the current group.
+
+
+<P>
+
+In a scalar context it returns the group name.
+
+
+<P>
+
+In an array context the return value is a list containing, the number of
+articles in the group, the number of the first article, the number of the
+last article and the group name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ihave">ihave ( MSGID [, MESSAGE ])
+
+</A></STRONG><DD>
+The <A HREF="#item_ihave">ihave</A> command informs the server that the client has an article whose id is <CODE>MSGID</CODE>. If the server desires a copy of that article, and <A HREF="#item_MESSAGE">MESSAGE</A> has been given the it will be sent.
+
+
+<P>
+
+Returns <EM>true</EM> if the server desires the article and <A HREF="#item_MESSAGE">MESSAGE</A> was successfully sent,if specified.
+
+
+<P>
+
+If <A HREF="#item_MESSAGE">MESSAGE</A> is not specified then the message must be sent using the
+<A HREF="#item_datasend">datasend</A> and <A HREF="#item_dataend">dataend</A> methods from <A HREF="/n|/perl/html/./lib/Net/Cmd.html">Cmd</A>
+
+
+
+
+<P>
+
+<A HREF="#item_MESSAGE">MESSAGE</A> can be either an array of lines or a reference to an array.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_last">last ()
+
+</A></STRONG><DD>
+Set the ``current article pointer'' to the previous article in the current
+newsgroup.
+
+
+<P>
+
+Returns the message-id of the article.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_date">date ()
+
+</A></STRONG><DD>
+Returns the date on the remote server. This date will be in a 
+<FONT SIZE=-1>UNIX</FONT> time format (seconds since 1970)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_postok">postok ()
+
+</A></STRONG><DD>
+<A HREF="#item_postok">postok</A> will return <EM>true</EM> if the servers initial response indicated that it will allow posting.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_authinfo">authinfo ( USER, PASS )
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_list">list ()
+
+</A></STRONG><DD>
+Obtain information about all the active newsgroups. The results is a
+reference to a hash where the key is a group name and each value is a
+reference to an array. The elements in this array are:- the first article
+number in the group, the last article number in the group and any
+information flags about the group.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_newgroups">newgroups ( SINCE [, DISTRIBUTIONS ])
+
+</A></STRONG><DD>
+<CODE>SINCE</CODE> is a time value and <CODE>DISTRIBUTIONS</CODE> is either a distribution pattern or a reference to a list of distribution
+patterns. The result is the same as <A HREF="#item_list">list</A>, but the groups return will be limited to those created after <CODE>SINCE</CODE> and, if specified, in one of the distribution areas in <CODE>DISTRIBUTIONS</CODE>. 
+
+
+<P>
+
+<DT><STRONG><A NAME="item_newnews">newnews ( SINCE [, GROUPS [, DISTRIBUTIONS ]])
+
+</A></STRONG><DD>
+<CODE>SINCE</CODE> is a time value. <CODE>GROUPS</CODE> is either a group pattern or a reference to a list of group patterns. <CODE>DISTRIBUTIONS</CODE> is either a distribution pattern or a reference to a list of distribution
+patterns.
+
+
+<P>
+
+Returns a reference to a list which contains the message-ids of all news
+posted after <CODE>SINCE</CODE>, that are in a groups which matched <CODE>GROUPS</CODE> and a distribution which matches <CODE>DISTRIBUTIONS</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_next">next ()
+
+</A></STRONG><DD>
+Set the ``current article pointer'' to the next article in the current
+newsgroup.
+
+
+<P>
+
+Returns the message-id of the article.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_post">post ( [ MESSAGE ] )
+
+</A></STRONG><DD>
+Post a new article to the news server. If <A HREF="#item_MESSAGE">MESSAGE</A> is specified and posting is allowed then the message will be sent.
+
+
+<P>
+
+If <A HREF="#item_MESSAGE">MESSAGE</A> is not specified then the message must be sent using the
+<A HREF="#item_datasend">datasend</A> and <A HREF="#item_dataend">dataend</A> methods from <A HREF="/n|/perl/html/./lib/Net/Cmd.html">Cmd</A>
+
+
+
+
+<P>
+
+<A HREF="#item_MESSAGE">MESSAGE</A> can be either an array of lines or a reference to an array.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_slave">slave ()
+
+</A></STRONG><DD>
+Tell the remote server that 
+<FONT SIZE=-1>I</FONT> am not a user client, but probably another news
+server.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_quit">quit ()
+
+</A></STRONG><DD>
+Quit the remote server and close the socket connection.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Extension_methods">Extension methods
+
+</A></H2>
+These methods use commands that are not part of the 
+<FONT SIZE=-1>RFC977</FONT> documentation. Some servers may not support all
+of them.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_newsgroups">newsgroups ( [ PATTERN ] )
+
+</A></STRONG><DD>
+Returns a reference to a hash where the keys are all the group names which
+match <A HREF="#item_PATTERN">PATTERN</A>, or all of the groups if no pattern is specified, and each value contains
+the description text for the group.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_distributions">distributions ()
+
+</A></STRONG><DD>
+Returns a reference to a hash where the keys are all the possible
+distribution names and the values are the distribution descriptions.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_subscriptions">subscriptions ()
+
+</A></STRONG><DD>
+Returns a reference to a list which contains a list of groups which are
+recommended for a new user to subscribe to.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_overview_fmt">overview_fmt ()
+
+</A></STRONG><DD>
+Returns a reference to an array which contain the names of the fields
+returned by <A HREF="#item_xover">xover</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_active_times">active_times ()
+
+</A></STRONG><DD>
+Returns a reference to a hash where the keys are the group names and each
+value is a reference to an array containing the time the groups was created
+and an identifier, possibly an Email address, of the creator.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_active">active ( [ PATTERN ] )
+
+</A></STRONG><DD>
+Similar to <A HREF="#item_list">list</A> but only active groups that match the pattern are returned.
+<A HREF="#item_PATTERN">PATTERN</A> can be a group pattern.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xgtitle">xgtitle ( PATTERN )
+
+</A></STRONG><DD>
+Returns a reference to a hash where the keys are all the group names which
+match <A HREF="#item_PATTERN">PATTERN</A> and each value is the description text for the group.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xhdr">xhdr ( HEADER, MESSAGE-SPEC )
+
+</A></STRONG><DD>
+Obtain the header field <CODE>HEADER</CODE> for all the messages specified. 
+
+
+<P>
+
+The return value will be a reference to a hash where the keys are the
+message numbers and each value contains the text of the requested header
+for that message.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xover">xover ( MESSAGE-SPEC )
+
+</A></STRONG><DD>
+The return value will be a reference to a hash where the keys are the
+message numbers and each value contains a reference to an array which
+contains the overview fields for that message.
+
+
+<P>
+
+The names of the fields can be obtained by calling <A HREF="#item_overview_fmt">overview_fmt</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xpath">xpath ( MESSAGE-ID )
+
+</A></STRONG><DD>
+Returns the path name to the file on the server which contains the
+specified message.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xpat">xpat ( HEADER, PATTERN, MESSAGE-SPEC)
+
+</A></STRONG><DD>
+The result is the same as <A HREF="#item_xhdr">xhdr</A> except the is will be restricted to headers where the text of the header
+matches <A HREF="#item_PATTERN">PATTERN</A>
+
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xrover">xrover
+
+</A></STRONG><DD>
+The 
+<FONT SIZE=-1>XROVER</FONT> command returns reference information for the
+<CODE>article(s)</CODE> specified.
+
+
+<P>
+
+Returns a reference to a 
+<FONT SIZE=-1>HASH</FONT> where the keys are the message numbers and the
+values are the References: lines from the articles
+
+
+<P>
+
+<DT><STRONG><A NAME="item_listgroup">listgroup
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_reader">reader
+
+</A></STRONG><DD>
+</DL>
+<P>
+<HR>
+<H1><A NAME="UNSUPPORTED">UNSUPPORTED
+
+</A></H1>
+The following 
+<FONT SIZE=-1>NNTP</FONT> command are unsupported by the package, and there
+are no plans to do so.
+
+
+<P>
+
+<PRE>    AUTHINFO GENERIC
+    XTHREAD
+    XSEARCH
+    XINDEX
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DEFINITIONS">DEFINITIONS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_MESSAGE">MESSAGE-SPEC
+
+</A></STRONG><DD>
+<CODE>MESSAGE-SPEC</CODE> is either a single message-id, a single message number, or a reference to a
+list of two message numbers.
+
+
+<P>
+
+If <CODE>MESSAGE-SPEC</CODE> is a reference to a list of two message numbers and the second number in a
+range is less than or equal to the first then the range represents all
+messages in the group after the first message number.
+
+
+<P>
+
+<STRONG>NOTE</STRONG> For compatibility reasons only with earlier versions of Net::NNTP a message
+spec can be passed as a list of two numbers, this is depreciated and a
+reference to the list should now be passed
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PATTERN">PATTERN
+
+</A></STRONG><DD>
+The <CODE>NNTP</CODE> protocol uses the <CODE>WILDMAT</CODE> format for patterns. The 
+<FONT SIZE=-1>WILDMAT</FONT> format was first developed by Rich Salz based on the format used in the 
+<FONT SIZE=-1>UNIX</FONT> ``find'' command to articulate file names. It was developed to provide a uniform mechanism for matching patterns in the same manner that the 
+<FONT SIZE=-1>UNIX</FONT> shell matches filenames.
+
+
+
+<P>
+
+Patterns are implicitly anchored at the beginning and end of each string
+when testing for a match.
+
+
+<P>
+
+There are five pattern matching operations other than a strict one-to-one
+match between the pattern and the source to be checked for a match.
+
+
+<P>
+
+The first is an asterisk <CODE>*</CODE> to match any sequence of zero or more characters.
+
+
+<P>
+
+The second is a question mark <CODE>?</CODE> to match any single character. The third specifies a specific set of
+characters.
+
+
+<P>
+
+The set is specified as a list of characters, or as a range of characters
+where the beginning and end of the range are separated by a minus (or dash)
+character, or as any combination of lists and ranges. The dash can also be
+included in the set as a character it if is the beginning or end of the
+set. This set is enclosed in square brackets. The close square bracket <CODE>]</CODE> may be used in a set if it is the first character in the set.
+
+
+<P>
+
+The fourth operation is the same as the logical not of the third operation
+and is specified the same way as the third with the addition of a caret
+character <CODE>^</CODE> at the beginning of the test string just inside the open square bracket.
+
+
+<P>
+
+The final operation uses the backslash character to invalidate the special
+meaning of the a open square bracket <CODE>[</CODE>, the asterisk, backslash or the question mark. Two backslashes in sequence
+will result in the evaluation of the backslash as a character with no
+special meaning.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Examples">Examples
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__">[^]-]
+
+</A></STRONG><DD>
+matches any single character other than a close square bracket or a minus
+sign/dash.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_bdc">bdc
+
+</A></STRONG>
+matches any string that ends with the string ``bdc'' including the string
+``bdc'' (without quotes).
+
+
+<P>
+
+<DT><STRONG><A NAME="item__0_9a_zA_Z_">[0-9a-zA-Z]
+
+</A></STRONG><DD>
+matches any single printable alphanumeric 
+<FONT SIZE=-1>ASCII</FONT> character.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_a">a??d
+
+</A></STRONG><DD>
+matches any four character string which begins with a and ends with d.
+
+
+<P>
+
+</DL>
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Net/Cmd.html">Cmd</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1997 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

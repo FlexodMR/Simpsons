@@ -1,0 +1,50 @@
+SelectMission("m2");
+
+SetMissionResetPlayerInCar("m2_carstart");
+SetDynaLoadData("l7z3.p3d;l7r2.p3d;l7r3.p3d;");
+
+AddStage(0); 
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage("final");
+	RESET_TO_HERE();
+	SetStageMessageIndex(84);
+	SetHUDIcon( "sports_v" );
+	SetMaxTraffic(3);
+	AddStageVehicle("cBlbart","m2_AI_carstart","evade","Missions\level07\M2chase.con");  
+	SetVehicleAIParams( "cBlbart", 50, 51 ); // all vehicles
+
+//	AddStageVehicle("cBlbart","m2_AI_carstart","evade","Missions\level06\M3chase.con");  
+//	AddStageVehicle("skinn_v","m2_AI_carstart","evade","Missions\level07\M2chase.con");  	
+	AddStageWaypoint( "m2_AI_path19" );
+//	AddStageWaypoint( "m2_AI_path" );
+	AddStageWaypoint( "m2_AI_path10" );
+	AddStageWaypoint( "m2_AI_path18" );
+	AddObjective("follow");
+		AddNPC("frink", "m3_frink_sd");
+//		AddStageVehicle("frink_v","m3_frink_carstart","NULL","HardRace\AI_2nd.con"); 
+//		AttachStatePropCollectible( "frink_v", "bombbarrel" );
+		//SetDestination("m2_AI_path18");
+		SetObjTargetVehicle("cBlbart");
+//		SetObjTargetVehicle("skinn_v");
+	CloseObjective();
+	AddCondition("followdistance");
+		SetFollowDistances(0, 200);
+		SetCondTargetVehicle("cBlbart");
+//		SetCondTargetVehicle("skinn_v");
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "zombi_v" );
+	CloseCondition();
+	SetCompletionDialog("plant");
+CloseStage();
+
+CloseMission();

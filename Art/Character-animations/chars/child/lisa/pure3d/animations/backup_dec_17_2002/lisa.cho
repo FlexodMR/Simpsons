@@ -1,0 +1,366 @@
+//---------------------------------------------------------------------------
+// Lisa
+//---------------------------------------------------------------------------
+
+// skeleton rig
+rig "lisa"
+{
+    skeleton "lisa";
+
+    // roots
+    jointIndex_AIRoot 0;
+    jointIndex_OrientationRoot 0;
+    joint_MotionRoot "Motion_Root";
+    joint_BalanceRoot "Balance_Root";
+    joint_CharacterRoot "Character_Root";
+
+    // balance root
+    maxBalanceRootCompress 0.25;
+
+    // legs
+    leg "left"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 1;
+
+        joint_FKMin "Hip_L";
+        joint_FKMax "Ball_L";
+
+        joint_Thigh "Hip_L";
+        joint_Knee "Knee_L";
+        joint_Ankle "Ankle_L";
+
+        //joint_Effector "Left_Foot";
+        //joint_PoleVector "Left_Knee";
+        //joint_OrientOffset "L_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+
+    leg "right"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 0;
+
+        joint_FKMin "Hip_R";
+        joint_FKMax "Ball_R";
+
+        joint_Thigh "Hip_R";
+        joint_Knee "Knee_R";
+        joint_Ankle "Ankle_R";
+
+        //joint_Effector "Right_Foot";
+        //joint_PoleVector "Right_Knee";
+        //joint_OrientOffset "R_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+};
+
+// bank
+bank "lisa"
+{
+    // reference to skeleton configuration
+    rig "lisa";
+
+    default animation.blendOutTime 0.1;
+    default animation.blendInTime 0.1;
+    
+    animation "fall_land"
+    {
+	    animation "lsa_fall_land";
+    };
+
+    animation "hit_by_car_front"
+    {
+	    animation "lsa_hit_by_car_front";
+    };
+    animation "hit_by_car_back"
+    {
+	    animation "lsa_hit_by_car_back";
+    };
+    animation "get_up"
+    {
+	    animation "lsa_get_up";
+    };
+    animation "idle0"
+    {
+	    animation "lsa_idle_look_watch";
+    };
+    animation "idle1"
+    {
+	    animation "lsa_idle_swat";
+    };
+    animation "run_into_object"
+    {
+	    animation "lsa_run_into_object";
+	    startFrame 3.0;
+    };
+    animation "run_into_person"
+    {
+	    animation "lsa_run_into_person";
+    };
+    animation "get_into_car"
+    {
+	    animation "lsa_get_into_car";
+    };
+    animation "get_into_car_open_door"
+    {
+	    animation "lsa_get_into_car_open_door";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_close_door"
+    {
+	    animation "lsa_get_into_car_close_door";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car"
+    {
+	    animation "lsa_get_out_of_car";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_open_door"
+    {
+	    animation "lsa_get_out_of_car_open_door";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_close_door"
+    {
+	    animation "lsa_get_out_of_car_close_door";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_close_door_high"
+    {
+	    animation "lsa_get_into_car_close_door_high";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_open_door_high"
+    {
+	    animation "lsa_get_into_car_open_door_high";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_high"
+    {
+	    animation "lsa_get_into_car_high";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_close_door_high"
+    {
+	    animation "lsa_get_out_of_car_close_door_high";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_open_door_high"
+    {
+	    animation "lsa_get_out_of_car_open_door_high";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_high"
+    {
+	    animation "lsa_get_out_of_car_high";
+	blendInTime 0.01;
+    };
+    animation "jump_idle_launch"
+    {
+	    animation "lsa_jump_idle_take_off";
+	blendInTime 0.01;
+    };
+    animation "jump_idle"
+    {
+	    animation "lsa_jump_idle_in_air";
+	blendInTime 0.01;
+    };
+    animation "jump_idle_land"
+    {
+	    animation "lsa_jump_idle_land";
+	blendInTime 0.01;
+    };
+    
+    animation "dash"
+    {
+	    animation "lsa_loco_dash";
+    };
+    animation "dash_skid"
+    {
+	    animation "lsa_dash_skid";
+    };
+    animation "hit_switch"
+    {
+    	animation "lsa_hit_switch";
+    };
+    animation "hit_switch_quick"
+    {
+    	animation "lsa_hit_switch";
+    	startFrame 3.0;
+    	endFrame 6.0;
+    	blendInTime 0.01;
+    };
+    animation "jump_dash_launch"
+    {
+    	animation "lsa_jump_dash_take_off";
+	blendInTime 0.01;
+    };
+    animation "jump_dash_in_air"
+    {
+    	animation "lsa_jump_dash_in_air";
+	blendInTime 0.01;
+    };
+    animation "jump_dash_land"
+    {
+    	animation "lsa_jump_dash_land";
+	blendInTime 0.01;
+    };
+    animation "jump_run_launch"
+    {
+    	animation "lsa_jump_run_take_off";
+    };
+    animation "jump_run_in_air"
+    {
+    	animation "lsa_jump_run_in_air";
+    };
+    animation "jump_run_land"
+    {
+    	animation "lsa_jump_run_land";
+    };
+    animation "break"
+    {
+    	animation "lsa_break";
+    };
+    animation "break_quick"
+    {
+	animation "lsa_break";
+	blendInTime 0.01;
+    };
+//    animation "phone_pick_up"
+//    {
+//    	animation "lsa_phone_pick_up";
+//    };
+//    animation "phone_hold"
+//    {
+//    	animation "lsa_phone_hold";
+//    };
+//    animation "phone_put_down"
+//    {
+//	animation "lsa_phone_put_down";
+//    };
+    animation "get_into_car_driver"
+    {
+	    animation "lsa_get_into_car_driver";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_open_door_driver"
+    {
+	    animation "lsa_get_into_car_open_door_driver";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_close_door_driver"
+    {
+	    animation "lsa_get_into_car_close_door_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_driver"
+    {
+	    animation "lsa_get_out_of_car_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_open_door_driver"
+    {
+	    animation "lsa_get_out_of_car_open_door_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_close_door_driver"
+    {
+	    animation "lsa_get_out_of_car_close_door_driver";
+    };
+    animation "get_into_car_close_door_high_driver"
+    {
+	    animation "lsa_get_into_car_close_door_high_driver";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_open_door_high_driver"
+    {
+	    animation "lsa_get_into_car_open_door_high_driver";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_high_driver"
+    {
+	    animation "lsa_get_into_car_high_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_close_door_high_driver"
+    {
+	    animation "lsa_get_out_of_car_close_door_high_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_open_door_high_driver"
+    {
+	    animation "lsa_get_out_of_car_open_door_high_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_high_driver"
+    {
+	    animation "lsa_get_out_of_car_high_driver";
+	blendInTime 0.01;
+    };
+    
+    locomotion4 "walkerLoco"
+    {
+        idle "lsa_loco_idle_rest";
+
+        blendInTime 0.1;
+        blendOutTime 0.1;
+
+        priority 1;
+
+        //acceleration 50;
+        //turningAcceleration 1440;
+        //turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        animation "n" 0 "lsa_loco_walk";
+        animation "w" 0 "lsa_loco_walk";
+        animation "s" 0 "lsa_loco_walk";
+        animation "e" 0 "lsa_loco_walk";
+
+        animation "n" 1 "lsa_loco_run";
+        animation "w" 1 "lsa_loco_run";
+        animation "s" 1 "lsa_loco_run";
+        animation "e" 1 "lsa_loco_run";
+
+        animation "n" 2 "lsa_loco_dash";
+        animation "w" 2 "lsa_loco_dash";
+        animation "s" 2 "lsa_loco_dash";
+        animation "e" 2 "lsa_loco_dash";
+    };
+    
+    locomotion4 "carLoco"
+    {
+        idle "lsa_in_car_idle";
+
+        blendInTime 0.1;
+        blendOutTime 0.1;
+
+        priority 1;
+
+        //acceleration 50;
+        //turningAcceleration 1440;
+        //turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        animation "n" 0 "lsa_in_car_idle";
+        animation "w" 0 "lsa_in_car_idle";
+        animation "s" 0 "lsa_in_car_idle";
+        animation "e" 0 "lsa_in_car_idle";
+
+        animation "n" 1 "lsa_in_car_idle";
+        animation "w" 1 "lsa_in_car_idle";
+        animation "s" 1 "lsa_in_car_idle";
+        animation "e" 1 "lsa_in_car_idle";
+    };
+};
+
+
+
+
+// End of file.

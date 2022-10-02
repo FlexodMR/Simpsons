@@ -1,0 +1,131 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>I18N::Collate - compare 8-bit scalar data according to the current locale
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+I18N::Collate - compare 8-bit scalar data according to the current locale
+
+
+<P>
+
+<PRE>  ***
+</PRE>
+
+<P>
+
+<PRE>  WARNING: starting from the Perl version 5.003_06
+  the I18N::Collate interface for comparing 8-bit scalar data
+  according to the current locale
+</PRE>
+
+<P>
+
+<PRE>        HAS BEEN DEPRECATED
+</PRE>
+
+<P>
+
+<PRE>  That is, please do not use it anymore for any new applications
+  and please migrate the old applications away from it because its
+  functionality was integrated into the Perl core language in the
+  release 5.003_06.
+</PRE>
+
+<P>
+
+<PRE>  See the <A HREF="/n|/perl/html/./lib/Pod/perllocale.html">perllocale</A> manual page for further information.
+</PRE>
+
+<P>
+
+<PRE>  ***
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use I18N::Collate;
+    setlocale(LC_COLLATE, 'locale-of-your-choice'); 
+    $s1 = new I18N::Collate &quot;scalar_data_1&quot;;
+    $s2 = new I18N::Collate &quot;scalar_data_2&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provides you with objects that will collate according to your national character set, provided that the 
+<FONT SIZE=-1>POSIX</FONT> <CODE>setlocale()</CODE> function is supported on your system.
+
+
+
+<P>
+
+You can compare <CODE>$s1</CODE> and <CODE>$s2</CODE> above with
+
+
+<P>
+
+<PRE>    $s1 le $s2
+</PRE>
+
+<P>
+
+to extract the data itself, you'll need a dereference: <CODE>$$s1</CODE>
+
+
+<P>
+
+This module uses POSIX::setlocale(). The basic collation conversion is done by <CODE>strxfrm()</CODE> which terminates at 
+<FONT SIZE=-1>NUL</FONT> characters being a decent 
+<FONT SIZE=-1>C</FONT> routine. <CODE>collate_xfrm()</CODE> handles embedded 
+<FONT SIZE=-1>NUL</FONT> characters gracefully.
+
+
+
+<P>
+
+The available locales depend on your operating system; try whether
+<CODE>locale -a</CODE> shows them or man pages for ``locale'' or ``nlsinfo'' or the direct
+approach <CODE>ls /usr/lib/nls/loc</CODE> or <CODE>ls /usr/lib/nls</CODE> or
+<CODE>ls /usr/lib/locale</CODE>. Not all the locales that your vendor supports are necessarily installed:
+please consult your operating system's documentation and possibly your
+local system administration. The locale names are probably something like <CODE>xx_XX.(ISO)?8859-N</CODE> or
+<CODE>xx_XX.(ISO)?8859N</CODE>, for example <CODE>fr_CH.ISO8859-1</CODE> is the Swiss 
+<FONT SIZE=-1>(CH)</FONT> variant of French (fr), 
+<FONT SIZE=-1>ISO</FONT> Latin (8859) 1 (-1) which is the Western European character set.
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

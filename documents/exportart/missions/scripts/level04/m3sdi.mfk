@@ -1,0 +1,81 @@
+SelectMission("m3sd");
+
+//SetMissionStartCameraName( "mission3camShape" );
+//SetMissionStartMulticontName( "mission3cam" );
+//SetAnimatedCameraName( "mission3camShape" );
+//SetAnimCamMulticontName( "mission3cam" );
+
+SetMissionResetPlayerOutCar("m2_marge_2","m2_marge_car2");
+SetDynaLoadData("l4z2.p3d;l4r1.p3d;l4r2.p3d;");
+
+AddStage(25);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(25);
+	SetHUDIcon( "cletus" );
+	AddObjective("talkto");
+		AddStageVehicle("cletu_v","m2_cletustruck_2","NULL","EasyRace\AI_5th.con");
+		AddNPC("cletus", "m2_cletus_2");
+		AddObjectiveNPCWaypoint( "cletus", "m3_cletus_walk1" );
+		AddObjectiveNPCWaypoint( "cletus", "m3_cletus_walk2" );
+		AddObjectiveNPCWaypoint( "cletus", "m3_cletus_walk1" );
+		SetTalkToTarget("cletus", 0, 0); 
+	CloseObjective();
+CloseStage();
+
+	//LOCKED STAGE FOR MARGE'S PRISON OUTFIT
+	//
+	//THIS DIALOGUE WILL INCLUDE THE GATED LINES
+	AddStage("locked","skin","m_prison");
+		SetStageMessageIndex(4);
+		AddObjective("dialogue");
+			SetPresentationBitmap( "art/frontend/dynaload/images/mis04_03.p3d" );
+			AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+			AmbientAnimationRandomize( 0, 0 );
+			SetConversationCam( 0, "pc_near" );
+			SetConversationCam( 1, "npc_far" );
+			SetConversationCam( 2, "pc_near" );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientNpcAnimation( "dialogue_no" );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientPcAnimation( "none" );
+			AddAmbientPcAnimation( "none" );
+			AddAmbientPcAnimation( "dialogue_scratch_head" );
+			SetCamBestSide("m3_bestside");
+			SetDialogueInfo("marge","cletus","baby",0);
+			SetDialoguePositions("m2_marge_talk","m3_cletus_walk1","m2_marge_car2");
+		CloseObjective();
+	CloseStage();
+
+	//THIS DIALOGUE WILL NOT INCLUDE THE GATED LINES AND WILL START THE MISSION
+	AddStage(1);
+		AddObjective("dialogue");
+			SetPresentationBitmap( "art/frontend/dynaload/images/mis04_03.p3d" );
+			AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+			AmbientAnimationRandomize( 0, 0 );
+			SetConversationCam( 0, "pc_near" );
+			SetConversationCam( 1, "npc_far" );
+			SetConversationCam( 2, "pc_near" );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientNpcAnimation( "dialogue_no" );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientPcAnimation( "none" );
+			AddAmbientPcAnimation( "none" );
+			AddAmbientPcAnimation( "dialogue_scratch_head" );
+			SetCamBestSide("m3_bestside");
+			SetDialogueInfo("marge","cletus","baby2",0);
+			SetDialoguePositions("m2_marge_talk","m3_cletus_walk1","m2_marge_car2");
+		CloseObjective();
+	CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

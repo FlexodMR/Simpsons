@@ -1,0 +1,76 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>vars - Perl pragma to predeclare global variable names
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+vars - Perl pragma to predeclare global variable names
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use vars qw($frob @mung %seen);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This will predeclare all the variables whose names are in the list,
+allowing you to use them under ``use strict'', and disabling any typo
+warnings.
+
+
+<P>
+
+Unlike pragmas that affect the <A HREF="#item__H">$^H</A> hints variable, the <CODE>use vars</CODE> and
+<CODE>use subs</CODE> declarations are not BLOCK-scoped. They are thus effective for the entire
+file in which they appear. You may not rescind such declarations with <CODE>no vars</CODE> or <CODE>no subs</CODE>.
+
+
+<P>
+
+Packages such as the <STRONG>AutoLoader</STRONG> and <STRONG>SelfLoader</STRONG> that delay loading of subroutines within packages can create problems with
+package lexicals defined using <A HREF="#item_my">my()</A>. While the <STRONG>vars</STRONG> pragma cannot duplicate the effect of package lexicals (total transparency
+outside of the package), it can act as an acceptable substitute by
+pre-declaring global symbols, ensuring their availability to the
+later-loaded routines.
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#Pragmatic_Modules">Pragmatic Modules</A>.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

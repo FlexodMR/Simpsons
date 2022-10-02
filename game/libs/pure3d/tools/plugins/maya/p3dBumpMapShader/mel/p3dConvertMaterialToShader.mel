@@ -1,0 +1,41 @@
+global proc P3DConvertMaterialsToShaders()
+{
+   string $materials[] = `ls -type lambert`;
+
+   for ($material in $materials)
+   { 
+      if (strcmp($material,"lambert1")==0)
+      {
+         continue;
+      }
+      string $shader = `createNode pure3dSimpleShader`;
+      string $connections[] = `listConnections -type "materialInfo" -connections true -plugs true $material`;
+      int $current;
+
+      for ($current = 0; $current < size($connections); $current+=2)
+      {
+          disconnectAttr $connections[$current] $connections[++$current];
+      }
+      replaceNode $material $shader;
+
+      float $ambient[3] = `getAttr ($material+".ambientColor")`;
+      setAttr -type float3 ($shader+".ambient") $ambient[0] $ambient[1] $ambient[2];
+
+      float $diffuse = `getAttr ($material+".diffuse")`;
+      setAttr -type float3 ($shader+".diffuse") $diffuse $diffuse $diffuse;
+
+      setAttr ($shader+".dynamicallyLit") `getAttr ($material+".p3dLit")`;
+      setAttr ($shader+".shadeMode") `getAttr ($material+".p3dShadeMode")`;
+      setAttr ($shader+".blendMode") `getAttr ($material+".p3dBlendMode")`;
+      setAttr ($shader+".uvMode") `getAttr ($material+".p3dUVMode")`;
+      setAttr ($shader+".filterMode") `getAttr ($material+".p3dFilterMode")`;
+      setAttr ($shader+".alphaTest") `getAttr ($material+".p3dAlphaTest")`;
+      setAttr ($shader+".alphaCompare") `getAttr ($material+".p3dAlphaCompareMode")`;
+      setAttr ($shader+".proceduralXRes") `getAttr ($material+".p3dProceduralTexXRes")`;
+      setAttr ($shader+".proceduralYRes") `getAttr ($material+".p3dProceduralTexYRes")`;
+
+      delete $material;
+      rename $shader $material;
+   }
+}
+

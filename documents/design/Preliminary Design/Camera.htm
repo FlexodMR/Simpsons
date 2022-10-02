@@ -1,0 +1,439 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 9">
+<meta name=Originator content="Microsoft Word 9">
+<link rel=File-List href="./Camera_files/filelist.xml">
+<title>Camera – Preliminary Design</title>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>Radical Entertainment</o:Author>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor>slee</o:LastAuthor>
+  <o:Revision>5</o:Revision>
+  <o:TotalTime>139</o:TotalTime>
+  <o:LastPrinted>2002-03-08T00:16:00Z</o:LastPrinted>
+  <o:Created>2002-03-15T18:15:00Z</o:Created>
+  <o:LastSaved>2002-04-12T23:27:00Z</o:LastSaved>
+  <o:Pages>2</o:Pages>
+  <o:Words>782</o:Words>
+  <o:Characters>4462</o:Characters>
+  <o:Company>Radical Entertainment</o:Company>
+  <o:Lines>37</o:Lines>
+  <o:Paragraphs>8</o:Paragraphs>
+  <o:CharactersWithSpaces>5479</o:CharactersWithSpaces>
+  <o:Version>9.4402</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+@font-face
+	{font-family:Helvetica;
+	panose-1:2 11 6 4 2 2 2 2 2 4;
+	mso-font-charset:0;
+	mso-generic-font-family:swiss;
+	mso-font-pitch:variable;
+	mso-font-signature:536902279 -2147483648 8 0 511 0;}
+@font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;
+	mso-font-charset:2;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:0 268435456 0 0 -2147483648 0;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;
+	mso-font-charset:0;
+	mso-generic-font-family:swiss;
+	mso-font-pitch:variable;
+	mso-font-signature:553679495 -2147483648 8 0 66047 0;}
+ /* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+h1
+	{mso-style-next:Normal;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	background:black;
+	font-size:16.0pt;
+	font-family:Arial;
+	mso-font-kerning:16.0pt;}
+h2
+	{mso-style-next:Normal;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:2;
+	background:black;
+	font-size:14.0pt;
+	font-family:Arial;
+	font-weight:normal;}
+h3
+	{mso-style-next:Normal;
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:3;
+	background:black;
+	font-size:10.0pt;
+	font-family:Helvetica;
+	mso-bidi-font-weight:normal;}
+p.MsoHeader, li.MsoHeader, div.MsoHeader
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:center 3.0in right 6.0in;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+p.MsoFooter, li.MsoFooter, div.MsoFooter
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:center 3.0in right 6.0in;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+p.MsoDocumentMap, li.MsoDocumentMap, div.MsoDocumentMap
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	background:navy;
+	font-size:12.0pt;
+	font-family:Tahoma;
+	mso-fareast-font-family:"Times New Roman";}
+p.VehicleFeedback, li.VehicleFeedback, div.VehicleFeedback
+	{mso-style-name:"Vehicle Feedback";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-footer:url("./Camera_files/header.htm") f1;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+@list l0
+	{mso-list-id:130832711;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-1661057132 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l0:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l0:level2
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";
+	mso-bidi-font-family:"Times New Roman";}
+@list l0:level3
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0A7;
+	mso-level-tab-stop:1.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Wingdings;}
+@list l1
+	{mso-list-id:1929921790;
+	mso-list-type:hybrid;
+	mso-list-template-ids:410288742 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l1:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+</head>
+
+<body lang=EN-US style='tab-interval:.5in'>
+
+<div class=Section1>
+
+<h1 align=center style='text-align:center'><span style='color:white'>Camera<o:p></o:p></span></h1>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<p class=MsoNormal>This document addresses the gameplay camera. Although it touches
+on presentation (e.g., bullet time, cut cameras for vehicle jumps, etc.) it
+does not cover all game presentation elements.</p>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<h2><span style='color:white'>Goals<o:p></o:p></span></h2>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>In-car
+     camera shows:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>the
+      user what they need to see (down the road)</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>the
+      car and suspension effects</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>chase
+      vehicles</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>special
+      events (jumps, or enemy explosions, etc.)</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>vehicle
+      accidents (with smooth camera motion as in Road Rage)</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>use
+      camera f/x (e.g., shake on crash, explosions, etc.)</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>The
+     camera movement is smooth (e.g., left/right and up/down camera
+     damping/delay)</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Exceptions
+      for special situations (e.g., fast spin after j-turn, smooth during
+      accidents)</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>Clear
+     design guidelines:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Overhang
+      limits</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>How
+      to handle passing through dynamic objects</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Indoor
+      driving area limitations (e.g., same as outdoor)</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>Clear,
+     consistent, and mutually exclusive tuning values (e.g., up/down damping
+     not affected by the speed of the car)</li>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>Head-2-head
+     camera helps you see the opponent vehicle</li>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>On-foot
+     camera:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Moves
+      smoothly to make the character control feel smooth</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Shows
+      off characters but doesn’t reveal limitations in art</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Presents
+      the gameplay elements (e.g., conversations, and interactive world
+      objects)</li>
+  <ul style='margin-top:0in' type=square>
+   <li class=MsoNormal style='mso-list:l0 level3 lfo3;tab-stops:list 1.5in'>Camera
+       can point at anything</li>
+  </ul>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Has
+      a simple way of dealing with viewing problems (e.g., if a character is
+      behind an obstacle, allow user rotation of camera)</li>
+ </ul>
+</ul>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<h2><span style='color:white'>Features<o:p></o:p></span></h2>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>The
+     core in-car camera system for driving from Road Rage will generally work
+     again, with a few exceptions:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>The
+      up/down damping of camera movement would override the vertical camera
+      placement. This camera damping had to be disabled. The camera acted as if
+      the road between it and the car was elastic, so driving fast would cause
+      it to drop to the ground. It should act more like it’s on a fixed stick,
+      which is affixed to the car via suspension-like springs.</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Keep
+      the feature that allows a separate camera rotation speed after certain
+      events (e.g., j-turn stops, accidents, etc.).</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Change
+      the camera for vehicle reversing – it should swing around to show the car
+      from the front</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Certain
+      camera features should be independent of other variables (in particular
+      the left/right and up/down rotation delays and damping)</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>The
+     camera will smoothly pull back and up during a chase, so the chase
+     vehicles can be seen better</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Tuned
+      via global parameters of a camera location relative to vehicle – not
+      specific to vehicles</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>Head 2
+     head features:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>“Target
+      camera” when in bullet mode – camera stays in 3<sup>rd</sup> person
+      perspective, but rotates around your vehicle to keep the opponent car as
+      the camera target</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Separately
+      tunable FOV </li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Experiment
+      with going to full-screen during bullet time (using the POV of the player
+      who triggered it)</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'><b>Question</b>
+      Is there a reasonable system for dealing with the differences between
+      various TVs? Or do we just tune it for worst-case TVs again and let
+      high-end TV owners suffer?</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>Camera
+     f/x – shake on crash, explosions</li>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>“Cut
+     cameras” (i.e., during jumps) will use auto-zooming to show off vehicles
+     better</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Investigate
+      “camera shake” to give camera that hand-held feel</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Cut
+      camera on jumps stays turned on until vehicle lands (e.g., even if it’s
+      left the camera trigger volume, as in GTA3)</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Experiment
+      with “bullet time” slow motion effect in cut cameras</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Experiment
+      with using bullet-time cut cameras in non-jump situations, including
+      “target camera” (for example, showing your car, but rotating the camera
+      so that you can also see a chase car blowing up)</li>
+  <ul style='margin-top:0in' type=square>
+   <li class=MsoNormal style='mso-list:l0 level3 lfo3;tab-stops:list 1.5in'><b>Question</b>
+       – what are the specific situations the game could capture where this
+       could work? Can some of these situations be pre-planned and scripted by
+       designers?</li>
+  </ul>
+ </ul>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>On-foot
+     camera:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Smooth
+      camera movement – as if the camera is attached to the character with a
+      rubber band; see PS2 Crash Bandicoot for an example – this kind of camera
+      movement makes the character control feel smooth</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'><i>Baldur’s
+      Gate</i> or <i>Banjo-Tooie</i> style when walking through the world – we
+      tune the height and relative distance from the user. The user’s character
+      can face the camera.</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Colliding
+      with a collision volume – rotate the camera angle as in Banjo-tooie. </li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Camera
+      settings for conversations – closer, lower angle? See <i>presentation</i>
+      document.</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>What
+      about static and dynamic object camera collisions?</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Show
+      interactive world objects/changes:</li>
+  <ul style='margin-top:0in' type=square>
+   <li class=MsoNormal style='mso-list:l0 level3 lfo3;tab-stops:list 1.5in'>As
+       a clue – a specific walking location triggers a camera that shows you a
+       world object that can be manipulated (e.g., a ferry)</li>
+   <li class=MsoNormal style='mso-list:l0 level3 lfo3;tab-stops:list 1.5in'>As
+       a result – when you “push the button” (e.g., enter a trigger volume) the
+       camera shows the change, such as the ferry moving</li>
+   <li class=MsoNormal style='mso-list:l0 level3 lfo3;tab-stops:list 1.5in'>See
+       <i>presentation</i> document for details</li>
+  </ul>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Change
+      POV during chase gamplay to emphasize objects doing the chasing (i.e.
+      truckasoraus)</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>Look
+     Back Button:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Used
+      for chase gameplay.<span style="mso-spacerun: yes">  </span>(POV is from
+      front of car to allow driving to still be possible)</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Can be
+      combined with bullet time to make it ‘quick and easy’</li>
+ </ul>
+</ul>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<h2><span style='color:white'>Questions<o:p></o:p></span></h2>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal style='mso-list:l1 level1 lfo7;tab-stops:list .5in'>Do we
+     need a near and far camera choice? Or just one well tuned camera location?</li>
+</ul>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<h2><span style='color:white'>Tools<o:p></o:p></span></h2>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo3;tab-stops:list .5in'>Workflow
+     for tuning and setting up cameras:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Determine
+      which camera variables can be global, and which need to be
+      vehicle-specific</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Tuning
+      values should be clear and use a consistent scale (e.g., 1 to 10, or 1 to
+      100, or 1 to 1000 – use the same system for all values) so that anyone can
+      tune them</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>Tuning
+      values are mutually exclusive; they do not affect each other. For
+      example, in <i>Road Rage</i> the vertical damping that overrode the
+      vertical camera position.</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo3;tab-stops:list 1.0in'>The
+      bumper-camera should be implied by the vehicle model, not specified
+      explicitly.</li>
+ </ul>
+</ul>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+</div>
+
+</body>
+
+</html>

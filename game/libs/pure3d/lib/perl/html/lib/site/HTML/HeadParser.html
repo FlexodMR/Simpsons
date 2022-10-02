@@ -1,0 +1,232 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTML::HeadParser - Parse <HEAD> section of a HTML document
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTML::HeadParser - Parse 
+<FONT SIZE=-1>&lt;HEAD&gt;</FONT> section of a 
+<FONT SIZE=-1>HTML</FONT> document
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require HTML::HeadParser;
+ $p = HTML::HeadParser-&gt;new;
+ $p-&gt;parse($text) and  print &quot;not finished&quot;;
+</PRE>
+
+<P>
+
+<PRE> $p-&gt;header('Title')          # to access &lt;title&gt;....&lt;/title&gt;
+ $p-&gt;header('Content-Base')   # to access &lt;base href=&quot;<A HREF="http://...&quot">http://...&quot</A>;&gt;
+ $p-&gt;header('Foo')            # to access &lt;meta http-equiv=&quot;Foo&quot; content=&quot;...&quot;&gt;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <EM>HTML::HeadParser</EM> is a specialized (and lightweight)
+<EM>HTML::Parser</EM> that will only parse the &lt;
+<FONT SIZE=-1>HEAD&gt;...</FONT>&lt;
+<FONT SIZE=-1>/HEAD&gt;</FONT> section of a 
+<FONT SIZE=-1>HTML</FONT> document. The <CODE>parse()</CODE> and <CODE>parse_file()</CODE> methods will return a 
+<FONT SIZE=-1>FALSE</FONT> value as soon as a
+ &lt;
+<FONT SIZE=-1>BODY&gt;</FONT> element is found, and should not be called
+again after this.
+
+
+<P>
+
+The <EM>HTML::HeadParser</EM> constructor takes an optional <EM>HTTP::Headers</EM>
+object reference as argument. The parser will update this header object as
+the various &lt;
+<FONT SIZE=-1>HEAD&gt;</FONT> elements are recognized. If no header is
+given we will create an internal (and initially empty) header object. This
+header object can be accessed with the <CODE>header()</CODE> method.
+
+
+<P>
+
+The following header fields are initialized from elements found in the
+&lt;
+<FONT SIZE=-1>HEAD&gt;</FONT> section of the 
+<FONT SIZE=-1>HTML</FONT> document:
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Content">Content-Base:
+
+</A></STRONG><DD>
+The <EM>Content-Base</EM> header is initialized from the &lt;base href=``...''&gt; element.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Title">Title:
+
+</A></STRONG><DD>
+The <EM>Title</EM> header is initialized from the &lt;title&gt;...&lt;/title&gt; element.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Isindex">Isindex:
+
+</A></STRONG><DD>
+The <EM>Isindex</EM> header will be added if there is a &lt;isindex&gt; element in the &lt;head&gt;. The header value is initialized from the
+<EM>prompt</EM> attribute if it is present. If not <EM>prompt</EM> attribute is given it will have '?' as the value.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_X">X-Meta-Foo
+
+</A></STRONG><DD>
+All &lt;meta&gt; elements will initialize headers with the prefix ``X-Meta-''. If
+the element contains a <EM>http-equiv</EM> attribute, then it will be honored as the header name.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+The following methods (in addition to those provided by the superclass) are
+available:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__hp">$hp = HTML::HeadParser->new( [$header] )
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__hp_parse_">$hp->parse( $text )
+
+</A></STRONG><DD>
+Parses some 
+<FONT SIZE=-1>HTML</FONT> text (see HTML::Parser-&gt;parse()) but will return 
+<FONT SIZE=-1>FALSE</FONT> as soon as parsing should end.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__hp_header_">$hp->header;
+
+</A></STRONG><DD>
+Returns a reference to the HTML::Header object.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__hp_header_">$hp->header( $key )
+
+</A></STRONG><DD>
+Returns a header value.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__hp_as_string_">$hp->as_string;
+
+</A></STRONG><DD>
+Same as $hp-&gt;header-&gt;as_string
+
+
+<P>
+
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+<PRE> $h = <A HREF="HTTP::Headers-&gt">HTTP::Headers-&gt</A>;new;
+ $p = HTML::HeadParser-&gt;new($h);
+ $p-&gt;parse(&lt;&lt;EOT);
+ &lt;title&gt;Stupid example&lt;/title&gt;
+ &lt;base href=&quot;<A HREF="http://www.sn.no/libwww-perl/&quot">http://www.sn.no/libwww-perl/&quot</A>;&gt;
+ Normal text starts here.
+ EOT
+ undef $p;
+ print $h-&gt;title;   # should print &quot;Stupid example&quot;
+</PRE>
+
+<P>
+
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/HTML/Parser.html">Parser</A>, <A HREF="/n|/perl/html/./lib/site/HTTP/Headers.html">Headers</A>
+
+
+
+
+<P>
+
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1996-1997 Gisle Aas. All rights reserved.
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gisle Aas &lt;<A HREF="MAILTO:aas@sn.no>">aas@sn.no></A>
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

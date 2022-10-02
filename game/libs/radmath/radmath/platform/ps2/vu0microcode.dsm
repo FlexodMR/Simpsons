@@ -1,0 +1,325 @@
+;//-----------------------------------------------------------------------------
+;//              vu0math - vector & matrix math using vu0
+;//
+;// VU0 microcode
+;// File: $FILE$
+;//
+;// $COPYRIGHT$
+;//
+;// Last changed: 10 July 2002
+;// Release:      $RELEASE$
+;// Author:       Yee woon Goh, SCEE Technology Group (ps2_support@scee.net)
+;//
+;// Description: all the maths/collision microcode
+;//
+;//-----------------------------------------------------------------------------
+
+.global vu0_begin
+.global	vu0_ucode
+.global	vu0_SphereVSphere
+.global	vu0_SphereVAABox
+.global	vu0_SphereVTBox
+.global	vu0_sincos
+.global	vu0_unitmatrix
+.global vu0_mulmatrix
+.global vu0_rotateX
+.global vu0_translate
+.global vu0_transform
+.global vu0_quaternionmatrix
+.global vu0_quaternionmultiply
+.global vu0_end
+
+
+;//---------------------------------------------------------------------
+;//load all the code
+
+.p2align		4
+.DmaPackVif		0
+
+
+vu0_ucode:
+				DMAend		*
+				STCYCL		4,4
+				STMASK		0
+				STMOD		0
+				MPG			0,*
+
+
+
+
+;//---------------------------------------------------------------------
+;// sphere collision routines, 
+;// vi14 contains the result- (not 0)=hit, 0=miss
+;// vf30-31 contains sphere0 position & radius_sqr,radius,0,0
+;// vf25-29 contain the other collision primitive
+
+vu0_begin:
+
+;//sphere vs sphere
+;// vf28-29 is sphere1: pos & r^2,r
+;// vf22-24 is temp, vf21.x=1
+
+vu0_SphereVSphere:
+				sub.xyz		vf23, vf30, vf28	nop												;sphere0 centre relative to sphere1 centre
+				add.y		vf24, vf29, vf31	nop												;vf24=rad0+rad1
+				addw.x		vf21, vf0, vf0w		nop
+				nop								nop
+				mul.xyz		vf22, vf23, vf23	nop												;start dot product for distance between spheres
+				mul.y		vf24, vf24, vf24	nop												;vf24y=(rad0+rad1)^2
+				nop								nop
+				nop								nop
+				adday.x		acc, vf22, vf22y	nop
+				addy.x		vf24, vf00, vf24y	nop												;vf24x=(rad0+rad1)^2
+				maddz.x		vf22, vf21, vf22z	nop												;vf22x=(dist between spheres)^2
+				nop								nop
+				nop								nop
+				nop								nop
+				sub.x		vf23, vf22, vf24	nop												;compare dist^2 & radii^2
+				nop								nop
+				nop								nop
+				nop								iaddiu		vi14, vi00, 0x0080					;negative x
+				nop								fmand		vi01, vi14
+				nop[e]							iadd		vi14, vi00, vi01
+				nop								nop
+
+
+;//sphere vs axis aligned box
+;// vf28-29 is box: pos & max
+;// vf19-24 & vi01-13 is temp
+;// vi10-12 = neg x-z mask
+
+vu0_SphereVAABox:
+				sub.xyz		vf23, vf30, vf28	b			boxtest								;vf23=centre of sphere wrt box
+				nop								nop
+
+
+;//sphere vs orientated/transformed box
+;// vf25-29 is box: inverse RT matrix & max
+;// vf19-24 & vi01-13 is temp
+;// vi10-12 = neg x-z mask
+
+vu0_SphereVTBox:
+				mulax		acc,vf25,vf30		nop
+				madday		acc,vf26,vf30		nop
+				maddaz		acc,vf27,vf30		nop
+				maddw		vf23,vf28,vf30		b			boxtest								;vf23=centre of sphere wrt box
+				nop								nop
+
+;//common box test code
+boxtest:
+				sub.xyz		vf24, vf00, vf29	nop												;vf24=min
+				nop								iaddiu		vi11, vi00, 0x0080					;set x,y,z negative masks
+				sub.xyz		vf22, vf23, vf29	iaddiu		vi12, vi00, 0x0040					;vf22=centre-max
+				nop								iaddiu		vi13, vi00, 0x0020
+				sub.xyz		vf20, vf23, vf24	nop												;vf22=centre-min
+				nop								iaddiu		vi14, vi00, 0x00e0					;negative xyz
+				sub.xyz		vf00, vf00, vf22	move		vf23, vf00							;if(maxoffset >0)...
+				mul.xyz		vf21, vf22, vf22	nop												;vf21=max offset^2
+				add.xyz		vf00, vf00, vf20	nop												;if(minoffset <0)...
+				mul.xyz		vf19, vf20, vf20	nop												;vf19=min offset^2
+				nop								fmand		vi01, vi14							;vi01=1`s if (maxoffset^2 >0)
+				nop								iadd		vi10, vi00, vi01
+				nop								fmand		vi01, vi14							;vi01=1`s if (minoffset^2 <0)
+				nop								iand		vi07, vi10, vi11					;isolate x component of maxoffset>0
+				nop								iand		vi04, vi01, vi11					;isolate x component of minoffset<0
+				nop								ibeq		vi11, vi07, add_x_max2
+				nop								nop
+				nop								ibeq		vi11, vi04, add_x_min2
+done_x:
+				nop								iand		vi08, vi10, vi12
+				nop								iand		vi04, vi01, vi12
+				nop								ibeq		vi12, vi08, add_y_max2
+				nop								nop
+				nop								ibeq		vi12, vi04, add_y_min2
+done_y:
+				nop								iand		vi09, vi10, vi13
+				nop								iand		vi04, vi01, vi13
+				nop								ibeq		vi13, vi09, add_z_max2
+				nop								nop
+				nop								ibeq		vi13, vi04, add_z_min2
+done_z:
+				sub.x		vf00, vf23, vf31	nop
+				nop								nop
+				nop								nop
+				nop								iaddiu		vi14, vi00, 0x0080
+				nop[e]							fmand		vi01, vi14
+				nop								iadd		vi14, vi00, vi01
+
+add_x_min2:
+				add.x		vf23, vf23, vf19	b			done_x
+				nop								nop
+add_y_min2:
+				addy.x		vf23, vf23, vf19y	b			done_y
+				nop								nop
+add_z_min2:
+				addz.x		vf23, vf23, vf19z	nop
+				nop								nop
+				nop								b			done_z
+				nop								nop
+add_x_max2:
+				add.x		vf23, vf23, vf21	b			done_x
+				nop								nop
+add_y_max2:
+				addy.x		vf23, vf23, vf21y	b			done_y
+				nop								nop
+add_z_max2:
+				addz.x		vf23, vf23, vf21z	b			done_z
+				nop								nop
+
+
+;//---------------------------------------------------------------------
+;//Colin Hughes' Vector sin/cos routine:
+;//This takes 2 angles( in vf01 xy and zw) and generates cos/sin pairs in x/y and z/w
+;//uses vf1-6 & vi15
+
+vu0_sincos:
+				addx.y		vf1,vf0,vf1			bal			vi15,sincos							; Copy angle from x to y
+				mulz.w		vf1,vf0,vf1			loi			0x3fc90fdb							; Copy angle from z to w
+				nop[e]							nop
+				nop								nop
+
+sincos:
+				subi.xz		vf1,vf1,I			nop												; Phase difference for sin as cos ( PI/2 )
+				abs			vf1,vf1				loi			0xbe22f983							; Mirror cos around zero
+				maxw		vf2,vf0,vf0			nop												; Initialise all 1s
+				mulai		ACC,vf1,I			loi			0x4b400000							; Scale so single cycle is range 0 to -1 ( *-1/2PI )
+				msubai		ACC,vf2,I			nop												; Apply bias to remove fractional part
+				maddai		ACC,vf2,I			loi			0xbe22f983							; Remove bias to leave original int part
+				msubai		ACC,vf1,I			loi			0.5									; Apply original number to leave fraction range only
+				msubi		vf1,vf2,I			nop												; Ajust range: -0.5 to +0.5
+				abs			vf1,vf1				loi			0.25								; Clamp: 0 to +0.5
+				subi		vf1,vf1,I			nop												; Ajust range: -0.25 to +0.25
+
+				mul			vf2,vf1,vf1			loi			0xc2992661							;a^2
+				muli		vf6,vf1,I			loi			0xc2255de0							;k4 a
+				muli		vf4,vf1,I			loi			0x42a33457							;k2 a
+				muli		vf5,vf1,I			nop												;k3 a
+				mul			vf3,vf2,vf2			nop												;a^4
+				mul			vf6,vf6,vf2			nop												;k4 a^3
+				mula		ACC,vf4,vf2			loi			0x421ed7b7							;+ k2 a^3
+				muli		vf4,vf1,I			nop												;k5 a
+				mul			vf2,vf3,vf3			nop												;a^8
+				madda		ACC,vf6,vf3			nop												;+ k4 a^7
+				madda		ACC,vf5,vf3			loi			0x40c90fda							;+ k3 a^5
+				maddai		ACC,vf1,I			jr			vi15								;+ k1 a
+				madd		vf1,vf4,vf2			nop												;+ k5 a^9
+
+
+;//---------------------------------------------------------------------
+;//Colin Hughes' 
+;//Init result/op1 matrix to unity
+
+vu0_unitmatrix:
+	max vf31,vf0,vf0		mr32 vf30,vf0		; ---- ---- 0010 0001
+	addw[e].x vf28,vf0,vf0	mfir vf29,vi0		; 1--- 0000 0010 0001
+	addw.y vf29,vf0,vf0		mfir.yzw vf28,vi0	; 1000 0100 0010 0001
+
+;//---------------------------------------------------------------------
+;//Colin Hughes' 
+;//Multiply op1 by op2 to give result/op1
+
+vu0_mulmatrix:
+
+	mulax	ACC,vf24,vf28		nop
+	madday	ACC,vf25,vf28		nop
+	maddaz	ACC,vf26,vf28		nop
+	maddw	vf28,vf27,vf28		nop
+
+	mulax	ACC,vf24,vf29		nop
+	madday	ACC,vf25,vf29		nop
+	maddaz	ACC,vf26,vf29		nop
+	maddw	vf29,vf27,vf29		nop
+
+	mulax	ACC,vf24,vf30		nop
+	madday	ACC,vf25,vf30		nop
+	maddaz	ACC,vf26,vf30		nop
+	maddw	vf30,vf27,vf30		nop
+
+	mulax	ACC,vf24,vf31		nop
+	madday	ACC,vf25,vf31		nop
+	maddaz[e] ACC,vf26,vf31		nop
+	maddw	vf31,vf27,vf31		nop
+
+;//---------------------------------------------------------------------
+;//Colin Hughes' 
+;//Generate X rotation matrix in op2
+;//vf1x is angle
+
+vu0_rotateX:
+
+	addx.y vf1,vf0,vf1		bal vi15,sincos			; Copy angle from x to y
+	mulz.w vf1,vf0,vf1		loi 0x3fc90fdb			; Copy angle from z to w
+	max vf27,vf0,vf0		mfir vf26,vi0
+	addw.x vf24,vf0,vf0		mfir vf25,vi0
+	addy.y vf25,vf0,vf1		mfir.yzw vf24,vi0
+	addy.z vf26,vf0,vf1		nop
+	addx[e].z vf25,vf0,vf1	nop
+	subx.y vf26,vf0,vf1		nop
+
+;//---------------------------------------------------------------------
+;//Colin Hughes' 
+;Generate translation matrix in op2
+;vf27 is translation amount ( x y z - )
+
+vu0_translate:
+	maxw vf24,vf0,vf0			mr32 vf26,vf0		; 1111 ---- 0010 xyz-
+	maxw[e] vf25,vf0,vf0		mfir.yzw vf24,vi0	; 1000 1111 0010 xyz-
+	miniw.w vf27,vf0,vf0		mfir.xzw vf25,vi0	; 1000 0100 0010 xyz1
+
+;//---------------------------------------------------------------------
+;//Colin Hughes' 
+;Transform vector by matrix
+;Input vector in vf01, result in vf01
+
+vu0_transform:
+	mulax ACC,vf28,vf01			nop
+	madday ACC,vf29,vf01		nop
+	maddaz[e] ACC,vf30,vf01		nop
+	maddw vf01,vf31,vf01		nop
+
+;Throughput / latency
+;quat->matrix :    16/19
+;quat*quat:    8/11
+
+;Build matrix from Quaternion
+;Input quaternion in vf01
+;Output matrix in op2 ( ready for multiplication )
+
+vu0_quaternionmatrix:
+        mula ACC,vf01,vf01              loi 1.414213562373      ; xx yy zz , sqrt2
+        muli vf03,vf01,I                mr32.w vf24,vf0         ; x sqrt2 y sqrt2 zsqrt2 wsqrt2
+        madd vf02,vf01,vf01             nop                     ; 2xx 2yy 2zz
+        addw vf04,vf00,vf00             nop                     ; 1 1 1 
+        ;nop                             nop
+        opmula.xyz ACC, vf03,vf03       nop                     ; 2yz 2xz 2xy
+        msubw vf05,vf03,vf03            mr32.w vf26,vf0         ; 2yz-2xw 2xz-2yz 2xy-2zw
+        maddw vf06,vf03,vf03            mr32.w vf25,vf0         ; 2yz+2xw 2xz+2yz 2xy+2zw
+        addaw.xyz ACC,vf00,vf00         nop                     ; 1             1               1
+        msubax.yz ACC,vf04,vf02         nop                     ; 1             1-2xx           1-2xx
+        msuby.z vf26, vf04,vf02         mr32 vf03,vf05          ; -             -               1-2xx-2yy
+        msubay.xz ACC,vf04,vf02         mr32 vf07,vf06          ; 1-2yy         1-2xx           1-2xx-2yy
+        msubz.y vf25,vf04,vf02          mr32.y vf24,vf05        ; -             1-2xx-2zz       -
+        msubz.x vf24,vf04,vf02          mr32.x vf26,vf05        ; 1-2yy-2zz     -               -
+        addy[e].z vf24,vf00,vf06        mr32.z vf25,vf03
+        addx.y vf26,vf00,vf06           mr32.x vf25,vf07
+
+;Quaternion multiply
+;
+;qa in vf01,qb in vf02 - returns result in vf01
+
+vu0_quaternionmultiply:
+     mul vf03,vf01,vf02                     nop   ; xx yy zz ww
+     opmula.xyz ACC,vf01,vf02               nop   ; Start Outerproduct
+     maddaw.xyz ACC,vf01,vf02               nop   ; Add w2.xyz1
+     maddaw.xyz ACC,vf02,vf01               nop   ; Add w1.xyz2
+     opmsub.xyz vf01,vf02,vf01              nop   ; Finish Outerproduct
+     subaz.w ACC,vf03,vf03                  nop   ; ww - zz
+     msubay[e].w ACC,vf00,vf03              nop   ; ww - zz - yy
+     msubx.w vf01,vf00,vf03                 nop   ; ww - zz - xx
+
+vu0_end:
+
+.EndMPG
+.EndDmaData
+
+

@@ -1,0 +1,426 @@
+COPYRIGHT:
+==========
+	vcl is copyright sony computer entertainment america. 
+
+INFO:
+=====
+
+	this is vcl 1.2 and some examples. I'm going through some of the vu1 examples from 
+	/usr/local/sce and converting them to vcl, the order is:
+
+		iga	 -basic renderer.
+		clip_vu1 -simple clipped renderer.
+		scis_vu  -scissoring renderer.
+		bspline  -bspline renderer.
+
+	I'll post up some rd demo code as well when I have the time.
+	 
+	vcl is compiled for linux, and Win32. The windows build is under win98, the linux is RedHat 6.2.
+	Should be fine under 95,win2k and nt4, but doubtful for RedHat 5 or 7. 
+
+	vcl is a simple text preprocessor for sony vector unit code. it's output is compatible with
+	the ee-dvp-as assembler.
+
+	The aim of this version of vcl is to make programming for the ee vector units slightly easier.
+
+	it is best used in conjunction with ee-gasp (*) (see '-g' option) to allow macro processing. 
+	
+	For Win32 ppl - ee-gasp isn't really necessary -  gasp.exe, which is publically available, will
+	do the job. (You'll also need to download cygwin1.dll). Remember to rename gasp.exe to ee-gasp.exe..
+
+HISTORY
+=======
+
+	vcl 1.0 was the first release of vcl. 
+	1.1 or 1.01 depending on which part of vcl was doing the printfing had some major changes.
+	1.2 has some bug fixes and enhancements to the parser.
+
+what does vcl do?
+=================
+
+	VCL is a text processor that performs simple reordering of vector unit instructions, and simple assignment 
+	of names to registers. VCL is an asm tool - the key to good vu coding is the choice of instructions you
+	use to implement something, actually choosing where they go is a dull tiling problem that a machine should
+	be able to do. 
+	
+	VCL can try to generate loop code for you, as well as making the necessary epilogues and prologues.
+	It works with 'virtual' registers.. and assigns them to vector unit hardware registers automatically. 
+	It tries to prune unused instructions and register fields. Under some circumstances it can modify the 
+	immediate fields of instructions (for example, the offset field of a load instruction during loop generation), 
+	or introduce extra instructions (to save register contents during a loop etc).
+
+what doesn't it do ?
+====================
+
+	it's not a high level language, and it won't improve your algorithm. you'll still need to have some knowledge of asm to
+	make use of it.
+
+DEFINITION: 'BLOCK'
+===================
+
+	Vcl first breaks the code up into blocks. A block is a maximal sequence of instructions that contains no 
+	flow-control statements (branches). 
+	
+	later versions of VCL will move instructions between blocks. at the moment, instructions stay in their original block.
+
+vcl args:
+=========
+	
+	vcl [-h] [-g] [-d] [-s] [-c] [-p] [-t<seconds>] [-o<outfile>] [<infile>]
+
+	-o<outputfile>		; write output file, if not set then stdout..see BUGS..
+	<infile>		; input file, if not set then stdin
+	-d			; force vcl to be dumb as possible (implies -L)
+	-L			; ignore --Loop directives, ie: globally disable loops
+	-s			; skip register assign, write out symbolics
+	-c			; (try to) write out original source as comments
+	-h			; type out help and exit
+	-g			; invoke ee-gasp (*) on input file first (with options -p -s -c ';' ). this does macro processing etc
+	-I<include_path>	; pass this option to ee-gasp (*) for include path.. must be set after -g on command line
+	-t<seconds>		; set timeout value to <seconds> for each optimisation module. default is 4. 
+	-P			; disable pruning of unexecuted/or unused instructions or destination fields.
+	-A			; let VCL modify the immediate fields of instructions. This is useful in loop mode to make better loops.
+	-n			; enable new syntax. This means that if vcl could deduce the destination/broadcast fields from the format
+				; of an instruction, it does, if it can't them it falls back on the operands, so 'vertex' is a valid name
+				; at long last...for example,  
+
+					mulay.x acc,vertex,vertex (assume vertex=vf04) 	is mulay.x 	acc,vf05x,vf05y and 
+					div	q,vf00w,vertexx				is div		q,vf00w,vf05x	
+
+vcl files look like:
+===================
+
+	the work_vcl.vcl file in the 'iga' directory. 
+
+vcl file syntax.
+================
+
+	you can use names for registers, except where the register has to be specified (for example the vi01 you need for fcand etc),
+	also, you write the instructions in the order you want them to be executed, not in the upper/lower format.
+	syntax is the Sony syntax, except, you can use names for registers. You don't have to explicitely declare the names (apart
+	from in function entry/exit blocks), vcl decides their type from the context it first sees them.
+
+BIG_OLD_WARNING: 
+	since it's for use with assembly, there's no concept of scope, two 'names' in operand fields are the same if vcl sees that
+	(maybe after a large number of branches) the output of one instruction is the input of another and the names match.
+	if this doesn't happen, then the names are viewed as distinct. If vcl finds a register that is used before set, it thinks it's an error.
+	As a result of this, VCL has to be able to determine the branch target of a branch instruction, for this reason, at the moment, branch-to-register
+	instructions are not supported. This limitation will be removed in a future release.
+	
+	because old vcl strictly followed Sony syntax, names couldn't end with x,y,z, or w, (to avoid an ambiguity with the syntax of some instructions.)
+	To maintain some semblance of compatibility with old code that I can't be bothered with changing, -n now enables 'new syntax' mode. 
+	(see -n above), this modifies the way operands/instructions are parsed.
+	
+Entry/Exit/Continue
+===================
+
+to declare entry points to a piece of vcl code you declare an entry block:
+
+	--enter
+	--endenter
+
+this tells vcl that the program counter might start here. A piece of vcl code can have multiple entry points.
+
+to declare an exit point you do:
+
+	--exit
+	--endexit
+
+this tells vcl that when the program counter gets here, it's finito, and there's no need to carry register names
+or dependency information after this point. 
+
+to declare stop points in the code, so where you want register state to continue, but latency information to be discarded
+after the halt (for example, when you do 'MSCNT') then do 
+
+	--cont
+
+BIG_OLD_WARNING:
+
+	A program MUST have at least one --enter/--endenter block, and at least EITHER one --cont OR one --exit,--endexit sequence.
+	for VU1 coding, generally, you have one --enter/--endenter at the top of the code, then --cont directives, and no --exit at all.
+
+NOTE_FOR_VU0
+============
+
+For programming vu0 you probably want to declare inputs and outputs to a function, you declare these in the entry
+exit blocks as follows:
+
+	--enter
+	in_vf	vector(vf02)		; declare vf register name 'vector' and force it to be vf02
+	in_vi	integer(vi02)		; declare vi register name 'integer' and force it to be vi02
+	--endenter
+
+exits are similar
+
+	--exit
+	out_vf	avector(vf03)		; declare vf register name 'avector' and force it to be vf03
+	out_vi	ainteger(vi04)		; declare vi register name 'ainteger' and force it to be vi04
+	--endexit
+
+	[You don't have to specify the underlying register in brackets, if you don't vcl will pick one for you, which is
+	a bit pointless, perhaps.]
+
+
+BIG_OLD_WARNING:
+
+	I suspect the NOTES_FOR_VU0 is slightly optimistic. There are some register collision issues that needed to be fixed,
+	if you use different underlying registers as outputs to those that are inputs, then, things should be ok.
+
+	To let the register assigner use vector unit registers, you use the .init_vf directives.
+	to use all of them, do 
+
+		.init_vf_all	 	; for all vf registers. 
+		.init_vi_all		; for all vi registers.
+
+	..by default no user registers are available to vcl, so it'll halt when it tries to assign something and it hasn't been 
+	told to use any.
+	
+	vcl can always access the constant registers (vf00,vi00 and zero) as well as the hardware registers for the device
+	it's built for.
+
+<notes from here on out aren't relevant to many people>
+=======================================================
+
+Memory
+======
+
+vcl is only text based, so it can't figure out pointer aliasing by itself, so , sometimes you might have two
+pointers that correspond to the same address, and you'd want vcl to access the location in order. you do this
+by declaring memory tags, [for example of this see mem.vcl, or vu0_wave.vcl ]
+the basic syntax is a modification of the effective address operand, for example:
+
+	ilw	reg,10(ptr)x:TAG
+
+assigns this instruction to the memory group 'TAG', all other memory instructions in this group are executed
+in logical order.. so loads can be reordered, but can't move between adjacent stores etc etc
+
+BUG: the tag field should be a : separated list, so operands can belong to multiple tags.. at the moment it's 
+just done by a string compare on everything after the first ':'.
+
+
+Polymorphism
+============
+
+unfortunately, the vector units have hardware level polymorphism. this is a tedious way of saying that if you 
+have an integer value in a vector register, and add floating point zero to it, then the value is destroyed, 
+since it has 0 exponent. VCL keeps track of the type of registers, and also, occasionally, tries to insert 
+instructions to move register contents around. It can deduce everything apart from data loaded from RAM, 
+or declared as an external input, so the syntactical way of getting round this is by using upper case in the 
+destination field for load or input declaration instructions to denote integer type,
+
+for example:
+
+	lq.XYZw		rgb_val,0(ptr)		; declare rgb_val.xyz to be integer, and rgb_val.w to be float
+
+
+by doing this, VCL can check types better, and also, is prevented from doing:
+
+	addx.yz		rgb_val_new,rgb_val,vf00	
+
+if it decides to make a copy of rgb_val.yz.
+
+Looping
+=======
+
+	the directive:
+
+
+	--LoopCS	<minimum_count>,<safe_count>
+
+		tells vcl that it ought to try to optimise the current block as a loop. to do this though, it has to know
+		the minimum number of times the loop will be called (this let's it limit the amount of epilogue cases it has to 
+		generate) and <safe_count>, which is the number of mis-executions of the loop that the code can cope with. 
+		misexectution happens when vcl exits a loop, and 'future' versions of the calculation that have externally
+		visible side effects are currently in the pipeline..(xgkick or store instructions). If your code
+		can cope with this (maybe, your write buffer is slightly larger than the data you intend to write, etc)
+		then safe_count is a way of telling vcl about this.
+		 
+		Both <minimum_count> and <safe_count> must be greater than zero.
+
+		BUG: the <safe_count> parameter is ignored for this version of vcl.
+
+	--LoopExtra	<count>
+
+		tells vcl to start trying to make loops of size <theoretical_minimum>+<count>, it's really because
+		vcl can get the theoretical minimum wrong, particularly if there's long cyclic dependency chains on 
+		vf registers, or it just takes a long time.
+
+BIG_OLD_WARNING:
+
+	vcl only loop optimises blocks that end in a conditional that points back to the start of the block.
+
+
+
+Clip
+====
+	the clip instruction is treated as depending on the previous ones, to just test the current clip result, using the
+	'cliplw.xyz' instruction which makes this clip test independent of previous ones. !NB! - if using clipw.xyz.. you have 
+	to be sure to do fcset	0, or similar somewhere in your code, otherwise vcl will treat the clip instruction as
+	using an unset external input..
+
+Sticky Bits
+===========
+
+	If anyone ever makes use of these, then I'll buy 'em a pint, and add in a pseudo fsands instruction or something. 
+	In general forcing all alu ops before an fsand to be physically executed before the fsand is...   not   a   good   idea.
+
+Checking
+========
+	vcl examines every possible sequence of execution of the program. if it finds a register that is used before it's
+	set, then it halts with a cryptic message. 'found register used before set' or something like that. If vcl thinks you've 
+	used an (fp)alu operation on what it thinks is probably a non-number (exponent zero, mantissa not zero) it'll print an error and halt.
+
+DIRECTIVES:
+===========
+
+	vcl parses the following directives:
+
+	.name	<NAME>	       			emits two labels <NAME>_CodeStart and <NAME>_CodeEnd at the start and end of the code. as well as two .global
+			      			directives to make them externally visible.
+
+	.vsm   		    			declare a raw block of VSM code
+	.endvsm
+
+	.init_vf_all	      			add all VF registers for VCL to use
+	
+	.init_vi_all	       			add all VI (integer) registers for VCL to use
+
+	.init_vf  	<reg0>,..<regN>		let VCL just use <reg0>..<regN>, eg: .init_vf	vf01,vf03,vf06		
+	
+	.init_vi	<reg0>..<regN>		same as init_vf but for integer registers
+
+
+	--enter	  				declare an entry block. every vcl file must have at least one entry block
+	--endenter				this is where the program counter can start from.
+	
+
+	--exit	  				declare an exit block. register allocation ends here. this is where
+	--endexit				your program exits
+		 	
+
+	--cont					tell VCL the program will halt here, but it will continue via an MSCNT or similar
+						reason. this lets register allocation continue past the end of the block
+
+	--barrier				insert a scheduling barrier in the code, instructions cannot be rescheduled across this in a sequence
+
+BIG_OLD_WARNING:
+
+	Other directives are treated as errors. In general, you want to use the '-g' option, which will cause vcl to 
+	call ee-gasp (*) with command line : 
+	
+		ee-gasp -p -s -c ';' -I<your_include_paths> 
+
+	(in particular, this sets ';' as a comment character..)
+
+	This lets you use the features of gasp to write macros and include other files etc. The -I command line options get
+	passed straight through to gasp. 
+	This creates two temporary files in /tmp..they are deleted when vcl has finished with them. If it can't delete them or create them,
+	or ee-gasp returns an error back through system(), then it halts. 
+
+
+COMMON MISTAKES
+===============
+	not declaring any registers for VCL to use from the VF or VI registers. using .init_vi_all and .init_vf_all, is usually all
+	that is required.
+
+	vcl must have at least one entry point (so a --enter,--endenter block)
+
+	having unset external inputs is the main problem.. everything that VCL sees as an input operand (apart from constants like vf00)
+	HAS to have been set by an output it knows about. for external inputs to code, use the in_vf instruction. 
+	Even logically un-visited code is a classed as an error in this release.
+
+	Using -g option, and not having permission to create temporary files.. or gasp reporting an error back to VCL will stop vcl.
+
+
+GASP
+====
+	Since vcl is designed to be used in conjunction with a macro preprocessor, and gasp is the shipped with PS2, here's 
+	some notes about gasp.
+		1.	it's worthwhile to know that gasp parses 0.0001 into 0.1, and converts 0x123 to 0, without giving any
+			indication that it's done this.
+		2.	the syntax for hex appears to be H'123 for 0x123. for floats, use exponent format, so 1.23e-4 for 0.000123.
+
+
+NOTES
+=====
+	1.
+		vcl converts ilwr and iswr to ilw  blah,0(blah), and isw blah,0(blah) since I can't see why not.. this gives it slightly more
+		leaway when generating code.
+	2.	
+		I've modified vcl(1.2) so it's more comfortable with gaps in operands.. (which almost automatically ruled out using gcc
+		for #defines..). This should be fixed.. however it's possible that ' b' or ' B' as part of an immediate field might be 
+		interpreted as the start of a following branch instruction.
+
+	3.
+		vcl error reporting has always been not the highest priority. Things are slowly improving. From 1.1, vcl now reports:
+
+		INFO: <message>	; general information. 
+		WARNING: <message> : a non-critical event happened.. which might have unforseen consequences.
+		INTERNAL_ERROR: <message>  : vcl failed an internal consistency check (ie there's a bug in vcl) and tries to exit
+		USER: <message>	: vcl was confused by the input data it was given. This normally is at the parse stage.
+TIP
+===
+
+1.
+	Leaving long dependency chains in the code of the form:
+
+		mul	register,register,register		; register.xyzw modified
+		mul.xyz	register,register,register		; only register.xyz modified
+		mul.xyz	register,register,register		; only register.xyz modified
+		mul.xyz	register,register,register		; only register.xyz modified
+		mul.xyz	register,register,register		; only register.xyz modified
+		mul.xyz	register,register,register		; only register.xyz modified
+		mul	register,register,register		; register w also used..
+
+	this causes the current version of VCL some problems.. using a different register at each stage is impossible, since the 'w'
+	value will be discarded .. and the move generator is cautious at the moment. [v1.1 should cope better with this situation].
+
+2.
+	If you do something like :
+
+	sub	reg,reg,reg
+
+	to clear a register before it's first use, then vcl treats this as an error, since 'reg' is also an input.. this is generally a bad thing
+	nowadays anyway.
+
+	please do sub	reg,vf00,vf00 instead, which causes no stalls, or better still, mfir reg,vi00, which has no sideeffects on the flags 
+	registers..
+
+3.
+	You'll probably find that having a register with 1's in it useful.. with that you can do:
+
+	mul	tmp,vecA,vecB
+	adday.x	acc,tmp,tmp
+	maddz.x	dot,ONE,tmp
+
+	which puts the dot product of A and B in dot.x in 3 instructions.
+
+
+4.	
+	Since the loop generator only optimises conditional-free blocks, you should try clipping via ADC flag sequences like:
+
+	clipw.xyz	ct,ClipData			; trigger clip calculation
+	fcand		vi01,0x3ffff			; vi01 set if any of previous 3 points outside of clip
+	iaddiu 		adc_bit,vi01,0x7fff	    	; add immediate 0x7fff 
+	isw.w  		adc_bit,outvl_xyzf2(out_p) 	; out_p used
+	
+	[this works because ADC is bit 111 of XYZF2, which is bit 15 of W field, so adding 0x7fff forces it high iff vi01 is set via fcand.
+	If you use fogging, using an iand to mask the lower bits then ior the fog into place.]
+
+5.
+	clever use of max, min and multiplies by the largest float number can be used to create step functions.
+
+6.
+	EFU instructions are good when used sparingly, however their long latency/thruput compared to using Q register mean if you 
+	use them too much, you're loop code may well be limited by this.. so intermix efu and Q usage carefully. 
+
+FUTURE
+======
+	branch-to-register.  floating instructions between blocks. smallcode option to reduce code size.
+	combined vu0micro and core assembler loop generation from same input file using [m] and .i for sync.
+
+(*) ee-gasp is part of the toolchain provided by Sony. It is copyright 1996 Free Software Foundation Inc 
+
+
+
+

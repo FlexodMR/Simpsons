@@ -1,0 +1,266 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::CmdLine - Process standard X11 command line options
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::CmdLine - Process standard 
+<FONT SIZE=-1>X11</FONT> command line options
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+use Tk::CmdLine;
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The 
+<FONT SIZE=-1>X11R5</FONT> man page for 
+<FONT SIZE=-1>X11</FONT> says :
+
+
+
+<P>
+
+``Most 
+<FONT SIZE=-1>X</FONT> programs attempt to use the same names for command line options and arguments. All applications written with the 
+<FONT SIZE=-1>X</FONT> Toolkit Intrinsics automatically accept the following options: ...''
+
+
+
+<P>
+
+This module implemements these command line options for perl/Tk
+applications.
+
+
+<P>
+
+The options which are processed are :
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__display">-display display
+
+</A></STRONG><DD>
+This option specifies the name of the 
+<FONT SIZE=-1>X</FONT> server to use.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__geometry">-geometry geometry
+
+</A></STRONG><DD>
+This option specifies the initial size and location of the <EM>first</EM> MainWindow.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__bg">-bg color, -background color
+
+</A></STRONG><DD>
+Either option specifies the color to use for the window background.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__bd">-bd color, -bordercolor color
+
+</A></STRONG><DD>
+Either option specifies the color to use for the window border.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__bw">-bw number, -borderwidth number
+
+</A></STRONG><DD>
+Either option specifies the width in pixels of the window border.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fg">-fg color, -foreground color
+
+</A></STRONG><DD>
+Either option specifies the color to use for text or graphics.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fn">-fn font, -font font
+
+</A></STRONG><DD>
+Either option specifies the font to use for display- ing text.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__iconic">-iconic
+
+</A></STRONG><DD>
+This option indicates that the user would prefer that the application's
+windows initially not be visible as if the windows had be immediately
+iconi- fied by the user. Window managers may choose not to honor the
+application's request.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__name">-name
+
+</A></STRONG><DD>
+This option specifies the name under which resources for the application
+should be found. This option is useful in shell aliases to distinguish
+between invo- cations of an application, without resorting to creating
+links to alter the executable file name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__rv_">-rv, -reverse
+
+</A></STRONG><DD>
+Either option indicates that the program should simulate reverse video if
+possible, often by swap- ping the foreground and background colors. Not all
+programs honor this or implement it correctly. It is usually only used on
+monochrome displays.
+
+
+<P>
+
+<STRONG>Tk::CmdLine Ignores this option.</STRONG>
+
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__rv">+rv
+
+</A></STRONG><DD>
+This option indicates that the program should not simulate reverse video.
+This is used to override any defaults since reverse video doesn't always
+work properly.
+
+
+<P>
+
+<STRONG>Tk::CmdLine Ignores this option.</STRONG>
+
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__selectionTimeout">-selectionTimeout
+
+</A></STRONG><DD>
+This option specifies the timeout in milliseconds within which two
+communicating applications must respond to one another for a selection
+request.
+
+
+<P>
+
+<STRONG>Tk::CmdLine Ignores this option.</STRONG>
+
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__synchronous">-synchronous
+
+</A></STRONG><DD>
+This option indicates that requests to the 
+<FONT SIZE=-1>X</FONT> server should be sent synchronously, instead of
+asynchro- nously. Since Xlib normally buffers requests to the server,
+errors do not necessarily get reported immediately after they occur. This
+option turns off the buffering so that the application can be debugged. It
+should never be used with a working program.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__title">-title string
+
+</A></STRONG><DD>
+This option specifies the title to be used for this window. This
+information is sometimes used by a window manager to provide some sort of
+header iden- tifying the window.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__xnllanguage">-xnllanguage language[_territory][.codeset]
+
+</A></STRONG><DD>
+This option specifies the language, territory, and codeset for use in
+resolving resource and other filenames.
+
+
+<P>
+
+<STRONG>Tk::CmdLine Ignores this option.</STRONG>
+
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__xrm">-xrm resourcestring
+
+</A></STRONG><DD>
+This option specifies a resource name and value to override any defaults.
+It is also very useful for setting resources that don't have explicit
+command line arguments.
+
+
+<P>
+
+The <EM>resourcestring</EM> is of the form <CODE>name:value</CODE>, that is (the first) ':' is the used to determine which part is name and
+which part is value. The name/value pair is entered into the options
+database with <CODE>optionAdd</CODE>
+(for each MainWindow configd), with ``interactive'' priority.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

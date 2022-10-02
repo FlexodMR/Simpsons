@@ -1,0 +1,52 @@
+SelectMission("sr1");
+//The TIME TRIAL
+//Script set up for multipkle laps
+
+SetMissionResetPlayerInCar("sr1_carstart");
+SetDynaLoadData("l7z2.p3d;l7r1.p3d;l7r2.p3d;");
+
+SetMissionStartCameraName( "race1camShape" );
+SetMissionStartMulticontName( "race1cam" );
+SetAnimatedCameraName( "race1camShape" );
+SetAnimCamMulticontName( "race1cam" );
+
+//Chuck: StreetRace Prop Load and Unload Setup
+StreetRacePropsLoad("l7_sr1p.p3d;");
+StreetRacePropsUnload("l7_sr1p.p3d:");
+
+
+AddStage(0, "final" );
+SetHUDIcon( "race" );
+DisableHitAndRun();
+PlacePlayerCar("current", "sr1_carstart");
+PutMFPlayerInCar( );  // This makes the play auto reset into their car for this stage.                
+StartCountdown("count");
+	AddToCountdownSequence( "3", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "2", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "1", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "GO", 1000 ); // duration time in milliseconds
+NoTrafficForStage();
+SetStageMessageIndex(222);
+SetStageTime(70);
+RESET_TO_HERE();
+AddObjective( "race","neither");
+		AddNPC("patty", "sr1_patty");
+		AddNPC("selma", "sr1_selma");
+AddCollectible("sr1_waypoint1","carsphere");
+SetCollectibleEffect("wrench_collect");
+AddCollectible("sr1_waypoint2","carsphere");
+SetCollectibleEffect("wrench_collect");
+SetRaceLaps(5);
+CloseObjective();
+AddCondition("timeout");
+CloseCondition();
+AddCondition( "damage" );
+	SetCondMinHealth( 0.0 );
+	SetCondTargetVehicle( "current");
+CloseCondition();
+AddCondition("outofvehicle");
+	SetCondTime( 5000 );
+CloseCondition();
+GoToPsScreenWhenDone();
+CloseStage();
+CloseMission();

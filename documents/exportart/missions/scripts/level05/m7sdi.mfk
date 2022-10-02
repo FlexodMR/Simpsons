@@ -1,0 +1,64 @@
+SelectMission("m7sd");
+
+SetMissionResetPlayerOutCar("m7_apu_start", "m5_carstart");
+SetDynaLoadData("l5z2.p3d;l5r1.p3d;l5r2.p3d;");
+
+SetMissionStartCameraName( "mission7camShape" );
+SetMissionStartMulticontName( "mission7cam" );
+SetAnimatedCameraName( "mission7camShape" );
+SetAnimCamMulticontName( "mission7cam" );
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(226);
+	SetHUDIcon( "bart" );
+	AddObjective("talkto");
+		AddNPC("bart", "m7_bart_sd");
+		AddStageVehicle("bart_v","m7_carstart","NULL","HardRace\AI_2nd.con");
+		AddObjectiveNPCWaypoint( "bart", "m7_bart_walk1" );
+		SetTalkToTarget("bart", 0, -0.5);
+	CloseObjective();
+CloseStage();
+
+AddStage(1);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis05_07.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_far" );
+		SetConversationCam( 4, "pc_far" );
+		SetConversationCam( 5, "npc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_no" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_no" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide( "m7_carstart" );
+		SetDialogueInfo("apu","bart","museum",0);
+		SetDialoguePositions("m7_bart_walk1","m7_apu_start","m7_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

@@ -1,0 +1,178 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>File::Path - create or remove a series of directories
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+	<LI><A HREF="#REVISION">REVISION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+File::Path - create or remove a series of directories
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<CODE>use File::Path</CODE>
+
+
+
+
+<P>
+
+<A HREF="#item_mkpath_">mkpath(['/foo/bar/baz', 'blurfl/quux'], 1, 0711);</A>
+
+
+
+
+<P>
+
+<CODE>rmtree(['foo/bar/baz', 'blurfl/quux'], 1, 1);</CODE>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <A HREF="#item_mkpath">mkpath</A> function provides a convenient way to create directories, even if your <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_mkdir">mkdir</A> kernel call won't create more than one level of directory at a time.  <A HREF="#item_mkpath">mkpath</A> takes three arguments:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+the name of the path to create, or a reference to a list of paths to
+create,
+
+
+<P>
+
+<LI><STRONG></STRONG>
+a boolean value, which if 
+<FONT SIZE=-1>TRUE</FONT> will cause <A HREF="#item_mkpath">mkpath</A>
+to print the name of each directory as it is created (defaults to 
+<FONT SIZE=-1>FALSE),</FONT> and
+
+
+<P>
+
+<LI><STRONG></STRONG>
+the numeric mode to use when creating the directories (defaults to 0777)
+
+
+<P>
+
+</UL>
+It returns a list of all directories (including intermediates, determined
+using the Unix '/' separator) created.
+
+
+<P>
+
+Similarly, the <CODE>rmtree</CODE> function provides a convenient way to delete a subtree from the directory
+structure, much like the Unix command <CODE>rm -r</CODE>.
+<CODE>rmtree</CODE> takes three arguments:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+the root of the subtree to delete, or a reference to a list of roots. All
+of the files and directories below each root, as well as the roots
+themselves, will be deleted.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+a boolean value, which if 
+<FONT SIZE=-1>TRUE</FONT> will cause <CODE>rmtree</CODE> to print a message each time it examines a file, giving the name of the
+file, and indicating whether it's using <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_rmdir">rmdir</A>
+or <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_unlink">unlink</A> to remove it, or that it's skipping it. (defaults to 
+<FONT SIZE=-1>FALSE)</FONT>
+
+
+<P>
+
+<LI><STRONG></STRONG>
+a boolean value, which if 
+<FONT SIZE=-1>TRUE</FONT> will cause <CODE>rmtree</CODE> to skip any files to which you do not have delete access (if running under 
+<FONT SIZE=-1>VMS)</FONT> or write access (if running under another 
+<FONT SIZE=-1>OS).</FONT> This will change in the future when a criterion for 'delete permission' under OSs other than 
+<FONT SIZE=-1>VMS</FONT> is settled. (defaults to 
+<FONT SIZE=-1>FALSE)</FONT>
+
+
+
+<P>
+
+</UL>
+It returns the number of files successfully deleted. Symlinks are treated
+as ordinary files.
+
+
+<P>
+
+<STRONG>NOTE:</STRONG> If the third parameter is not 
+<FONT SIZE=-1>TRUE,</FONT> <CODE>rmtree</CODE> is <STRONG>unsecure</STRONG>
+in the face of failure or interruption. Files and directories which were
+not deleted may be left with permissions reset to allow world read and
+write access. Note also that the occurrence of errors in rmtree can be
+determined <EM>only</EM> by trapping diagnostic messages using <CODE>$SIG{__WARN__}</CODE>; it is not apparent from the return value. Therefore, you must be
+extremely careful about using <CODE>rmtree($foo,$bar,0</CODE>
+in situations where security is an issue.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+Tim Bunce &lt;<EM>Tim.Bunce@ig.co.uk</EM>&gt; and Charles Bailey &lt;<EM>bailey@genetics.upenn.edu</EM>&gt;
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="REVISION">REVISION
+
+</A></H1>
+Current <A HREF="#item__VERSION">$VERSION</A> is 1.04.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,177 @@
+SelectMission("m3");
+
+SetMissionResetPlayerInCar("m2_cletustruck_2");
+SetDynaLoadData("l4z2.p3d;l4r1.p3d;l4r2.p3d;");
+InitLevelPlayerVehicle("cletu_v","m2_cletustruck_2","OTHER");
+
+UsePedGroup(1);
+//This is a forced car mission.
+SetForcedCar();
+
+AddStage(0); 
+	RESET_TO_HERE();
+	ShowStageComplete(); 
+	SetStageMessageIndex(5);
+	SetHUDIcon( "ketchup" );
+
+	StartCountdown("count");
+		AddToCountdownSequence( "3", 1000 ); // duration time in milliseconds
+		AddToCountdownSequence( "2", 1000 ); // duration time in milliseconds
+		AddToCountdownSequence( "1", 1000 ); // duration time in milliseconds
+		AddToCountdownSequence( "GO", 400 ); // duration time in milliseconds
+
+	AddObjective("delivery");
+		AddNPC("cletus","m3_cletus_hide");
+		AddCollectible("m3_ketchup1","ketchup","winter");
+		AddCollectible("m3_ketchup2","ketchup");
+		AddCollectible("m3_ketchup3","ketchup","dumpster");
+		AddCollectible("m3_ketchup4","ketchup"); 
+		AddCollectible("m3_ketchup5","ketchup");
+		AddCollectible("m3_ketchup6","ketchup");
+		AddCollectible("m3_ketchup7", "ketchup","ketchup","cletus");
+		AddCollectible("m3_ketchup8","ketchup");
+		AddCollectible("m3_ketchup9","ketchup");
+//		AddCollectible("m3_ketchup10","ketchup");
+		AddCollectible("m3_ketchup11","ketchup");
+		AddCollectible("m3_ketchup12","ketchup");
+		AddCollectible("m3_ketchup13","ketchup");
+		AddCollectible("m3_ketchup14","ketchup");
+		AddCollectible("m3_ketchup15","ketchup");
+		AddCollectible("m3_ketchup16","ketchup");
+		AddCollectible("m3_ketchup17","ketchup");
+		AddCollectible("m3_ketchup18","ketchup");
+		AddCollectible("m3_ketchup19","ketchup");
+	CloseObjective();
+	SetStageTime(120);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "cletu_v" );
+	CloseCondition();
+	SetCompletionDialog("pappy","cletus");
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(215);
+	SetHUDIcon( "cletushs" );
+	AddObjective("goto");
+		SetDestination("m3_wiggumtrigger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+		AddStageVehicle("cSedan","m3_wiggumstart","NULL", "Missions\level04\M3evade.con");
+	CloseObjective();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "cletu_v" );
+	CloseCondition();
+	SetStageTime(45);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+
+AddStage(0);
+	SetStageMessageIndex(178);
+	SetHUDIcon( "bsedan_v" );
+	ActivateVehicle( "cSedan","NULL","chase" );
+	AddObjective( "losetail" );
+		SetObjTargetVehicle( "cSedan" );
+		SetObjDistance(150);
+	CloseObjective();
+	SetStageTime(60);
+	AddCondition( "timeout" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "cletu_v" );
+	CloseCondition();
+	StageStartMusicEvent("L4_drama");
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(215);
+	SetHUDIcon( "cletushs" );
+	AddObjective("goto");
+		SetDestination("m3_cletushouse", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "cletu_v" );
+	CloseCondition();
+	SetFadeOut( 1.0);
+	SwapInDefaultCar();
+	SetSwapDefaultCarLocator("m2_carstart");
+	SetSwapForcedCarLocator("m2_cletustruck_sd");
+	SetSwapPlayerLocator("m2_marge");
+	SetIrisWipe( 0.1 );
+CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(25);
+//	SetHUDIcon( "cletus" );
+//	AddObjective("talkto");
+//		AddNPC("cletus","m2_cletus");
+//		AddObjectiveNPCWaypoint( "cletus", "m2_cletus_walk1" );
+//		AddStageCharacter("marge", "m2_marge_start", "", "cletu_v", "m2_cletustruck_sd" );
+//		SetTalkToTarget( "cletus", 0, 0);
+//	CloseObjective();
+//CloseStage();
+
+AddStage(1);
+	AddObjective("timer");
+		AddNPC("cletus","m2_cletus_walk1");
+		AddStageCharacter("marge", "m2_marge", "", "cletu_v", "m2_cletustruck_sd" );
+		RemoveDriver("cletus");
+		SetDurationTime(1);
+	CloseObjective();
+CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis04_03.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "npc_far" );
+		SetConversationCam( 1, "pc_near" );
+		SetConversationCam( 2, "npc_far" );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		SetConversationCam( 3, "pc_far" );
+		//SetCamBestSide("bestside_m1");
+		SetDialogueInfo("marge","cletus","pappy",0);
+		SetDialoguePositions("m2_marge","m2_cletus_walk1","m2_carstart",1);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

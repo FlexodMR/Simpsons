@@ -1,0 +1,49 @@
+SelectMission("m1sd");
+
+// SetMissionStartCameraName( "mission1camShape" );
+// SetMissionStartMulticontName( "mission1cam" );
+// SetAnimatedCameraName( "mission1camShape" );
+// SetAnimCamMulticontName( "mission1cam" );
+
+SetMissionResetPlayerOutCar("L4_marge_sd","level4_carstart");
+//SetDynaLoadData("l4z1.p3d;l4r1.p3d;l4r7.p3d;l4i07.p3d@", "bartroom");
+SetDynaLoadData("l4z1.p3d;l4r1.p3d;l4r7.p3d;l4i02.p3d@", "SimpsonsHouse");
+UsePedGroup(0);
+
+	AddStage(0);
+		SetMaxTraffic(3);
+		SetStageMessageIndex(226);
+		SetHUDIcon( "bart" );
+		AddObjective("talkto","neither");
+			AddNPC("bart", "L4_bart_sd");
+			SetTalkToTarget("bart", 0, -0.4);
+		CloseObjective();
+	CloseStage();
+
+	AddStage(1);
+		AddObjective("dialogue");
+			SetPresentationBitmap( "art/frontend/dynaload/images/mis04_01.p3d" );
+			AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+			AmbientAnimationRandomize( 0, 0 );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientPcAnimation( "none" );
+			AddAmbientPcAnimation( "dialogue_hands_in_air" );
+			SetConversationCam( 3, "pc_far" );
+			SetDialogueInfo("marge","bart","nuts",0);
+		CloseObjective();
+	CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

@@ -1,0 +1,169 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>AnyDBM_File - provide framework for multiple DBMs
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#DBM_Comparisons">DBM Comparisons</A>
+	</UL>
+
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+AnyDBM_File - provide framework for multiple DBMs
+
+
+<P>
+
+NDBM_File, DB_File, GDBM_File, SDBM_File, ODBM_File - various 
+<FONT SIZE=-1>DBM</FONT> implementations
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use AnyDBM_File;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module is a ``pure virtual base class''--it has nothing of its own. It's just there to inherit from one of the various 
+<FONT SIZE=-1>DBM</FONT> packages. It prefers ndbm for compatibility reasons with Perl 4, then Berkeley 
+<FONT SIZE=-1>DB</FONT> (See
+
+<EM>DB_File</EM>), 
+<FONT SIZE=-1>GDBM,</FONT> 
+<FONT SIZE=-1>SDBM</FONT> (which is always there--it comes with Perl), and finally 
+<FONT SIZE=-1>ODBM.</FONT> This way old programs that used to use 
+<FONT SIZE=-1>NDBM</FONT> via <CODE>dbmopen()</CODE> can still do so, but new ones can reorder 
+<FONT SIZE=-1>@ISA:</FONT>
+
+
+
+<P>
+
+<PRE>    BEGIN { @AnyDBM_File::ISA = qw(DB_File GDBM_File NDBM_File) }
+    use AnyDBM_File;
+</PRE>
+
+<P>
+
+Having multiple 
+<FONT SIZE=-1>DBM</FONT> implementations makes it trivial to copy database
+formats:
+
+
+<P>
+
+<PRE>    use POSIX; use NDBM_File; use DB_File;
+    tie %newhash,  'DB_File', $new_filename, O_CREAT|O_RDWR;
+    tie %oldhash,  'NDBM_File', $old_filename, 1, 0;
+    %newhash = %oldhash;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="DBM_Comparisons">DBM Comparisons
+
+</A></H2>
+Here's a partial table of features the different packages offer:
+
+
+<P>
+
+<PRE>                         odbm    ndbm    sdbm    gdbm    bsd-db
+                         ----    ----    ----    ----    ------
+ Linkage comes w/ perl   yes     yes     yes     yes     yes
+ Src comes w/ perl       no      no      yes     no      no
+ Comes w/ many unix os   yes     yes[0]  no      no      no
+ Builds ok on !unix      ?       ?       yes     yes     ?
+ Code Size               ?       ?       small   big     big
+ Database Size           ?       ?       small   big?    ok[1]
+ Speed                   ?       ?       slow    ok      fast
+ FTPable                 no      no      yes     yes     yes
+ Easy to build          N/A     N/A      yes     yes     ok[2]
+ Size limits             1k      4k      1k[3]   none    none
+ Byte-order independent  no      no      no      no      yes
+ Licensing restrictions  ?       ?       no      yes     no
+</PRE>
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__0_">[0] 
+
+</A></STRONG><DD>
+on mixed universe machines, may be in the bsd compat library, which is
+often shunned.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__1_">[1] 
+
+</A></STRONG><DD>
+Can be trimmed if you compile for one access method.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__2_">[2] 
+
+</A></STRONG><DD>
+See <EM>DB_File</EM>. Requires symbolic links.  
+
+
+<P>
+
+<DT><STRONG><A NAME="item__3_">[3] 
+
+</A></STRONG><DD>
+By default, but can be redefined.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<CODE>dbm(3),</CODE> <CODE>ndbm(3),</CODE> <CODE>DB_File(3)</CODE>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

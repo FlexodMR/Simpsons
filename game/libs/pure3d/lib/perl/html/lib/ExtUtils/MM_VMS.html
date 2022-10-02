@@ -1,0 +1,586 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>ExtUtils::MM_VMS - methods to override UN*X behaviour in ExtUtils::MakeMaker
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Methods_always_loaded">Methods always loaded</A>
+		<LI><A HREF="#SelfLoaded_methods">SelfLoaded methods</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+ExtUtils::MM_VMS - methods to override 
+<FONT SIZE=-1>UN*X</FONT> behaviour in ExtUtils::MakeMaker
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use ExtUtils::MM_VMS; # Done internally by ExtUtils::MakeMaker if needed
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+See ExtUtils::MM_Unix for a documentation of the methods provided there.
+This package overrides the implementation of these methods, not the
+semantics.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Methods_always_loaded">Methods always loaded
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_eliminate_macros">eliminate_macros
+
+</A></STRONG><DD>
+Expands MM[KS]/Make macros in a text string, using the contents of
+identically named elements of <CODE>%$self</CODE>, and returns the result as a file specification in Unix syntax.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_fixpath">fixpath
+
+</A></STRONG><DD>
+Catchall routine to clean up problem MM[SK]/Make macros. Expands macros in any directory specification, in order to avoid juxtaposing two VMS-syntax directories when 
+<FONT SIZE=-1>MM[SK]</FONT> is run. Also expands expressions which are all macro, so that we can tell how long the expansion is, and avoid overrunning DCL's command buffer when 
+<FONT SIZE=-1>MM[KS]</FONT> is running.
+
+
+
+<P>
+
+If optional second argument has a 
+<FONT SIZE=-1>TRUE</FONT> value, then the return string is a VMS-syntax
+directory specification, otherwise it is a VMS-syntax file specification.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_catdir">catdir
+
+</A></STRONG><DD>
+Concatenates a list of file specifications, and returns the result as a
+VMS-syntax directory specification.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_catfile">catfile
+
+</A></STRONG><DD>
+Concatenates a list of file specifications, and returns the result as a
+VMS-syntax directory specification.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_wraplist">wraplist
+
+</A></STRONG><DD>
+Converts a list into a string wrapped at approximately 80 columns.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_curdir">curdir (override)
+
+</A></STRONG><DD>
+Returns a string representing of the current directory.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rootdir">rootdir (override)
+
+</A></STRONG><DD>
+Returns a string representing of the root directory.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_updir">updir (override)
+
+</A></STRONG><DD>
+Returns a string representing of the parent directory.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="SelfLoaded_methods">SelfLoaded methods
+
+</A></H2>
+Those methods which override default MM_Unix methods are marked ``(override)'', while methods unique to 
+<FONT SIZE=-1>MM_VMS</FONT> are marked ``(specific)''. For overridden methods, documentation is limited to an explanation of why this method overrides the MM_Unix method; see the ExtUtils::MM_Unix documentation for more details.
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_guess_name">guess_name (override)
+
+</A></STRONG><DD>
+Try to determine name of extension being built. We begin with the name of the current directory. Since 
+<FONT SIZE=-1>VMS</FONT> filenames are case-insensitive, however, we look for a
+ <EM>.pm</EM> file whose name matches that of the current directory (presumably the
+'main' <EM>.pm</EM> file for this extension), and try to find a <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_package">package</A> statement from which to obtain the Mixed::Case package name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_find_perl">find_perl (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>VMS</FONT> file specification syntax and 
+<FONT SIZE=-1>CLI</FONT> commands to find and invoke Perl images.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_path">path (override)
+
+</A></STRONG><DD>
+Translate logical name 
+<FONT SIZE=-1>DCL$PATH</FONT> as a searchlist, rather than trying to <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_split">split</A> string value of <CODE>$ENV{'PATH'}</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_maybe_command">maybe_command (override)
+
+</A></STRONG><DD>
+Follows 
+<FONT SIZE=-1>VMS</FONT> naming conventions for executable files. If the
+name passed in doesn't exactly match an executable file, appends <EM>.Exe</EM> (or equivalent) to check for executable image, and <EM>.Com</EM>
+to check for 
+<FONT SIZE=-1>DCL</FONT> procedure. If this fails, checks directories in 
+<FONT SIZE=-1>DCL$PATH</FONT> and finally
+ <EM>Sys$System:</EM> for an executable file having the name specified, with or without the <EM>.Exe</EM>-equivalent suffix.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_maybe_command_in_dirs">maybe_command_in_dirs (override)
+
+</A></STRONG><DD>
+Uses 
+<FONT SIZE=-1>DCL</FONT> argument quoting on test command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_script">perl_script (override)
+
+</A></STRONG><DD>
+If name passed in doesn't specify a readable file, appends <EM>.com</EM> or
+<EM>.pl</EM> and tries again, since it's customary to have file types on all files under 
+<FONT SIZE=-1>VMS.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_file_name_is_absolute">file_name_is_absolute (override)
+
+</A></STRONG><DD>
+Checks for 
+<FONT SIZE=-1>VMS</FONT> directory spec as well as Unix separators.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_replace_manpage_separator">replace_manpage_separator
+
+</A></STRONG><DD>
+Use as separator a character which is legal in a VMS-syntax file name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_init_others">init_others (override)
+
+</A></STRONG><DD>
+Provide VMS-specific forms of various utility commands, then hand off to
+the default MM_Unix method.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_constants">constants (override)
+
+</A></STRONG><DD>
+Fixes up numerous file and directory macros to insure 
+<FONT SIZE=-1>VMS</FONT> syntax regardless of input syntax. Also adds a few
+VMS-specific macros and makes lists of files comma-separated.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_cflags">cflags (override)
+
+</A></STRONG><DD>
+Bypass shell script and produce qualifiers for 
+<FONT SIZE=-1>CC</FONT> directly (but warn user if a shell script for this extension exists). Fold multiple /Defines into one, since some 
+<FONT SIZE=-1>C</FONT> compilers pay attention to only one instance of this qualifier on the command line.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_const_cccmd">const_cccmd (override)
+
+</A></STRONG><DD>
+Adds directives to point 
+<FONT SIZE=-1>C</FONT> preprocessor to the right place when handling
+#include &lt;sys/foo.h&gt; directives. Also constructs 
+<FONT SIZE=-1>CC</FONT> command line a bit differently than MM_Unix method.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_pm_to_blib">pm_to_blib (override)
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>DCL</FONT> <EM>still</EM> accepts a maximum of 255 characters on a command line, so we write the
+(potentially) long list of file names to a temp file, then persuade Perl to
+read it instead of the command line to find args.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_tool_autosplit">tool_autosplit (override)
+
+</A></STRONG><DD>
+Use VMS-style quoting on command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_tool_sxubpp">tool_sxubpp (override)
+
+</A></STRONG><DD>
+Use VMS-style quoting on xsubpp command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xsubpp_version">xsubpp_version (override)
+
+</A></STRONG><DD>
+Test xsubpp exit status according to 
+<FONT SIZE=-1>VMS</FONT> rules ($sts &amp; 1 ==&gt; good) rather than Unix rules ($sts == 0 ==&gt; good).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_tools_other">tools_other (override)
+
+</A></STRONG><DD>
+Adds a few 
+<FONT SIZE=-1>MM[SK]</FONT> macros, and shortens some the installatin commands, in order to stay under DCL's 255-character limit. Also changes 
+<FONT SIZE=-1>EQUALIZE_TIMESTAMP</FONT> to set revision date of target file to one second later than source file, since 
+<FONT SIZE=-1>MMK</FONT> interprets precisely equal revision dates for a source and target file as a sign that the target needs to be updated.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dist">dist (override)
+
+</A></STRONG><DD>
+Provide VMSish defaults for some values, then hand off to default MM_Unix
+method.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_c_o">c_o (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>VMS</FONT> syntax on command line. In particular, 
+<FONT SIZE=-1>$(DEFINE)</FONT> and 
+<FONT SIZE=-1>$(PERL_INC)</FONT> have been pulled into 
+<FONT SIZE=-1>$(CCCMD).</FONT> Also use 
+<FONT SIZE=-1>MM[SK]</FONT> macros.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xs_c">xs_c (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>MM[SK]</FONT> macros.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xs_o">xs_o (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>MM[SK]</FONT> macros, and 
+<FONT SIZE=-1>VMS</FONT> command line for 
+<FONT SIZE=-1>C</FONT> compiler.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_top_targets">top_targets (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>VMS</FONT> quoting on command line for Version_check.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dlsyms">dlsyms (override)
+
+</A></STRONG><DD>
+Create 
+<FONT SIZE=-1>VMS</FONT> linker options files specifying universal symbols
+for this extension's shareable image, and listing other shareable images or
+libraries to which it should be linked.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dynamic_lib">dynamic_lib (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>VMS</FONT> Link command.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dynamic_bs">dynamic_bs (override)
+
+</A></STRONG><DD>
+Use VMS-style quoting on Mkbootstrap command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_static_lib">static_lib (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>VMS</FONT> commands to manipulate object library.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_manifypods">manifypods (override)
+
+</A></STRONG><DD>
+Use VMS-style quoting on command line, and 
+<FONT SIZE=-1>VMS</FONT> logical name to specify fallback location at build
+time if we can't find pod2man.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_processPL">processPL (override)
+
+</A></STRONG><DD>
+Use VMS-style quoting on command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_installbin">installbin (override)
+
+</A></STRONG><DD>
+Stay under DCL's 255 character command line limit once again by splitting
+potentially long list of files across multiple lines in <A HREF="#item_realclean">realclean</A> target.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_subdir_x">subdir_x (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>VMS</FONT> commands to change default directory.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_clean">clean (override)
+
+</A></STRONG><DD>
+Split potentially long list of files across multiple commands (in order to stay under the magic command line limit). Also use 
+<FONT SIZE=-1>MM[SK]</FONT> commands for handling subdirectories.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_realclean">realclean (override)
+
+</A></STRONG><DD>
+Guess what we're working around? Also, use 
+<FONT SIZE=-1>MM[SK]</FONT> for subdirectories.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dist_basics">dist_basics (override)
+
+</A></STRONG><DD>
+Use VMS-style quoting on command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dist_core">dist_core (override)
+
+</A></STRONG><DD>
+Syntax for invoking <EM>VMS_Share</EM> differs from that for Unix <EM>shar</EM>, so <CODE>shdist</CODE> target actions are VMS-specific.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dist_dir">dist_dir (override)
+
+</A></STRONG><DD>
+Use VMS-style quoting on command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dist_test">dist_test (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>VMS</FONT> commands to change default directory, and use
+VMS-style quoting on command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_install">install (override)
+
+</A></STRONG><DD>
+Work around DCL's 255 character limit several times,and use VMS-style
+command line quoting in a few cases.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perldepend">perldepend (override)
+
+</A></STRONG><DD>
+Use VMS-style syntax for files; it's cheaper to just do it directly here
+than to have the MM_Unix method call <A HREF="#item_catfile">catfile</A> repeatedly. Also use config.vms as source of original config data if the Perl distribution is available; config.sh is an ancillary file under 
+<FONT SIZE=-1>VMS.</FONT> Finally, if we have to rebuild Config.pm, use 
+<FONT SIZE=-1>MM[SK]</FONT> to do it.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_makefile">makefile (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>VMS</FONT> commands and quoting.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_test">test (override)
+
+</A></STRONG><DD>
+Use 
+<FONT SIZE=-1>VMS</FONT> commands for handling subdirectories.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_test_via_harness">test_via_harness (override)
+
+</A></STRONG><DD>
+Use VMS-style quoting on command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_test_via_script">test_via_script (override)
+
+</A></STRONG><DD>
+Use VMS-style quoting on command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_makeaperl">makeaperl (override)
+
+</A></STRONG><DD>
+Undertake to build a new set of Perl images using 
+<FONT SIZE=-1>VMS</FONT> commands. Since 
+<FONT SIZE=-1>VMS</FONT> does dynamic loading, it's not necessary to statically link each extension into the Perl image, so this isn't the normal build path. Consequently, it hasn't really been tested, and may well be incomplete.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_nicetext">nicetext (override)
+
+</A></STRONG><DD>
+Insure that colons marking targets are preceded by space, in order to
+distinguish the target delimiter from a colon appearing as part of a
+filespec.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

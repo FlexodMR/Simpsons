@@ -1,0 +1,320 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::Cmd - Network Command class (as used by FTP, SMTP etc)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#USER_METHODS">USER METHODS</A>
+	<LI><A HREF="#CLASS_METHODS">CLASS METHODS</A>
+	<LI><A HREF="#EXPORTS">EXPORTS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::Cmd - Network Command class (as used by 
+<FONT SIZE=-1>FTP,</FONT> 
+<FONT SIZE=-1>SMTP</FONT> etc)
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Net::Cmd;
+    
+    @ISA = qw(Net::Cmd);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>Net::Cmd</CODE> is a collection of methods that can be inherited by a sub class of <CODE>IO::Handle</CODE>. These methods implement the functionality required for a command based protocol, for example 
+<FONT SIZE=-1>FTP</FONT> and 
+<FONT SIZE=-1>SMTP.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="USER_METHODS">USER METHODS
+
+</A></H1>
+These methods provide a user interface to the <CODE>Net::Cmd</CODE> object.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_debug">debug ( VALUE )
+
+</A></STRONG><DD>
+Set the level of debug information for this object. If <CODE>VALUE</CODE> is not given then the current state is returned. Otherwise the state is
+changed to 
+<CODE>VALUE</CODE> and the previous state returned. 
+
+
+<P>
+
+Set the level of debug information for this object. If no argument is given
+then the current state is returned. Otherwise the state is changed to <CODE>$value</CODE>and the previous state returned. Different packages may implement different levels of debug but, a non-zero value result in copies of all commands and responses also being sent to 
+<FONT SIZE=-1>STDERR.</FONT>
+
+
+
+<P>
+
+If <CODE>VALUE</CODE> is <A HREF="#item_undef">undef</A> then the debug level will be set to the default debug level for the class.
+
+
+<P>
+
+This method can also be called as a <EM>static</EM> method to set/get the default debug level for a given class.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_message">message ()
+
+</A></STRONG><DD>
+Returns the text message returned from the last command
+
+
+<P>
+
+<DT><STRONG><A NAME="item_code">code ()
+
+</A></STRONG><DD>
+Returns the 3-digit code from the last command. If a command is pending
+then the value 0 is returned
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ok">ok ()
+
+</A></STRONG><DD>
+Returns non-zero if the last code value was greater than zero and less than
+400. This holds true for most command servers. Servers where this does not
+hold may override this method.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_status">status ()
+
+</A></STRONG><DD>
+Returns the most significant digit of the current status code. If a command
+is pending then <CODE>CMD_PENDING</CODE> is returned.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_datasend">datasend ( DATA )
+
+</A></STRONG><DD>
+Send data to the remote server, converting 
+<FONT SIZE=-1>LF</FONT> to 
+<FONT SIZE=-1>CRLF.</FONT> Any line starting with a '.' will be prefixed with another '.'.
+
+<CODE>DATA</CODE> may be an array or a reference to an array.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dataend">dataend ()
+
+</A></STRONG><DD>
+End the sending of data to the remote server. This is done by ensuring that the data already sent ends with 
+<FONT SIZE=-1>CRLF</FONT> then sending 
+<FONT SIZE=-1>'.CRLF'</FONT> to end the transmission. Once this data has been sent
+ <A HREF="#item_dataend">dataend</A> calls <A HREF="#item_response">response</A> and returns true if <A HREF="#item_response">response</A> returns 
+<FONT SIZE=-1>CMD_OK.</FONT>
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="CLASS_METHODS">CLASS METHODS
+
+</A></H1>
+These methods are not intended to be called by the user, but used or
+over-ridden by a sub-class of <CODE>Net::Cmd</CODE>
+
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_debug_print">debug_print ( DIR, TEXT )
+
+</A></STRONG><DD>
+Print debugging information. <A HREF="#item_DIR">DIR</A> denotes the direction <EM>true</EM> being data being sent to the server. Calls <A HREF="#item_debug_text">debug_text</A> before printing to 
+<FONT SIZE=-1>STDERR.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_debug_text">debug_text ( TEXT )
+
+</A></STRONG><DD>
+This method is called to print debugging information. 
+<FONT SIZE=-1>TEXT</FONT> is the text being sent. The method should return
+the text to be printed
+
+
+<P>
+
+This is primarily meant for the use of modules such as 
+<FONT SIZE=-1>FTP</FONT> where passwords are sent, but we do not want to
+display them in the debugging information.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_command">command ( CMD [, ARGS, ... ])
+
+</A></STRONG><DD>
+Send a command to the command server. All arguments a first joined with a space character and 
+<FONT SIZE=-1>CRLF</FONT> is appended, this string is then sent to the command server.
+
+
+
+<P>
+
+Returns undef upon failure
+
+
+<P>
+
+<DT><STRONG><A NAME="item_unsupported">unsupported ()
+
+</A></STRONG><DD>
+Sets the status code to 580 and the response text to 'Unsupported command'.
+Returns zero.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_response">response ()
+
+</A></STRONG><DD>
+Obtain a response from the server. Upon success the most significant digit
+of the status code is returned. Upon failure, timeout etc., <EM>undef</EM> is returned.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_parse_response">parse_response ( TEXT )
+
+</A></STRONG><DD>
+This method is called by <A HREF="#item_response">response</A> as a method with one argument. It should return an array of 2 values, the
+3-digit status code and a flag which is true when this is part of a
+multi-line response and this line is not the list.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getline">getline ()
+
+</A></STRONG><DD>
+Retrieve one line, delimited by 
+<FONT SIZE=-1>CRLF,</FONT> from the remote server. Returns <EM>undef</EM>
+upon failure.
+
+
+<P>
+
+<STRONG>NOTE</STRONG>: If you do use this method for any reason, please remember to add some <A HREF="#item_debug_print">debug_print</A> calls into your method.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ungetline">ungetline ( TEXT )
+
+</A></STRONG><DD>
+Unget a line of text from the server.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_read_until_dot">read_until_dot ()
+
+</A></STRONG><DD>
+Read data from the remote server until a line consisting of a single '.'.
+Any lines starting with '..' will have one of the '.'s removed.
+
+
+<P>
+
+Returns a reference to a list containing the lines, or <EM>undef</EM> upon failure.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXPORTS">EXPORTS
+
+</A></H1>
+<CODE>Net::Cmd</CODE> exports six subroutines, five of these, <CODE>CMD_INFO</CODE>, <CODE>CMD_OK</CODE>,
+<CODE>CMD_MORE</CODE>, <CODE>CMD_REJECT</CODE> and <CODE>CMD_ERROR</CODE> ,correspond to possible results of <A HREF="#item_response">response</A> and <A HREF="#item_status">status</A>. The sixth is <CODE>CMD_PENDING</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1997 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

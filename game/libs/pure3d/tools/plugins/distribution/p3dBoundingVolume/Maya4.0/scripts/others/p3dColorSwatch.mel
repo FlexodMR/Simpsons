@@ -1,0 +1,693 @@
+// //////////////////////////////////////////////
+//  Returns an array of the elements for this control:
+//  $controls[0] = text
+//  $controls[1] = canvas
+//  $controls[2] = floatSlider
+proc string[] getControls( string $cwas )
+{
+    string $controls[];
+
+    if ( `formLayout -q -exists $cwas` )
+    {
+        $controls = `formLayout -q -ca $cwas`;
+    }
+    else
+    {
+        error ( "formLayout for colorSwatch not found: " + $cwas );
+    }
+
+    return $controls;
+}
+
+proc storeOptionVar( string $swatchUI, string $hiddenUI )
+{
+    string $optionVar = `text -q -label $hiddenUI`;
+    if ( $optionVar != "" )
+    {
+        float $rgb[] = `canvas -q -bg $swatchUI`;
+        optionVar -floatValue $optionVar $rgb[0];
+        optionVar -floatValueAppend $optionVar $rgb[1];
+        optionVar -floatValueAppend $optionVar $rgb[2];
+    }
+}
+
+proc int recallOptionVar( string $swatchUI, string $hiddenUI, float $rgb[] )
+{
+    int $bRecallOK = false;
+
+    $rgb[0] = 0.0;
+    $rgb[1] = 0.0;
+    $rgb[2] = 0.0;
+
+    string $optionVar = `text -q -label $hiddenUI`;
+    if ( ( $optionVar != "" ) && ( `optionVar -exists $optionVar` ) )
+    {
+        $rgb = `optionVar -q $optionVar`;
+        canvas -e -bg $rgb[0] $rgb[1] $rgb[2] $swatchUI;
+        $bRecallOK = true;
+    }
+
+    return $bRecallOK;
+}
+
+// //////////////////////////////////////////////
+//  Adds the Slider Mode popup menu to the floatSlider
+proc AddPopupMenu( string $cwas, string $slider )
+{
+    string $menu = `popupMenu -parent $slider -b 3`;
+    popupMenu -e 
+        -pmc ( "p3dColorSwatch_updateMenu " + $cwas + " " + $menu ) 
+            $menu;
+
+        radioMenuItemCollection;
+        menuItem -label "Hue"           -radioButton off        -c ( "p3dColorSwatch_setSliderMode " + $cwas + " 0;" );
+        menuItem -label "Saturation"    -radioButton off        -c ( "p3dColorSwatch_setSliderMode " + $cwas + " 1;" );
+        menuItem -label "Value"         -radioButton on         -c ( "p3dColorSwatch_setSliderMode " + $cwas + " 2;" );
+        menuItem -label "Red"           -radioButton off        -c ( "p3dColorSwatch_setSliderMode " + $cwas + " 3;" );
+        menuItem -label "Green"         -radioButton off        -c ( "p3dColorSwatch_setSliderMode " + $cwas + " 4;" );
+        menuItem -label "Blue"          -radioButton off        -c ( "p3dColorSwatch_setSliderMode " + $cwas + " 5;" );
+}
+
+// //////////////////////////////////////////////
+//  The "Slider Mode" is localized by setting it as the annotation
+// for the floatSlider.  To get the Slider Mode, read the annotation
+// from the slider and find its matching element in the $modes array.
+proc int getSliderMode( string $cwas )
+{
+    string $modes[] = 
+    {
+        "Hue", "Saturation", "Value", "Red", "Green", "Blue"
+    };
+
+    string $controls[] = getControls( $cwas );
+
+    string $slider = $controls[2];
+
+    int $sliderMode = 2;        // default to Value
+    
+    string $currentMode = `floatSlider -q -annotation $slider`;
+    
+    for ( $i = 0; $i < `size $modes`; $i++ )
+    {
+        if ( $currentMode == $modes[$i] )
+            return $i;
+    }
+    
+    if ( `optionVar -exists h2oColorSwatchSliderMode` )
+    {
+        $sliderMode = `optionVar -q h2oColorSwatchSliderMode`;
+        
+        if ( $sliderMode < 0 ) $sliderMode = 0;
+        if ( $sliderMode > 5 ) $sliderMode = 5;
+    }
+    
+    return $sliderMode;
+}
+
+global proc string[] p3dColorSwatch_drag( string $cwas, string $drag, int $x, int $y, int $mods )
+{
+    string $msgs[];
+    $msgs[0] = $cwas;   
+    return $msgs;
+}
+
+global proc p3dColorSwatch_drop( string $cwas, string $drag, string $drop, string $msgs[], int $x, int $y, int $type )
+{
+    string $controls[] = getControls( $cwas );
+    string $swatch = $controls[1];
+    
+    $controls = getControls( $msgs[0] );
+    string $otherSwatch = $controls[1];
+    
+    float $rgb[] = `canvas -q -bg $otherSwatch`;
+    canvas -e -bg $rgb[0] $rgb[1] $rgb[2] $swatch;
+    
+    p3dColorSwatch_reflectSwatch( $cwas );   
+}
+
+// //////////////////////////////////////////////
+//  The "Slider Mode" is localized by setting it as the annotation
+// for the floatSlider.  This way each colorSwatch control
+// can be in its own mode.
+global proc p3dColorSwatch_setSliderMode( string $cwas, int $sliderMode )
+{
+    string $modes[] = 
+    {
+        "Hue", "Saturation", "Value", "Red", "Green", "Blue"
+    };
+    
+    string $controls[] = getControls( $cwas );
+
+    string $swatch = $controls[1];
+    string $slider = $controls[2];
+    string $hidden = $controls[4];
+    
+    if ( $sliderMode < 0 ) $sliderMode = 0;
+    if ( $sliderMode > 5 ) $sliderMode = 5;
+    
+    floatSlider -e -annotation $modes[$sliderMode] $slider;
+
+    p3dColorSwatch_reflectSwatch( $cwas );
+}
+
+// //////////////////////////////////////////////
+//  The -postMenuCommand for the popupMenu attached to the floatSlider.
+// Selects the appropriate radioMenuItem.
+global proc p3dColorSwatch_updateMenu( string $cwas, string $menu )
+{
+    int $sliderMode = getSliderMode( $cwas );
+
+    string $menuItems[] = `menu -q -ia $menu`;
+    
+    switch ( $sliderMode )
+    {
+        case 0:     // Hue
+            menuItem -e -radioButton on $menuItems[0];
+            break;
+        case 1:     // Saturation
+            menuItem -e -radioButton on $menuItems[1];
+            break;
+        case 3:     // Red
+            menuItem -e -radioButton on $menuItems[3];
+            break;
+        case 4:     // Green
+            menuItem -e -radioButton on $menuItems[4];
+            break;
+        case 5:     // Blue
+            menuItem -e -radioButton on $menuItems[5];
+            break;
+        default:    // Value
+            menuItem -e -radioButton on $menuItems[2];
+            break;
+    }
+    
+}
+
+global proc p3dColorSwatch_SetLabel( string $cwas, string $label )
+{
+    string $controls[] = getControls( $cwas );
+
+    string $textControl = $controls[0];
+    
+    text -e -label $label $textControl;
+}
+
+global proc p3dColorSwatch_SetVisible( string $cwas, int $visible )
+{
+    formLayout -e -visible $visible $cwas;
+}
+
+
+
+// ******************************************************************
+//
+//   CONNECT
+
+global proc p3dColorSwatch_ConnectControl( string $cwas, string $attr )
+{
+    if ( `objExists $attr` )
+    {
+        string $controls[] = getControls( $cwas );
+
+//        connectControl $controls[1] $attr;
+
+        // Add a popup menu to the label for the color swatch
+        string $popups[] = `control -q -pma $controls[0]`;
+        for ( $p in $popups ) deleteUI $p;
+        
+        popupMenu -p $controls[0] -aob false;
+            menuItem -label "Set Key" -c ( "setKeyframe " + $attr );
+            menuItem -label "Color Chooser…" -c ( "p3dColorSwatch_colorEditor " + $cwas );
+
+        string $callback;
+
+        string $attrType = `getAttr -type $attr`;
+        if ( $attrType == "float3" )
+        {
+            $callback = ( "float $rgb[3] = `canvas -q -bg " + $controls[1] + "`; setAttr " + $attr + " $rgb[0] $rgb[1] $rgb[2];" );
+        }
+        else
+        {
+            $callback = ( "float $rgb[3] = `canvas -q -bg " + $controls[1] + "`; setAttr " + $attr + " $rgb[0];" );
+        }
+
+        p3dColorSwatch_changeCommand( $cwas, $callback );
+
+        scriptJob -p $cwas -attributeChange $attr ( "p3dColorSwatch_reflectAttribute \"" + $cwas + "\" \"" + $attr + "\"" );
+
+        p3dColorSwatch_reflectAttribute $cwas $attr;
+    }
+}
+
+global proc p3dColorSwatch_reflectAttribute( string $cwas, string $attr )
+{
+    float $rgb[3] = { 0.0, 0.0, 0.0 };
+    string $attrType = `getAttr -type $attr`;
+    if ( $attrType == "float3" )
+    {
+        $rgb = `getAttr $attr`;
+    }
+    else
+    {
+        $rgb[0] = $rgb[1] = $rgb[2] = `getAttr $attr`;
+    }
+    p3dColorSwatch_setRGB( $cwas, $rgb );
+}
+
+
+// //////////////////////////////////////////////
+//  Reflects the value of the Slider back to the Swatch,
+// based on the Slider Mode.
+global proc p3dColorSwatch_reflectSlider( string $cwas )
+{
+    string $controls[] = getControls( $cwas );
+
+    string $label = $controls[0];
+    string $swatch = $controls[1];
+    string $slider = $controls[2];
+    string $field = $controls[3];
+    string $hidden = $controls[4];
+    
+    int $sliderMode = getSliderMode( $cwas );
+    
+    float $rgb[3] = `canvas -q -bg $swatch`;
+    vector $hsv;
+    float $slide = `floatSlider -q -value $slider`;
+    
+    $hsv = `rgb_to_hsv << $rgb[0], $rgb[1], $rgb[2] >>`;
+    
+    switch ( $sliderMode )
+    {
+        case 0:     // Hue
+            $hsv = << $slide, ($hsv.y), ($hsv.z) >>;
+            break;
+        case 1:     // Saturation
+            $hsv = << ($hsv.x), $slide, ($hsv.z) >>;
+            break;
+            
+        case 3:     // Red
+            $rgb[0] = $slide;
+            break;
+        case 4:     // Green
+            $rgb[1] = $slide;
+            break;
+        case 5:     // Blue
+            $rgb[2] = $slide;
+            break;
+            
+        default:    // Value
+            $hsv = << ($hsv.x), ($hsv.y), $slide >>;
+            break;
+    }
+
+    floatField -e -value $slide $field;
+    
+    $hsv = `hsv_to_rgb $hsv`;
+    
+    if ( $sliderMode < 3 )
+    {
+        $rgb[0] = ($hsv.x);
+        $rgb[1] = ($hsv.y);
+        $rgb[2] = ($hsv.z);
+    }
+
+    canvas -e -bg $rgb[0] $rgb[1] $rgb[2] $swatch;
+
+    storeOptionVar( $swatch, $hidden );
+}
+
+proc int ModeLocked( string $sliderUI )
+{
+    string $pma[] = `floatSlider -q -pma $sliderUI`;
+    return ( `size $pma` == 0 );
+}
+
+// //////////////////////////////////////////////
+//  Reflects the color of the Swatch to the Slider,
+// based on the Slider Mode.
+global proc p3dColorSwatch_reflectSwatch( string $cwas )
+{
+    string $controls[] = getControls( $cwas );
+    
+    string $label  = $controls[0];
+    string $swatch = $controls[1];
+    string $slider = $controls[2];
+    string $field  = $controls[3];
+    string $hidden = $controls[4];
+
+    int $sliderMode = getSliderMode( $cwas );
+    float $slide = 0.0;
+    
+    float $rgb[3] = `canvas -q -bg $swatch`;
+    vector $hsv = `rgb_to_hsv << $rgb[0], $rgb[1], $rgb[2] >>`;
+
+    // If slider is modeless, lock to individual component
+    if ( ModeLocked( $slider ) )
+    {
+        switch ( $sliderMode )
+        {
+            case 0:     // Hue
+                $hsv = << ($hsv.x), 1.0, 1.0 >>;        // full saturation, full value
+                break;
+            case 1:     // Saturation
+                $hsv = << ($hsv.x), ($hsv.y), 1.0 >>;   // full value
+                break;
+            case 3:     // Red
+                $rgb[1] = 0.0;
+                $rgb[2] = 0.0;
+                break;
+            case 4:     // Green
+                $rgb[0] = 0.0;
+                $rgb[2] = 0.0;
+                break;
+            case 5:     // Blue
+                $rgb[0] = 0.0;
+                $rgb[1] = 0.0;
+                break;
+            default:    // Value
+                $hsv = << ($hsv.x), 0.0, ($hsv.z) >>;   // zero saturation
+                break;
+        }
+    }
+
+    switch ( $sliderMode )
+    {
+        case 0:     // Hue
+            $slide = ($hsv.x);
+            break;
+        case 1:     // Saturation
+            $slide = ($hsv.y);
+            break;
+        case 3:     // Red
+            $slide = $rgb[0];
+            break;
+        case 4:     // Green
+            $slide = $rgb[1];
+            break;
+        case 5:     // Blue
+            $slide = $rgb[2];
+            break;
+        default:    // Value
+            $slide = ($hsv.z);
+            break;
+    }
+
+    floatSlider -e -value $slide $slider;
+    floatField  -e -value $slide $field;
+
+    if ( ModeLocked( $slider ) )
+    {
+        $hsv = `hsv_to_rgb $hsv`;
+
+        if ( $sliderMode < 3 )
+        {
+            canvas -e -bg ($hsv.x) ($hsv.y) ($hsv.z) $swatch;
+        }
+        else
+        {
+            canvas -e -bg $rgb[0] $rgb[1] $rgb[2] $swatch;
+        }
+    }
+
+    storeOptionVar( $swatch, $hidden );
+}
+
+// //////////////////////////////////////////////
+//  Reflects the value of the Field back to the Swatch,
+// based on the Slider Mode.
+global proc p3dColorSwatch_reflectField( string $cwas )
+{
+    string $controls[] = getControls( $cwas );
+
+    string $label = $controls[0];
+    string $swatch = $controls[1];
+    string $slider = $controls[2];
+    string $field = $controls[3];
+    
+    int $sliderMode = getSliderMode( $cwas );
+    
+    float $rgb[3] = `canvas -q -bg $swatch`;
+    float $value = `floatField -q -value $field`;
+
+    vector $hsv;
+    $hsv = `rgb_to_hsv << $rgb[0], $rgb[1], $rgb[2] >>`;
+    
+    switch ( $sliderMode )
+    {
+        case 0:     // Hue
+            $hsv = << $value, ($hsv.y), ($hsv.z) >>;
+            break;
+        case 1:     // Saturation
+            $hsv = << ($hsv.x), $value, ($hsv.z) >>;
+            break;
+            
+        case 3:     // Red
+            $rgb[0] = $value;
+            break;
+        case 4:     // Green
+            $rgb[1] = $value;
+            break;
+        case 5:     // Blue
+            $rgb[2] = $value;
+            break;
+            
+        default:    // Value
+            $hsv = << ($hsv.x), ($hsv.y), $value >>;
+            break;
+    }
+
+    floatSlider -e -value $value $slider;
+    
+    $hsv = `hsv_to_rgb $hsv`;
+    
+    if ( $sliderMode < 3 )
+    {
+        canvas -e -bg ($hsv.x) ($hsv.y) ($hsv.z) $swatch;
+    }
+    else
+    {
+        canvas -e -bg $rgb[0] $rgb[1] $rgb[2] $swatch;
+    }
+}
+
+// //////////////////////////////////////////////
+//  Brings up the Color Editor and assigns the picked color
+// to the Swatch, if necessary.
+global proc p3dColorSwatch_colorEditor( string $cwas )
+{
+    string $controls[] = getControls( $cwas );
+    
+    string $label = $controls[0];
+    string $swatch = $controls[1];
+    string $slider = $controls[2];
+
+    int $sliderMode = getSliderMode( $cwas );
+    float $slide = 0.0;
+    
+    float $rgb[3] = `canvas -q -bg $swatch`;
+
+    waitCursor -state on;
+    
+    colorEditor -rgb $rgb[0] $rgb[1] $rgb[2];
+    
+    waitCursor -state off;
+
+    if ( `colorEditor -q -result` )
+    {
+        $rgb = `colorEditor -q -rgb`;
+        canvas -e -bg $rgb[0] $rgb[1] $rgb[2] $swatch;
+        p3dColorSwatch_reflectSwatch( $cwas );
+    }
+}
+
+global proc p3dColorSwatch_setRGB( string $cwas, float $rgb[] )
+{
+    string $controls[] = getControls( $cwas );
+    string $swatch = $controls[1];
+    
+    canvas -e -bg $rgb[0] $rgb[1] $rgb[2] $swatch;
+
+    p3dColorSwatch_reflectSwatch( $cwas );   
+}
+
+global proc float[] p3dColorSwatch_getRGB( string $cwas )
+{
+    string $controls[] = getControls( $cwas );
+    string $swatch = $controls[1];
+    
+    float $rgb[3] = `canvas -q -bg $swatch`;
+    
+    return $rgb;
+}
+
+global proc p3dColorSwatch_addCallback( string $cwas, string $callback )
+{
+    string $controls[] = getControls( $cwas );
+    
+    string $swatch = $controls[1];
+    string $slider = $controls[2];
+
+    string $sliderCommand = `floatSlider -q -cc $slider`;
+    string $swatchCommand = `canvas -q -pc $swatch`;
+
+    $sliderCommand += $callback;
+    $swatchCommand += $callback;
+    
+    floatSlider -e -cc $sliderCommand $slider;
+    canvas -e -pc $swatchCommand $swatch;
+}
+
+// //////////////////////////////////////////////
+//  Allows the application to define a callback for this control.
+// The callback is appended to the default behavior for each control.
+// By default, the Slider reflects its value to the Swatch when changed,
+// and the Swatch brings up the colorEditor when pressed.
+global proc p3dColorSwatch_changeCommand( string $cwas, string $command )
+{
+    string $controls[] = getControls( $cwas );
+    
+    string $swatch = $controls[1];
+    string $slider = $controls[2];
+    string $field  = $controls[3];
+    
+//    string $sliderCommand = ( "p3dColorSwatch_reflectSlider " + $cwas + ";" + $command );
+    string $sliderDragCommand = ( "p3dColorSwatch_reflectSlider " + $cwas + ";" );
+    string $swatchCommand = ( "p3dColorSwatch_colorEditor " + $cwas + ";" + $command );
+    string $fieldCommand = ( "p3dColorSwatch_reflectField " + $cwas + ";" + $command );
+
+    canvas -e -pc $swatchCommand $swatch;
+
+    floatSlider -e 
+//        -cc $sliderCommand 
+        -cc $command 
+        -dc $sliderDragCommand
+            $slider;
+
+    floatField -e
+        -cc $fieldCommand
+            $field;
+}
+
+//===========================================================================
+// p3dColorSwatch
+//===========================================================================
+// Description: An "object-oriented" MEL control to generate a color swatch
+//              with a configurable slider capable of adjusting value (the
+//              default), hue or saturation, and red, green and blue channels
+//              independently.
+//
+// Constraints: 
+//
+//  Parameters: string $parentUI: The parent control for the new control.
+//              float $defaultColor[]: The initial color for the swatch,
+//                      in { red, green, blue } format; values 0.0 to 1.0.
+//              int $hasLabel: TRUE to display label for swatch.
+//              string $label: The label to display; ignored if $hasLabel
+//                             is FALSE.
+//              int $labelWidth: Width, in pixels, for the label. This will
+//                               be empty space if $hasLabel is FALSE.
+//              int $hasField: TRUE to display numerical input field.
+//              int $hasPopupMenu: TRUE to enable the pop-up menu that 
+//                                 allows the use to configure the function
+//                                 for the slider control.
+//              int $currentMode: The initial mode for the slider. If 
+//                                $hasPopupMenu is FALSE then this mode 
+//                                cannot be changed by the user.
+//              string $optionVar: The optionVar used to store the user's
+//                                 color preference for the swatch control.
+//              string $name: The UI name Maya will use for the root layout
+//                            of the control group.
+//
+//      Return: (string): The UI name for the root layout of the control group.
+//                        Use this name when calling p3dColorSwatch edit
+//                        functions.
+//
+//===========================================================================
+global proc string p3dColorSwatch( 
+    string $parentUI, 
+    float $defaultColor[],
+    int $hasLabel, string $label, int $labelWidth,
+    int $hasField,
+    int $hasPopupMenu, int $currentMode,
+    string $optionVar,
+    string $name
+)    
+{
+    global int $gTextColumnWidthIndex;      // typically 132
+
+    string $oldParent = `setParent $parentUI`;
+
+    string $label, $swatch, $slider, $field, $hidden;
+
+    string $labelName  = ( $name + "Label" );
+    string $swatchName = ( $name + "Swatch" );
+    string $sliderName = ( $name + "Slider" );
+    string $fieldName  = ( $name + "Field" );
+    string $hiddenName = ( $name + "Hidden" );
+
+    int $fieldWidth = 48;
+    int $sliderAttach = ( $fieldWidth + 4 ) * ( $hasField != 0 );
+    
+    string $form = `formLayout $name`;
+
+        $label = `text -label $label -align "right" $labelName`;
+
+        $swatch = `canvas -width 64 -bg $defaultColor[0] $defaultColor[1] $defaultColor[2] $swatchName`;
+
+        $slider = `floatSlider -min 0.0 -max 1.0 -width $labelWidth $sliderName`;
+        
+        $field = `floatField -min 0.0 -max 1.0 -width $fieldWidth $fieldName`;
+
+        $hidden = `text -label $optionVar -visible false -manage false $hiddenName`;
+        
+        setParent ..;
+
+    formLayout -e
+        -af     $label              "top"           6
+        -af     $label              "left"          4       // so popupMenu accessible from margin
+        -aof    $label              "right"         (-$labelWidth)
+
+        -af     $swatch             "top"           1
+        -ac     $swatch             "left"          4       $label
+        -af     $swatch             "bottom"        1
+
+        -af     $field              "top"           1
+        -af     $field              "right"         4
+        -af     $field              "bottom"        1
+        
+        -af     $slider             "top"           4
+        -ac     $slider             "left"          4       $swatch
+        -af     $slider             "right"         $sliderAttach
+        
+            $form;
+
+    floatField -e -manage $hasField $field;
+    text -e -manage $hasLabel $label;
+    
+    float $rgb[3];
+    recallOptionVar( $swatch, $hidden, $rgb );
+
+    p3dColorSwatch_setSliderMode( $form, $currentMode );
+
+    // Set up default change callback
+    p3dColorSwatch_changeCommand( $form, "" );
+
+    if ( $hasPopupMenu )
+    {
+        // Add popup menu to floatSlider
+        AddPopupMenu( $form, $slider );
+    }
+
+    // Restore swatch setting
+    p3dColorSwatch_setRGB( $form, $rgb );
+
+    // Add drag/drop to control
+    text -e
+        -dragCallback ( "p3dColorSwatch_drag " + $form )
+        -dropCallback ( "p3dColorSwatch_drop " + $form )
+            $label;
+
+    setParent $oldParent;
+
+    return $form;   
+}

@@ -1,0 +1,151 @@
+//===========================================================================
+// Copyright ©2001 Radical Entertainment Ltd.  All rights reserved.
+//
+// Component:   hiliteUnsewnUVEdges.mel
+//              MEL Script for Maya (v3.0/4.0)
+//
+// Creator:     Bryan Ewert
+//
+// Created:     28 Nov 2001
+// Last Update: 7 Dec 2001
+//
+// Version:     1.0
+//
+//===========================================================================
+
+// ××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××
+//
+// How to use:
+//
+//      1. Select one or more polymesh models.
+//
+//      2. Call this script.
+//
+// ××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+// Constraints: Used with assertCurrent().
+//
+//===========================================================================
+proc float version()
+{
+    return ( 1.0 );
+}
+
+//===========================================================================
+// assertCurrent
+//===========================================================================
+// Description: Used to determine if this MEL script's current version 
+//              matches that from Version Control (equal or newer).
+//              
+// Parameters:  (none)
+//
+// Return:      (int): ZERO if everything is OK; NON-ZERO if fails assert.
+//
+//===========================================================================
+proc int assertCurrent()        // returns non-zero if error
+{
+    int $assert = false;
+    
+    // ** ASSERT NEWEST VERSION **
+    if ( `exists hasCurrentTool` ) $assert = ( !hasCurrentTool( "hiliteUnsewnUVEdges.mel", version() ) );
+    
+    return $assert;
+}
+
+//===========================================================================
+// getShape
+//===========================================================================
+// Description: Returns the Shape node for the specified transform.
+//              If the argument is already a shape it is simply returned.
+//
+// Constraints: Only the first Shape node for the specified Transform is
+//              considered; multiple Shape nodes are not supported.
+//
+// Parameters:  string $xform: The (presumably) transform node.
+//
+// Return:      (string): The Shape node.
+//
+//===========================================================================
+proc string getShape( string $xform )
+{
+    string $shapes[];
+    
+    $shapes[0] = $xform;
+    
+    if ( "transform" == `nodeType $xform` )
+    // If given node is not a transform, assume it is a shape 
+    // and pass it through
+    {
+        $shapes = `listRelatives -fullPath -shapes $xform`;
+    }
+    
+    return $shapes[0];
+}
+
+//===========================================================================
+// hiliteUnsewnUVEdges
+//===========================================================================
+// Description: Highlights the edges on the selected polymesh models which
+//              have unshared UVs.  This can be used as a complement for
+//              Maya's "UV Topology" Custom Polygon Display.
+//
+// Constraints: 
+//
+// Parameters:  (none)
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc hiliteUnsewnUVEdges()
+{
+    if ( assertCurrent() ) error ( "Please update hiliteUnsewnUVEdges.mel" );
+
+    string $unsewn[];
+
+    int $kFilterExpandUVs = 35;
+    
+    string $select[] = `selectedNodes`;
+    
+    waitCursor -state on;
+    
+    for ( $node in $select )
+    {
+        int $numUnsewn = 0;
+        
+        $node = getShape( $node );
+        
+        if ( `nodeType $node` == "mesh" )
+        {
+            int $numEdges[] = `polyEvaluate -e $node`;
+
+            for ( $e = 0; $e < $numEdges[0]; $e++ )
+            {
+                string $component = ( $node + ".e[" + $e + "]" );
+                string $uvs[] = `polyListComponentConversion -fe -tuv $component`;
+                $uvs = `filterExpand -ex true -sm $kFilterExpandUVs $uvs`;
+
+                if ( `size $uvs` > 2 )
+                {
+                    $unsewn[`size $unsewn`] = $component;
+                    $numUnsewn++;
+                }
+            }
+       }
+       
+       if ( $numUnsewn > 0 )
+       {
+           hilite $node;
+       }
+    }
+
+    waitCursor -state off;
+
+    select $unsewn; 
+    
+}

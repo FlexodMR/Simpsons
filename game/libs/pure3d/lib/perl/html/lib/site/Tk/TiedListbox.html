@@ -1,0 +1,256 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::TiedListbox - gang together Listboxes
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#OVERRIDDEN_METHODS">OVERRIDDEN METHODS</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::TiedListbox - gang together Listboxes
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Tk::TiedListbox
+</PRE>
+
+<P>
+
+<PRE>    $l1 = $mw-&gt;Listbox(-exportselection =&gt; 0,...);
+    $l2 = $mw-&gt;Listbox(-exportselection =&gt; 0,...);
+    $l3 = $mw-&gt;Listbox(-exportselection =&gt; 0,...);
+    $l1-&gt;tie([$l2,$l3]);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+TiedListbox causes two or more Listboxes to be operated in tandem. One
+application is emulating multi-column listboxes. The scrolling, selection,
+or both mechanisms may be tied together. The methods <STRONG>tie</STRONG>
+and <STRONG>untie</STRONG> are provided, along with overridden versions of some of the Listbox methods
+to provide tandem operation.
+
+
+<P>
+
+Scrollbars are fully supported. You can use either explicitly created
+<STRONG>Scrollbar</STRONG>s, the <STRONG>ScrlListbox</STRONG> widget, or the <STRONG>Scrolled</STRONG>
+super-widget. Tricks to ``attach'' multiple tied listboxes to a single
+scrollbar are unnecessary and will lead to multiple calls of the listbox
+methods (a bad thing).
+
+
+<P>
+
+The configuration options, geometry, and items of the Listboxes are not
+altered by tying them. The programmer will have to make sure that the setup
+of the Listboxes make sense together. Here are some (unenforced)
+guidelines:
+
+
+<P>
+
+For listboxes with tied selection: set <STRONG>-exportselection</STRONG> to 0 for all but possibly one Listbox use identical <STRONG>-selectmode</STRONG> for all Listboxes if items are added/deleted, they should be done all at
+once and at the same index, or the selection should be cleared Listboxes
+should have the same number of items For listboxes with tied scrolling: use
+the same window height and font for all Listboxes Listboxes should have the
+same number of items
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item__listbox_tie_option_">$listbox->tie?(?option?, [listbox,...])?
+
+</A></STRONG><DD>
+Ties together <EM>$listbox</EM> and the list of Listboxes with the given
+<EM>option</EM>. Returns <EM>$listbox</EM>.
+
+
+<P>
+
+If no arguments are given, returns a list containing two items: the tie
+option (``scroll'', ``selection'', or ``all'') and the list of Listboxes
+that <EM>$listbox</EM> is tied to.
+
+
+<P>
+
+<EM>option</EM> can be one of ``scroll'', ``selection'', or ``all''. If omitted, ``all'' is
+assumed. ``scroll'' makes the tied Listboxes to scroll together,
+``selection'' makes selections to occur simultaneously in all tied
+Listboxes, and ``all'' effects both actions.
+
+
+<P>
+
+All the Listboxes are <STRONG>untie</STRONG>d (if previously tied) before being tied to each other; hence a Listbox can
+only be in one ``tie group'' at a time. ``Tiedness'' is commutative.
+
+
+<P>
+
+The tie method can be called with either Listbox or TiedListbox objects.
+All listbox objects specified are reblessed to TiedListbox objects.
+
+
+<P>
+
+Code such as below can be used to tie ScrlListboxes:
+
+
+<P>
+
+<PRE>  $slb1=ScrlListbox(...); # or Scrolled('Listbox',...
+  $slb2=ScrlListbox(...); # or Scrolled('Listbox',...
+  $slb1-&gt;tie([$slb2-&gt;Subwidget('scrolled')]);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__listbox_untie_">$listbox->untie()
+
+</A></STRONG><DD>
+This function unties the Listbox from its ``tie group''. The other items in
+the ``tie group'' (if more than one) remain tied to each other.
+
+
+<P>
+
+Returns a list containing two items: the old tie option (``scroll'',
+``selection'', or ``all'') and the list of Listboxes that <EM>$listbox</EM> was tied to.
+
+
+<P>
+
+<H1><A NAME="OVERRIDDEN_METHODS">OVERRIDDEN METHODS
+
+</A></H1>
+You probably don't care about these. They are just details to tie together
+the behaviors of the listboxes.
+
+
+<P>
+
+All overriden methods take identical arguments as the corresponding
+<STRONG>Listbox</STRONG> methods (see the <STRONG>Listbox</STRONG> documentation for a full description). All overridden methods that take an
+index interpret that index in the context of the listbox object provided.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__listbox_activate_">$listbox->activate(...)
+=item $listbox->selection(...)
+
+</A></STRONG><DD>
+To allow tied selection, these functions are overridden for listboxes tied
+together with the ``selection'' or ``all'' option. When an item is selected
+or activated in one listbox, the items with the same index (if present) are
+selected or activated in all tied listboxes.
+
+
+<P>
+
+The <STRONG>selection</STRONG>('includes',...) submethod returns only information about the given <EM>$listbox</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__listbox_scan_">$listbox->scan(...)
+=item $listbox->see(...)
+=item $listbox->yview(...)
+
+</A></STRONG><DD>
+To allow tied scrolling, these functions are overridden for listboxes tied
+together with the ``scroll'' or ``all'' option. When one listbox is
+scrolled, all the other tied listboxes are scrolled by the same number of
+items (if possible). An attempt is made to keep items of the same index at
+the top of each tied listbox, while not interfering with the normal
+scrolling operations.
+
+
+<P>
+
+The <STRONG>yview</STRONG> method with no arguments returns only information about the given <EM>$listbox</EM>.
+
+
+<P>
+
+Horizontal scrolling (via <STRONG>xview</STRONG>) is not tied.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Reblessing the widgets to TiedListbox might be too weird. It will disable any additional features for widgets in a class derived from Listbox (none yet that 
+<FONT SIZE=-1>I</FONT> know of).
+
+
+
+<P>
+
+The bindtags for reblessed widgets aren't updated. This is probably
+wouldn't be a good thing to do automatically anyway.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+<STRONG>Andrew Allen</STRONG> <A HREF="MAILTO:ada@fc.hp.com">ada@fc.hp.com</A>
+
+
+<P>
+
+This code may be distributed under the same conditions as Perl.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

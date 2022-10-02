@@ -1,0 +1,146 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Math::BigInt - Arbitrary size integer math package
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Math::BigInt - Arbitrary size integer math package
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use Math::BigInt;
+  $i = Math::BigInt-&gt;new($string);
+</PRE>
+
+<P>
+
+<PRE>  $i-&gt;bneg return BINT               negation
+  $i-&gt;babs return BINT               absolute value
+  $i-&gt;bcmp(BINT) return CODE         compare numbers (undef,&lt;0,=0,&gt;0)
+  $i-&gt;badd(BINT) return BINT         addition
+  $i-&gt;bsub(BINT) return BINT         subtraction
+  $i-&gt;bmul(BINT) return BINT         multiplication
+  $i-&gt;bdiv(BINT) return (BINT,BINT)  division (quo,rem) just quo if scalar
+  $i-&gt;bmod(BINT) return BINT         modulus
+  $i-&gt;bgcd(BINT) return BINT         greatest common divisor
+  $i-&gt;bnorm return BINT              normalization
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+All basic math operations are overloaded if you declare your big integers
+as
+
+
+<P>
+
+<PRE>  $i = new Math::BigInt '123 456 789 123 456 789';
+</PRE>
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Canonical">Canonical notation
+
+</A></STRONG><DD>
+Big integer value are strings of the form <CODE>/^[+-]\d+$/</CODE> with leading zeros suppressed.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Input">Input
+
+</A></STRONG><DD>
+Input values to these routines may be strings of the form
+<CODE>/^\s*[+-]?[\d\s]+$/</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Output">Output
+
+</A></STRONG><DD>
+Output values always always in canonical form
+
+
+<P>
+
+</DL>
+Actual math is done in an internal format consisting of an array whose
+first element is the sign (/^[+-]$/) and whose remaining elements are base
+100000 digits with the least significant digit first. The string 'NaN' is
+used to represent the result when input arguments are not numbers, as well
+as the result of dividing by zero.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+<PRE>   '+0'                            canonical zero value
+   '   -123 123 123'               canonical value '-123123123'
+   '1 23 456 7890'                 canonical value '+1234567890'
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+The current version of this module is a preliminary version of the real
+thing that is currently (as of perl5.002) under development.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Mark Biggar, overloaded interface by Ilya Zakharevich.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,144 @@
+//**************************************************************************************************
+//  Procedure Name:
+//    P3dSetupParticleSystemShelf()
+//
+//  Description:
+//    Sets up the particles system command buttons in P3DParticleTools shelf
+//
+//  Input Arguments:
+//    None.
+//
+//  Return Value:
+//    None.
+//**************************************************************************************************
+global proc p3dParticleInstallCommand()
+{
+   source p3dParticleTools;
+   source p3dParticleUI;
+ 
+   // BUG FIX: Do NOT create Shelf if Shelf UI is hidden!
+   //          The Shelf may already exist in Maya's Preferences
+   //          but be deferred until the Shelf UI is visible,
+   //          and a clash will result if a duplicate is made.
+   // BUG FIX: Do NOT attempt if without UI.
+   if ( !`about -batch` && isUIComponentVisible( "Shelf" ) )
+   {
+       if (`shelfLayout -exists "P3DParticleTools"`==0)
+       {
+          addNewShelfTab "P3DParticleTools";
+       }
+
+       string $buttons[] = `shelfLayout -q -ca P3DParticleTools`;
+       int $particle_ui_exists = 0;
+       int $create_particle_system_exists = 0;
+       int $create_particle_emitter_exists = 0;
+       int $create_particle_emitter_blend_state_editor_exists = 0;
+       int $create_particle_force_exists = 0;
+       int $particle_force_dialog_exists = 0;
+       int $create_particle_collision_exists = 0;
+       int $particle_collision_dialog_exists = 0;
+       int $scale_particle_system_exists = 0;
+       int $create_particle_emitter_blend_state_exists = 0;
+
+       int $i;
+       for ($i = 0;
+            ($i < size($buttons)) &&
+            (($particle_ui_exists == 0) ||
+             ($create_particle_system_exists == 0) ||
+             ($create_particle_emitter_exists == 0) ||
+             ($create_particle_emitter_blend_state_editor_exists == 0) ||
+             ($create_particle_force_exists ==0) ||
+             ($particle_force_dialog_exists ==0) ||
+             ($create_particle_collision_exists ==0) ||
+             ($particle_collision_dialog_exists ==0) ||
+             ($scale_particle_system_exists == 0) ||
+             ($create_particle_emitter_blend_state_exists ==0));
+            $i++)
+       {
+          string $command = `shelfButton -q -c $buttons[$i]`;
+
+          if ($command == "P3DParticlePanelLayout")
+          {
+             $particle_ui_exists = 1;
+          }
+          else if ($command == "P3DCreateParticleSystem")
+          {
+             $create_particle_system_exists = 1;
+          }
+          else if ($command == "P3DAddEmitter")
+          {
+             $create_particle_emitter_exists = 1;
+          }
+          else if ($command == "P3DDisplayBlendStateEditor")
+          {
+             $create_particle_emitter_blend_state_editor_exists = 1;
+          }
+          //remove old shelf buttons
+          else if ($command == "P3DCreateParticleForce")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "P3DDisplayParticleForceDialog")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "P3DCreateParticleCollision")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "P3DDisplayParticleCollisionDialog")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "P3DScaleParticleSystemPrompt")
+          {
+             deleteUI $buttons[$i];
+          }
+          else if ($command == "P3DAddEmitterBlendState")
+          {
+             deleteUI $buttons[$i];
+          }
+       }
+
+       if (!$particle_ui_exists)
+       {
+          shelfButton -c   "P3DParticlePanelLayout" 
+                      -p   "P3DParticleTools"
+                      -i1  "p3dParticleUI.bmp" 
+                      -ann "P3D Particle System Panel Layout"
+                      -l   "P3DParticleSystemLayoutButton";
+       }
+       if (!$create_particle_system_exists)
+       {
+          shelfButton -c   "P3DCreateParticleSystem" 
+                      -p   "P3DParticleTools"
+                      -i1  "p3dParticleSystem.bmp" 
+                      -ann "Create P3D Particle System"
+                      -l   "P3DCreateParticleSystemButton";
+       }
+       if (!$create_particle_emitter_exists)
+       {
+          shelfButton -c   "P3DAddEmitter" 
+                      -p   "P3DParticleTools"
+                      -i1  "p3dParticleEmitter.bmp" 
+                      -ann "Create P3D Particle Emitter"
+                      -l   "P3DCreateParticleEmitterButton";
+       }
+       if (!$create_particle_emitter_blend_state_editor_exists)
+       {
+          shelfButton -c   "P3DDisplayBlendStateEditor" 
+                      -p   "P3DParticleTools"
+                      -i1  "p3dParticleEmitterBlendState.bmp" 
+                      -ann "P3D Particle Emitter Blend State Editor"
+                      -l   "P3DParticleEmitterBlendStateEditorButton";
+       }
+    }
+}
+
+global proc p3dParticleInstall()
+{
+   evalDeferred "p3dParticleInstallCommand";
+}
+
+
+// End of file.

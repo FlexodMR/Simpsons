@@ -1,0 +1,1891 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlmodlib - constructing new Perl modules and finding existing ones
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#THE_PERL_MODULE_LIBRARY">THE PERL MODULE LIBRARY</A>
+	<UL>
+
+		<LI><A HREF="#Pragmatic_Modules">Pragmatic Modules</A>
+		<LI><A HREF="#Standard_Modules">Standard Modules</A>
+		<LI><A HREF="#Extension_Modules">Extension Modules</A>
+	</UL>
+
+	<LI><A HREF="#CPAN">CPAN</A>
+	<LI><A HREF="#Modules_Creation_Use_and_Abus">Modules: Creation, Use, and Abuse</A>
+	<UL>
+
+		<LI><A HREF="#Guidelines_for_Module_Creation">Guidelines for Module Creation</A>
+		<LI><A HREF="#Guidelines_for_Converting_Perl_4">Guidelines for Converting Perl 4 Library Scripts into Modules</A>
+		<LI><A HREF="#Guidelines_for_Reusing_Applicati">Guidelines for Reusing Application Code</A>
+	</UL>
+
+	<LI><A HREF="#NOTE">NOTE</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlmodlib - constructing new Perl modules and finding existing ones
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<P>
+<HR>
+<H1><A NAME="THE_PERL_MODULE_LIBRARY">THE PERL MODULE LIBRARY
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> number of modules are included the Perl
+distribution. These are described below, and all end in <EM>.pm</EM>. You may also discover files in the library directory that end in either <EM>.pl</EM> or <EM>.ph</EM>. These are old libraries supplied so that old programs that use them still
+run. The
+<EM>.pl</EM> files will all eventually be converted into standard modules, and the <EM>.ph</EM> files made by <STRONG>h2ph</STRONG> will probably end up as extension modules made by <STRONG>h2xs</STRONG>. (Some <EM>.ph</EM> values may already be available through the 
+<FONT SIZE=-1>POSIX</FONT> module.) The <STRONG>pl2pm</STRONG> file in the distribution may help in your conversion, but it's just a
+mechanical process and therefore far from bulletproof.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Pragmatic_Modules">Pragmatic Modules
+
+</A></H2>
+They work somewhat like pragmas in that they tend to affect the compilation
+of your program, and thus will usually work well only when used within a
+<A HREF="#item_use">use</A>, or <A HREF="#item_no">no</A>. Most of these are locally scoped, so an inner 
+<FONT SIZE=-1>BLOCK</FONT> may countermand any of these by saying:
+
+
+<P>
+
+<PRE>    no integer;
+    no strict 'refs';
+</PRE>
+
+<P>
+
+which lasts until the end of that 
+<FONT SIZE=-1>BLOCK.</FONT>
+
+
+<P>
+
+Unlike the pragmas that effect the <A HREF="#item__H">$^H</A> hints variable, the <CODE>use
+vars</CODE> and <CODE>use subs</CODE> declarations are not BLOCK-scoped. They allow you to predeclare a variables
+or subroutines within a particular
+<EM>file</EM> rather than just a block. Such declarations are effective for the entire
+file for which they were declared. You cannot rescind them with <CODE>no vars</CODE> or <CODE>no subs</CODE>.
+
+
+<P>
+
+The following pragmas are defined (and have their own documentation).
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_use">use autouse MODULE => qw(sub1 sub2 sub3)
+
+</A></STRONG><DD>
+Defers <CODE>require MODULE</CODE> until someone calls one of the specified subroutines (which must be exported by 
+<FONT SIZE=-1>MODULE).</FONT> This pragma should be used with caution, and only when necessary.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_blib">blib
+
+</A></STRONG><DD>
+manipulate <A HREF="#item__INC">@INC</A> at compile time to use MakeMaker's
+uninstalled version of a package
+
+
+<P>
+
+<DT><STRONG><A NAME="item_diagnostics">diagnostics
+
+</A></STRONG><DD>
+force verbose warning diagnostics
+
+
+<P>
+
+<DT><STRONG><A NAME="item_integer">integer
+
+</A></STRONG><DD>
+compute arithmetic in integer instead of double
+
+
+<P>
+
+<DT><STRONG><A NAME="item_less">less
+
+</A></STRONG><DD>
+request less of something from the compiler
+
+
+<P>
+
+<DT><STRONG><A NAME="item_lib">lib
+
+</A></STRONG><DD>
+manipulate <A HREF="#item__INC">@INC</A> at compile time
+
+
+<P>
+
+<DT><STRONG><A NAME="item_locale">locale
+
+</A></STRONG><DD>
+use or ignore current locale for builtin operations (see <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ops">ops
+
+</A></STRONG><DD>
+restrict named opcodes when compiling or running Perl code
+
+
+<P>
+
+<DT><STRONG><A NAME="item_overload">overload
+
+</A></STRONG><DD>
+overload basic Perl operations
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sigtrap">sigtrap
+
+</A></STRONG><DD>
+enable simple signal handling
+
+
+<P>
+
+<DT><STRONG><A NAME="item_strict">strict
+
+</A></STRONG><DD>
+restrict unsafe constructs
+
+
+<P>
+
+<DT><STRONG><A NAME="item_subs">subs
+
+</A></STRONG><DD>
+predeclare sub names
+
+
+<P>
+
+<DT><STRONG><A NAME="item_vmsish">vmsish
+
+</A></STRONG><DD>
+adopt certain VMS-specific behaviors
+
+
+<P>
+
+<DT><STRONG><A NAME="item_vars">vars
+
+</A></STRONG><DD>
+predeclare global variable names
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Standard_Modules">Standard Modules
+
+</A></H2>
+Standard, bundled modules are all expected to behave in a well-defined
+manner with respect to namespace pollution because they use the Exporter
+module. See their own documentation for details.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_AnyDBM_File">AnyDBM_File
+
+</A></STRONG><DD>
+provide framework for multiple DBMs
+
+
+<P>
+
+<DT><STRONG><A NAME="item_AutoLoader">AutoLoader
+
+</A></STRONG><DD>
+load functions only on demand
+
+
+<P>
+
+<DT><STRONG><A NAME="item_AutoSplit">AutoSplit
+
+</A></STRONG><DD>
+split a package for autoloading
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Benchmark">Benchmark
+
+</A></STRONG><DD>
+benchmark running times of code
+
+
+<P>
+
+<DT><STRONG><A NAME="item_CPAN">CPAN
+
+</A></STRONG><DD>
+interface to Comprehensive Perl Archive Network
+
+
+<P>
+
+<DT><STRONG><A NAME="item_CPAN">CPAN::FirstTime
+
+</A></STRONG><DD>
+create a 
+<FONT SIZE=-1>CPAN</FONT> configuration file
+
+
+<P>
+
+<DT><STRONG><A NAME="item_CPAN">CPAN::Nox
+
+</A></STRONG><DD>
+run 
+<FONT SIZE=-1>CPAN</FONT> while avoiding compiled extensions
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Carp">Carp
+
+</A></STRONG><DD>
+warn of errors (from perspective of caller)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Class">Class::Struct
+
+</A></STRONG><DD>
+declare struct-like datatypes
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Config">Config
+
+</A></STRONG><DD>
+access Perl configuration information
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Cwd">Cwd
+
+</A></STRONG><DD>
+get pathname of current working directory
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DB_File">DB_File
+
+</A></STRONG><DD>
+access to Berkeley 
+<FONT SIZE=-1>DB</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Devel">Devel::SelfStubber
+
+</A></STRONG><DD>
+generate stubs for a SelfLoading module
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DirHandle">DirHandle
+
+</A></STRONG><DD>
+supply object methods for directory handles
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DynaLoader">DynaLoader
+
+</A></STRONG><DD>
+dynamically load 
+<FONT SIZE=-1>C</FONT> libraries into Perl code
+
+
+<P>
+
+<DT><STRONG><A NAME="item_English">English
+
+</A></STRONG><DD>
+use nice English (or awk) names for ugly punctuation variables
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Env">Env
+
+</A></STRONG><DD>
+import environment variables
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Exporter">Exporter
+
+</A></STRONG><DD>
+implements default import method for modules
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::Embed
+
+</A></STRONG><DD>
+utilities for embedding Perl in 
+<FONT SIZE=-1>C/C++</FONT> applications
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::Install
+
+</A></STRONG><DD>
+install files from here to there
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::Liblist
+
+</A></STRONG><DD>
+determine libraries to use and how to use them
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::MM_OS2
+
+</A></STRONG><DD>
+methods to override Unix behaviour in ExtUtils::MakeMaker
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::MM_Unix
+
+</A></STRONG><DD>
+methods used by ExtUtils::MakeMaker
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::MM_VMS
+
+</A></STRONG><DD>
+methods to override Unix behaviour in ExtUtils::MakeMaker
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::MakeMaker
+
+</A></STRONG><DD>
+create an extension Makefile
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::Manifest
+
+</A></STRONG><DD>
+utilities to write and check a 
+<FONT SIZE=-1>MANIFEST</FONT> file
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::Mkbootstrap
+
+</A></STRONG><DD>
+make a bootstrap file for use by DynaLoader
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::Mksymlists
+
+</A></STRONG><DD>
+write linker options files for dynamic extension
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ExtUtils">ExtUtils::testlib
+
+</A></STRONG><DD>
+add blib/* directories to <A HREF="#item__INC">@INC</A>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Fcntl">Fcntl
+
+</A></STRONG><DD>
+load the 
+<FONT SIZE=-1>C</FONT> Fcntl.h defines
+
+
+<P>
+
+<DT><STRONG><A NAME="item_File">File::Basename
+
+</A></STRONG><DD>
+split a pathname into pieces
+
+
+<P>
+
+<DT><STRONG><A NAME="item_File">File::CheckTree
+
+</A></STRONG><DD>
+run many filetest checks on a tree
+
+
+<P>
+
+<DT><STRONG><A NAME="item_File">File::Compare
+
+</A></STRONG><DD>
+compare files or filehandles
+
+
+<P>
+
+<DT><STRONG><A NAME="item_File">File::Copy
+
+</A></STRONG><DD>
+copy files or filehandles
+
+
+<P>
+
+<DT><STRONG><A NAME="item_File">File::Find
+
+</A></STRONG><DD>
+traverse a file tree
+
+
+<P>
+
+<DT><STRONG><A NAME="item_File">File::Path
+
+</A></STRONG><DD>
+create or remove a series of directories
+
+
+<P>
+
+<DT><STRONG><A NAME="item_File">File::stat
+
+</A></STRONG><DD>
+by-name interface to Perl's builtin <CODE>stat()</CODE> functions
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FileCache">FileCache
+
+</A></STRONG><DD>
+keep more files open than the system permits
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FileHandle">FileHandle
+
+</A></STRONG><DD>
+supply object methods for filehandles
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FindBin">FindBin
+
+</A></STRONG><DD>
+locate directory of original perl script
+
+
+<P>
+
+<DT><STRONG><A NAME="item_GDBM_File">GDBM_File
+
+</A></STRONG><DD>
+access to the gdbm library
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Getopt">Getopt::Long
+
+</A></STRONG><DD>
+extended processing of command line options
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Getopt">Getopt::Std
+
+</A></STRONG><DD>
+process single-character switches with switch clustering
+
+
+<P>
+
+<DT><STRONG><A NAME="item_I18N">I18N::Collate
+
+</A></STRONG><DD>
+compare 8-bit scalar data according to the current locale
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IO">IO
+
+</A></STRONG><DD>
+load various 
+<FONT SIZE=-1>IO</FONT> modules
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IO">IO::File
+
+</A></STRONG><DD>
+supply object methods for filehandles
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IO">IO::Handle
+
+</A></STRONG><DD>
+supply object methods for 
+<FONT SIZE=-1>I/O</FONT> handles
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IO">IO::Pipe
+
+</A></STRONG><DD>
+supply object methods for pipes
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IO">IO::Seekable
+
+</A></STRONG><DD>
+supply seek based methods for 
+<FONT SIZE=-1>I/O</FONT> objects
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IO">IO::Select
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>OO</FONT> interface to the select system call
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IO">IO::Socket
+
+</A></STRONG><DD>
+object interface to socket communications
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IPC">IPC::Open2
+
+</A></STRONG><DD>
+open a process for both reading and writing
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IPC">IPC::Open3
+
+</A></STRONG><DD>
+open a process for reading, writing, and error handling
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Math">Math::BigFloat
+
+</A></STRONG><DD>
+arbitrary length float math package
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Math">Math::BigInt
+
+</A></STRONG><DD>
+arbitrary size integer math package
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Math">Math::Complex
+
+</A></STRONG><DD>
+complex numbers and associated mathematical functions
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Math">Math::Trig
+
+</A></STRONG><DD>
+simple interface to parts of Math::Complex for those who need trigonometric
+functions only for real numbers
+
+
+<P>
+
+<DT><STRONG><A NAME="item_NDBM_File">NDBM_File
+
+</A></STRONG><DD>
+tied access to ndbm files
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Net">Net::Ping
+
+</A></STRONG><DD>
+Hello, anybody home?
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Net">Net::hostent
+
+</A></STRONG><DD>
+by-name interface to Perl's builtin gethost*() functions
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Net">Net::netent
+
+</A></STRONG><DD>
+by-name interface to Perl's builtin getnet*() functions
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Net">Net::protoent
+
+</A></STRONG><DD>
+by-name interface to Perl's builtin getproto*() functions
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Net">Net::servent
+
+</A></STRONG><DD>
+by-name interface to Perl's builtin getserv*() functions
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Opcode">Opcode
+
+</A></STRONG><DD>
+disable named opcodes when compiling or running perl code
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Pod">Pod::Text
+
+</A></STRONG><DD>
+convert 
+<FONT SIZE=-1>POD</FONT> data to formatted 
+<FONT SIZE=-1>ASCII</FONT> text
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_POSIX">POSIX
+
+</A></STRONG><DD>
+interface to 
+<FONT SIZE=-1>IEEE</FONT> Standard 1003.1
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SDBM_File">SDBM_File
+
+</A></STRONG><DD>
+tied access to sdbm files
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Safe">Safe
+
+</A></STRONG><DD>
+compile and execute code in restricted compartments
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Search">Search::Dict
+
+</A></STRONG><DD>
+search for key in dictionary file
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SelectSaver">SelectSaver
+
+</A></STRONG><DD>
+save and restore selected file handle
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SelfLoader">SelfLoader
+
+</A></STRONG><DD>
+load functions only on demand
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Shell">Shell
+
+</A></STRONG><DD>
+run shell commands transparently within perl
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Socket">Socket
+
+</A></STRONG><DD>
+load the 
+<FONT SIZE=-1>C</FONT> socket.h defines and structure manipulators
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Symbol">Symbol
+
+</A></STRONG><DD>
+manipulate Perl symbols and their names
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Sys">Sys::Hostname
+
+</A></STRONG><DD>
+try every conceivable way to get hostname
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Sys">Sys::Syslog
+
+</A></STRONG><DD>
+interface to the Unix <CODE>syslog(3)</CODE> calls
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Term">Term::Cap
+
+</A></STRONG><DD>
+termcap interface
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Term">Term::Complete
+
+</A></STRONG><DD>
+word completion module
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Term">Term::ReadLine
+
+</A></STRONG><DD>
+interface to various <A HREF="#item_readline">readline</A> packages
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Test">Test::Harness
+
+</A></STRONG><DD>
+run perl standard test scripts with statistics
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Text">Text::Abbrev
+
+</A></STRONG><DD>
+create an abbreviation table from a list
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Text">Text::ParseWords
+
+</A></STRONG><DD>
+parse text into an array of tokens
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Text">Text::Soundex
+
+</A></STRONG><DD>
+implementation of the Soundex Algorithm as described by Knuth
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Text">Text::Tabs
+
+</A></STRONG><DD>
+expand and unexpand tabs per the Unix <CODE>expand(1)</CODE> and
+<CODE>unexpand(1)</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Text">Text::Wrap
+
+</A></STRONG><DD>
+line wrapping to form simple paragraphs
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Tie">Tie::Hash
+
+</A></STRONG><DD>
+base class definitions for tied hashes
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Tie">Tie::RefHash
+
+</A></STRONG><DD>
+base class definitions for tied hashes with references as keys
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Tie">Tie::Scalar
+
+</A></STRONG><DD>
+base class definitions for tied scalars
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Tie">Tie::SubstrHash
+
+</A></STRONG><DD>
+fixed-table-size, fixed-key-length hashing
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Time">Time::Local
+
+</A></STRONG><DD>
+efficiently compute time from local and 
+<FONT SIZE=-1>GMT</FONT> time
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Time">Time::gmtime
+
+</A></STRONG><DD>
+by-name interface to Perl's builtin <CODE>gmtime()</CODE> function
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Time">Time::localtime
+
+</A></STRONG><DD>
+by-name interface to Perl's builtin <CODE>localtime()</CODE> function
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Time">Time::tm
+
+</A></STRONG><DD>
+internal object used by Time::gmtime and Time::localtime
+
+
+<P>
+
+<DT><STRONG><A NAME="item_UNIVERSAL">UNIVERSAL
+
+</A></STRONG><DD>
+base class for 
+<FONT SIZE=-1>ALL</FONT> classes (blessed references)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_User">User::grent
+
+</A></STRONG><DD>
+by-name interface to Perl's builtin getgr*() functions
+
+
+<P>
+
+<DT><STRONG><A NAME="item_User">User::pwent
+
+</A></STRONG><DD>
+by-name interface to Perl's builtin getpw*() functions
+
+
+<P>
+
+</DL>
+To find out <EM>all</EM> the modules installed on your system, including those without documentation
+or outside the standard release, do this:
+
+
+<P>
+
+<PRE>    find `perl -e 'print &quot;@INC&quot;'` -name '*.pm' -print
+</PRE>
+
+<P>
+
+They should all have their own documentation installed and accessible via
+your system <CODE>man(1)</CODE> command. If that fails, try the <EM>perldoc</EM> program.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Extension_Modules">Extension Modules
+
+</A></H2>
+Extension modules are written in 
+<FONT SIZE=-1>C</FONT> (or a mix of Perl and 
+<FONT SIZE=-1>C)</FONT> and may be statically linked or in general are dynamically loaded into Perl if and when you need them. Supported extension modules include the Socket, Fcntl, and 
+<FONT SIZE=-1>POSIX</FONT> modules.
+
+
+
+<P>
+
+Many popular 
+<FONT SIZE=-1>C</FONT> extension modules do not come bundled (at least, not completely) due to their sizes, volatility, or simply lack of time for adequate testing and configuration across the multitude of platforms on which Perl was beta-tested. You are encouraged to look for them in <CODE>archie(1L),</CODE> the Perl 
+<FONT SIZE=-1>FAQ</FONT> or Meta-FAQ, the 
+<FONT SIZE=-1>WWW</FONT> page, and even with their authors before randomly posting asking for their present condition and disposition.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CPAN">CPAN
+
+</A></H1>
+
+<FONT SIZE=-1>CPAN</FONT> stands for the Comprehensive Perl Archive
+Network. This is a globally replicated collection of all known Perl
+materials, including hundreds of unbundled modules. Here are the major
+categories of modules:
+
+
+<P>
+
+<UL>
+<LI><STRONG><A NAME="item_Language">Language Extensions and Documentation Tools
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Development">Development Support
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Operating">Operating System Interfaces
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Networking">Networking, Device Control (modems) and InterProcess Communication
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Data">Data Types and Data Type Utilities
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Database">Database Interfaces
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_User">User Interfaces
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Interfaces">Interfaces to / Emulations of Other Programming Languages
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_File">File Names, File Systems and File Locking (see also File Handles)
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_String">String Processing, Language Text Processing, Parsing, and Searching
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Option">Option, Argument, Parameter, and Configuration File Processing
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Internationalization">Internationalization and Locale
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Authentication">Authentication, Security, and Encryption
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_World">World Wide Web, HTML, HTTP, CGI, MIME
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Server">Server and Daemon Utilities
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Archiving">Archiving and Compression
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Images">Images, Pixmap and Bitmap Manipulation, Drawing, and Graphing
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Mail">Mail and Usenet News
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Control">Control Flow Utilities (callbacks and exceptions etc)
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_File">File Handle and Input/Output Stream Utilities
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Miscellaneous">Miscellaneous Modules
+
+</A></STRONG>
+</UL>
+The registered 
+<FONT SIZE=-1>CPAN</FONT> sites as of this writing include the following.
+You should try to choose one close to you:
+
+
+<P>
+
+<UL>
+<LI><STRONG><A NAME="item_Africa">Africa
+
+</A></STRONG>
+<PRE>    South Africa    <A HREF="ftp://ftp.is.co.za/programming/perl/CPAN/">ftp://ftp.is.co.za/programming/perl/CPAN/</A>
+</PRE>
+
+<P>
+
+<LI><STRONG><A NAME="item_Asia">Asia
+
+</A></STRONG>
+<PRE>    Hong Kong       <A HREF="ftp://ftp.hkstar.com/pub/CPAN/">ftp://ftp.hkstar.com/pub/CPAN/</A>
+    Japan           <A HREF="ftp://ftp.jaist.ac.jp/pub/lang/perl/CPAN/">ftp://ftp.jaist.ac.jp/pub/lang/perl/CPAN/</A>
+                    <A HREF="ftp://ftp.lab.kdd.co.jp/lang/perl/CPAN/">ftp://ftp.lab.kdd.co.jp/lang/perl/CPAN/</A>
+    South Korea     <A HREF="ftp://ftp.nuri.net/pub/CPAN/">ftp://ftp.nuri.net/pub/CPAN/</A>
+    Taiwan          <A HREF="ftp://dongpo.math.ncu.edu.tw/perl/CPAN/">ftp://dongpo.math.ncu.edu.tw/perl/CPAN/</A>
+                    <A HREF="ftp://ftp.wownet.net/pub2/PERL/">ftp://ftp.wownet.net/pub2/PERL/</A>
+</PRE>
+
+<P>
+
+<LI><STRONG><A NAME="item_Australasia">Australasia
+
+</A></STRONG>
+<PRE>    Australia       <A HREF="ftp://ftp.netinfo.com.au/pub/perl/CPAN/">ftp://ftp.netinfo.com.au/pub/perl/CPAN/</A>
+    New Zealand     <A HREF="ftp://ftp.tekotago.ac.nz/pub/perl/CPAN/">ftp://ftp.tekotago.ac.nz/pub/perl/CPAN/</A>
+</PRE>
+
+<P>
+
+<LI><STRONG><A NAME="item_Europe">Europe
+
+</A></STRONG>
+<PRE>    Austria         <A HREF="ftp://ftp.tuwien.ac.at/pub/languages/perl/CPAN/">ftp://ftp.tuwien.ac.at/pub/languages/perl/CPAN/</A>
+    Belgium         <A HREF="ftp://ftp.kulnet.kuleuven.ac.be/pub/mirror/CPAN/">ftp://ftp.kulnet.kuleuven.ac.be/pub/mirror/CPAN/</A>
+    Czech Republic  <A HREF="ftp://sunsite.mff.cuni.cz/Languages/Perl/CPAN/">ftp://sunsite.mff.cuni.cz/Languages/Perl/CPAN/</A>
+    Denmark         <A HREF="ftp://sunsite.auc.dk/pub/languages/perl/CPAN/">ftp://sunsite.auc.dk/pub/languages/perl/CPAN/</A>
+    Finland         <A HREF="ftp://ftp.funet.fi/pub/languages/perl/CPAN/">ftp://ftp.funet.fi/pub/languages/perl/CPAN/</A>
+    France          <A HREF="ftp://ftp.ibp.fr/pub/perl/CPAN/">ftp://ftp.ibp.fr/pub/perl/CPAN/</A>
+                    <A HREF="ftp://ftp.pasteur.fr/pub/computing/unix/perl/CPAN/">ftp://ftp.pasteur.fr/pub/computing/unix/perl/CPAN/</A>
+    Germany         <A HREF="ftp://ftp.gmd.de/packages/CPAN/">ftp://ftp.gmd.de/packages/CPAN/</A>
+                    <A HREF="ftp://ftp.leo.org/pub/comp/programming/languages/perl/CPAN/">ftp://ftp.leo.org/pub/comp/programming/languages/perl/CPAN/</A>
+                    <A HREF="ftp://ftp.mpi-sb.mpg.de/pub/perl/CPAN/">ftp://ftp.mpi-sb.mpg.de/pub/perl/CPAN/</A>
+                    <A HREF="ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/">ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/</A>
+                    <A HREF="ftp://ftp.uni-erlangen.de/pub/source/Perl/CPAN/">ftp://ftp.uni-erlangen.de/pub/source/Perl/CPAN/</A>
+                    <A HREF="ftp://ftp.uni-hamburg.de/pub/soft/lang/perl/CPAN/">ftp://ftp.uni-hamburg.de/pub/soft/lang/perl/CPAN/</A>
+    Greece          <A HREF="ftp://ftp.ntua.gr/pub/lang/perl/">ftp://ftp.ntua.gr/pub/lang/perl/</A>
+    Hungary         <A HREF="ftp://ftp.kfki.hu/pub/packages/perl/CPAN/">ftp://ftp.kfki.hu/pub/packages/perl/CPAN/</A>
+    Italy           <A HREF="ftp://cis.utovrm.it/CPAN/">ftp://cis.utovrm.it/CPAN/</A>
+    the Netherlands <A HREF="ftp://ftp.cs.ruu.nl/pub/PERL/CPAN/">ftp://ftp.cs.ruu.nl/pub/PERL/CPAN/</A>
+                    <A HREF="ftp://ftp.EU.net/packages/cpan/">ftp://ftp.EU.net/packages/cpan/</A>
+    Norway          <A HREF="ftp://ftp.uit.no/pub/languages/perl/cpan/">ftp://ftp.uit.no/pub/languages/perl/cpan/</A>
+    Poland          <A HREF="ftp://ftp.pk.edu.pl/pub/lang/perl/CPAN/">ftp://ftp.pk.edu.pl/pub/lang/perl/CPAN/</A>
+                    <A HREF="ftp://sunsite.icm.edu.pl/pub/CPAN/">ftp://sunsite.icm.edu.pl/pub/CPAN/</A>
+    Portugal        <A HREF="ftp://ftp.ci.uminho.pt/pub/lang/perl/">ftp://ftp.ci.uminho.pt/pub/lang/perl/</A>
+                    <A HREF="ftp://ftp.telepac.pt/pub/CPAN/">ftp://ftp.telepac.pt/pub/CPAN/</A>
+    Russia          <A HREF="ftp://ftp.sai.msu.su/pub/lang/perl/CPAN/">ftp://ftp.sai.msu.su/pub/lang/perl/CPAN/</A>
+    Slovenia        <A HREF="ftp://ftp.arnes.si/software/perl/CPAN/">ftp://ftp.arnes.si/software/perl/CPAN/</A>
+    Spain           <A HREF="ftp://ftp.etse.urv.es/pub/mirror/perl/">ftp://ftp.etse.urv.es/pub/mirror/perl/</A>
+                    <A HREF="ftp://ftp.rediris.es/mirror/CPAN/">ftp://ftp.rediris.es/mirror/CPAN/</A>
+    Sweden          <A HREF="ftp://ftp.sunet.se/pub/lang/perl/CPAN/">ftp://ftp.sunet.se/pub/lang/perl/CPAN/</A>
+    UK              <A HREF="ftp://ftp.demon.co.uk/pub/mirrors/perl/CPAN/">ftp://ftp.demon.co.uk/pub/mirrors/perl/CPAN/</A>
+                    <A HREF="ftp://sunsite.doc.ic.ac.uk/packages/CPAN/">ftp://sunsite.doc.ic.ac.uk/packages/CPAN/</A>
+                    <A HREF="ftp://unix.hensa.ac.uk/mirrors/perl-CPAN/">ftp://unix.hensa.ac.uk/mirrors/perl-CPAN/</A>
+</PRE>
+
+<P>
+
+<LI><STRONG><A NAME="item_North">North America
+
+</A></STRONG>
+<PRE>    Ontario         <A HREF="ftp://ftp.utilis.com/public/CPAN/">ftp://ftp.utilis.com/public/CPAN/</A>
+                    <A HREF="ftp://enterprise.ic.gc.ca/pub/perl/CPAN/">ftp://enterprise.ic.gc.ca/pub/perl/CPAN/</A>
+    Manitoba        <A HREF="ftp://theory.uwinnipeg.ca/pub/CPAN/">ftp://theory.uwinnipeg.ca/pub/CPAN/</A>
+    California      <A HREF="ftp://ftp.digital.com/pub/plan/perl/CPAN/">ftp://ftp.digital.com/pub/plan/perl/CPAN/</A>
+                    <A HREF="ftp://ftp.cdrom.com/pub/perl/CPAN/">ftp://ftp.cdrom.com/pub/perl/CPAN/</A>
+    Colorado        <A HREF="ftp://ftp.cs.colorado.edu/pub/perl/CPAN/">ftp://ftp.cs.colorado.edu/pub/perl/CPAN/</A>
+    Florida         <A HREF="ftp://ftp.cis.ufl.edu/pub/perl/CPAN/">ftp://ftp.cis.ufl.edu/pub/perl/CPAN/</A>
+    Illinois        <A HREF="ftp://uiarchive.uiuc.edu/pub/lang/perl/CPAN/">ftp://uiarchive.uiuc.edu/pub/lang/perl/CPAN/</A>
+    Massachusetts   <A HREF="ftp://ftp.iguide.com/pub/mirrors/packages/perl/CPAN/">ftp://ftp.iguide.com/pub/mirrors/packages/perl/CPAN/</A>
+    New York        <A HREF="ftp://ftp.rge.com/pub/languages/perl/">ftp://ftp.rge.com/pub/languages/perl/</A>
+    North Carolina  <A HREF="ftp://ftp.duke.edu/pub/perl/">ftp://ftp.duke.edu/pub/perl/</A>
+    Oklahoma        <A HREF="ftp://ftp.ou.edu/mirrors/CPAN/">ftp://ftp.ou.edu/mirrors/CPAN/</A>
+    Oregon          <A HREF="http://www.perl.org/CPAN/">http://www.perl.org/CPAN/</A>
+                    <A HREF="ftp://ftp.orst.edu/pub/packages/CPAN/">ftp://ftp.orst.edu/pub/packages/CPAN/</A>
+    Pennsylvania    <A HREF="ftp://ftp.epix.net/pub/languages/perl/">ftp://ftp.epix.net/pub/languages/perl/</A>
+    Texas           <A HREF="ftp://ftp.sedl.org/pub/mirrors/CPAN/">ftp://ftp.sedl.org/pub/mirrors/CPAN/</A>
+                    <A HREF="ftp://ftp.metronet.com/pub/perl/">ftp://ftp.metronet.com/pub/perl/</A>
+</PRE>
+
+<P>
+
+<LI><STRONG><A NAME="item_South">South America
+
+</A></STRONG>
+<PRE>    Chile           <A HREF="ftp://sunsite.dcc.uchile.cl/pub/Lang/perl/CPAN/">ftp://sunsite.dcc.uchile.cl/pub/Lang/perl/CPAN/</A>
+</PRE>
+
+<P>
+
+</UL>
+For an up-to-date listing of 
+<FONT SIZE=-1>CPAN</FONT> sites, see <EM>http://www.perl.com/perl/CPAN</EM> or <EM>ftp://ftp.perl.com/perl/</EM>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Modules_Creation_Use_and_Abus">Modules: Creation, Use, and Abuse
+
+</A></H1>
+(The following section is borrowed directly from Tim Bunce's modules file, available at your nearest 
+<FONT SIZE=-1>CPAN</FONT> site.)
+
+
+
+<P>
+
+Perl implements a class using a package, but the presence of a package doesn't imply the presence of a class. 
+<FONT SIZE=-1>A</FONT> package is just a namespace. 
+<FONT SIZE=-1>A</FONT> class is a package that provides subroutines that can be used as methods. 
+<FONT SIZE=-1>A</FONT> method is just a subroutine that expects, as its first argument, either the name of a package (for ``static'' methods), or a reference to something (for ``virtual'' methods).
+
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> module is a file that (by convention) provides a class of the same name (sans the .pm), plus an import method in that class that can be called to fetch exported symbols. This module may implement some of its methods by loading dynamic 
+<FONT SIZE=-1>C</FONT> or 
+<FONT SIZE=-1>C++</FONT> objects, but that should be totally transparent to the user of the module. Likewise, the module might set up an 
+<FONT SIZE=-1>AUTOLOAD</FONT> function to slurp in subroutine definitions on demand, but this is also transparent. Only the
+ <EM>.pm</EM> file is required to exist. See <A HREF="/n|/perl/html/./lib/Pod/perlsub.html#">the perlsub manpage</A>, <A HREF="/n|/perl/html/./lib/Pod/perltoot.html#">the perltoot manpage</A>, and <A HREF="/n|/perl/html/./lib/AutoLoader.html#">the AutoLoader manpage</A> for details about the 
+<FONT SIZE=-1>AUTOLOAD</FONT> mechanism.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Guidelines_for_Module_Creation">Guidelines for Module Creation
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_Do">Do similar modules already exist in some form?
+
+</A></STRONG><DD>
+If so, please try to reuse the existing modules either in whole or by inheriting useful features into a new class. If this is not practical try to get together with the module authors to work on extending or enhancing the functionality of the existing modules. 
+<FONT SIZE=-1>A</FONT> perfect example is the plethora of packages in perl4 for dealing with command line options.
+
+
+
+<P>
+
+If you are writing a module to expand an already existing set of modules,
+please coordinate with the author of the package. It helps if you follow
+the same naming scheme and module interaction scheme as the original
+author.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Try">Try to design the new module to be easy to extend and reuse.
+
+</A></STRONG><DD>
+Use blessed references. Use the two argument form of bless to bless into
+the class name given as the first parameter of the constructor, e.g.,:
+
+
+<P>
+
+<PRE> sub new {
+        my $class = shift;
+        return bless {}, $class;
+ }
+</PRE>
+
+<P>
+
+or even this if you'd like it to be used as either a static or a virtual
+method.
+
+
+<P>
+
+<PRE> sub new {
+        my $self  = shift;
+        my $class = ref($self) || $self;
+        return bless {}, $class;
+ }
+</PRE>
+
+<P>
+
+Pass arrays as references so more parameters can be added later (it's also
+faster). Convert functions into methods where appropriate. Split large
+methods into smaller more flexible ones. Inherit methods from other modules
+if appropriate.
+
+
+<P>
+
+Avoid class name tests like: <CODE>die "Invalid" unless ref $ref eq 'FOO'</CODE>. Generally you can delete the ``<CODE>eq 'FOO'</CODE>'' part with no harm at all. Let the objects look after themselves!
+Generally, avoid hard-wired class names as far as possible.
+
+
+<P>
+
+Avoid <CODE>$r-&gt;Class::func()</CODE> where using <CODE>@ISA=qw(... Class ...)</CODE> and
+<CODE>$r-&gt;func()</CODE> would work (see <A HREF="/n|/perl/html/./lib/Pod/perlbot.html#">the perlbot manpage</A> for more details).
+
+
+<P>
+
+Use autosplit so little used or newly added functions won't be a burden to programs which don't use them. Add test functions to the module after 
+<FONT SIZE=-1>__END__</FONT> either using AutoSplit or by saying:
+
+
+
+<P>
+
+<PRE> eval join('',&lt;main::DATA&gt;) || die $@ unless caller();
+</PRE>
+
+<P>
+
+Does your module pass the 'empty subclass' test? If you say ``<CODE>@SUBCLASS::ISA = qw(YOURCLASS);</CODE>'' your applications should be able to use 
+<FONT SIZE=-1>SUBCLASS</FONT> in exactly the same way as 
+<FONT SIZE=-1>YOURCLASS.</FONT> For example, does your application still work if you change:
+  <CODE>$obj = new YOURCLASS;</CODE>
+into: <CODE>$obj = new SUBCLASS;</CODE> ?
+
+
+<P>
+
+Avoid keeping any state information in your packages. It makes it difficult
+for multiple other packages to use yours. Keep state information in
+objects.
+
+
+<P>
+
+Always use <STRONG>-w</STRONG>. Try to <CODE>use strict;</CODE> (or <CODE>use strict qw(...);</CODE>). Remember that you can add <CODE>no strict qw(...);</CODE> to individual blocks of code which need less strictness. Always use <STRONG>-w</STRONG>. Always use <STRONG>-w</STRONG>! Follow the guidelines in the <CODE>perlstyle(1)</CODE> manual.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Some">Some simple style guidelines
+
+</A></STRONG><DD>
+The perlstyle manual supplied with perl has many helpful points.
+
+
+<P>
+
+Coding style is a matter of personal taste. Many people evolve their style
+over several years as they learn what helps them write and maintain good
+code. Here's one set of assorted suggestions that seem to be widely used by
+experienced developers:
+
+
+<P>
+
+Use underscores to separate words. It is generally easier to read <CODE>$var_names_like_this</CODE> than $VarNamesLikeThis, especially for non-native speakers of English. It's also a simple rule that works consistently with 
+<FONT SIZE=-1>VAR_NAMES_LIKE_THIS.</FONT>
+
+
+
+<P>
+
+Package/Module names are an exception to this rule. Perl informally
+reserves lowercase module names for 'pragma' modules like integer and
+strict. Other modules normally begin with a capital letter and use mixed
+case with no underscores (need to be short and portable).
+
+
+<P>
+
+You may find it helpful to use letter case to indicate the scope or nature
+of a variable. For example:
+
+
+<P>
+
+<PRE> $ALL_CAPS_HERE   constants only (beware clashes with perl vars)
+ $Some_Caps_Here  package-wide global/static
+ $no_caps_here    function scope my() or local() variables
+</PRE>
+
+<P>
+
+Function and method names seem to work best as all lowercase. e.g., <CODE>$obj-&gt;as_string()</CODE>.
+
+
+<P>
+
+You can use a leading underscore to indicate that a variable or function
+should not be used outside the package that defined it.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Select">Select what to export.
+
+</A></STRONG><DD>
+Do 
+<FONT SIZE=-1>NOT</FONT> export method names!
+
+
+<P>
+
+Do 
+<FONT SIZE=-1>NOT</FONT> export anything else by default without a good
+reason!
+
+
+<P>
+
+Exports pollute the namespace of the module user. If you must export try to
+use <CODE>@EXPORT_OK</CODE> in preference to <CODE>@EXPORT</CODE> and avoid
+short or common names to reduce the risk of name clashes.
+
+
+<P>
+
+Generally anything not exported is still accessible from outside the module
+using the ModuleName::item_name (or <CODE>$blessed_ref-&gt;method</CODE>) syntax. By convention you can use a leading underscore on names to
+indicate informally that they are 'internal' and not for public use.
+
+
+<P>
+
+(It is actually possible to get private functions by saying:
+<CODE>my $subref = sub { ... };  &$subref;</CODE>. But there's no way to call that directly as a method, because a method
+must have a name in the symbol table.)
+
+
+<P>
+
+As a general rule, if the module is trying to be object oriented then
+export nothing. If it's just a collection of functions then
+<CODE>@EXPORT_OK</CODE> anything but use <CODE>@EXPORT</CODE> with caution.
+
+
+<P>
+
+<DT><STRONG>Select a name for the module.
+
+</A></STRONG><DD>
+This name should be as descriptive, accurate, and complete as possible.
+Avoid any risk of ambiguity. Always try to use two or more whole words.
+Generally the name should reflect what is special about what the module
+does rather than how it does it. Please use nested module names to group
+informally or categorize a module. There should be a very good reason for a
+module not to have a nested name. Module names should begin with a capital
+letter.
+
+
+<P>
+
+Having 57 modules all called Sort will not make life easy for anyone
+(though having 23 called Sort::Quick is only marginally better :-). Imagine
+someone trying to install your module alongside many others. If in any
+doubt ask for suggestions in comp.lang.perl.misc.
+
+
+<P>
+
+If you are developing a suite of related modules/classes it's good practice
+to use nested classes with a common prefix as this will avoid namespace
+clashes. For example: Xyz::Control, Xyz::View, Xyz::Model etc. Use the
+modules in this list as a naming guide.
+
+
+<P>
+
+If adding a new module to a set, follow the original author's standards for
+naming modules and the interface to methods in those modules.
+
+
+<P>
+
+To be portable each component of a module name should be limited to 11 characters. If it might be used on 
+<FONT SIZE=-1>MS-DOS</FONT> then try to ensure each is unique in the first 8 characters. Nested modules make this easier.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Have">Have you got it right?
+
+</A></STRONG><DD>
+How do you know that you've made the right decisions? Have you picked an
+interface design that will cause problems later? Have you picked the most
+appropriate name? Do you have any questions?
+
+
+<P>
+
+The best way to know for sure, and pick up many helpful suggestions, is to
+ask someone who knows. Comp.lang.perl.misc is read by just about all the
+people who develop modules and it's the best place to ask.
+
+
+<P>
+
+All you need to do is post a short summary of the module, its purpose and interfaces. 
+<FONT SIZE=-1>A</FONT> few lines on each of the main methods is probably enough. (If you post the whole module it might be ignored by busy people - generally the very people you want to read it!)
+
+
+
+<P>
+
+Don't worry about posting if you can't say when the module will be ready -
+just say so in the message. It might be worth inviting others to help you,
+they may be able to complete it for you!
+
+
+<P>
+
+<DT><STRONG><A NAME="item_README">README and other Additional Files.
+
+</A></STRONG><DD>
+It's well known that software developers usually fully document the software they write. If, however, the world is in urgent need of your software and there is not enough time to write the full documentation please at least provide a 
+<FONT SIZE=-1>README</FONT> file containing:
+
+
+
+<P>
+
+<UL>
+<LI><STRONG><A NAME="item_A">A description of the module/package/extension etc.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_A">A copyright notice - see below.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Prerequisites">Prerequisites - what else you may need to have.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_How">How to build it - possible changes to Makefile.PL etc.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_How">How to install it.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Recent">Recent changes in this release, especially incompatibilities
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Changes">Changes / enhancements you plan to make in the future.
+
+</A></STRONG>
+</UL>
+If the 
+<FONT SIZE=-1>README</FONT> file seems to be getting too large you may wish to split out some of the sections into separate files: 
+<FONT SIZE=-1>INSTALL,</FONT> Copying, ToDo etc.
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Adding">Adding a Copyright Notice.
+
+</A></STRONG><DD>
+How you choose to license your work is a personal decision. The general
+mechanism is to assert your Copyright and then make a declaration of how
+others may copy/use/modify your work.
+
+
+<P>
+
+Perl, for example, is supplied with two types of licence: The 
+<FONT SIZE=-1>GNU</FONT> 
+<FONT SIZE=-1>GPL</FONT> and The Artistic Licence (see the files 
+<FONT SIZE=-1>README,</FONT> Copying, and Artistic). Larry has good reasons for 
+<FONT SIZE=-1>NOT</FONT> just using the 
+<FONT SIZE=-1>GNU</FONT> 
+<FONT SIZE=-1>GPL.</FONT>
+
+
+
+<P>
+
+My personal recommendation, out of respect for Larry, Perl, and the perl
+community at large is to state something simply like:
+
+
+<P>
+
+<PRE> Copyright (c) 1995 Your Name. All rights reserved.
+ This program is free software; you can redistribute it and/or
+ modify it under the same terms as Perl itself.
+</PRE>
+
+<P>
+
+This statement should at least appear in the 
+<FONT SIZE=-1>README</FONT> file. You may also wish to include it in a
+Copying file and your source files. Remember to include the other words in
+addition to the Copyright.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Give">Give the module a version/issue/release number.
+
+</A></STRONG><DD>
+To be fully compatible with the Exporter and MakeMaker modules you should store your module's version number in a non-my package variable called 
+<FONT SIZE=-1>$VERSION.</FONT> This should be a floating point number with at least two digits after the decimal (i.e., hundredths, e.g,
+ <CODE>$VERSION = "0.01"</CODE>). Don't use a ``1.3.2'' style version. See Exporter.pm in Perl5.001m or
+later for details.
+
+
+<P>
+
+It may be handy to add a function or method to retrieve the number. Use the
+number in announcements and archive file names when releasing the module
+(ModuleName-1.02.tar.Z). See perldoc ExtUtils::MakeMaker.pm for details.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_How">How to release and distribute a module.
+
+</A></STRONG><DD>
+It's good idea to post an announcement of the availability of your module
+(or the module itself if small) to the comp.lang.perl.announce Usenet
+newsgroup. This will at least ensure very wide once-off distribution.
+
+
+<P>
+
+If possible you should place the module into a major ftp archive and
+include details of its location in your announcement.
+
+
+<P>
+
+Some notes about ftp archives: Please use a long descriptive file name
+which includes the version number. Most incoming directories will not be
+readable/listable, i.e., you won't be able to see your file after uploading
+it. Remember to send your email notification message as soon as possible
+after uploading else your file may get deleted automatically. Allow time
+for the file to be processed and/or check the file has been processed
+before announcing its location.
+
+
+<P>
+
+
+<FONT SIZE=-1>FTP</FONT> Archives for Perl Modules:
+
+
+<P>
+
+Follow the instructions and links on
+
+
+<P>
+
+<PRE>   <A HREF="http://franz.ww.tu-berlin.de/modulelist">http://franz.ww.tu-berlin.de/modulelist</A>
+</PRE>
+
+<P>
+
+or upload to one of these sites:
+
+
+<P>
+
+<PRE>   <A HREF="ftp://franz.ww.tu-berlin.de/incoming">ftp://franz.ww.tu-berlin.de/incoming</A>
+   <A HREF="ftp://ftp.cis.ufl.edu/incoming">ftp://ftp.cis.ufl.edu/incoming</A>
+</PRE>
+
+<P>
+
+and notify &lt;<EM>upload@franz.ww.tu-berlin.de</EM>&gt;.
+
+
+<P>
+
+By using the 
+<FONT SIZE=-1>WWW</FONT> interface you can ask the Upload Server to mirror your modules from your ftp or 
+<FONT SIZE=-1>WWW</FONT> site into your own directory on 
+<FONT SIZE=-1>CPAN!</FONT>
+
+
+
+<P>
+
+Please remember to send me an updated entry for the Module list!
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Take">Take care when changing a released module.
+
+</A></STRONG><DD>
+Always strive to remain compatible with previous released versions (see 2.2
+above) Otherwise try to add a mechanism to revert to the old behaviour if
+people rely on it. Document incompatible changes.
+
+
+<P>
+
+</DL>
+</DL>
+<P>
+<HR>
+<H2><A NAME="Guidelines_for_Converting_Perl_4">Guidelines for Converting Perl 4 Library Scripts into Modules
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_There">There is no requirement to convert anything.
+
+</A></STRONG><DD>
+If it ain't broke, don't fix it! Perl 4 library scripts should continue to
+work with no problems. You may need to make some minor changes (like
+escaping non-array @'s in double quoted strings) but there is no need to
+convert a .pl file into a Module for just that.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Consider">Consider the implications.
+
+</A></STRONG><DD>
+All the perl applications which make use of the script will need to be
+changed (slightly) if the script is converted into a module. Is it worth it
+unless you plan to make other changes at the same time?
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Make">Make the most of the opportunity.
+
+</A></STRONG><DD>
+If you are going to convert the script to a module you can use the
+opportunity to redesign the interface. The 'Guidelines for Module Creation'
+above include many of the issues you should consider.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_The">The pl2pm utility will get you started.
+
+</A></STRONG><DD>
+This utility will read *.pl files (given as parameters) and write
+corresponding *.pm files. The pl2pm utilities does the following:
+
+
+<P>
+
+<UL>
+<LI><STRONG><A NAME="item_Adds">Adds the standard Module prologue lines
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Converts">Converts package specifiers from ' to ::
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Converts">Converts die(...) to croak(...)
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Several">Several other minor changes
+
+</A></STRONG>
+</UL>
+Being a mechanical process pl2pm is not bullet proof. The converted code
+will need careful checking, especially any package statements. Don't delete
+the original .pl file till the new .pm one works!
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Guidelines_for_Reusing_Applicati">Guidelines for Reusing Application Code
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_Complete">Complete applications rarely belong in the Perl Module Library.
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Many">Many applications contain some perl code which could be reused.
+
+</A></STRONG><DD>
+Help save the world! Share your code in a form that makes it easy to reuse.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Break">Break-out the reusable code into one or more separate module files.
+
+</A></STRONG><DD>
+<DT><STRONG>Take the opportunity to reconsider and redesign the interfaces.
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_In">In some cases the 'application' can then be reduced to a small
+
+</A></STRONG><DD>
+fragment of code built on top of the reusable modules. In these cases the
+application could invoked as:
+
+
+<P>
+
+<PRE>     perl -e 'use Module::Name; method(@ARGV)' ...
+or
+     perl -mModule::Name ...    (in perl5.002 or higher)
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+Perl does not enforce private and public parts of its modules as you may have been used to in other languages like 
+<FONT SIZE=-1>C++,</FONT> Ada, or Modula-17. Perl doesn't have an infatuation with enforced privacy. It would prefer that you stayed out of its living room because you weren't invited, not because it has a shotgun.
+
+
+
+<P>
+
+The module and its user have a contract, part of which is common law, and part of which is ``written''. Part of the common law contract is that a module doesn't pollute any namespace it wasn't asked to. The written contract for the module 
+<FONT SIZE=-1>(A.K.A.</FONT> documentation) may make other provisions. But then you know when you
+ <CODE>use RedefineTheWorld</CODE> that you're redefining the world and willing to take the consequences.
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

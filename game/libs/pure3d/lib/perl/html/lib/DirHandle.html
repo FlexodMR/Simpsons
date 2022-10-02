@@ -1,0 +1,68 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>DirHandle - supply object methods for directory handles
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME </A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME 
+
+</A></H1>
+DirHandle - supply object methods for directory handles
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use DirHandle;
+    $d = new DirHandle &quot;.&quot;;
+    if (defined $d) {
+        while (defined($_ = $d-&gt;read)) { something($_); }
+        $d-&gt;rewind;
+        while (defined($_ = $d-&gt;read)) { something_else($_); }
+        undef $d;
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <A HREF="#item_DirHandle">DirHandle</A> method provide an alternative interface to the <CODE>opendir(),</CODE>
+<CODE>closedir(),</CODE> <CODE>readdir(),</CODE> and
+<CODE>rewinddir()</CODE> functions.
+
+
+<P>
+
+The only objective benefit to using <A HREF="#item_DirHandle">DirHandle</A> is that it avoids namespace pollution by creating globs to hold directory
+handles.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

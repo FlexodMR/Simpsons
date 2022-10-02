@@ -1,0 +1,38 @@
+SelectMission("m4");
+
+SetMissionResetPlayerOutCar("m4_marge_start","m4_carstart");
+SetDynaLoadData("l4z1.p3d;l4z7.p3d;l4r7.p3d;");
+
+
+AddStage("final");
+	
+//SetStageAIRaceCatchupParams( 
+//	STAGEVEHICLENAME,
+//      ALONGROADDISTFROMPLAYER_TO_APPLYMAXCATCHUP, // default = 80
+//      FRACTIONPLAYERSPEED_MINCATCHUP,   // default = 0.5
+//      FRACTIONPLAYERSPEED_NOCATCHUP,    // default = 1.1
+//      FRACTIONPLAYERSPEED_MAXCATCHUP )  // default = 1.7	AddStageWaypoint( "m7_smithers_race1" );
+//SetStageAIRaceCatchupParams("wiggu_v", 80, 0.5, 1.1, 1.7); 
+	
+	RESET_TO_HERE();
+	SetStageMessageIndex(100);
+	SetHUDIcon( "retire" );
+	AddStageVehicle("wiggu_v","m4_wiggum_start","race","Missions\level04\M4race.con");
+	SetStageAIRaceCatchupParams("wiggu_v", 80, 0.9, 1.5, 2.3); 
+	SetVehicleAIParams( "wiggu_v", 50, 51 );   // no shortcuts
+	AddStageWaypoint( "m4_race_finish" );
+	AddObjective( "race" );
+//		SetHitAndRunMeter(100);
+		AddNPC("grandpa", "m5_grampa_sd"); 
+		AddCollectible("m4_race_finish","finish_line");
+		SetCollectibleEffect("finish_line_col");
+	CloseObjective();
+	AddCondition("race");
+		SetCondTargetVehicle("wiggu_v");
+	CloseCondition();
+	StageStartMusicEvent("L4_drama");
+CloseStage();
+
+CloseMission();
+
+

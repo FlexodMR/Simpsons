@@ -1,0 +1,215 @@
+
+(object Petal
+    version    	44
+    _written   	"Rose 7.0.9420.17"
+    charSet    	0)
+
+(object Class_Category "World Manager"
+    is_unit    	TRUE
+    is_loaded  	TRUE
+    attributes 	(list Attribute_Set
+	(object Attribute
+	    tool       	"sc"
+	    name       	"SourceControlSpec"
+	    value      	"-- using Perforce --"))
+    quid       	"3C893057008D"
+    exportControl 	"Public"
+    logical_models 	(list unit_reference_list
+	(object Class "DSGObject"
+	    quid       	"3CACA5C8011C"
+	    operations 	(list Operations
+		(object Operation "GetPosition"
+		    quid       	"3CACA5E7013B"
+		    concurrency 	"Sequential"
+		    abstract   	TRUE
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "GetRadius"
+		    quid       	"3CACA5F00179"
+		    concurrency 	"Sequential"
+		    abstract   	TRUE
+		    opExportControl 	"Public"
+		    uid        	0))
+	    abstract   	TRUE)
+	(object Class "CollisionObject"
+	    quid       	"3CACA64B013A"
+	    documentation 	"Base class for anything in the world that can be collided with."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CACA65E00DC"
+		    supplier   	"Logical View::Model::World Manager::DSGObject"
+		    quidu      	"3CACA5C8011C"))
+	    operations 	(list Operations
+		(object Operation "ReactToCollision"
+		    quid       	"3CACA66A01D5"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "OnCollision"
+		    quid       	"3CACA6C9000F"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0))
+	    abstract   	TRUE)
+	(object Class "DynamicObject"
+	    quid       	"3CACA656004F"
+	    documentation 	"Base class for anything in the world that can be collided with and needs to be simulated i.e. moves around as a result of the collision."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CACA660006E"
+		    supplier   	"Logical View::Model::World Manager::CollisionObject"
+		    quidu      	"3CACA64B013A"))
+	    abstract   	TRUE))
+    logical_presentations 	(list unit_reference_list
+	(object ClassDiagram "Main"
+	    quid       	"3CACA5BD0284"
+	    title      	"Main"
+	    documentation 	
+|DSG -- Devin's SceneGraph
+|
+|Base class for all objects in the world
+	    
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	0
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object ClassView "Class" "Logical View::Model::World Manager::DSGObject" @1
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(752, 288)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@1
+			location   	(607, 182)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	290
+			justify    	0
+			label      	"DSGObject")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CACA5C8011C"
+		    compartment 	(object Compartment
+			Parent_View 	@1
+			location   	(607, 243)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	TRUE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			icon_style 	"Icon"
+			fill_color 	13434879
+			anchor     	2
+			nlines     	3
+			max_width  	296)
+		    width      	308
+		    height     	236
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::World Manager::CollisionObject" @2
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(752, 688)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@2
+			location   	(560, 582)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	384
+			justify    	0
+			label      	"CollisionObject")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CACA64B013A"
+		    compartment 	(object Compartment
+			Parent_View 	@2
+			location   	(560, 643)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	TRUE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			icon_style 	"Icon"
+			fill_color 	13434879
+			anchor     	2
+			nlines     	3
+			max_width  	390)
+		    width      	402
+		    height     	236
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::World Manager::DynamicObject" @3
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(752, 1056)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@3
+			location   	(592, 1004)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	320
+			justify    	0
+			label      	"DynamicObject")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CACA656004F"
+		    width      	338
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @4
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CACA65E00DC"
+		    client     	@2
+		    supplier   	@1
+		    line_style 	0)
+		(object InheritView "" @5
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CACA660006E"
+		    client     	@3
+		    supplier   	@2
+		    line_style 	0)))))

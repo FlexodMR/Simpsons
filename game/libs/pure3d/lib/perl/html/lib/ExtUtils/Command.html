@@ -1,0 +1,184 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>ExtUtils::Command - utilities to replace common UNIX commands in Makefiles etc.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO </A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+ExtUtils::Command - utilities to replace common 
+<FONT SIZE=-1>UNIX</FONT> commands in Makefiles etc.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  perl -MExtUtils::Command -e cat files... &gt; destination
+  perl -MExtUtils::Command -e mv source... destination
+  perl -MExtUtils::Command -e cp source... destination
+  perl -MExtUtils::Command -e touch files...
+  perl -MExtUtils::Command -e rm_f file...
+  perl -MExtUtils::Command -e rm_rf directories...
+  perl -MExtUtils::Command -e mkpath directories...
+  perl -MExtUtils::Command -e eqtime source destination
+  perl -MExtUtils::Command -e chmod mode files...
+  perl -MExtUtils::Command -e test_f file
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The module is used in Win32 port to replace common 
+<FONT SIZE=-1>UNIX</FONT> commands. Most commands are wrapers on generic
+modules File::Path and File::Basename.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_cat">cat 
+
+</A></STRONG><DD>
+Concatenates all files mentioned on command line to 
+<FONT SIZE=-1>STDOUT.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_eqtime">eqtime src dst
+
+</A></STRONG><DD>
+Sets modified time of dst to that of src
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rm_f">rm_f files....
+
+</A></STRONG><DD>
+Removes directories - recursively (even if readonly)
+
+
+<P>
+
+<DT><STRONG>rm_f files....
+
+</A></STRONG><DD>
+Removes files (even if readonly)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_touch">touch files ...
+
+</A></STRONG><DD>
+Makes files exist, with current timestamp 
+
+
+<P>
+
+<DT><STRONG><A NAME="item_mv">mv source... destination
+
+</A></STRONG><DD>
+Moves source to destination. Multiple sources are allowed if destination is
+an existing directory.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_cp">cp source... destination
+
+</A></STRONG><DD>
+Copies source to destination. Multiple sources are allowed if destination
+is an existing directory.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_chmod">chmod mode files...
+
+</A></STRONG><DD>
+Sets 
+<FONT SIZE=-1>UNIX</FONT> like permissions 'mode' on all the files.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_mkpath">mkpath directory...
+
+</A></STRONG><DD>
+Creates directory, including any parent directories.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_test_f">test_f file
+
+</A></STRONG><DD>
+Tests if a file exists
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Should probably be Auto/Self loaded.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO 
+
+</A></H1>
+ExtUtils::MakeMaker, ExtUtils::MM_Unix, ExtUtils::MM_Win32
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Nick Ing-Simmons &lt;<EM>nick@ni-s.u-net.com</EM>&gt;.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

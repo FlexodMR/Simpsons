@@ -1,0 +1,415 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>IO::Socket - Object interface to socket communications
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#SUB_CLASSES">SUB-CLASSES</A>
+	<UL>
+
+		<LI><A HREF="#IO_Socket_INET">IO::Socket::INET</A>
+		<LI><A HREF="#METHODS">METHODS</A>
+		<LI><A HREF="#IO_Socket_UNIX">IO::Socket::UNIX</A>
+		<LI><A HREF="#METHODS">METHODS</A>
+	</UL>
+
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+IO::Socket - Object interface to socket communications
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use IO::Socket;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>IO::Socket</CODE> provides an object interface to creating and using sockets. It is built
+upon the <A HREF="/n|/perl/html/./lib/IO/Handle.html">Handle</A> interface and inherits all the methods defined by <A HREF="/n|/perl/html/./lib/IO/Handle.html">Handle</A>.
+
+
+<P>
+
+<CODE>IO::Socket</CODE> only defines methods for those operations which are common to all types of
+socket. Operations which are specified to a socket in a particular domain
+have methods defined in sub classes of <CODE>IO::Socket</CODE>
+
+
+
+
+<P>
+
+<CODE>IO::Socket</CODE> will export all functions (and constants) defined by <A HREF="/n|/perl/html/./lib/Socket.html#">the Socket manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ( [ARGS] )
+
+</A></STRONG><DD>
+Creates an <CODE>IO::Socket</CODE>, which is a reference to a newly created symbol (see the <CODE>Symbol</CODE> package). <A HREF="#item_new">new</A>
+optionally takes arguments, these arguments are in key-value pairs.
+<A HREF="#item_new">new</A> only looks for one key <CODE>Domain</CODE> which tells new which domain the socket will be in. All other arguments
+will be passed to the configuration method of the package for that domain,
+See below.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A> for complete descriptions of each of the following supported <CODE>IO::Socket</CODE> methods, which are just front ends for the corresponding built-in
+functions:
+
+
+<P>
+
+<PRE>    socket
+    socketpair
+    bind
+    listen
+    accept
+    send
+    recv
+    peername (getpeername)
+    sockname (getsockname)
+</PRE>
+
+<P>
+
+Some methods take slightly different arguments to those defined in <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>
+in attempt to make the interface more flexible. These are
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_accept">accept([PKG])
+
+</A></STRONG><DD>
+perform the system call <A HREF="#item_accept">accept</A> on the socket and return a new object. The new object will be created in
+the same class as the listen socket, unless
+<CODE>PKG</CODE> is specified. This object can be used to communicate with the client that
+was trying to connect. In a scalar context the new socket is returned, or
+undef upon failure. In an array context a two-element array is returned
+containing the new socket and the peer address, the list will be empty upon
+failure.
+
+
+<P>
+
+Additional methods that are provided are
+
+
+<P>
+
+<DT><STRONG><A NAME="item_timeout">timeout([VAL])
+
+</A></STRONG><DD>
+Set or get the timeout value associated with this socket. If called without
+any arguments then the current setting is returned. If called with an
+argument the current setting is changed and the previous value returned.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sockopt">sockopt(OPT [, VAL])
+
+</A></STRONG><DD>
+Unified method to both set and get options in the 
+<FONT SIZE=-1>SOL_SOCKET</FONT> level. If called with one argument then
+getsockopt is called, otherwise setsockopt is called.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sockdomain">sockdomain
+
+</A></STRONG><DD>
+Returns the numerical number for the socket domain type. For example, for a 
+<FONT SIZE=-1>AF_INET</FONT> socket the value of <CODE>&AF_INET</CODE> will be returned.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_socktype">socktype
+
+</A></STRONG><DD>
+Returns the numerical number for the socket type. For example, for a 
+<FONT SIZE=-1>SOCK_STREAM</FONT> socket the value of
+<CODE>&SOCK_STREAM</CODE> will be returned.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_protocol">protocol
+
+</A></STRONG><DD>
+Returns the numerical number for the protocol being used on the socket, if known. If the protocol is unknown, as with an 
+<FONT SIZE=-1>AF_UNIX</FONT> socket, zero is returned.
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SUB_CLASSES">SUB-CLASSES
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="IO_Socket_INET">IO::Socket::INET
+
+</A></H2>
+<CODE>IO::Socket::INET</CODE> provides a constructor to create an 
+<FONT SIZE=-1>AF_INET</FONT> domain socket and some related methods. The
+constructor can take the following options
+
+
+<P>
+
+<PRE>    PeerAddr    Remote host address          &lt;hostname&gt;[:&lt;port&gt;]
+    PeerPort    Remote port or service       &lt;service&gt;[(&lt;no&gt;)] | &lt;no&gt;
+    LocalAddr   Local host bind address      hostname[:port]
+    LocalPort   Local host bind port         &lt;service&gt;[(&lt;no&gt;)] | &lt;no&gt;
+    Proto       Protocol name                &quot;tcp&quot; | &quot;udp&quot; | ...
+    Type        Socket type                  SOCK_STREAM | SOCK_DGRAM | ...
+    Listen      Queue size for listen
+    Reuse       Set SO_REUSEADDR before binding
+    Timeout     Timeout value for various operations
+</PRE>
+
+<P>
+
+If <CODE>Listen</CODE> is defined then a listen socket is created, else if the socket type, which is derived from the protocol, is 
+<FONT SIZE=-1>SOCK_STREAM</FONT> then <CODE>connect()</CODE> is called.
+
+
+
+<P>
+
+The <CODE>PeerAddr</CODE> can be a hostname or the IP-address on the ``xx.xx.xx.xx'' form. The <CODE>PeerPort</CODE> can be a number or a symbolic service name. The service name might be
+followed by a number in parenthesis which is used if the service is not
+known by the system. The <CODE>PeerPort</CODE> specification can also be embedded in the <CODE>PeerAddr</CODE>
+by preceding it with a ``:''.
+
+
+<P>
+
+Only one of <CODE>Type</CODE> or <CODE>Proto</CODE> needs to be specified, one will be assumed from the other. If you specify a
+symbolic <CODE>PeerPort</CODE> port, then the constructor will try to derive <CODE>Type</CODE> and <CODE>Proto</CODE> from the service name.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>   $sock = IO::Socket::INET-&gt;new(PeerAddr =&gt; 'www.perl.org',
+                                 PeerPort =&gt; 'http(80)',
+                                 Proto    =&gt; 'tcp');
+</PRE>
+
+<P>
+
+<PRE>   $sock = IO::Socket::INET-&gt;new(PeerAddr =&gt; 'localhost:smtp(25)');
+</PRE>
+
+<P>
+
+<PRE>   $sock = IO::Socket::INET-&gt;new(Listen    =&gt; 5,
+                                 LocalAddr =&gt; 'localhost',
+                                 LocalPort =&gt; 9000,
+                                 Proto     =&gt; 'tcp');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="METHODS">METHODS
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_sockaddr">sockaddr ()
+
+</A></STRONG><DD>
+Return the address part of the sockaddr structure for the socket
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sockport">sockport ()
+
+</A></STRONG><DD>
+Return the port number that the socket is using on the local host
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sockhost">sockhost ()
+
+</A></STRONG><DD>
+Return the address part of the sockaddr structure for the socket in a text
+form xx.xx.xx.xx
+
+
+<P>
+
+<DT><STRONG><A NAME="item_peeraddr">peeraddr ()
+
+</A></STRONG><DD>
+Return the address part of the sockaddr structure for the socket on the
+peer host
+
+
+<P>
+
+<DT><STRONG><A NAME="item_peerport">peerport ()
+
+</A></STRONG><DD>
+Return the port number for the socket on the peer host.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_peerhost">peerhost ()
+
+</A></STRONG><DD>
+Return the address part of the sockaddr structure for the socket on the
+peer host in a text form xx.xx.xx.xx
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="IO_Socket_UNIX">IO::Socket::UNIX
+
+</A></H2>
+<CODE>IO::Socket::UNIX</CODE> provides a constructor to create an 
+<FONT SIZE=-1>AF_UNIX</FONT> domain socket and some related methods. The
+constructor can take the following options
+
+
+<P>
+
+<PRE>    Type        Type of socket (eg SOCK_STREAM or SOCK_DGRAM)
+    Local       Path to local fifo
+    Peer        Path to peer fifo
+    Listen      Create a listen socket
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="METHODS">METHODS
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_hostpath">hostpath()
+
+</A></STRONG><DD>
+Returns the pathname to the fifo at the local end
+
+
+<P>
+
+<DT><STRONG><A NAME="item_peerpath">peerpath()
+
+</A></STRONG><DD>
+Returns the pathanme to the fifo at the peer end
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Socket.html#">the Socket manpage</A>, <A HREF="/n|/perl/html/./lib/IO/Handle.html">Handle</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr &lt;<EM>Graham.Barr@tiuk.ti.com</EM>&gt;
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1996 Graham Barr. All rights reserved. This program is free
+software; you can redistribute it and/or modify it under the same terms as
+Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

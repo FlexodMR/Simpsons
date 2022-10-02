@@ -1,0 +1,109 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Text::Wrap - line wrapping to form simple paragraphs
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS </A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Text::Wrap - line wrapping to form simple paragraphs
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS 
+
+</A></H1>
+<PRE>        use Text::Wrap
+</PRE>
+
+<P>
+
+<PRE>        print wrap($initial_tab, $subsequent_tab, @text);
+</PRE>
+
+<P>
+
+<PRE>        use Text::Wrap qw(wrap $columns);
+</PRE>
+
+<P>
+
+<PRE>        $columns = 132;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Text::Wrap::wrap() is a very simple paragraph formatter. It formats a
+single paragraph at a time by breaking lines at word boundries. Indentation
+is controlled for the first line ($initial_tab) and all subsquent lines
+($subsequent_tab) independently. $Text::Wrap::columns should be set to the
+full width of your output device.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+<PRE>        print wrap(&quot;\t&quot;,&quot;&quot;,&quot;This is a bit of text that forms 
+                a normal book-style paragraph&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+It's not clear what the correct behavior should be when <CODE>Wrap()</CODE>
+is presented with a word that is longer than a line. The previous behavior
+was to die. Now the word is split at line-length.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+David Muir Sharnoff <A HREF="MAILTO:<muir@idiom.com>"><muir@idiom.com></A>
+with help from Tim Pierce and others.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Tune|Win32">
+      <Configuration>Tune</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName>
+    </SccProjectName>
+    <SccAuxPath />
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProvider>
+    </SccProvider>
+    <ProjectGuid>{D3D85EF1-6E12-478E-85F8-95974C430774}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Tune|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Tune|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\release\</OutDir>
+    <IntDir>.\release\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Tune|Win32'">
+    <OutDir>.\tune\</OutDir>
+    <IntDir>.\tune\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\debug\</OutDir>
+    <IntDir>.\debug\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\inc;..\..\..\pure3d;..\..\..\poser\inc;..\..\..\sim;..\..\..\radmath;..\..\..\radcore\inc;..\..\..\radcontent\inc;..\..\..\..\code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;RAD_RELEASE;WIN32;_LIB;RAD_WIN32;RAD_PC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>.\release/choreo.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\release/</AssemblerListingLocation>
+      <ObjectFileName>.\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>..\..\lib\choreowr.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x1009</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Tune|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\inc;..\..\..\pure3d;..\..\..\poser\inc;..\..\..\sim;..\..\..\radmath;..\..\..\radcore\inc;..\..\..\radcontent\inc;..\..\..\..\code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;RAD_TUNE;WIN32;_LIB;RAD_WIN32;RAD_PC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>.\tune/choreo.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\tune/</AssemblerListingLocation>
+      <ObjectFileName>.\tune/</ObjectFileName>
+      <ProgramDataBaseFileName>.\tune/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>..\..\lib\choreowt.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x1009</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\inc;..\..\..\pure3d;..\..\..\poser\inc;..\..\..\sim;..\..\..\radmath;..\..\..\radcore\inc;..\..\..\radcontent\inc;..\..\..\..\code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;RAD_DEBUG;WIN32;_LIB;RAD_WIN32;RAD_PC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>.\debug/choreo.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\debug/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>..\..\lib\choreowd.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x1009</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\blendtemplate.cpp" />
+    <ClCompile Include="..\..\src\constants.cpp" />
+    <ClCompile Include="..\..\src\driver.cpp" />
+    <ClCompile Include="..\..\src\internalanimation.cpp" />
+    <ClCompile Include="..\..\src\jointblenddriver.cpp" />
+    <ClCompile Include="..\..\src\jointblender.cpp" />
+    <ClCompile Include="..\..\src\replayblenddriver.cpp" />
+    <ClCompile Include="..\..\src\replayblender.cpp" />
+    <ClCompile Include="..\..\src\rootblenddriver.cpp" />
+    <ClCompile Include="..\..\src\rootblender.cpp" />
+    <ClCompile Include="..\..\src\utility.cpp" />
+    <ClCompile Include="..\..\src\basebank.cpp" />
+    <ClCompile Include="..\..\src\load.cpp" />
+    <ClCompile Include="..\..\src\scriptreader.cpp" />
+    <ClCompile Include="..\..\src\scriptwriter.cpp" />
+    <ClCompile Include="..\..\src\footblenddriver.cpp" />
+    <ClCompile Include="..\..\src\footblender.cpp" />
+    <ClCompile Include="..\..\src\footplanter.cpp" />
+    <ClCompile Include="..\..\src\bank.cpp" />
+    <ClCompile Include="..\..\src\engine.cpp" />
+    <ClCompile Include="..\..\src\partition.cpp" />
+    <ClCompile Include="..\..\src\puppet.cpp" />
+    <ClCompile Include="..\..\src\rig.cpp" />
+    <ClCompile Include="..\..\src\animation.cpp" />
+    <ClCompile Include="..\..\src\blend.cpp" />
+    <ClCompile Include="..\..\src\foot.cpp" />
+    <ClCompile Include="..\..\src\locomotion.cpp" />
+    <ClCompile Include="..\..\src\replay.cpp" />
+    <ClCompile Include="..\..\src\root.cpp" />
+    <ClCompile Include="..\..\src\synchronization.cpp" />
+    <ClCompile Include="..\..\src\transition.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\inc\choreo\blendtemplate.hpp" />
+    <ClInclude Include="..\..\inc\choreo\buildconfig.hpp" />
+    <ClInclude Include="..\..\inc\choreo\constants.hpp" />
+    <ClInclude Include="..\..\inc\choreo\driver.hpp" />
+    <ClInclude Include="..\..\inc\choreo\internalanimation.hpp" />
+    <ClInclude Include="..\..\inc\choreo\jointblenddriver.hpp" />
+    <ClInclude Include="..\..\inc\choreo\jointblender.hpp" />
+    <ClInclude Include="..\..\inc\choreo\replayblenddriver.hpp" />
+    <ClInclude Include="..\..\inc\choreo\replayblender.hpp" />
+    <ClInclude Include="..\..\inc\choreo\rootblenddriver.hpp" />
+    <ClInclude Include="..\..\inc\choreo\rootblender.hpp" />
+    <ClInclude Include="..\..\inc\choreo\utility.hpp" />
+    <ClInclude Include="..\..\inc\choreo\basebank.hpp" />
+    <ClInclude Include="..\..\inc\choreo\load.hpp" />
+    <ClInclude Include="..\..\inc\choreo\scriptreader.hpp" />
+    <ClInclude Include="..\..\inc\choreo\scriptwriter.hpp" />
+    <ClInclude Include="..\..\inc\choreo\footblenddriver.hpp" />
+    <ClInclude Include="..\..\inc\choreo\footblender.hpp" />
+    <ClInclude Include="..\..\inc\choreo\footplanter.hpp" />
+    <ClInclude Include="..\..\inc\choreo\bank.hpp" />
+    <ClInclude Include="..\..\inc\choreo\engine.hpp" />
+    <ClInclude Include="..\..\inc\choreo\partition.hpp" />
+    <ClInclude Include="..\..\inc\choreo\puppet.hpp" />
+    <ClInclude Include="..\..\inc\choreo\rig.hpp" />
+    <ClInclude Include="..\..\inc\choreo\animation.hpp" />
+    <ClInclude Include="..\..\inc\choreo\blend.hpp" />
+    <ClInclude Include="..\..\inc\choreo\foot.hpp" />
+    <ClInclude Include="..\..\inc\choreo\locomotion.hpp" />
+    <ClInclude Include="..\..\inc\choreo\replay.hpp" />
+    <ClInclude Include="..\..\inc\choreo\root.hpp" />
+    <ClInclude Include="..\..\inc\choreo\synchronization.hpp" />
+    <ClInclude Include="..\..\inc\choreo\transition.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

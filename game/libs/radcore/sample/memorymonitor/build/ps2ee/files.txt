@@ -1,0 +1,35 @@
+ROOTDIR = ../../../../..
+
+BINDIRECTORY	= ../../bin
+SOURCEDIR	= ../../src
+
+include $(ROOTDIR)/radcore/build/ps2ee/radcore.m
+
+#================================
+# PS2 specific configuation
+#================================
+include $(ROOTDIR)/radbuild/config.ps2
+
+crt0.o: $(CRTFILE)
+	@$(CC) $(ASFLAGS) -o $@ $< > $*.lst
+
+ifeq ($(PS2LINKER),SNLINKER)
+else
+EXE_OBJS += crt0.o
+endif
+
+ifeq ($(PS2LINKER),SNLINKER)
+LINKERCMDFILE = sn_app.cmd
+else
+LINKERCMDFILE = sce_app.cmd
+endif
+
+TARGET		= $(BINDIRECTORY)/memorymonitor
+
+TARGETTYPE	= EXECUTABLE
+
+SOURCEFILES += \
+	main
+
+	
+

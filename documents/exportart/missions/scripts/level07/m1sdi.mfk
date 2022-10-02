@@ -1,0 +1,45 @@
+SelectMission("m1sd");
+
+SetMissionResetPlayerOutCar("level7_homer_start", "level7_carstart");
+SetDynaLoadData("l7z1.p3d;l7r1.p3d;l7r7.p3d;l7i02.p3d@", "SimpsonsHouse");
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(156);
+	SetHUDIcon("lisa");
+	AddObjective("talkto", "neither");
+		AddNPC("lisa", "m1_lisa_sd");
+		SetTalkToTarget("lisa", 0, -0.2);
+	CloseObjective();
+CloseStage();
+
+AddStage(1);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis07_01.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "dialogue_open_arm_hand_gesture" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_no" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		//AddAmbientPcAnimation( "dialogue_shaking_fist" );
+		SetConversationCam( 3, "pc_far" );
+		SetDialogueInfo("homer","lisa","zombie",0);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

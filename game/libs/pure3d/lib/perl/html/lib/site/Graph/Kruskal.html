@@ -1,0 +1,448 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Graph::Kruskal - Kruskal's Algorithm for Minimal Spanning Trees in Graphs
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#VERSION">VERSION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#LICENSE">LICENSE</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Graph::Kruskal - Kruskal's Algorithm for Minimal Spanning Trees in Graphs
+
+
+<P>
+
+Computes the Minimal Spanning Tree of a given graph according to some cost
+function defined on the edges of the graph.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<UL>
+<LI><STRONG></STRONG>
+<CODE>use Graph::Kruskal qw(define_vortices define_edges</CODE>
+
+<CODE>heapify makeheap heapsort find union kruskal example);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>use Graph::Kruskal qw(:all);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>&define_vortices(2,3,5,7,11,13,17,19,23,29,31);</CODE>
+
+
+
+
+<P>
+
+Define a list of vortices (integers &gt; 0)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>&define_edges( 2,13,3, 3,13,2, 5,13,1, 3,5,2, 3,29,21 );</CODE>
+
+
+
+
+<P>
+
+Define (non-directed) edges on the vortices previously defined (always in
+triplets: ``from'' vortice, ``to'' vortice and cost of that edge)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>&heapify($i,$n);</CODE>
+
+
+
+
+<P>
+
+Main subroutine for sorting the edges according to their costs
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>&makeheap($n);</CODE>
+
+
+
+
+<P>
+
+Routine to initialize sorting of the edges
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>&heapsort($n);</CODE>
+
+
+
+
+<P>
+
+The famous heapsort algorithm (not needed for Kruskal's algorithm as a
+whole but included here for the sake of completeness) for sorting the edges
+according to their costs
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>&find($i);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>&union($i,$j);</CODE>
+
+
+
+
+<P>
+
+Disjoint (!) sets are stored as trees in an array in this algorithm. Each
+element of some set (a cell in the array) contains a pointer to (the number
+of) another element, up to the root element that does not point anywhere,
+but contains the (negative) number of elements the set contains. The number
+of the root element is also used as an identifier for the set.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>            i  : |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |
+    -------------+-----+-----+-----+-----+-----+-----+-----+-----+
+     parent[i] : | -4  | -3  |  1  |  2  |  1  | -1  |  3  |  4  |
+</PRE>
+
+<P>
+
+This array contains the three sets 
+<FONT SIZE=-1>S1,</FONT> 
+<FONT SIZE=-1>S2</FONT> and 
+<FONT SIZE=-1>S6:</FONT>
+
+
+
+<P>
+
+<PRE>                    1           2           6
+                   / \          |
+                  3   5         4
+                 /              |
+                7               8
+</PRE>
+
+<P>
+
+``find'' returns the number of the root element (= the identifier of the
+set) of the tree in which the given element is contained:
+
+
+<P>
+
+<PRE>      find(a) := i  so that  a in Si
+</PRE>
+
+<P>
+
+It also reduces the height of that tree by changing all the pointers from the given element up to the root element to point 
+<FONT SIZE=-1>DIRECTLY</FONT> to the root element.
+
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>    find(7) returns &quot;1&quot; and modifies the array as follows:
+</PRE>
+
+<P>
+
+<PRE>            i  : |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |
+    -------------+-----+-----+-----+-----+-----+-----+-----+-----+
+     parent[i] : | -4  | -3  |  1  |  2  |  1  | -1  |  1  |  4  |
+</PRE>
+
+<P>
+
+<PRE>                    1           2           6
+                   /|\          |
+                  3 5 7         4
+                                |
+                                8
+</PRE>
+
+<P>
+
+``union'' takes the identifiers of two sets (= the numbers of their respective root elements) and merges the two sets by appending one of the two trees to the other. It always appends the 
+<FONT SIZE=-1>SMALLER</FONT> set to the 
+<FONT SIZE=-1>LARGER</FONT> one (to keep the height of the resulting tree as small as possible) and updates the number of elements contained in the resulting set which is stored in the root element's cell of the array.
+
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>    union(2,6) does the following:
+</PRE>
+
+<P>
+
+<PRE>            i  : |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |
+    -------------+-----+-----+-----+-----+-----+-----+-----+-----+
+     parent[i] : | -4  | -4  |  1  |  2  |  1  |  2  |  1  |  4  |
+</PRE>
+
+<P>
+
+<PRE>                    1           2
+                   /|\         / \
+                  3 5 7       4   6
+                              |
+                              8
+</PRE>
+
+<P>
+
+<PRE>    complexity for O(n) &quot;find&quot; operations: O( G(n) n )
+</PRE>
+
+<P>
+
+<PRE>    complexity for one &quot;union&quot; operation: O(1)
+</PRE>
+
+<P>
+
+<PRE>    complexity for O(n) ( &quot;find&quot; + &quot;union&quot; ) operations: O( G(n) n )
+</PRE>
+
+<P>
+
+<PRE>    where  G(n) := min{ j | F(j) &gt;= n }
+</PRE>
+
+<P>
+
+<PRE>    and    F(j) := 1            for j = 0
+           F(j) := 2 ^ F(j-1)   for j &gt; 0
+</PRE>
+
+<P>
+
+<PRE>    also,  G(n) &lt;= ld n         for all n
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>&kruskal();</CODE>
+
+
+
+
+<P>
+
+This routine carries out the computations associated with Kruskal's
+algorithm.
+
+
+<P>
+
+Returns an array of hashes (each hash containing the keys ``from'', ``to''
+and ``cost'' and the corresponding values) representing the minimal
+spanning tree of the graph previously defined by calls to
+``define_vortices'' and ``define_edges''.
+
+
+<P>
+
+The result can also be found in @Graph::Kruskal::T.
+
+
+<P>
+
+See the implementation of the subroutine ``example'' to see how to access this array directly (remember to fully qualify the name of this array in your program, i.e., use ``@Graph::Kruskal::T'' instead of just 
+<FONT SIZE=-1>``@T'',</FONT> since this array is not exported - or your program will not work!)
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>&example();</CODE>
+
+
+
+
+<P>
+
+Demonstrates how to use the various subroutines in this module.
+
+
+<P>
+
+Computes the minimal spanning tree of a sample graph.
+
+
+<P>
+
+Just say ``use Graph::Kruskal <CODE>qw(example);''</CODE> and
+``&amp;example();'' in a little Perl script to see it ``in action''.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This algorithm computes the Minimal Spanning Tree of a given graph
+according to some cost function defined on the edges of that graph.
+
+
+<P>
+
+Input: 
+<FONT SIZE=-1>A</FONT> set of vortices which constitute a graph (some
+cities on a map, for example), a set of edges (i.e., roads) between the
+vortices of the (non-directed and connected) graph (i.e., the edges can be
+traveled in either direction, and a path must exist between any two
+vortices), and the cost of each edge (for instance, the geographical
+distance).
+
+
+<P>
+
+Output: 
+<FONT SIZE=-1>A</FONT> set of edges forming a spanning tree (i.e., a set of
+edges linking all vortices, so that a path exists between any two vortices)
+which is free of circles (because it's a tree) and which is minimal in
+terms of the cost function defined on the set of edges.
+
+
+<P>
+
+See Aho, Hopcroft, Ullman, ``The Design and Analysis of Computer
+Algorithms'' for more details on the algorithm.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Math::MatrixBool(3), Math::MatrixReal(3), DFA::Kleene(3),
+Set::IntegerRange(3), Set::IntegerFast(3), Bit::Vector(3).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VERSION">VERSION
+
+</A></H1>
+This man page documents ``Graph::Kruskal'' version 2.0.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Steffen Beyer <A HREF="MAILTO:<sb@sdm.de>."><sb@sdm.de>.</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995, 1996, 1997 by Steffen Beyer. All rights reserved.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="LICENSE">LICENSE
+
+</A></H1>
+This package is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,215 @@
+proc string p3dBillboardObject_FixName(string $name)
+{
+    string $newName;
+    string $buffer[];
+    tokenize($name, $buffer);
+    int $i;
+    $newName = $buffer[0];
+    for ($i=1; $i < size($buffer); $i++)
+    {
+        $newName = $newName + "_" + $buffer[$i];
+    }
+    return $newName;
+}
+
+proc string p3dBillboardObject_GetNewName(string $title, string $message)
+{
+    do {
+        string $result = `promptDialog -title $title 
+                              -message ($message + "Enter new name:")
+                              -messageAlign center
+                              -button "OK" 
+                              -button "Cancel"
+                              -defaultButton "OK" 
+                              -cancelButton "Cancel"
+                              -dismissString "Cancel"`;
+        if (`strcmp $result "OK"`==0)
+        {
+            $newName = `promptDialog -query -text`;
+            if ($newName=="")
+            {
+                $title = "ERROR!";
+                $message = "No name was entered.\n";
+            }
+            else if (size(`ls $newName`)!=0)
+            {
+                $title = "ERROR!";
+                $message = "This name is already used.\n";
+            }
+            else 
+            {
+                return $newName;
+            }
+        }
+        else
+        {
+            return "";
+        }
+    } while (1);
+}
+
+global proc p3dBillboardObject_UpdateMaterialName( string $objectName, string $shaderName )
+{
+    setAttr -lock off ($objectName + ".material");
+    setAttr -type "string" ($objectName + ".material") $shaderName;
+    setAttr -lock on ($objectName + ".material");
+}
+
+global proc p3dBillboardObject_CreateBillboardQuad()
+{
+    $newName = p3dBillboardObject_GetNewName("Create New Billboard Quad","");         
+    $quadName = p3dBillboardObject_FixName($newName);
+    if ($quadName!="")
+    {
+        string $shape = `createNode p3dBillboardQuadShape`;
+        setAttr -lock true ($shape+".mt");
+        string $transform[] = `p3dBillboardObject_GetTransformNodeCmd -o $shape`;
+        if ($transform[0]!="")
+        {
+            setAttr -lock true ($transform[0]+".sz");
+            rename $transform $quadName;
+            select $quadName;
+        }
+    }
+}
+
+global proc p3dBillboardObject_CreateBillboardQuadGroup()
+{
+    $newName = p3dBillboardObject_GetNewName("Create New Billboard Quad Group","");         
+    $groupName = p3dBillboardObject_FixName($newName);
+    if ($groupName!="")
+    {
+        string $shape = `createNode p3dBillboardQuadGroupShape`;
+        setAttr -lock true ($shape+".mt");
+        string $transform[] = `p3dBillboardObject_GetTransformNodeCmd -o $shape`;
+        if ($transform[0]!="")
+        {
+            rename $transform $groupName;
+            select $groupName;
+        }
+    }
+}
+
+/*
+global proc p3dBillboardObject_DisplayBillboardQuadPropertiesEditor()
+{
+   if (`window -query -exists BillboardQuadPropertiesEditor`!=1)
+   {
+      window -width 600 -height 200 -sizeable true -title "Pure 3D Billboard Properties Editor" BillboardQuadPropertiesEditor;
+      formLayout BillboardQuadPropertiesFormLayout;
+         formLayout BillboardQuadPropertiesDisplayLayout;
+            text -label "Current Billboard Quad :" -align left CurrentBillboardQuadLabel;
+            textField -editable false CurrentBillboardQuadName;
+            textScrollList -allowMultiSelection false -selectCommand p3dBillboardQuad_SelectBillboardQuad BillboardQuadList;
+
+            formLayout -edit -attachForm CurrentBillboardQuadLabel top 5
+                             -attachNone CurrentBillboardQuadLabel bottom 
+                             -attachForm CurrentBillboardQuadLabel left 5
+                             -attachNone CurrentBillboardQuadLabel right
+
+                             -attachForm CurrentBillboardQuadName top 3
+                             -attachNone CurrentBillboardQuadName bottom 
+                             -attachControl CurrentBillboardQuadName left 1 CurrentBillboardQuadLabel
+                             -attachForm CurrentBillboardQuadName right 5
+
+                             -attachControl BillboardQuadList top 5 CurrentBillboardQuadLabel
+                             -attachForm BillboardQuadList bottom 5
+                             -attachForm BillboardQuadList left 5
+                             -attachForm BillboardQuadList right 5
+                             BillboardQuadPropertiesDisplayLayout;
+         setParent ..;
+
+         formLayout BillboardQuadPropertiesButtonLayout;
+            button -label "Create Billboard Quad Group" -align "center" -command P3DAddBlendState AddEmitterBlendStateButton;
+            button -label "Add Billboard Quad" -align "center" -command P3DAddBlendState AddEmitterBlendStateButton;
+            button -label "Copy Billboard Quad" -align "center" -command P3DCopyBlendState CopyEmitterBlendStateButton;
+            button -label "Delete Billboard Quad" -align "center" -command P3DDeleteBlendState DeleteEmitterBlendStateButton;
+            button -label "Move Billboard Quad Up" -align "center" -command P3DMoveUpBlendState MoveUpEmitterBlendStateButton;
+            button -label "Move Billboard Quad Down" -align "center" -command P3DMoveDownBlendState MoveDownEmitterBlendStateButton;
+
+            formLayout -edit -attachForm AddEmitterBlendStateButton top 5
+                             -attachPosition AddEmitterBlendStateButton bottom 1 23 
+                             -attachForm AddEmitterBlendStateButton left 5
+                             -attachForm AddEmitterBlendStateButton right 5
+
+                             -attachPosition CopyEmitterBlendStateButton top 1 23
+                             -attachPosition CopyEmitterBlendStateButton bottom 1 41 
+                             -attachForm CopyEmitterBlendStateButton left 5
+                             -attachForm CopyEmitterBlendStateButton right 5
+
+                             -attachPosition DeleteEmitterBlendStateButton top 1 41
+                             -attachPosition DeleteEmitterBlendStateButton bottom 1 59 
+                             -attachForm DeleteEmitterBlendStateButton left 5
+                             -attachForm DeleteEmitterBlendStateButton right 5
+
+                             -attachPosition MoveUpEmitterBlendStateButton top 1 59
+                             -attachPosition MoveUpEmitterBlendStateButton bottom 1 77 
+                             -attachForm MoveUpEmitterBlendStateButton left 5
+                             -attachForm MoveUpEmitterBlendStateButton right 5
+
+                             -attachPosition MoveDownEmitterBlendStateButton top 1 77
+                             -attachForm MoveDownEmitterBlendStateButton bottom 5 
+                             -attachForm MoveDownEmitterBlendStateButton left 5
+                             -attachForm MoveDownEmitterBlendStateButton right 5
+                             EmitterBlendStateButtonLayout;
+         setParent ..;
+
+         formLayout -edit -attachForm EmitterBlendStateDisplayLayout top 0
+                          -attachForm EmitterBlendStateDisplayLayout bottom 0
+                          -attachForm EmitterBlendStateDisplayLayout left 0
+                          -attachPosition EmitterBlendStateDisplayLayout right 0 70
+
+                          -attachForm EmitterBlendStateButtonLayout top 0
+                          -attachForm EmitterBlendStateButtonLayout bottom 0
+                          -attachPosition EmitterBlendStateButtonLayout left 0 70
+                          -attachForm EmitterBlendStateButtonLayout right 0
+                          EmitterBlendStateFormLayout;         
+      setParent ..;      
+
+      showWindow EmitterBlendStateEditor;
+
+      P3DUpdateBlendStateEditor(1);
+
+      scriptJob -parent EmitterBlendStateEditor -event SelectionChanged "P3DUpdateBlendStateEditor(0)";
+   }
+}
+
+
+global proc p3dBillboardObject_SetBillboardProperties()
+{
+    
+    editorTemplate -addControl "billboardMode";
+    editorTemplate -addControl "distance";
+    editorTemplate -addControl "enablePerspectiveScale";
+    editorTemplate -addControl "enableZTest";
+    editorTemplate -addControl "enableZWrite";
+    editorTemplate -addControl "enableFog";
+
+    editorTemplate -beginLayout "Colour And Texture Attributes";
+
+        editorTemplate -addControl "colour";
+        editorTemplate -addControl "alpha";
+        editorTemplate -addControl "textureUV0";
+        editorTemplate -addControl "textureUV1";
+        editorTemplate -addControl "textureUV2";
+        editorTemplate -addControl "textureUV3";
+        editorTemplate -addControl "uvOffset";
+        editorTemplate -addControl "uvOffsetMode";
+        editorTemplate -addControl "uvOffsetDistanceRange";
+        editorTemplate -addControl "uvOffsetAngleRange";
+        editorTemplate -addControl "material";
+
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Display Attributes";
+
+        editorTemplate -addControl "cutOffMode";
+        editorTemplate -addControl "sourceRadius";
+        editorTemplate -addControl "edgeRadius";
+        editorTemplate -addControl "sourceAngle";
+        editorTemplate -addControl "edgeAngle";
+
+    editorTemplate -endLayout;
+    
+}
+*/

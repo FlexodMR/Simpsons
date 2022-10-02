@@ -1,0 +1,923 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 9">
+<meta name=Originator content="Microsoft Word 9">
+<link rel=File-List href="./Vehicle%20Chase%20AI_files/filelist.xml">
+<title>Vehicle Chase AI</title>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>Radical Entertainment</o:Author>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor>slee</o:LastAuthor>
+  <o:Revision>3</o:Revision>
+  <o:TotalTime>211</o:TotalTime>
+  <o:Created>2002-03-15T18:11:00Z</o:Created>
+  <o:LastSaved>2002-03-28T19:15:00Z</o:LastSaved>
+  <o:Pages>3</o:Pages>
+  <o:Words>1258</o:Words>
+  <o:Characters>7171</o:Characters>
+  <o:Company>Radical Entertainment</o:Company>
+  <o:Lines>59</o:Lines>
+  <o:Paragraphs>14</o:Paragraphs>
+  <o:CharactersWithSpaces>8806</o:CharactersWithSpaces>
+  <o:Version>9.4402</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+@font-face
+	{font-family:Helvetica;
+	panose-1:2 11 6 4 2 2 2 2 2 4;
+	mso-font-charset:0;
+	mso-generic-font-family:swiss;
+	mso-font-pitch:variable;
+	mso-font-signature:536902279 -2147483648 8 0 511 0;}
+@font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;
+	mso-font-charset:2;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:0 268435456 0 0 -2147483648 0;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;
+	mso-font-charset:0;
+	mso-generic-font-family:swiss;
+	mso-font-pitch:variable;
+	mso-font-signature:553679495 -2147483648 8 0 66047 0;}
+ /* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+h1
+	{mso-style-next:Normal;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	background:black;
+	font-size:16.0pt;
+	font-family:Arial;
+	mso-font-kerning:16.0pt;}
+h2
+	{mso-style-next:Normal;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:2;
+	background:black;
+	font-size:14.0pt;
+	font-family:Arial;
+	font-weight:normal;}
+h3
+	{mso-style-next:Normal;
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:3;
+	background:black;
+	font-size:10.0pt;
+	font-family:Helvetica;
+	mso-bidi-font-family:"Times New Roman";
+	mso-bidi-font-weight:normal;}
+p.MsoDocumentMap, li.MsoDocumentMap, div.MsoDocumentMap
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	background:navy;
+	font-size:12.0pt;
+	font-family:Tahoma;
+	mso-fareast-font-family:"Times New Roman";}
+p.VehicleFeedback, li.VehicleFeedback, div.VehicleFeedback
+	{mso-style-name:"Vehicle Feedback";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+@list l0
+	{mso-list-id:475220553;
+	mso-list-type:hybrid;
+	mso-list-template-ids:1379584474 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l0:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l0:level2
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";
+	mso-bidi-font-family:"Times New Roman";}
+@list l0:level3
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0A7;
+	mso-level-tab-stop:1.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Wingdings;}
+@list l1
+	{mso-list-id:528370964;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-1701001166 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l1:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l1:level2
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:.75in;
+	mso-level-number-position:left;
+	margin-left:.75in;
+	text-indent:-.25in;
+	font-family:"Courier New";
+	mso-bidi-font-family:"Times New Roman";}
+@list l2
+	{mso-list-id:543177335;
+	mso-list-type:hybrid;
+	mso-list-template-ids:771765182 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l2:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l2:level2
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";
+	mso-bidi-font-family:"Times New Roman";}
+@list l3
+	{mso-list-id:983046248;
+	mso-list-type:hybrid;
+	mso-list-template-ids:513281894 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l3:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l3:level2
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";
+	mso-bidi-font-family:"Times New Roman";}
+@list l4
+	{mso-list-id:1101530338;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-533021622 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l4:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l5
+	{mso-list-id:1209949856;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-512198524 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l5:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l6
+	{mso-list-id:1440446125;
+	mso-list-type:hybrid;
+	mso-list-template-ids:564163500 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l6:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l7
+	{mso-list-id:1499224358;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-1604780650 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l7:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l8
+	{mso-list-id:1671057444;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-1848768378 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l8:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l9
+	{mso-list-id:1962686573;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-375363636 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l9:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l10
+	{mso-list-id:2038653993;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-2024768742 67698689 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l10:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l10:level2
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";
+	mso-bidi-font-family:"Times New Roman";}
+@list l10:level3
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0A7;
+	mso-level-tab-stop:1.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Wingdings;}
+@list l10:level4
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:2.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+</head>
+
+<body lang=EN-US style='tab-interval:.5in'>
+
+<div class=Section1>
+
+<h1 align=center style='text-align:center'><span style='color:white'>Vehicle
+Chase AI<o:p></o:p></span></h1>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<h2><span style='color:white'>Goals<o:p></o:p></span></h2>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<p class=MsoNormal>This is the area of the game where we will “make or break”
+our overall gameplay goal: <i><span style='mso-bidi-font-size:10.0pt;
+mso-bidi-font-family:Arial'>Game has to be fun to play without Simpsons license</span></i><span
+style='mso-bidi-font-size:10.0pt;mso-bidi-font-family:Arial'>. The essence of chase
+AI is that these vehicles are player enemies – so the player must have
+effective tools for defeating them. The goals are:<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='mso-bidi-font-size:10.0pt;mso-bidi-font-family:
+Arial'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal style='mso-list:l4 level1 lfo3;tab-stops:list .5in'><b>Effective</b>
+     strategies, tools, and counter-measures for defeating AI chase vehicles.</li>
+ <li class=MsoNormal style='mso-list:l4 level1 lfo3;tab-stops:list .5in'><b>Clear</b>
+     strategies and tools – the user must know what they are supposed to do.</li>
+ <li class=MsoNormal style='mso-list:l4 level1 lfo3;tab-stops:list .5in'>Visceral
+     <b>payoff </b>for utilizing the strategies – use visuals, sound,
+     controller vibration, camera (position, camera shake, etc.) and physics
+     system (e.g., aftershock of explosion shakes player vehicle).</li>
+ <li class=MsoNormal style='mso-list:l4 level1 lfo3;tab-stops:list .5in'><b>Empower</b>
+     the user – e.g., create difficulty by the number of enemies, not by
+     increasing their strength.</li>
+ <li class=MsoNormal style='mso-list:l4 level1 lfo3;tab-stops:list .5in'><b>Flexible
+     </b>AI that can be tuned by designers (e.g., location specific AI) but
+     with runtime variables to control AI difficulty and numbers.</li>
+ <li class=MsoNormal style='mso-list:l4 level1 lfo3;tab-stops:list .5in'><b>Reasonable
+     scope</b></li>
+</ul>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<h2><span style='color:white'>Prioritized Features<o:p></o:p></span></h2>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>The
+     golden rule – Player vehicle has a strength advantage over AI vehicles.
+     One on one, the player can defeat an AI vehicle through sheer force.</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>An
+      AI car will be disabled by any serious accident (e.g., impact over a
+      certain threshold).</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>AI
+     vehicle start locations will be placed in Maya by designers on a
+     mission-by-mission basis. There will also be a default set of AI
+     pawn-positions for each level.</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>These
+      cars are “turned on” when they are a certain distance from the user, <b><i>or</i></b>
+      when the user passes through a trigger volume that activates the car (<b>question/scope</b>
+      – are trigger volumes really necessary, or is proximity a sufficient
+      trigger?)</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>There
+      are two other tiers of AI spawn points, that are linked to the first kind
+      of AI cars, and activated when they are – but based on mission script
+      control</li>
+  <ul style='margin-top:0in' type=square>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>For
+       example, if the AI is set to “Level 2” then when basic AI vehicles are
+       spawned, then tier 2 cars are also spawned and activated</li>
+   <ul style='margin-top:0in' type=disc>
+    <li class=MsoNormal style='mso-list:l10 level4 lfo6;tab-stops:list 2.0in'>If
+        the AI is set to “level 3” then when basic AI vehicles are spawned,
+        then tier 2 <i>and</i> tier 3 cars are spawned and activated</li>
+   </ul>
+  </ul>
+ </ul>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>There
+     are three types of AI vehicles:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>“Generic”
+      AI chase/escape vehicles; simple models without interiors or characters
+      in them, there can be several of them chasing the user at once</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>“Boss”
+      vehicles – basically a drivable vehicle, with fully rendered interior and
+      a character in it (e.g., Wiggum in his police car). Only one of these
+      will ever be present at one time</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>“Generic
+      roadblock vehicles” – generic vehicles that do not drive when they are
+      spawned, they are roadblock obstacles for the user to get around</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>Camera
+     system that shows as much of the chase as possible – pulls back and up to
+     show more of what’s behind you (last year’s camera system should be mostly
+     re-usable, except for the up/down camera damping effect – when was enabled
+     it overrode the height of the camera).</li>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>Driving
+     strategies</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>Swerving
+      through oncoming traffic greatly increases the chances of an AI accident.</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>AI
+      vehicle line of site, or other ways you can hide from them? Maybe
+      specific places for this, such as gas stations? If you get there when the
+      AI can’t see you they go roaring by?</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>Outrun
+      AI vehicles - through perfect driving and/or speed burst, or a tricky
+      shortcut</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>Block
+      AI vehicle with physics objects (large movables or traffic vehicles that
+      have been knocked off their path). Has to be <b>effective</b> – AI should
+      suffer a large penalty when they run into the objects. </li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>Vehicle
+      choice matters</li>
+  <ul style='margin-top:0in' type=square>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Vehicles
+       have a specialty of speed, control, or strength</li>
+  </ul>
+ </ul>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>Vehicle
+     counter-measures. Each vehicle will have one of these abilities. They can
+     be used three times in a mission. There are five items, listed here in
+     priority order (i.e., it’s assumed that we’ll scope this down to the 3 or
+     4 best ones):</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>1)
+      Speed burst</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>2)
+      Oil slicks – causes all chasing vehicles to slide (spin out on corners,
+      or lose steering control and/or spin out on straights). </li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>3)
+      Bullet time – could help you make that difficult jump, or swerve through
+      traffic to shake off the AI chasers.</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>4)
+      Exploding Duff keg – works like the bomb in Smuggler’s Run 2.</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>5)
+      Smoke screen – causes chase vehicles to stop steering while in the [huge]
+      smoke screen. </li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>HUD
+      features – like the Smuggler’s Run 2 HUD. Three lights indicate
+      availability and use. </li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>Game
+      logic – how are the items recharged?</li>
+  <ul style='margin-top:0in' type=square>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>At
+       the beginning of all missions</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>In
+       the game world by going to a specific location and talking to a
+       character such as Professor Frink (probably on foot)</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>When
+       all three are used up in “Sunday Drive” conditions (e.g., unlimited when
+       outside of a mission, so you can practice)</li>
+  </ul>
+ </ul>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>World
+     counter-measures:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>Jumps
+      that change roads (e.g., onto or off of a bridge) make the AI crash or
+      lose you</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>Narrow
+      alleys difficult to get into at high speed</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>Payoff
+     for defeating AI:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>Show
+      the explosion/crash if we can - Bullet time in certain situations? E.g.,
+      jump escape?</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>AI
+      Cars explode when they crash hard enough to be disabled. This has many
+      effects:</li>
+  <ul style='margin-top:0in' type=square>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Large
+       visual explosion f/x (causes light flash you can see even if explosion
+       is out of screen?)</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>HUGE
+       explosion sound (think about breaking the sound barrier)</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Camera
+       shake</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Controller
+       shake</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Aftershock
+       hits user vehicle and causes back of vehicle to lift slightly (see bomb
+       counter-measure effect in Smuggler’s Run 2 for example of this)</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Vehicle
+       parts go flying by (i.e., from behind) – an animation, not physics based</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>In
+       convertible (e.g., Wiggum’s car) the AI driver goes flying by –
+       animation or physics based? Harder to get approved by Fox/Gracie; so
+       maybe lower priority?</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Use
+       bullet time as presentation effect in certain specific situations (e.g.,
+       you hit the jump – time goes slow, camera swings around to show police
+       cars crashing as you fly to safety)</li>
+  </ul>
+ </ul>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>General
+     AI rules and principles:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>Incorporate
+      realistic reaction times into AI programming, so that they act like
+      humans – provides more counter-measures, and could make bullet-time in
+      single-player mode effective.</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>No
+      cheating – AI has same controls and physics as the player.</li>
+  <li class=MsoNormal style='mso-list:l10 level2 lfo6;tab-stops:list 1.0in'>The
+      AI will have skill levels in three different categories, adjustable by the
+      mission scripter:</li>
+  <ul style='margin-top:0in' type=square>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Reaction
+       time/skill – low, medium, or high</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Numbers
+       of AI – low, medium, high (affects AI calling for backup, and the number
+       of cars that come to help)</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Speed
+       of AI – Fast, Medium, Slow (definitions? E.g., are they relative to the
+       player’s current vehicle speed?)</li>
+   <li class=MsoNormal style='mso-list:l10 level3 lfo6;tab-stops:list 1.5in'>Strength</li>
+  </ul>
+ </ul>
+ <li class=MsoNormal style='mso-list:l10 level1 lfo6;tab-stops:list .5in'>AI
+     vehicle techniques to use against the player, with intended effect, and
+     corresponding player counter-measure to prevent it from being frustrating.</li>
+</ul>
+
+<div align=center>
+
+<table border=1 cellspacing=0 cellpadding=0 style='border-collapse:collapse;
+ border:none;mso-border-alt:solid black .75pt;mso-padding-alt:0in 5.4pt 0in 5.4pt'>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b><span style='font-size:14.0pt;mso-bidi-font-size:12.0pt'>AI
+  Tactic<o:p></o:p></span></b></p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border:solid black .75pt;
+  border-left:none;mso-border-left-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b><span style='font-size:14.0pt;mso-bidi-font-size:12.0pt'>Intended
+  Effect on User<o:p></o:p></span></b></p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border:solid black .75pt;
+  border-left:none;mso-border-left-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b><span style='font-size:14.0pt;mso-bidi-font-size:12.0pt'>Countermeasure
+  / User strategy<o:p></o:p></span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Sideswipe you</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=VehicleFeedback>Push user into something</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l5 level1 lfo8;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Hit brakes – AI shoots ahead</p>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l5 level1 lfo8;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Speed burst</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Rear-swipe (i.e., hit near your back bumper)</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spin out</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=VehicleFeedback style='margin-left:.25in;text-indent:-.25in;
+  mso-list:l9 level1 lfo10;tab-stops:list .25in'><![if !supportLists]><span
+  style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Hit brakes or swerve</p>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l9 level1 lfo10;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Oil slick, smoke screen, bomb</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>T-bone (side collision)</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Severe damage, loss of control</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l7 level1 lfo12;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Brakes or swerve – or quick brakes followed by gas,
+  and t-bone the attacker</p>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l7 level1 lfo12;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Speed burst, bullet time</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Head-on-collision</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Most severe damage possible from one collision; kamikaze
+  in nature (i.e., destroys the attacker too)</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l8 level1 lfo14;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Swerve/stop</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Rear-end collision</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Loss of control</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l8 level1 lfo14;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Swerve</p>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l8 level1 lfo14;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>speed burst, oil slick, bomb, smoke screen</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Impede – group of AI cars blocking you</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Slow you down</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>?</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Impede – box you in</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Slow you down</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Brakes + swerve</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Hit user (with an above technique) and back off</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=VehicleFeedback>Put the user off balance, as AI changes to another
+  tactic</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l6 level1 lfo16;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Evasive maneuvers </p>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l6 level1 lfo16;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Speed burst after being hit</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Call for backup</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Add other AI cars, with their own tactics</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Call for a roadblock</p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Block the user on an upcoming path</p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l1 level1 lfo18;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Steer through gap in roadblock</p>
+  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l1 level1 lfo18;
+  tab-stops:list .25in'><![if !supportLists]><span style='font-family:Symbol'>·<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></span><![endif]>Bullet Time</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=139 valign=top style='width:1.45in;border:solid black .75pt;
+  border-top:none;mso-border-top-alt:solid black .75pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+  </td>
+  <td width=180 valign=top style='width:135.0pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+  </td>
+  <td width=271 valign=top style='width:203.4pt;border-top:none;border-left:
+  none;border-bottom:solid black .75pt;border-right:solid black .75pt;
+  mso-border-top-alt:solid black .75pt;mso-border-left-alt:solid black .75pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=VehicleFeedback><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+  </td>
+ </tr>
+</table>
+
+</div>
+
+<p class=VehicleFeedback><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<h2><span style='color:white'>Tools<o:p></o:p></span></h2>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo21;tab-stops:list .5in'>Maya
+     world-building:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo21;tab-stops:list 1.0in'>Place
+      start-locations and identity of AI chase vehicles. They are sitting their
+      stationary until the user gets in a certain range, when they become
+      active.</li>
+  <ul style='margin-top:0in' type=square>
+   <li class=MsoNormal style='mso-list:l0 level3 lfo21;tab-stops:list 1.5in'>One
+       set of start locations per mission (i.e., referenced by the mission
+       scripter – which can also specify “no chase AI” for a mission).</li>
+   <li class=MsoNormal style='mso-list:l0 level3 lfo21;tab-stops:list 1.5in'>One
+       “fallback” set per level for non-mission situations, active when no
+       specific mission set is referenced and “no chase AI” is not specified.</li>
+  </ul>
+ </ul>
+ <li class=MsoNormal style='mso-list:l0 level1 lfo21;tab-stops:list .5in'>Mission
+     scripter:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo21;tab-stops:list 1.0in'>Allows
+      setting of AI difficulty level per mission, or possibly per specific situations
+      (e.g., go to level two when the user picks up their fourth Panda bear”).</li>
+  <li class=MsoNormal style='mso-list:l0 level2 lfo21;tab-stops:list 1.0in'>Allows
+      chase AI to be turned off</li>
+ </ul>
+</ul>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<h2><span style='color:white'>Content<o:p></o:p></span></h2>
+
+<p class=MsoNormal><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<p class=MsoNormal>Special f/x:</p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal style='mso-list:l2 level1 lfo24;tab-stops:list .5in'>Big
+     explosion effect for AI vehicles (also could be used on AI collisions in
+     general) and related special f/x:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l2 level2 lfo24;tab-stops:list 1.0in'>Sound,
+      animation (vehicle parts), controller vibration, screen fade, and physics
+      aftershock on the player vehicle</li>
+ </ul>
+</ul>
+
+<p class=VehicleFeedback><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></p>
+
+<p class=MsoNormal>Chase vehicles: (<b>INCOMPLETE – Waiting for story direction</b>)</p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal style='mso-list:l3 level1 lfo27;tab-stops:list .5in'>Police:</li>
+ <ul style='margin-top:0in' type=circle>
+  <li class=MsoNormal style='mso-list:l3 level2 lfo27;tab-stops:list 1.0in'>Chief
+      Wiggum (in convertible style police car)</li>
+  <li class=MsoNormal style='mso-list:l3 level2 lfo27;tab-stops:list 1.0in'>Police
+      officer Lou in convertible style police car</li>
+  <li class=MsoNormal style='mso-list:l3 level2 lfo27;tab-stops:list 1.0in'>Police
+      officer Eddie in convertible style police car</li>
+  <li class=MsoNormal style='mso-list:l3 level2 lfo27;tab-stops:list 1.0in'>Generic
+      officer in enclosed police car</li>
+ </ul>
+ <li class=MsoNormal style='mso-list:l3 level1 lfo27;tab-stops:list .5in'>Other
+     cars <b>TBD</b> dependent on the game story</li>
+</ul>
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,261 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::Netrc - OO interface to users netrc file
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#THE_netrc_FILE">THE .netrc FILE</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::Netrc - 
+<FONT SIZE=-1>OO</FONT> interface to users netrc file
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Net::Netrc;
+    
+    $mach = Net::Netrc-&gt;lookup('some.machine');
+    $login = $mach-&gt;login;
+    ($login, $password, $account) = $mach-&gt;lpa;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>Net::Netrc</CODE> is a class implementing a simple interface to the .netrc file used as by
+the ftp program.
+
+
+<P>
+
+<CODE>Net::Netrc</CODE> also implements security checks just like the ftp program, these checks
+are, first that the .netrc file must be owned by the user and second the
+ownership permissions should be such that only the owner has read and write
+access. If these conditions are not met then a warning is output and the
+.netrc file is not read.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="THE_netrc_FILE">THE .netrc FILE
+
+</A></H1>
+The .netrc file contains login and initialization information used by the
+auto-login process. It resides in the user's home directory. The following
+tokens are recognized; they may be separated by spaces, tabs, or new-lines:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_machine">machine name
+
+</A></STRONG><DD>
+Identify a remote machine name. The auto-login process searches the .netrc
+file for a machine token that matches the remote machine specified. Once a
+match is made, the subsequent .netrc tokens are processed, stopping when
+the end of file is reached or an- other machine or a default token is
+encountered.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_default">default
+
+</A></STRONG><DD>
+This is the same as machine name except that default matches any name.
+There can be only one default token, and it must be after all machine
+tokens. This is normally used as:
+
+
+<P>
+
+<PRE>    default login anonymous password user@site
+</PRE>
+
+<P>
+
+thereby giving the user automatic anonymous login to machines not specified
+in .netrc.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_login">login name
+
+</A></STRONG><DD>
+Identify a user on the remote machine. If this token is present, the
+auto-login process will initiate a login using the specified name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_password">password string
+
+</A></STRONG><DD>
+Supply a password. If this token is present, the auto-login process will
+supply the specified string if the remote server requires a password as
+part of the login process.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_account">account string
+
+</A></STRONG><DD>
+Supply an additional account password. If this token is present, the
+auto-login process will supply the specified string if the remote server
+requires an additional account password.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_macdef">macdef name
+
+</A></STRONG><DD>
+Define a macro. <CODE>Net::Netrc</CODE> only parses this field to be compatible with <EM>ftp</EM>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+The constructor for a <CODE>Net::Netrc</CODE> object is not called new as it does not really create a new object. But
+instead is called <A HREF="#item_lookup">lookup</A> as this is essentially what it does.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_lookup">lookup ( MACHINE [, LOGIN ])
+
+</A></STRONG><DD>
+Lookup and return a reference to the entry for <CODE>MACHINE</CODE>. If <CODE>LOGIN</CODE> is given then the entry returned will have the given login. If <CODE>LOGIN</CODE> is not given then the first entry in the .netrc file for <CODE>MACHINE</CODE> will be returned.
+
+
+<P>
+
+If a matching entry cannot be found, and a default entry exists, then a
+reference to the default entry is returned.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG>login ()
+
+</A></STRONG><DD>
+Return the login id for the netrc entry
+
+
+<P>
+
+<DT><STRONG>password ()
+
+</A></STRONG><DD>
+Return the password for the netrc entry
+
+
+<P>
+
+<DT><STRONG>account ()
+
+</A></STRONG><DD>
+Return the account information for the netrc entry
+
+
+<P>
+
+<DT><STRONG><A NAME="item_lpa">lpa ()
+
+</A></STRONG><DD>
+Return a list of login, password and account information fir the netrc
+entry
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Net/Netrc.html">Netrc</A>
+
+<A HREF="/n|/perl/html/./lib/Net/Cmd.html">Cmd</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1997 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

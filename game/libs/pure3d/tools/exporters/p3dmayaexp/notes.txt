@@ -1,0 +1,44 @@
+Build instructions for the Pure3D Maya exporter:
+
+last updated: Feb 29, 2000
+Greg Mayer
+
+
+note: this has changed from detailed build instructions
+to simply a list of stuff to check that might be different
+on your local machine from the checked-in .dsp.
+
+Also note that right now the settings in the project are only 
+correct for the Debug build.
+
+Basically, the main things to check for are the include directories 
+for pure3d, and Maya.
+
+My pure3d is in 
+D:\pure3d\p3dv12\....
+
+Maya is in:
+C:\Aw\Maya2.5\....
+
+Also note that I set the output file to be:
+C:\Aw\Maya2.5\bin\plug-ins\p3dmayaexp.mll
+
+
+
+
+//-----------------------------------------
+left over from the original howtobuild.txt:
+
+-----------------------
+build settings in MSVC:
+-----------------------
+
+ - create a win32 dynamic-link-library project called p3dmayaexp
+ - preprocessor defines must have: NT_PLUGIN
+ - include path must have: ...maya2.5\include, ...toollib\inc
+ - under code-generation, use run-time library: Multithreaded DLL
+ - under link|project options, add:
+      /export:initializePlugin /export:uninitializePlugin
+ - under link|general, rename output file to .mll (instead of .dll)
+   (I also like to change the output location to put it in the maya2.5\bin\plug-ins dir)
+ 

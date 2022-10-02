@@ -1,0 +1,79 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformExpressionUIPopulate.mel
+// Author: Bryan Brandt
+//
+// Description: Expression Deformation tool UI populate function
+//
+
+
+// Callback when "Key" button is clicked on state panel
+//
+global proc p3dDeformExpressionUIKeyStateCallback(string $state)
+{
+   string $state_state = $state + ".state";
+   setKeyframe $state_state;
+}
+
+global proc p3dDeformExpressionUIZeroStateCallback(string $state)
+{
+   string $state_state = $state + ".state";
+   setAttr $state_state 0.0;
+}
+
+// Called whenever associated slider changes
+//
+global proc p3dDeformExpressionUISliderChangedCallback(string $state)
+{
+   select -add $state;
+}
+
+
+// Callback for creating expression state slider
+//
+global proc string p3dDeformExpressionUISliderCallback(string $state, string $sub_form)
+{
+   string $slider_cmd = "p3dDeformExpressionUISliderChangedCallback " + $state;
+
+  
+   // create state slider
+   string $attr_state = $state + ".state";
+   
+   string $state_slider = `attrFieldSliderGrp -p $sub_form
+                                              -l $state
+                                              -at $attr_state
+                                              -min -1
+                                              -max 1
+                                              -ad4 1
+                                              -cw4 110 50 150 10
+                                              -cal 1 "right"
+                                              -cc $slider_cmd`;
+   popupMenu;
+      menuItem -command ("p3dDeformExpressionUIKeyStateCallback " + $state) -label "Key";
+      menuItem -command ("p3dDeformExpressionUIZeroStateCallback " + $state) -label "Zero";
+   return $state_slider;
+   
+}
+
+
+// (Re-)Populates the scrollable state list
+// - main entry point
+//
+global proc p3dDeformExpressionUIPopulate(string $arg_group_layout)
+{
+   if (!(`window -exists p3dDeformer`))
+   {
+      return;
+   }
+
+   p3dDeformUIPopulateStateList($arg_group_layout);
+}
+
+
+global proc p3dDeformUpdateSelection(string $state)
+{
+   string $state_state = $state + ".state";
+   select -add $state_state;
+}
+
+// End of file.

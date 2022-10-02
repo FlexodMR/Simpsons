@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName>
+    </SccProjectName>
+    <SccAuxPath />
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProvider>
+    </SccProvider>
+    <ProjectGuid>{ACF60C5C-93C6-447B-92A2-477AECB0E19C}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>../../../../../code/constants;../../../toollib/inc;../../../constants;../../../toollib/chunks16/inc;../../../../radmath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;RAD_RELEASE;WIN32;_CONSOLE;P3DDEBUG;P3DWIN95;RAD_WIN32;RAD_PC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader />
+      <PrecompiledHeaderOutputFile>.\Release/p3dgendsg.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\bin\p3dgendsg.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreSpecificDefaultLibraries>LIBC.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ProgramDatabaseFile>.\Release/p3dgendsg.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <Midl>
+      <TypeLibraryName>.\Release/p3dgendsg.tlb</TypeLibraryName>
+    </Midl>
+    <PreLinkEvent>
+      <Command>perl ..\..\..\toollib\compile_info.pl Release &gt; Release\tlcompileinfo.cpp
+cl /nologo /G6 /MT /c Release\tlcompileinfo.cpp /FoRelease\tlcompileinfo.obj
+</Command>
+    </PreLinkEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../perl;../../../../../code/constants;../../../toollib/inc;../../../constants;../../../toollib/chunks16/inc;../../../../radmath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;RAD_DEBUG;WIN32;_CONSOLE;P3DDEBUG;P3DWIN95;RAD_WIN32;RAD_PC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader />
+      <PrecompiledHeaderOutputFile>.\Debug/p3dgendsg.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Debug/p3dgendsg.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug/p3dgendsg.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <Midl>
+      <TypeLibraryName>.\Debug/p3dgendsg.tlb</TypeLibraryName>
+    </Midl>
+    <PreLinkEvent>
+      <Command>perl ..\..\..\toollib\compile_info.pl Debug &gt; Debug\tlcompileinfo.cpp
+cl /nologo /G6 /MTd /W3 /GR /GX /ZI /Od /c Debug\tlcompileinfo.cpp /FR"Debug/" /Fo"Debug/" /Fd"Debug/"
+</Command>
+    </PreLinkEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Param.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="version.cpp" />
+    <ClCompile Include="Culling\BoxPts.cpp" />
+    <ClCompile Include="Culling\Cell.cpp" />
+    <ClCompile Include="Culling\CellBlock.cpp" />
+    <ClCompile Include="Culling\CoordSubList.cpp" />
+    <ClCompile Include="Culling\CullData.cpp" />
+    <ClCompile Include="Culling\HexahedronP.cpp" />
+    <ClCompile Include="Culling\ISpatialProxy.cpp" />
+    <ClCompile Include="Culling\OctTreeData.cpp" />
+    <ClCompile Include="Culling\OctTreeNode.cpp" />
+    <ClCompile Include="Culling\SphereSP.cpp" />
+    <ClCompile Include="Culling\VectorLib.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Param.hpp" />
+    <ClInclude Include="version.hpp" />
+    <ClInclude Include="Culling\BlockCoord.h" />
+    <ClInclude Include="Culling\Bounds.h" />
+    <ClInclude Include="Culling\BoxPts.h" />
+    <ClInclude Include="Culling\Cell.h" />
+    <ClInclude Include="Culling\CellBlock.h" />
+    <ClInclude Include="Culling\ContiguousBinNode.h" />
+    <ClInclude Include="Culling\CoordSubList.h" />
+    <ClInclude Include="Culling\CullData.h" />
+    <ClInclude Include="Culling\FixedArray.h" />
+    <ClInclude Include="Culling\FloatFuncs.h" />
+    <ClInclude Include="Culling\HexahedronP.h" />
+    <ClInclude Include="Culling\ISpatialProxy.h" />
+    <ClInclude Include="Culling\Matrix3f.h" />
+    <ClInclude Include="Culling\OctTreeConst.h" />
+    <ClInclude Include="Culling\OctTreeData.h" />
+    <ClInclude Include="Culling\OctTreeNode.h" />
+    <ClInclude Include="Culling\OctTreeParams.h" />
+    <ClInclude Include="Culling\Plane3f.h" />
+    <ClInclude Include="Culling\Point3f.h" />
+    <ClInclude Include="Culling\ReserveArray.h" />
+    <ClInclude Include="Culling\ScratchArray.h" />
+    <ClInclude Include="Culling\SpatialNode.h" />
+    <ClInclude Include="Culling\SpatialTree.h" />
+    <ClInclude Include="Culling\SpatialTreeFactory.h" />
+    <ClInclude Include="Culling\SpatialTreeIter.h" />
+    <ClInclude Include="Culling\SphereSP.h" />
+    <ClInclude Include="Culling\UseArray.h" />
+    <ClInclude Include="Culling\Vector3f.h" />
+    <ClInclude Include="Culling\Vector3i.h" />
+    <ClInclude Include="Culling\VectorLib.h" />
+    <ClInclude Include="Culling\srrRenderTypes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="p3dgendsg.sc">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ToolsParamCreator</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\bin\ToolsParamCreator  -s  "%(Filename).sc"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Param.cpp;Param.hpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ToolsParamCreator</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\bin\ToolsParamCreator  -s  "%(Filename).sc"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Param.cpp;Param.hpp;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\lib\freetype\builds\win32\visualc\freetype.vcxproj">
+      <Project>{6d333c70-a27d-4e25-ad26-bb9e20558b8f}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\toollib\toollib_extras.vcxproj">
+      <Project>{cdb92e4a-1e5d-49a8-8153-34264b3fef29}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

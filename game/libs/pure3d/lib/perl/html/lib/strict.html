@@ -1,0 +1,137 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>strict - Perl pragma to restrict unsafe constructs
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+strict - Perl pragma to restrict unsafe constructs
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use strict;
+</PRE>
+
+<P>
+
+<PRE>    use strict &quot;vars&quot;;
+    use strict &quot;refs&quot;;
+    use strict &quot;subs&quot;;
+</PRE>
+
+<P>
+
+<PRE>    use strict;
+    no strict &quot;vars&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+If no import list is supplied, all possible restrictions are assumed. (This
+is the safest mode to operate in, but is sometimes too strict for casual
+programming.) Currently, there are three possible things to be strict
+about: ``subs'', ``vars'', and ``refs''.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_strict">strict refs
+
+</A></STRONG><DD>
+This generates a runtime error if you use symbolic references (see <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A>).
+
+
+<P>
+
+<PRE>    use strict 'refs';
+    $ref = \$foo;
+    print $$ref;        # ok
+    $ref = &quot;foo&quot;;
+    print $$ref;        # runtime error; normally ok
+</PRE>
+
+<P>
+
+<DT><STRONG>strict vars
+
+</A></STRONG><DD>
+This generates a compile-time error if you access a variable that wasn't
+localized via <A HREF="#item_my">my()</A> or wasn't fully qualified. Because this is to avoid variable suicide
+problems and subtle dynamic scoping issues, a merely <CODE>local()</CODE>
+variable isn't good enough. See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#my">my</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#local">local</A>.
+
+
+<P>
+
+<PRE>    use strict 'vars';
+    $X::foo = 1;         # ok, fully qualified
+    my $foo = 10;        # ok, my() var
+    local $foo = 9;      # blows up
+</PRE>
+
+<P>
+
+The <CODE>local()</CODE> generated a compile-time error because you just
+touched a global name without fully qualifying it.
+
+
+<P>
+
+<DT><STRONG>strict subs
+
+</A></STRONG><DD>
+This disables the poetry optimization, generating a compile-time error if
+you try to use a bareword identifier that's not a subroutine, unless it
+appears in curly braces or on the left hand side of the ``=&gt;'' symbol.
+
+
+<P>
+
+<PRE>    use strict 'subs';
+    $SIG{PIPE} = Plumber;       # blows up
+    $SIG{PIPE} = &quot;Plumber&quot;;     # just fine: bareword in curlies always ok
+    $SIG{PIPE} = \&amp;Plumber;     # preferred form
+</PRE>
+
+<P>
+
+</DL>
+See <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#Pragmatic_Modules">Pragmatic Modules</A>.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,65 @@
+//**************************************************************************************************
+//  Procedure Name:
+//    p3dAnimatedObject_Install()
+//
+//  Description:
+//    Sets up the optic effects command buttons in P3DAnimatedObjectTools shelf
+//
+//  Input Arguments:
+//    None.
+//
+//  Return Value:
+//    None.
+//**************************************************************************************************
+global proc p3dAnimatedObject_Install()
+{
+   source p3dAnimatedObjectTools;
+ 
+   // BUG FIX: Do NOT create Shelf if Shelf UI is hidden!
+   //          The Shelf may already exist in Maya's Preferences
+   //          but be deferred until the Shelf UI is visible,
+   //          and a clash will result if a duplicate is made.
+   // BUG FIX: Do NOT attempt if without UI.
+   if ( !`about -batch` && isUIComponentVisible( "Shelf" ) )
+   {
+       if (`shelfLayout -exists "P3DAnimatedObjectTools"`==0)
+       {
+          addNewShelfTab "P3DAnimatedObjectTools";
+       }
+
+       string $buttons[] = `shelfLayout -q -ca P3DAnimatedObjectTools`;
+       int $create_animated_object_exists = 0;
+
+       int $i;
+       for ($i = 0;
+            ($i < size($buttons)) &&
+            (($create_animated_object_exists == 0));
+            $i++)
+       {
+          string $command = `shelfButton -q -c $buttons[$i]`;
+
+          //remove old shelf buttons
+          if ($command == "P3DCreateAnimatedObject")
+          {
+             deleteUI $buttons[$i];
+          }
+
+          //add shelf buttons
+          if ($command == "p3dAnimatedObject_CreateAnimatedObject")
+          {
+             $create_animated_object_exists = 1;
+          }
+       }
+
+       if (!$create_animated_object_exists)
+       {
+          shelfButton -c   "p3dAnimatedObject_CreateAnimatedObject" 
+                      -p   "P3DAnimatedObjectTools"
+                      -i1  "p3dAnimatedObject.bmp" 
+                      -ann "Create P3D Animated Object"
+                      -l   "P3DCreateAnimatedObjectButton";
+       }
+    }
+}
+
+// End of file.

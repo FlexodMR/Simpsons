@@ -1,0 +1,44 @@
+################################################################################
+#
+#  Files specific: This files specified the location of the generated 
+#		   library/executable file and where to gather source & header 
+#		   files  for compilation.
+################################################################################
+
+#========================
+# General defines
+#========================
+
+ROOTDIR = ../../..
+LIBRARYDIR	= ../../lib
+SOURCEDIR	= ../../Src
+INCLUDEDIR	= ../../Inc                  \
+                  ../../../radcore/inc       \
+                  ../../../radscript/src/pch \
+                  ../../../../code           \
+
+		
+TARGET		= $(LIBRARYDIR)/radscript
+
+TARGETTYPE	= LIBRARY
+
+#####################################
+# source files included in project
+#####################################
+
+SOURCEFILES += \
+	script/script \
+	script/remotescript \
+	namespace/namespace \
+	factory/radfactory \
+	typeinfo/TypeInfoInstance \
+	typeinfo/TypeInfoInterface \
+	typeinfo/TypeInfoLoader \
+	typeinfo/TypeInfoMethod \
+	typeinfo/TypeInfoEnum \
+	typeinfo/TypeInfoParam \
+	typeinfo/TypeInfoIntLiteral \
+	typeinfo/ps2/ps2typeinfovfcall \
+	typeinfoutil/typeinfodistributor \
+	typeinfoutil/typeinfoutil \
+	typeinfo/TypeInfoSystem

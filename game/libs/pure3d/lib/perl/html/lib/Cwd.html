@@ -1,0 +1,100 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>getcwd - get pathname of current working directory
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+getcwd - get pathname of current working directory
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Cwd;
+    $dir = cwd;
+</PRE>
+
+<P>
+
+<PRE>    use Cwd;
+    $dir = getcwd;
+</PRE>
+
+<P>
+
+<PRE>    use Cwd;
+    $dir = fastgetcwd;
+</PRE>
+
+<P>
+
+<PRE>    use Cwd 'chdir';
+    chdir &quot;/tmp&quot;;
+    print $ENV{'PWD'};
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>getcwd()</CODE> function re-implements the <CODE>getcwd(3)</CODE>
+(or <CODE>getwd(3))</CODE> functions in Perl.
+
+
+<P>
+
+The <CODE>fastcwd()</CODE> function looks the same as
+<CODE>getcwd(),</CODE> but runs faster. It's also more dangerous because
+you might conceivably <CODE>chdir()</CODE> out of a directory that you
+can't <CODE>chdir()</CODE> back into.
+
+
+<P>
+
+The <CODE>cwd()</CODE> function looks the same as getcwd and fastgetcwd but
+is implemented using the most natural and safe form for the current
+architecture. For most systems it is identical to `pwd` (but without the
+trailing line terminator). It is recommended that cwd (or another *cwd()
+function) is used in <EM>all</EM> code to ensure portability.
+
+
+<P>
+
+If you ask to override your <CODE>chdir()</CODE> built-in function, then your 
+<FONT SIZE=-1>PWD</FONT> environment variable will be kept up to date. (See
+
+<A HREF="/n|/perl/html/./lib/Pod/perlsub.html#Overriding_Builtin_Functions">Overriding Builtin Functions</A>.) Note that it will only be kept up to date if all packages which use
+chdir import it from Cwd.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

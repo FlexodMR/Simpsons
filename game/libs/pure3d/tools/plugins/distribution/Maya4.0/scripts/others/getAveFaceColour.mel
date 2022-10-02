@@ -1,0 +1,71 @@
+/*===========================================================================
+    File:    aveFaceColours.mel
+    Created: January 28, 2002
+    Author:  Harold Westlund
+
+    Copyright (c) 2002 Radical Entertainment, Inc.
+    All rights reserved.
+
+    Version: 1.0.0
+
+=============================================================================
+
+    This procedure takes a mesh and an array of face indices and computes
+    the average vertexFace colour.  $aveColour is updated with this average
+    colour.
+
+    return value:
+    bool = success of this procedure.
+
+===========================================================================*/
+
+global proc int getAveFaceColour( float $aveColour[], string $mesh, int $faces[] )
+{
+    int $i;
+    int $j;
+    
+    float $red;
+    float $green;
+    float $blue;
+    int $vertexCount;
+
+    // Step through all selected faces
+    for( $i = 0; $i < size($faces); $i++ )
+    {
+        int $fIdx    = $faces[$i];
+        string $face = $mesh + ".f[" + $fIdx + "]";
+        string $s[]  = `polyInfo -fv $face`;
+        string $t[];
+        int $tokCount = `tokenize $s[0] $t`;
+        clear $s;
+        
+        // Step through the vertices of this face.
+        for( $j = 2; $j < $tokCount; $j++ )
+        {
+            int $vIdx = $t[$j];
+            string $vf = $mesh + ".vtxFace[" + $vIdx + "][" + $fIdx + "]";
+            float $rgb[] = `polyColorPerVertex -q -r -g -b $vf`;
+            
+            // Should this be weighted by the triangle's area?
+            $red   += $rgb[0];
+            $green += $rgb[1];
+            $blue  += $rgb[2];
+            clear $rgb;
+            
+            $vertexCount++;            
+        }
+        clear $t;
+    }
+    
+    if( $vertexCount == 0 )
+    {
+        return false;
+    }
+    
+    // Simple RGB average of the three colour.
+    $aveColour[0] = $red   / $vertexCount;
+    $aveColour[1] = $green / $vertexCount;
+    $aveColour[2] = $blue  / $vertexCount;
+    return true;
+}
+

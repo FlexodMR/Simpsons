@@ -1,0 +1,121 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>CGI::Apache - Make things work with CGI.pm against Perl-Apache API
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTE_1">NOTE 1</A>
+	<LI><A HREF="#NOTE_2">NOTE 2</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+CGI::Apache - Make things work with CGI.pm against Perl-Apache 
+<FONT SIZE=-1>API</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require CGI::Apache;
+</PRE>
+
+<P>
+
+<PRE> my $q = new Apache::CGI;
+</PRE>
+
+<P>
+
+<PRE> $q-&gt;print($q-&gt;header);
+</PRE>
+
+<P>
+
+<PRE> #do things just like you do with CGI.pm
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+When using the Perl-Apache 
+<FONT SIZE=-1>API,</FONT> your applications are faster, but the enviroment is different than 
+<FONT SIZE=-1>CGI.</FONT> This module attempts to set-up that environment as best it can.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE_1">NOTE 1
+
+</A></H1>
+This module used to be named Apache::CGI. Sorry for the confusion.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE_2">NOTE 2
+
+</A></H1>
+If you're going to inherit from this class, make sure to ``use'' it after
+your package declaration rather than ``require'' it. This is because CGI.pm
+does a little magic during the <CODE>import()</CODE> step in order to make
+autoloading work correctly.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<CODE>perl(1),</CODE> <CODE>Apache(3),</CODE> <CODE>CGI(3)</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Doug MacEachern &lt;<A HREF="MAILTO:dougm@osf.org">dougm@osf.org</A>&gt;, hacked over by Andreas König &lt;<A HREF="MAILTO:a.koenig@mind.de">a.koenig@mind.de</A>&gt;, modified by Lincoln Stein <A
+HREF="MAILTO:<lt>lstein@genome.wi.mit.edu<gt>"><lt>lstein@genome.wi.mit.edu<gt></A>
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

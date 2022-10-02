@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0075)https://www.ps2-pro.com/docs/surroundsound/display_doc.php?docid=2317&raw=1 -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR></HEAD>
+<BODY>
+<CENTER>
+<H2>Surround Sound for the PlayStation<SMALL>®</SMALL>2</H2><SMALL>Jason Page 
+(Jason_Page@scee.net)<BR>Audio Manager<BR>Sony Computer Entertainment 
+Europe</SMALL> </CENTER>
+<P>Last updated: 4th October 2001
+<P>
+<H3>What types of surround sound are available for the PS2?</H3>There are three 
+types of surround sound:
+<P>
+<UL>
+  <LI>Dolby Digital (digital output via SP/DIF connector) 
+  <LI>DTS (digital output via SP/DIF connector) 
+  <LI>Dolby ProLogic (via analogue output) </LI></UL>
+<HR>
+
+<H2>DTS Surround Sound</H2>
+<H3>How can I perform DTS digital surround sound output?</H3>DTS have a PS2 SDK 
+available, which will mix up to 6 channels of PCM sound into a DTS compatible 
+stream in realtime, and send it out the SP/DIF optical out connector at the back 
+of the PS2. For more information, contact:
+<P>
+<H4><I>SCEA/SCEI territory (Asia and America)</I></H4>
+<DIR>Glenn Arentzoff<BR><BR>Tel +1 (818) 706-3525<BR>Email: <A 
+href="mailto:garentzoff@dtsonline.com">mailto:garentzoff@dtsonline.com</A><BR><BR><A 
+href="http://www.dtsonline.com/">http://www.dtsonline.com/</A> </DIR>
+<H4><I>SCEE territory (Europe)</I></H4>
+<DIR>Ted Laverty<BR><BR>DTS<BR>Enterprise House<BR>Balloo Avenue, Bangor<BR>N. 
+Ireland, BT19 7QT<BR><BR>Tel +44 (0)28 91 469-900<BR>Email: <A 
+href="mailto:tedlaverty@dtsonline.co.uk">tedlaverty@dtsonline.co.uk</A><BR><BR><A 
+href="http://www.dtsonline.com/">http://www.dtsonline.com/</A> </DIR>
+<HR>
+
+<H2>Dolby Surround Sound</H2>
+<H3>What types of Dolby Surround Sound are available for the PS2?</H3>There are 
+two types of Dolby surround sound available for the PS2:
+<P>
+<OL>
+  <LI>Dolby Digital (also known as AC3 and 5.1) 
+  <LI>Dolby Prologic </LI></OL>
+<H4><I>Dolby Digital</I></H4>
+<OL>
+  <LI>It is currently not possible to encode Dolby Digital in real time on the 
+  PS2. Processing time would be high. Also, another side effect would be that 
+  all of your SFX would need to be stored as RAW PCM data - rather than as 
+  ADPCM. This, therefore would take a lot of RAM! 
+  <LI>Playing Dolby Digital will mean that you can not play any other sound at 
+  the same time. The PlayStation 2 will set a mode which will bypass all other 
+  audio playback if you are playing a Dolby Digital bit stream. This makes sense 
+  really, as the 5.1 bit stream is, say, like a MP3 file. You can't just start 
+  adding more data to this file without having to go through the whole encoding 
+  process. 
+  <LI>I recommend using Dolby Digital for FMV and cut sequences. It does sound 
+  very good, but is not suited for in-game purposes. 
+  <LI>See the sample code <A 
+  href="https://www.ps2-pro.com/projects/sm-spdif">SimpleSPDIF.ZIP</A> which is 
+  available on the support web site for how to incorporate Dolby Digital 
+  playback in your project. </LI></OL>
+<H4><I>Dolby Pro-logic</I></H4>
+<OL>
+  <LI>Dolby Pro-logic can work in real time. 
+  <LI>Dolby Pro-logic treats the back two speakers as mono. 
+  <LI>Real time Dolby Pro-logic takes hardly any processing time. </LI></OL>
+<H3>How is Dolby Pro-logic played back in real time?</H3>
+<OL>
+  <LI>You need to play the same sample on two different SPU channels, with the 
+  same pitch/ADSR settings. 
+  <LI>A small delay is required between keying on the first and second SPU 
+  channel. Just by setting up the pitch/ADSR1/ADSR2/SPU Address is enough of a 
+  delay, so it is not really a problem. 
+  <LI>Then, you need to set the volumes of these two channels like this:
+  <P>&nbsp;&nbsp;&nbsp;&nbsp;SPUChannel1_Volume = Front_Left, Front_Right (as 
+  normal)<BR>&nbsp;&nbsp;&nbsp;&nbsp;SPUChannel2_Volume = Back_Volume, 
+  -BackVolume (sets the volume for the rear speakers)
+  <P>Note that because the top bit of the SPU2 Volume registers is used for 
+  other purposes, such as automatic volume fade up/down etc. You need really to 
+  do this:
+  <P>&nbsp;&nbsp;&nbsp;&nbsp;SPUChannel2_Volume = Back_Volume, 0x7fff - 
+  BackVolume
+  <P>And that's it! </P></LI></OL>
+<H3>Why can't I mix these two channel volumes together and only use one 
+channel?</H3>You can't mix these two channel volumes together and then use only 
+one SPU channel due to the fact that both channels will be actually playing 
+slightly different sound data (due to the delay between the keying on for the 
+second channel) 
+<H3>Is it possible with only one channel?</H3>Yes, but you will have a few 
+problems: 
+<OL>
+  <LI>You will hear the sound flip from back/left to back/right if the source of 
+  the sound moves across the centre of the screen. 
+  <LI>You can't play the SFX at full volume (using one channel involves a 
+  channel volume "bleeding" through to the back speakers (ie. volume = 
+  0x2000,-0x4000). 
+  <LI>So its only really useful for single spot FX which are far away. Like 
+  something that will ALWAYS only require one channel and that won't move around 
+  the playing area too much, which would cause the sound to flip from the front 
+  left/right speakers. Also, being far away, it would not require its volume 
+  level to be high anyway. 
+  <LI>Basically, I recommend using two channels if possible, so you never have 
+  to deal with these problems anyway. </LI></OL></BODY></HTML>

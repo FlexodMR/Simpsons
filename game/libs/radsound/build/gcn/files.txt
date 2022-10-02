@@ -1,0 +1,74 @@
+##########################################################################
+#
+#  Files specific: This files specified location of the generated library/
+#		   executable file and where to gather source & header files  
+#		   for compilation.
+##########################################################################
+
+#========================
+# General defines
+#========================
+ROOTDIR	      = ../../..
+LIBRARYDIR    = ../../lib
+SOURCEDIR     = ../../Src
+INCLUDEDIR    = ../../inc \
+		$(ROOTDIR)/radcore/inc \
+		$(ROOTDIR)/radsound/inc \
+		$(ROOTDIR)/radsound/src/hal/common \
+		$(ROOTDIR)/radsound/src/pch \
+		$(ROOTDIR)/radsound/src/radsound \
+		$(ROOTDIR)/radsound/src/hal/gcn \
+		$(ROOTDIR)/radsound/src/common \
+		$(ROOTDIR)/../code
+
+TARGET        = $(LIBRARYDIR)/radsound
+
+TARGETTYPE    = LIBRARY
+
+ifeq ($(CONFIG),RELEASE)
+    DEFINES += FINAL
+endif
+
+
+#####################################
+# source files included in project
+#####################################
+SOURCEFILES = \
+  	common/audioformat \
+	common/radsoundobject \
+	common/radsoundupdatableobject \
+	math/radsoundmath \
+	hal/common/softwarelistener \
+	hal/common/softwarepositionalgroup \
+	hal/common/radsoundfile \
+	hal/common/rolloff \
+	hal/common/banner \
+	hal/common/memoryregion \
+	radsound/buffereddatasource \
+	radsound/clip \
+	radsound/clipplayer \
+	radsound/datacache \
+	radsound/rsdfiledatasource \
+	radsound/memorydatasource \
+	radsound/memoryspaceobject \
+	radsound/stitcheddatasource \
+	radsound/streamplayer \
+	radsound/radicaladpcm \
+	hal/gcn/audioformatgcn \
+	hal/gcn/buffer \
+	hal/gcn/bufferasyncloader \
+	hal/gcn/bufferasyncrequest \
+	hal/gcn/bufferasyncclearer \
+	hal/gcn/clip \
+	hal/gcn/clipplayer \
+	hal/gcn/effect \
+	hal/gcn/streamplayer \
+	hal/gcn/radsoundgcn \
+	hal/gcn/soundsystem \
+	hal/gcn/voice \
+	hal/gcn/standardqualityreverb \
+	hal/gcn/delay
+
+	
+
+	

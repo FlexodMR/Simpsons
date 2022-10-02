@@ -1,0 +1,55 @@
+global proc AEpure3dPointSpriteShaderTemplate ( string $nodeName )
+{
+    AEswatchDisplay $nodeName;
+    editorTemplate -beginScrollLayout;
+    editorTemplate -callCustom AEshaderTypeNew AEshaderTypeReplace "message";
+
+    editorTemplate -beginLayout "Common Material Attributes" -collapse 0; 
+        editorTemplate -label "Texture" -addControl "color";
+        editorTemplate -label "Alpha Texture" -addControl "transparency";
+        editorTemplate -addControl "ambient";
+        editorTemplate -addControl "diffuse";
+        editorTemplate -addControl "emissive";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Specular Shading" -collapse 0;
+        editorTemplate -addControl "specular";
+        editorTemplate -addControl "shininess";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Material Attributes" -collapse true;
+        editorTemplate -addControl "shadeMode";
+        editorTemplate -addControl "blendMode";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Texture Attributes" -collapse true;
+        editorTemplate -addControl "uvMode";
+        editorTemplate -addControl "filterMode";
+        editorTemplate -addControl "alphaTest";
+        editorTemplate -addControl "alphaCompare";
+        editorTemplate -addControl "proceduralXRes";
+        editorTemplate -addControl "proceduralYRes";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Point Sprite Attributes" -collapse true;
+        editorTemplate -addControl "scaleA";
+        editorTemplate -addControl "scaleB";
+        editorTemplate -addControl "scaleC";
+        editorTemplate -addControl "scaleOffset";
+    editorTemplate -endLayout;
+
+    // supressed attributes
+    editorTemplate -suppress "pointCamera";
+    editorTemplate -suppress "normalCamera";
+    editorTemplate -suppress "rayDirection";
+
+    // include/call base class/node attributes
+    AElambertCommonInclude $nodeName;
+
+    editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+        AEhardwareTextureTemplate $nodeName ("color");
+    editorTemplate -endLayout;
+
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+}

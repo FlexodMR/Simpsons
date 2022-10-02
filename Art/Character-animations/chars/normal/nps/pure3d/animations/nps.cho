@@ -1,0 +1,137 @@
+//---------------------------------------------------------------------------
+// nps
+//---------------------------------------------------------------------------
+
+// skeleton rig
+rig "nps"
+{
+    skeleton "nps";
+
+    // roots
+    jointIndex_AIRoot 0;
+    jointIndex_OrientationRoot 0;
+    joint_MotionRoot "Motion_Root";
+    joint_BalanceRoot "Balance_Root";
+    joint_CharacterRoot "Character_Root";
+
+    // balance root
+    maxBalanceRootCompress 0.25;
+
+    // legs
+    leg "left"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 1;
+
+        joint_FKMin "Hip_L";
+        joint_FKMax "Ball_L";
+
+        joint_Thigh "Hip_L";
+        joint_Knee "Knee_L";
+        joint_Ankle "Ankle_L";
+
+        //joint_Effector "Left_Foot";
+        //joint_PoleVector "Left_Knee";
+        //joint_OrientOffset "L_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+
+    leg "right"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 0;
+
+        joint_FKMin "Hip_R";
+        joint_FKMax "Ball_R";
+
+        joint_Thigh "Hip_R";
+        joint_Knee "Knee_R";
+        joint_Ankle "Ankle_R";
+
+        //joint_Effector "Right_Foot";
+        //joint_PoleVector "Right_Knee";
+        //joint_OrientOffset "R_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+};
+
+// bank
+bank "nps"
+{
+    // reference to skeleton configuration
+    rig "nps";
+
+	default animation.blendOutTime 0.1;
+	default animation.blendInTime 0.1;
+
+
+	animation "point_left"
+	{
+		animation "nps_point_left";
+	};
+
+	animation "point_right"
+	{
+		animation "nps_point_right";
+	};
+
+	animation "point_straight_ahead"
+	{
+		animation "nps_point_straight_ahead";
+	};
+
+	animation "look_back"
+	{
+		animation "nps_look_back";
+	};
+
+	animation "look_left"
+	{
+		animation "nps_look_left";
+	};
+
+	animation "look_right"
+	{
+		animation "nps_look_right";
+	};
+
+	animation "sway_right"
+	{
+		animation "nps_sway_right";
+	};
+
+	animation "sway_left"
+	{
+		animation "nps_sway_left";
+	};	
+
+	animation "turn_head"
+	{
+		animation "nps_turn_head";
+	};
+ 
+	animation "victory_large"
+	{
+		animation "nps_victory_large";
+	};
+
+ 
+	animation "victory_small"
+	{
+		animation "nps_victory_small";
+	};
+   
+
+   animation "in_car_idle"
+    {
+	    animation "nps_in_car_idle";
+        blendInTime 0;
+        blendOutTime 0;
+    };
+
+};
+
+
+// End of file.

@@ -1,0 +1,88 @@
+
+// This code fixes the hardware texturing on plugin shaders
+
+proc string getMaterialInfo( string $messagePlug )
+{
+    if ( `objExists $messagePlug` )
+    {
+        string $connections[] = `listConnections $messagePlug`;
+
+        for ($item in $connections)
+	    {
+		    // Yes, it seems silly to check the existence of an item
+		    // returned by "listConnections", but it's true...
+		    // Maya will give me a connected node that returns "does not exist"
+		    // in the `nodeType` query.  Hand me another Tylenol....
+            if ( `objExists $item` && `nodeType $item` == "materialInfo")
+                return $item;
+	    }
+    }
+
+    return "";
+}
+
+proc disconnectInfoTexture( string $info )
+{
+    // We need to break all connection because we want to ensure the
+    // texture being displayed has a multi index of zero.
+    //
+    // Note: the connections are broken from back to front because
+    // breaking a connection at the end of the multi will not affect
+    // the connections at the start of the multi.
+
+    string $connections[];
+    $connections = `listConnections -connections true ($info+".texture")`;
+
+    for ($i = size($connections); $i > 0; $i -= 2)
+        disconnectAttr ($connections[$i-1]+".message") $connections[$i-2];
+}
+
+//===========================================================================
+// FixHWTextureInfo
+//===========================================================================
+// Description: This is a "node added" callback 
+//              (MDGMessage::addNodeAddedCallback) added to the Pure3D
+//              Simple Shader.
+//
+//              It is also used as a "scriptJob -connectionChange" callback
+//              on the p3dSimpleShader node's ".color" attribute.
+//
+//              See the initializePlugin() method within the p3dSimpleShader.
+//
+//              This function generates a unique connection from the
+//              texture shading the Simple Shader's ".color" attribute
+//              (eg. a "file" node) to its materialInfo node's ".texture[0]"
+//              array element plug.
+//
+// Constraints: 
+//
+//  Parameters: string $nodeName: The name of the p3dSimpleShader to "fix."
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc FixHWTextureInfo( string $nodeName )
+{
+//    print ( "FixHWTextureInfo called on " + $nodeName + "\n");
+    string $info;
+
+    $info = getMaterialInfo( $nodeName );
+    if($info == "")
+    {
+       return;
+    }
+    string $texture[];
+    $texture = `listConnections ( $nodeName + ".color" )`;
+    if( $texture[0] == "" )
+    {
+       return;
+    }
+    disconnectInfoTexture( $info );
+    connectAttr ( $texture[0] + ".message" ) ( $info + ".texture[0]" );
+}
+
+global proc FixHWTextureInfoOnAll()
+{
+    string $shaders[] = `ls -type "pure3dSimpleShader"`;
+    for ( $shader in $shaders ) FixHWTextureInfo( $shader );
+}

@@ -1,0 +1,68 @@
+################################################################################
+#
+#  Files specific: This files specified the location of the generated 
+#		   library/executable file and where to gather source & header 
+#		   files  for compilation.
+################################################################################
+
+#========================
+# General defines
+#========================
+
+ROOTDIR = ../../..
+LIBRARYDIR	= ../../lib
+SOURCEDIR	= ../../Src
+INCLUDEDIR	= \
+        ../../Inc \
+        ../../../radcore/inc \
+        ../../../radsound/inc \
+        ../../../radsound/src/pch \
+        ../../../radsound/src/hal/common \
+        ../../../radsound/src/hal/ps2 \
+        ../../../radsound/src/hal/ps2/iop \
+        ../../../radsound/src/hal/ps2/adpcm \
+        ../../../radsound/src/radsound \
+        ../../../radsound/src/common \
+        ../../../../code
+	
+TARGET		= $(LIBRARYDIR)/radsound
+
+TARGETTYPE	= LIBRARY
+
+#####################################
+# source files included in project
+#####################################
+
+SOURCEFILES += \
+	common/radsoundobject \
+	common/radsoundupdatableobject \
+	math/radsoundmath \
+	hal/common/audioformat \
+	hal/common/banner \
+	hal/common/radsoundfile \
+	hal/common/rolloff \
+	hal/common/softwarelistener \
+	hal/common/softwarepositionalgroup \
+	hal/common/memoryregion \
+	hal/ps2/system \
+	hal/ps2/effect \
+	hal/ps2/iop/iopclient \
+	hal/ps2/adpcm/adpcm \
+	hal/ps2/adpcm/adpcmasyncrequest \
+	hal/ps2/adpcm/adpcmbuffer \
+	hal/ps2/adpcm/adpcmbufferclearer \
+	hal/ps2/adpcm/adpcmbufferloader \
+	hal/ps2/adpcm/adpcmvoice \
+	radsound/buffereddatasource \
+	radsound/clip \
+	radsound/clipplayer \
+	radsound/datacache \
+	radsound/rsdfiledatasource \
+	radsound/memorydatasource \
+	radsound/memoryspaceobject \
+	radsound/stitcheddatasource \
+	radsound/streamplayer
+
+
+
+

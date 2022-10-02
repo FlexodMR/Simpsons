@@ -1,0 +1,26 @@
+PRINT Interior 04 (Moe)
+PRINT =========================
+
+
+DEPEND gens.p3d track.p3d lights.p3d wb_data.p3d
+
+TEMPLATE statics gens.p3d i04_statics.p3d
+TEMPLATE terrain track.p3d i04_track.p3d
+TEMPLATE intersect track.p3d i04_intersect.p3d
+
+COMMAND p3djoin lights.p3d wb_data.p3d -o i04_env.p3d
+COMMAND p3djoin i04_track.p3d i04_statics.p3d -o i04_region.p3d
+COMMAND p3d2dsg i04_region.p3d -o i04_dsg.p3d
+COMMAND p3dsort -s i04_dsg.p3d -o i04_dsg.p3d
+COMMAND p3djoin i04_dsg.p3d i04_env.p3d -o i04.p3d 
+
+COMMAND p3djoin i04_statics.p3d i04_intersect.p3d -o i04_tree.p3d 
+
+COMMAND p3d2dsg -i i04_intersect.p3d -o i04_intersect.p3d
+
+STORE i04_tree.p3d i04_tree.p3d
+
+COMMAND p3djoin  i04.p3d i04_intersect.p3d -o i04.p3d
+
+STORE i04.p3d i04.p3d
+

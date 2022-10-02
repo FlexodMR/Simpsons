@@ -1,0 +1,201 @@
+
+(object Petal
+    version    	44
+    _written   	"Rose 7.0.9420.17"
+    charSet    	0)
+
+(object Class_Category "Event Manager"
+    is_unit    	TRUE
+    is_loaded  	TRUE
+    attributes 	(list Attribute_Set
+	(object Attribute
+	    tool       	"sc"
+	    name       	"SourceControlSpec"
+	    value      	"-- using Perforce --"))
+    quid       	"3C9A47CF00E6"
+    exportControl 	"Public"
+    logical_models 	(list unit_reference_list
+	(object Class "EventManager"
+	    quid       	"3C9A480000F5")
+	(object Class "EventListener"
+	    quid       	"3C9A4819020E"
+	    documentation 	"Base class for anybody who wants to be notified of events by the Event Manager."
+	    operations 	(list Operations
+		(object Operation "HandleEvent"
+		    quid       	"3CA108DD00A8"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "HandleEvent"
+		    quid       	"3CACD28002CC"
+		    parameters 	(list Parameters
+			(object Parameter "locator"
+			    quid       	"3CACD2890145"
+			    type       	"Locator&"))
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0))
+	    abstract   	TRUE)
+	(object Association "$UNNAMED$0"
+	    quid       	"3C9A4826024C"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$1"
+		    quid       	"3C9A482700A6"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E"
+		    client_cardinality 	(value cardinality "n")
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$2"
+		    quid       	"3C9A482700A7"
+		    supplier   	"Logical View::Model::Event Manager::EventManager"
+		    quidu      	"3C9A480000F5"))))
+    logical_presentations 	(list unit_reference_list
+	(object ClassDiagram "Main"
+	    quid       	"3C9A47E40376"
+	    title      	"Main"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	0
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object ClassView "Class" "Logical View::Model::Event Manager::EventListener" @1
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(880, 768)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@1
+			location   	(741, 717)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	278
+			justify    	0
+			label      	"EventListener")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A4819020E"
+		    compartment 	(object Compartment
+			Parent_View 	@1
+			location   	(741, 778)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	TRUE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			icon_style 	"Icon"
+			fill_color 	16777215
+			anchor     	2
+			nlines     	3
+			max_width  	0)
+		    width      	296
+		    height     	126
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Event Manager::EventManager" @2
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(880, 400)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@2
+			location   	(743, 331)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	275
+			justify    	0
+			label      	"EventManager")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A480000F5"
+		    width      	293
+		    height     	162
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$0" @3
+		    location   	(880, 592)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9A4826024C"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$1" @4
+			    Parent_View 	@3
+			    location   	(0, 192)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9A482700A6"
+			    client     	@3
+			    supplier   	@1
+			    line_style 	0
+			    label      	(object SegLabel @5
+				Parent_View 	@4
+				location   	(918, 659)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"n"
+				pctDist    	0.598214
+				height     	38
+				orientation 	0))
+			(object RoleView "$UNNAMED$2" @6
+			    Parent_View 	@3
+			    location   	(0, 192)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9A482700A7"
+			    client     	@3
+			    supplier   	@2
+			    line_style 	0)))))))

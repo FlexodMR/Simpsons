@@ -1,0 +1,51 @@
+;-----------------------------------------------------------------------------------------
+; line
+;-----------------------------------------------------------------------------------------
+; scratch registers used:
+
+; vi04  current vertex address
+; vi05  current count
+; vf02  input vertex
+; vf03  transformed vertex
+; note: this code is not optimised
+
+VU_LINE:
+
+LINE_START:
+   nop                              bal vi15, VU_LOADPRIMGROUP
+   nop                              nop
+
+LINE_LOOP:
+   mulaw ACC,  _CTM3, vf00          lq vf02, 2(vi04)                 ; transform, load vertex
+   maddaz ACC, _CTM2, vf02          lq vf01, 0(vi04)                 ;
+   madday ACC, _CTM1, vf02          lq vf04, 1(vi04)                 ;
+   maddx vf03, _CTM0, vf02          iaddi vi05, vi05, -1             ; decrement vertex count
+   clipw.xyz vf03xyz, vf03w         div q, vf00w, vf03w              ; clip vertex, start 1/w 
+   mul.xyz vf03, vf03, _VPS         sq vf01, 0(vi06)
+   nop                              sq vf04, 1(vi06)
+   mulq vf03, vf03, Q               waitq                            ; viewport scale, wait for 1/w to complete
+   nop                              fcand vi01, 0xfff                ; project, test visibility
+   add.xyz vf03, vf03, _VPO         iaddiu vi01, vi01, 0x7fff        ; viewport origin, compute ADC bit
+   nop                              mfir.w vf03w, vi01               ; store ADC bit
+   ftoi4.xyz vf03, vf03             nop                              ; convert to 12.4 for GS
+   nop                              sq vf03, 2(vi06)                 ; store transformed vertex
+   nop                              iaddiu vi06,vi06,3
+   nop                              ibne vi05, vi00, LINE_LOOP
+   nop                              iaddiu vi04, vi04, 3             ; increment output pointer to next vertex
+
+   nop                              xgkick _GIFTAG                   ; stop, kick prims to GIF
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b LINE_START                     ; start a new batch of vertices
+   nop                              nop
+
+
+VU_DONOTHING:
+   nop[e] nop
+   nop    nop
+   
+   nop    b VU_DONOTHING
+   nop    nop

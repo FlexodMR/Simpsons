@@ -1,0 +1,176 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::Balloon - pop up help balloons.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::Balloon - pop up help balloons.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Tk::Balloon;
+    ...
+    $b = $top-&gt;Balloon(-statusbar =&gt; $status_bar_widget);
+    $b-&gt;attach($widget,
+               -balloonmsg =&gt; &quot;Balloon help message&quot;,
+               -statusmsg =&gt; &quot;Status bar message&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<STRONG>Balloon</STRONG> provides the framework to create and attach help balloons to various
+widgets so that when the mouse pauses over the widget for more than a
+specified amount of time, a help balloon is poppped up.
+
+
+<P>
+
+<STRONG>Balloon</STRONG> accepts all the options that the <STRONG>Frame</STRONG> widget accepts. In addition, the following options are also recognized.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__initwait">-initwait
+
+</A></STRONG><DD>
+Specifies the amount of time to wait without activity before popping up a
+help balloon. Specified in milliseconds. Defaults to 350 milliseconds. This
+applies only to the popped up balloon. The status bar message is shown
+instantly.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__state">-state
+
+</A></STRONG><DD>
+Can be one of <STRONG>balloon</STRONG>, <STRONG>status</STRONG>, <STRONG>both</STRONG> or <STRONG>none</STRONG> indicating that the help balloon, status bar help, both or none
+respectively should be activated when the mouse pauses over the client
+widget.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__statusbar">-statusbar
+
+</A></STRONG><DD>
+Specifies the widget used to display the status message. This widget should
+accept the <STRONG>-text</STRONG> option and is typically a
+<STRONG>Label</STRONG>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+The <STRONG>Balloon</STRONG> widget supports only two non-standard methods:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_attach">attach(widget, options)
+Attaches the widget indicated by widget to the help system. The
+options can be:
+
+</A></STRONG><DD>
+<DL>
+<DT><STRONG><A NAME="item__statusmsg">-statusmsg
+
+</A></STRONG><DD>
+The argument is the message to be shown on the status bar when the mouse
+passes over this client. If this is not specified, but
+<STRONG>-msg</STRONG> is specified then the message displayed on the status bar is the same as
+the argument for <STRONG>-msg</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__balloonmsg">-balloonmsg
+
+</A></STRONG><DD>
+The argument is the message to be displayed in the balloon that will be
+popped up when the mouse pauses over the client. As with
+<STRONG>-statusmsg</STRONG> if this is not specified, then it takes its value from the <STRONG>-msg</STRONG> specification as any. If neither <STRONG>-balloonmsg</STRONG>
+nor <STRONG>-msg</STRONG> are specified, then an empty balloon will be popped up... this is silly,
+but there it is.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__msg">-msg
+
+</A></STRONG><DD>
+The catch-all for <STRONG>-statusmsg</STRONG> and <STRONG>-balloonmsg</STRONG>. This is a convenient way of specifying the same message to be displayed
+in both the balloon and the status bar for the client.
+
+
+<P>
+
+</DL>
+<DT><STRONG><A NAME="item_detach">detach(widget)
+
+</A></STRONG><DD>
+Detaches the specified widget <EM>widget</EM> from the help system.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+<STRONG>Rajappa Iyer</STRONG> <A HREF="MAILTO:rsi@earthling.net">rsi@earthling.net</A>
+
+
+<P>
+
+This code and documentation is derived from Balloon.tcl from the Tix4.0
+distribution by Ioi Lam. This code may be redistributed under the same
+terms as Perl.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

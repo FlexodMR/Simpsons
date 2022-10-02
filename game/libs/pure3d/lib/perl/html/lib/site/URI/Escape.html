@@ -1,0 +1,108 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>uri_escape - Escape unsafe characters
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+uri_escape - Escape unsafe characters
+
+
+<P>
+
+uri_unescape - Unescape escaped characters
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use URI::Escape;
+ $safe = uri_escape(&quot;10% is enough\n&quot;);
+ $verysafe = uri_escape(&quot;foo&quot;, &quot;\0-\377&quot;);
+ $str  = uri_unescape($safe);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provide functions to escape and unescape 
+<FONT SIZE=-1>URI</FONT> strings. Some characters are regarded as ``unsafe'' and must be escaped in accordance with 
+<FONT SIZE=-1>RFC</FONT> 1738. Escaped characters are represented by a triplet consisting of the character ``%'' followed by two hexadecimal digits.
+
+
+
+<P>
+
+The <CODE>uri_escape()</CODE> function takes an optional second argument
+that overrides the set of characters that are to be escaped. The set is
+specified as a string that can be used in a regular expression character
+class (between [ ]). E.g.:
+
+
+<P>
+
+<PRE>  \x00-\x1f\x7f-\xff          # all control and hi-bit characters
+  a-z                         # all lower case characters
+  ^A-Za-z                     # everything not a letter
+</PRE>
+
+<P>
+
+The default set of characters to be escaped is:
+
+
+<P>
+
+<PRE>  \x00-\x20&quot;#%;&lt;&gt;?{}|\\\\^~`\[\]\x7F-\xFF
+</PRE>
+
+<P>
+
+The module can also export the <CODE>%escapes</CODE> hash which contains
+the mapping from all characters to the corresponding escape code.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/URI/URL.html">URL</A>
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

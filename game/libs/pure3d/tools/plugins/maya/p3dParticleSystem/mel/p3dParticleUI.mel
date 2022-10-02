@@ -1,0 +1,80 @@
+global int $p3dDisplayParticleLayout = 0;
+
+global proc P3DCreateParticleGraphEditor()
+{
+   global int $gUseMenusInPanels;
+   if (`scriptedPanel -query -exists p3dParticleGraphEditor`==1) deleteGraphEditor p3dParticleGraphEditor;
+   scriptedPanel -unParent -type "graphEditor" -label "P3D Particle Graph Editor" p3dParticleGraphEditor;
+}
+
+global proc P3DCreateParticleDopeSheetEditor()
+{
+   global int $gUseMenusInPanels;
+   if (`scriptedPanel -query -exists p3dParticleDopeSheetEditor`==1) deleteDopeSheetPanel p3dParticleDopeSheetEditor;
+   scriptedPanel -unParent -type "dopeSheetPanel" -label "P3D Particle Dope Sheet Editor" p3dParticleDopeSheetEditor;
+}
+
+global proc P3DCreateParticleHyperGraphEditor()
+{
+   global int $gUseMenusInPanels;
+   if (`scriptedPanel -query -exists p3dParticleHyperGraphEditor`==1) deleteHyperGraphPanel p3dParticleHyperGraphEditor;
+   scriptedPanel -unParent -type "hyperGraphPanel" -label "P3D Particle Hyper Graph Editor" p3dParticleHyperGraphEditor;
+}
+
+global proc P3DCreateParticlePerspView()
+{
+   global int $gUseMenusInPanels;
+   if (`modelPanel -query -exists p3dParticlePerspView`==1) deleteUI -panel p3dParticlePerspView;
+   modelPanel -mbv $gUseMenusInPanels -unParent -l "P3D Particle Persp View" -cam persp p3dParticlePerspView;
+}
+
+global proc P3DParticlePanelLayout()
+{
+   global int $p3dDisplayParticleLayout;
+
+   string $panelConfig = `getPanel -cwl "p3dParticleSystemLayout"`;
+
+   if (`strcmp "" $panelConfig`!=0)
+      if (`strcmp "p3dParticleSystemLayout" $panelConfig`!=0)
+         renameUI $panelConfig p3dParticleSystemLayout;
+
+   if (`panelConfiguration -query -exists p3dParticleSystemLayout`==0)
+   {
+      panelConfiguration
+               -label "p3dParticleSystemLayout"
+               -sceneConfig false
+               -configString "paneLayout -edit -configuration \"left4\" $gMainPane;"
+               -addPanel false
+                     "P3D Particle Hyper Graph Editor"
+                     "hyperGraphPanel"
+                     "P3DCreateParticleHyperGraphEditor"
+                     "scriptedPanel -edit -label \"P3D Particle Hyper Graph Editor\" $panelName"
+               -addPanel false
+                     "P3D Particle Persp View"
+                     "modelPanel"
+                     "P3DCreateParticlePerspView"
+                     "modelPanel -edit -label \"P3D Particle Persp View\" -cam persp $panelName"
+               -addPanel false
+                     "P3D Particle Graph Editor"
+                     "graphEditor"
+                     "P3DCreateParticleGraphEditor"
+                     "scriptedPanel -edit -label \"P3D Particle Graph Editor\" $panelName"
+               -addPanel false
+                     "P3D Particle Dope Sheet Editor"
+                     "dopeSheetPanel"
+                     "P3DCreateParticleDopeSheetEditor"
+                     "scriptedPanel -edit -label \"P3D Particle Dope Sheet Editor\" $panelName"
+               p3dParticleSystemLayout;
+   }
+
+   if ($p3dDisplayParticleLayout==1)
+   {
+      switchPanes goBack 0;
+      $p3dDisplayParticleLayout=0;      
+   }
+   else
+   {
+      setNamedPanelLayout "p3dParticleSystemLayout";
+      $p3dDisplayParticleLayout=1;      
+   }
+}

@@ -1,0 +1,72 @@
+// Copyright (C) 1997-2000 Alias|Wavefront,
+// a division of Silicon Graphics Limited.
+//
+// The information in this file is provided for the exclusive use of the
+// licensees of Alias|Wavefront.  Such users have the right to use, modify,
+// and incorporate this code into other products for purposes authorized
+// by the Alias|Wavefront license agreement, without fee.
+//
+// ALIAS|WAVEFRONT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+// INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+// EVENT SHALL ALIAS|WAVEFRONT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+// DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+// TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+//
+// Alias|Wavefront Script File
+// MODIFY THIS AT YOUR OWN RISK
+//
+// Creation Date:  28 June 1996
+//
+//
+//
+//  Procedure Name:
+//      buildObjectMenuItemsNow
+//
+//  Description:
+//      This procedure is called from ModelEdMenu as a postMenuCommand.
+//
+//  Input Arguments:
+//      The parent item to parent the popup menu to.
+//
+//  Return Value:
+//      None.
+//
+
+
+global proc buildObjectMenuItemsNow( string $parentName)
+{
+	global int $gIsMarkingMenuOn;
+
+	if (`popupMenu -e -exists $parentName`) {
+		popupMenu -e -deleteAllItems $parentName;	
+		if (`popupMenu -q -mm $parentName` != $gIsMarkingMenuOn) {
+			popupMenu -e -mm $gIsMarkingMenuOn $parentName;
+		}
+		if (!`dagObjectHit -mn $parentName`) {
+			string $leadObject[] = `ls -sl -tail 1 -typ transform -typ shape`;
+			if (size($leadObject) > 0) {
+				dagMenuProc($parentName, $leadObject[0]);
+			} else 
+			{
+				setParent -menu $parentName;
+
+				if ( `currentCtx` == "deformDraggerCtx" )
+				{
+					
+					makeDraggerMM;
+				}
+				else
+				{
+					menuItem -l "Select All" -rp "S" -c "select -all";
+					menuItem -l "Complete Tool" -rp "N" -c "ctxCompletion";
+					setParent ..;
+				}
+			}
+		}
+	} else {
+		warning("parent doesn't exist");
+	}
+}

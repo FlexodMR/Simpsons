@@ -1,0 +1,101 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Text::ParseWords - parse text into an array of tokens
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Text::ParseWords - parse text into an array of tokens
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use Text::ParseWords;
+  @words = &amp;quotewords($delim, $keep, @lines);
+  @words = &amp;shellwords(@lines);
+  @words = &amp;old_shellwords(@lines);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+&amp;quotewords() accepts a delimiter (which can be a regular expression)
+and a list of lines and then breaks those lines up into a list of words
+ignoring delimiters that appear inside quotes.
+
+
+<P>
+
+The <CODE>$keep</CODE> argument is a boolean flag. If true, the quotes are
+kept with each word, otherwise quotes are stripped in the splitting
+process. <CODE>$keep</CODE> also defines whether unprotected backslashes
+are retained.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> &amp;shellwords() replacement is included to demonstrate the new package. This version differs from the original in that it will 
+<FONT SIZE=-1>_NOT_</FONT> default to using <CODE>$_</CODE> if no arguments are given. 
+<FONT SIZE=-1>I</FONT> personally find the old behavior to be a mis-feature.
+
+
+
+<P>
+
+&amp;quotewords() works by simply jamming all of <CODE>@lines</CODE> into a
+single string in <CODE>$_</CODE> and then pulling off words a bit at a time
+until <CODE>$_</CODE> is exhausted.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+Hal Pomeranz <A
+HREF="MAILTO:(pomeranz@netcom.com),">(pomeranz@netcom.com),</A> 23 March
+1994
+
+
+<P>
+
+Basically an update and generalization of the old shellwords.pl. Much code
+shamelessly stolen from the old version (author unknown).
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,548 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perl - Practical Extraction and Report Language
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#ENVIRONMENT">ENVIRONMENT</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#FILES">FILES</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#DIAGNOSTICS">DIAGNOSTICS</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perl - Practical Extraction and Report Language
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<STRONG>perl</STRONG>		[&nbsp;<STRONG>-sTuU</STRONG>&nbsp;]
+	
+	[&nbsp;<STRONG>-hv</STRONG>&nbsp;]&nbsp;[&nbsp;<STRONG>-V</STRONG>[:<EM>configvar</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-cw</STRONG>&nbsp;]&nbsp;[&nbsp;<STRONG>-d</STRONG>[:<EM>debugger</EM>]&nbsp;]&nbsp;[&nbsp;<STRONG>-D</STRONG>[<EM>number/list</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-pna</STRONG>&nbsp;]&nbsp;[&nbsp;<STRONG>-F</STRONG><EM>pattern</EM>&nbsp;]&nbsp;[&nbsp;<STRONG>-l</STRONG>[<EM>octal</EM>]&nbsp;]&nbsp;[&nbsp;<STRONG>-0</STRONG>[<EM>octal</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-I</STRONG><EM>dir</EM>&nbsp;]&nbsp;[&nbsp;<STRONG>-m</STRONG>[<STRONG>-</STRONG>]<EM>module</EM>&nbsp;]&nbsp;[&nbsp;<STRONG>-M</STRONG>[<STRONG>-</STRONG>]<EM>'module...'</EM>&nbsp;]
+	
+	[&nbsp;<STRONG>-P</STRONG>&nbsp;]
+	
+	[&nbsp;<STRONG>-S</STRONG>&nbsp;]
+	
+	[&nbsp;<STRONG>-x</STRONG>[<EM>dir</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-i</STRONG>[<EM>extension</EM>]&nbsp;]
+	
+	[&nbsp;<STRONG>-e</STRONG>&nbsp;<EM>'command'</EM>&nbsp;]&nbsp;[&nbsp;<STRONG>--</STRONG>&nbsp;]&nbsp;[&nbsp;<EM>programfile</EM>&nbsp;]&nbsp;[&nbsp;<EM>argument</EM>&nbsp;]...
+
+
+
+
+<P>
+
+For ease of access, the Perl manual has been split up into a number of
+sections:
+
+
+<P>
+
+<PRE>    perl        Perl overview (this section)
+    <A HREF="/n|/perl/html/./lib/Pod/perldelta.html">perldelta</A>   Perl changes since previous version
+    <A HREF="/n|/perl/html/./lib/Pod/perlfaq.html">perlfaq</A>     Perl frequently asked questions
+</PRE>
+
+<P>
+
+<PRE>    <A HREF="/n|/perl/html/./lib/Pod/perldata.html">perldata</A>    Perl data structures
+    <A HREF="/n|/perl/html/./lib/Pod/perlsyn.html">perlsyn</A>     Perl syntax
+    <A HREF="/n|/perl/html/./lib/Pod/perlop.html">perlop</A>      Perl operators and precedence
+    <A HREF="/n|/perl/html/./lib/Pod/perlre.html">perlre</A>      Perl regular expressions
+    <A HREF="/n|/perl/html/./lib/Pod/perlrun.html">perlrun</A>     Perl execution and options
+    <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html">perlfunc</A>    Perl builtin functions
+    <A HREF="/n|/perl/html/./lib/Pod/perlvar.html">perlvar</A>     Perl predefined variables
+    <A HREF="/n|/perl/html/./lib/Pod/perlsub.html">perlsub</A>     Perl subroutines
+    <A HREF="/n|/perl/html/./lib/Pod/perlmod.html">perlmod</A>     Perl modules: how they work
+    <A HREF="/n|/perl/html/./lib/Pod/perlmodlib.html">perlmodlib</A>  Perl modules: how to write and use
+    <A HREF="/n|/perl/html/./lib/Pod/perlform.html">perlform</A>    Perl formats
+    <A HREF="/n|/perl/html/./lib/Pod/perllocale.html">perllocale</A>  Perl locale support
+</PRE>
+
+<P>
+
+<PRE>    <A HREF="/n|/perl/html/./lib/Pod/perlref.html">perlref</A>     Perl references
+    <A HREF="/n|/perl/html/./lib/Pod/perldsc.html">perldsc</A>     Perl data structures intro
+    <A HREF="/n|/perl/html/./lib/Pod/perllol.html">perllol</A>     Perl data structures: lists of lists
+    <A HREF="/n|/perl/html/./lib/Pod/perltoot.html">perltoot</A>    Perl OO tutorial
+    <A HREF="/n|/perl/html/./lib/Pod/perlobj.html">perlobj</A>     Perl objects
+    <A HREF="/n|/perl/html/./lib/Pod/perltie.html">perltie</A>     Perl objects hidden behind simple variables
+    <A HREF="/n|/perl/html/./lib/Pod/perlbot.html">perlbot</A>     Perl OO tricks and examples
+    <A HREF="/n|/perl/html/./lib/Pod/perlipc.html">perlipc</A>     Perl interprocess communication
+</PRE>
+
+<P>
+
+<PRE>    <A HREF="/n|/perl/html/./lib/Pod/perldebug.html">perldebug</A>   Perl debugging
+    <A HREF="/n|/perl/html/./lib/Pod/perldiag.html">perldiag</A>    Perl diagnostic messages
+    <A HREF="/n|/perl/html/./lib/Pod/perlsec.html">perlsec</A>     Perl security
+    <A HREF="/n|/perl/html/./lib/Pod/perltrap.html">perltrap</A>    Perl traps for the unwary
+    <A HREF="/n|/perl/html/./lib/Pod/perlstyle.html">perlstyle</A>   Perl style guide
+</PRE>
+
+<P>
+
+<PRE>    <A HREF="/n|/perl/html/./lib/Pod/perlpod.html">perlpod</A>     Perl plain old documentation
+    <A HREF="/n|/perl/html/./lib/Pod/perlbook.html">perlbook</A>    Perl book information
+</PRE>
+
+<P>
+
+<PRE>    <A HREF="/n|/perl/html/./lib/Pod/perlembed.html">perlembed</A>   Perl ways to embed perl in your C or C++ application
+    <A HREF="/n|/perl/html/./lib/Pod/perlapio.html">perlapio</A>    Perl internal IO abstraction interface
+    <A HREF="/n|/perl/html/./lib/Pod/perlxs.html">perlxs</A>      Perl XS application programming interface
+    <A HREF="/n|/perl/html/./lib/Pod/perlxstut.html">perlxstut</A>   Perl XS tutorial
+    <A HREF="/n|/perl/html/./lib/Pod/perlguts.html">perlguts</A>    Perl internal functions for those doing extensions
+    <A HREF="/n|/perl/html/./lib/Pod/perlcall.html">perlcall</A>    Perl calling conventions from C
+</PRE>
+
+<P>
+
+(If you're intending to read these straight through for the first time, the
+suggested order will tend to reduce the number of forward references.)
+
+
+<P>
+
+By default, all of the above manpages are installed in the 
+<EM>/usr/local/man/</EM> directory.  
+
+
+<P>
+
+Extensive additional documentation for Perl modules is available. The
+default configuration for perl will place this additional documentation in
+the <EM>/usr/local/lib/perl5/man</EM> directory (or else in the <EM>man</EM>
+subdirectory of the Perl library directory). Some of this additional
+documentation is distributed standard with Perl, but you'll also find
+documentation for third-party modules there.
+
+
+<P>
+
+You should be able to view Perl's documentation with your <CODE>man(1)</CODE> program by including the proper directories in the appropriate start-up files, or in the 
+<FONT SIZE=-1>MANPATH</FONT> environment variable. To find out where the configuration has installed the manpages, type:
+
+
+
+<P>
+
+<PRE>    perl -V:man.dir
+</PRE>
+
+<P>
+
+If the directories have a common stem, such as <EM>/usr/local/man/man1</EM>
+and <EM>/usr/local/man/man3</EM>, you need only to add that stem (<EM>/usr/local/man</EM>) to your <CODE>man(1)</CODE> configuration files or your 
+<FONT SIZE=-1>MANPATH</FONT> environment variable. If they do not share a
+stem, you'll have to add both stems.
+
+
+<P>
+
+If that doesn't work for some reason, you can still use the supplied <EM>perldoc</EM> script to view module information. You might also look into getting a
+replacement man program.
+
+
+<P>
+
+If something strange has gone wrong with your program and you're not sure
+where you should look for help, try the <STRONG>-w</STRONG> switch first. It will often point out exactly where the trouble is.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Perl is a language optimized for scanning arbitrary text files, extracting
+information from those text files, and printing reports based on that
+information. It's also a good language for many system management tasks.
+The language is intended to be practical (easy to use, efficient, complete)
+rather than beautiful (tiny, elegant, minimal).
+
+
+<P>
+
+Perl combines (in the author's opinion, anyway) some of the best features of 
+<FONT SIZE=-1>C,</FONT>
+ <STRONG>sed</STRONG>, <STRONG>awk</STRONG>, and <STRONG>sh</STRONG>, so people familiar with those languages should have little difficulty
+with it. (Language historians will also note some vestiges of <STRONG>csh</STRONG>, Pascal, and even 
+<FONT SIZE=-1>BASIC-PLUS.)</FONT> Expression syntax corresponds quite closely to 
+<FONT SIZE=-1>C</FONT> expression syntax. Unlike most Unix utilities, Perl does not arbitrarily limit the size of your data--if you've got the memory, Perl can slurp in your whole file as a single string. Recursion is of unlimited depth. And the tables used by hashes (previously called ``associative arrays'') grow as necessary to prevent degraded performance. Perl uses sophisticated pattern matching techniques to scan large amounts of data very quickly. Although optimized for scanning text, Perl can also deal with binary data, and can make dbm files look like hashes. Setuid Perl scripts are safer than 
+<FONT SIZE=-1>C</FONT> programs through a dataflow tracing mechanism which prevents many stupid security holes.
+
+
+
+<P>
+
+If you have a problem that would ordinarily use <STRONG>sed</STRONG> or <STRONG>awk</STRONG> or
+<STRONG>sh</STRONG>, but it exceeds their capabilities or must run a little faster, and you don't want to write the silly thing in 
+<FONT SIZE=-1>C,</FONT> then Perl may be for you. There are also translators to turn your
+ <STRONG>sed</STRONG> and <STRONG>awk</STRONG>
+scripts into Perl scripts.
+
+
+<P>
+
+But wait, there's more...
+
+
+<P>
+
+Perl version 5 is nearly a complete rewrite, and provides the following
+additional benefits:
+
+
+<P>
+
+<UL>
+<LI><STRONG><A NAME="item_Many">Many usability enhancements
+
+</A></STRONG>
+It is now possible to write much more readable Perl code (even within
+regular expressions). Formerly cryptic variable names can be replaced by
+mnemonic identifiers. Error messages are more informative, and the optional
+warnings will catch many of the mistakes a novice might make. This cannot
+be stressed enough. Whenever you get mysterious behavior, try the <STRONG>-w</STRONG> switch!!! Whenever you don't get mysterious behavior, try using <STRONG>-w</STRONG> anyway.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Simplified">Simplified grammar
+
+</A></STRONG>
+The new yacc grammar is one half the size of the old one. Many of the
+arbitrary grammar rules have been regularized. The number of reserved words
+has been cut by 2/3. Despite this, nearly all old Perl scripts will
+continue to work unchanged.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Lexical">Lexical scoping
+
+</A></STRONG>
+Perl variables may now be declared within a lexical scope, like ``auto'' variables in 
+<FONT SIZE=-1>C.</FONT> Not only is this more efficient, but it contributes to better privacy for ``programming in the large''. Anonymous subroutines exhibit deep binding of lexical variables (closures).
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Arbitrarily">Arbitrarily nested data structures
+
+</A></STRONG>
+Any scalar value, including any array element, may now contain a reference
+to any other variable or subroutine. You can easily create anonymous
+variables and subroutines. Perl manages your reference counts for you.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Modularity">Modularity and reusability
+
+</A></STRONG>
+The Perl library is now defined in terms of modules which can be easily shared among various packages. 
+<FONT SIZE=-1>A</FONT> package may choose to import all or a portion of a module's published interface. Pragmas (that is, compiler directives) are defined and used by the same mechanism.
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Object">Object-oriented programming
+
+</A></STRONG>
+
+<FONT SIZE=-1>A</FONT> package can function as a class. Dynamic multiple
+inheritance and virtual methods are supported in a straightforward manner
+and with very little new syntax. Filehandles may now be treated as objects.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Embeddable">Embeddable and Extensible
+
+</A></STRONG>
+Perl may now be embedded easily in your 
+<FONT SIZE=-1>C</FONT> or 
+<FONT SIZE=-1>C++</FONT> application, and can either call or be called by your routines through a documented interface. The 
+<FONT SIZE=-1>XS</FONT> preprocessor is provided to make it easy to glue your 
+<FONT SIZE=-1>C</FONT> or 
+<FONT SIZE=-1>C++</FONT> routines into Perl. Dynamic loading of modules is supported, and Perl itself can be made into a dynamic library.
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_POSIX">POSIX compliant
+
+</A></STRONG>
+
+<FONT SIZE=-1>A</FONT> major new module is the 
+<FONT SIZE=-1>POSIX</FONT> module, which provides access to all available 
+<FONT SIZE=-1>POSIX</FONT> routines and definitions, via object classes where appropriate.
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Package">Package constructors and destructors
+
+</A></STRONG>
+The new 
+<FONT SIZE=-1>BEGIN</FONT> and 
+<FONT SIZE=-1>END</FONT> blocks provide means to capture control as a package is being compiled, and after the program exits. As a degenerate case they work just like awk's 
+<FONT SIZE=-1>BEGIN</FONT> and 
+<FONT SIZE=-1>END</FONT> when you use the
+ <STRONG>-p</STRONG> or <STRONG>-n</STRONG> switches.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Multiple">Multiple simultaneous DBM implementations
+
+</A></STRONG>
+
+<FONT SIZE=-1>A</FONT> Perl program may now access 
+<FONT SIZE=-1>DBM,</FONT> 
+<FONT SIZE=-1>NDBM,</FONT> 
+<FONT SIZE=-1>SDBM,</FONT> 
+<FONT SIZE=-1>GDBM,</FONT> and Berkeley 
+<FONT SIZE=-1>DB</FONT> files from the same script simultaneously. In fact, the old dbmopen interface has been generalized to allow any variable to be tied to an object class which defines its access methods.
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Subroutine">Subroutine definitions may now be autoloaded
+
+</A></STRONG>
+In fact, the 
+<FONT SIZE=-1>AUTOLOAD</FONT> mechanism also allows you to define any
+arbitrary semantics for undefined subroutine calls. It's not for just
+autoloading.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Regular">Regular expression enhancements
+
+</A></STRONG>
+You can now specify nongreedy quantifiers. You can now do grouping without creating a backreference. You can now write regular expressions with embedded whitespace and comments for readability. 
+<FONT SIZE=-1>A</FONT> consistent extensibility mechanism has been added that is upwardly compatible with all old regular expressions.
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Innumerable">Innumerable Unbundled Modules
+
+</A></STRONG>
+The Comprehensive Perl Archive Network described in <A HREF="/n|/perl/html/./lib/Pod/perlmodlib.html#">the perlmodlib manpage</A>
+contains hundreds of plug-and-play modules full of reusable code. See <EM>http://www.perl.com/CPAN</EM> for a site near you.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Compilability">Compilability
+
+</A></STRONG>
+While not yet in full production mode, a working perl-to-C compiler does exist. It can generate portable byte code, simple 
+<FONT SIZE=-1>C,</FONT> or optimized 
+<FONT SIZE=-1>C</FONT> code.
+
+
+
+<P>
+
+</UL>
+Okay, that's <EM>definitely</EM> enough hype.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ENVIRONMENT">ENVIRONMENT
+
+</A></H1>
+See <A HREF="/n|/perl/html/./lib/Pod/perlrun.html#">the perlrun manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Larry Wall &lt;<EM>larry@wall.org</EM>&gt;, with the help of oodles of other folks.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="FILES">FILES
+
+</A></H1>
+<PRE> &quot;/tmp/perl-e$$&quot;        temporary file for -e commands
+ &quot;@INC&quot;                 locations of perl libraries
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<PRE> a2p    awk to perl translator
+</PRE>
+
+<P>
+
+<PRE> s2p    sed to perl translator
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DIAGNOSTICS">DIAGNOSTICS
+
+</A></H1>
+The <STRONG>-w</STRONG> switch produces some lovely diagnostics.
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perldiag.html#">the perldiag manpage</A> for explanations of all Perl's diagnostics.
+
+
+<P>
+
+Compilation errors will tell you the line number of the error, with an
+indication of the next token or token type that was to be examined. (In the
+case of a script passed to Perl via <STRONG>-e</STRONG> switches, each
+<STRONG>-e</STRONG> is counted as one line.)
+
+
+<P>
+
+Setuid scripts have additional constraints that can produce error messages
+such as ``Insecure dependency''. See <A HREF="/n|/perl/html/./lib/Pod/perlsec.html#">the perlsec manpage</A>.
+
+
+<P>
+
+Did we mention that you should definitely consider using the <STRONG>-w</STRONG>
+switch?
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+The <STRONG>-w</STRONG> switch is not mandatory.
+
+
+<P>
+
+Perl is at the mercy of your machine's definitions of various operations
+such as type casting, <CODE>atof(),</CODE> and floating-point output with
+<CODE>sprintf().</CODE>
+
+
+<P>
+
+If your stdio requires a seek or eof between reads and writes on a
+particular stream, so does Perl. (This doesn't apply to
+<CODE>sysread()</CODE> and <CODE>syswrite().)</CODE>
+
+
+<P>
+
+While none of the built-in data types have any arbitrary size limits (apart from memory size), there are still a few arbitrary limits: a given variable name may not be longer than 255 characters, and no component of your 
+<FONT SIZE=-1>PATH</FONT> may be longer than 255 if you use
+ <STRONG>-S</STRONG>. 
+<FONT SIZE=-1>A</FONT> regular expression may not compile to more than
+32767 bytes internally.
+
+
+<P>
+
+You may mail your bug reports (be sure to include full configuration
+information as output by the myconfig program in the perl source tree, or
+by <CODE>perl -V</CODE>) to &lt;<EM>perlbug@perl.com</EM>&gt;. If you've succeeded in compiling perl, the perlbug script in the
+utils/ subdirectory can be used to help mail in a bug report.
+
+
+<P>
+
+Perl actually stands for Pathologically Eclectic Rubbish Lister, but don't tell anyone 
+<FONT SIZE=-1>I</FONT> said that.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTES">NOTES
+
+</A></H1>
+The Perl motto is ``There's more than one way to do it.'' Divining how many
+more is left as an exercise to the reader.
+
+
+<P>
+
+The three principal virtues of a programmer are Laziness, Impatience, and
+Hubris. See the Camel Book for why.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

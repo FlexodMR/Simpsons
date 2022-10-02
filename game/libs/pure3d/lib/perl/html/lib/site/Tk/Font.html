@@ -1,0 +1,231 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::Font - a class for finding X Fonts
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#Foundry_val_">Foundry( [ $val ] )</A>
+		<LI><A HREF="#Family_val_">Family( [ $val ] )</A>
+		<LI><A HREF="#Weight_val_">Weight( [ $val ] )</A>
+		<LI><A HREF="#Slant_val_">Slant( [ $val ] )</A>
+		<LI><A HREF="#Swidth_val_">Swidth( [ $val ] )</A>
+		<LI><A HREF="#Adstyle_val_">Adstyle( [ $val ] )</A>
+		<LI><A HREF="#Pixel_val_">Pixel( [ $val ] )</A>
+		<LI><A HREF="#Point_val_">Point( [ $val ] )</A>
+		<LI><A HREF="#Xres_val_">Xres( [ $val ] )</A>
+		<LI><A HREF="#Yres_val_">Yres( [ $val ] )</A>
+		<LI><A HREF="#Space_val_">Space( [ $val ] )</A>
+		<LI><A HREF="#Avgwidth_val_">Avgwidth( [ $val ] )</A>
+		<LI><A HREF="#Registry_val_">Registry( [ $val ] )</A>
+		<LI><A HREF="#Encoding_val_">Encoding( [ $val ] )</A>
+		<LI><A HREF="#Name_max_">Name( [ $max ] )</A>
+		<LI><A HREF="#Clone_key_value_">Clone( [ key => value, [ ...]] )</A>
+	</UL>
+
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#HISTORY">HISTORY</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::Font - a class for finding 
+<FONT SIZE=-1>X</FONT> Fonts
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use Tk::Font;
+</PRE>
+
+<P>
+
+<PRE> $font = $widget-&gt;Font(foundry =&gt; 'adobe',
+                       family  =&gt; 'times',
+                       point   =&gt; 120
+                      );
+</PRE>
+
+<P>
+
+<PRE> $font = $widget-&gt;Font('*-courier-medium-r-normal-*-*');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<PRE>   This module can be use to interrogate the X server what fonts are
+   avaliable.
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Foundry_val_">Foundry( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Family_val_">Family( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Weight_val_">Weight( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Slant_val_">Slant( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Swidth_val_">Swidth( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Adstyle_val_">Adstyle( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Pixel_val_">Pixel( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Point_val_">Point( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Xres_val_">Xres( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Yres_val_">Yres( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Space_val_">Space( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Avgwidth_val_">Avgwidth( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Registry_val_">Registry( [ $val ] )
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Encoding_val_">Encoding( [ $val ] )
+
+</A></H2>
+Set the given field in the font name to <CODE>$val</CODE> if given and return the current or previous value
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Name_max_">Name( [ $max ] )
+
+</A></H2>
+In a list context it returns a list of all font names that match the fields
+given. It will return a maximum of <CODE>$max</CODE> names, or 128 if <CODE>$max</CODE> is not given.
+
+
+<P>
+
+In a scalar contex it returns the first matching name or undef
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Clone_key_value_">Clone( [ key => value, [ ...]] )
+
+</A></H2>
+Create a duplicate of the curent font object and modify the given fields
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A
+HREF="MAILTO:<Graham.Barr@tiuk.ti.com>"><Graham.Barr@tiuk.ti.com></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="HISTORY">HISTORY
+
+</A></H1>
+11-Jan-96 Initial version
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1996 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

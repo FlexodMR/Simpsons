@@ -1,0 +1,114 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::protoent - by-name interface to Perl's built-in getproto*() functions
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::protoent - by-name interface to Perl's built-in getproto*() functions
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use Net::protoent;
+ $p = getprotobyname(shift || 'tcp') || die &quot;no proto&quot;;
+ printf &quot;proto for %s is %d, aliases are %s\n&quot;,
+    $p-&gt;name, $p-&gt;proto, &quot;@{$p-&gt;aliases}&quot;;
+</PRE>
+
+<P>
+
+<PRE> use Net::protoent qw(:FIELDS);
+ getprotobyname(shift || 'tcp') || die &quot;no proto&quot;;
+ print &quot;proto for $p_name is $p_proto, aliases are @p_aliases\n&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module's default exports override the core <CODE>getprotoent(),</CODE>
+<CODE>getprotobyname(),</CODE> and <CODE>getnetbyport()</CODE> functions,
+replacing them with versions that return ``Net::protoent'' objects. They
+take default second arguments of ``tcp''. This object has methods that
+return the similarly named structure field name from the C's protoent
+structure from <EM>netdb.h</EM>; namely name, aliases, and proto. The aliases method returns an array
+reference, the rest scalars.
+
+
+<P>
+
+You may also import all the structure fields directly into your namespace as regular variables using the 
+<FONT SIZE=-1>:FIELDS</FONT> import tag. (Note that this still overrides your core functions.) Access these fields as variables named with a preceding
+ <CODE>p_</CODE>. Thus, <CODE>$proto_obj-&gt;name()</CODE> corresponds to <CODE>$p_name</CODE> if you import the fields. Array
+references are available as regular array variables, so for example <CODE>@{ $proto_obj-&gt;aliases()
+}</CODE> would be simply @p_aliases.
+
+
+<P>
+
+The <CODE>getproto()</CODE> function is a simple front-end that forwards a
+numeric argument to <CODE>getprotobyport(),</CODE> and the rest to
+<CODE>getprotobyname().</CODE>
+
+
+<P>
+
+To access this functionality without the core overrides, pass the <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_use">use</A> an empty import list, and then access function functions with their full
+qualified names. On the other hand, the built-ins are still available via
+the <CODE>CORE::</CODE> pseudo-package.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+While this class is currently implemented using the Class::Struct module to
+build a struct-like class, you shouldn't rely upon this.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Christiansen
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

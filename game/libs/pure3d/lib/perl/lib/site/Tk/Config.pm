@@ -1,0 +1,12 @@
+package Tk::Config;
+require Exporter;
+@ISA = qw(Exporter);
+$VERSION = '402.002';
+$inc = '-I$(TKDIR)/pTk/mTk/xlib';
+$define = '-DBASEEXT=\\"$(BASEEXT)\\"';
+$xlib = '';
+$xinc = '';
+$gccopt = '';
+$win_arch = 'MSWin32';
+@EXPORT = qw($VERSION $inc $define $xlib $xinc $gccopt $win_arch);
+1;

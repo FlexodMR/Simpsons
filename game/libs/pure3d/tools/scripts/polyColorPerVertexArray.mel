@@ -1,0 +1,247 @@
+/*===========================================================================
+    File:    polyColorPerVertexArray.mel
+    Created: February 11, 2002
+    Author:  Harold Westlund
+
+    Copyright (c) 2002 Radical Entertainment, Inc.
+    All rights reserved.
+
+    Updated: February 25, 2002
+    Version: 1.0.1
+
+=============================================================================
+
+   global proc int polyColorPerVertexArray( int $vertexIndex[], int $faceIndex[],
+                                         float $red[], float $green[], float $blue[],
+                                         string $mesh )
+
+   Change the entire vertex colour table of an object.
+
+   The standard polyColorPerVertex operates on only one vertex at a time.
+   Multiple calls for vertex changes can kill the system with a bloated undo
+   cache.  This Function provides a way to update an object's vertex colour
+   table yet still maintain a lean undo.
+
+   Each vertex face colour is passed in as pararamers along with the corresponding
+   vertex index and face index.  Be sure to have a reference to every vertex face
+   as no check is made to the validity of the passed vertex face set.  There is
+   however no order requirement for parameter data.
+
+===========================================================================*/
+
+proc string nextValidName( )
+{
+    string $base = "polyColorPerVertex";
+    string $result;
+    int $i = 0;
+
+    do
+    {
+        $result = ( $base + $i );
+        $i++;
+    }
+    while ( `objExists $result` );
+
+    return $result;
+}
+
+/*------------------------------------------------------------------------------
+  Connect this polyColorPerVertex node, $polyCPVNode, to the mesh, $mesh.
+  $polyCPVNode will be inserted before the mesh.  If there is already an
+  existing node upstream of the mesh, that will be made the input to
+  $polyCPVNode.  
+  Before:
+  ... -> $inNode -> $outNode -> ...
+  After:
+  ... -> $inNode -> $polyCPVNode -> $outNode -> ...
+
+  input:
+    string $mesh = a node of type mesh
+    string $polyCPVNode = a polyColorPerVertext node correctly built for $mesh
+
+  output:
+    void
+*/
+proc connectPolyColorPerVertex( string $polyCPVNode, string $mesh )
+{
+    // Get the names of the in node and out node.
+    string $outNodeInput = ( $mesh + ".inMesh" );
+//    print ( "The outNode is " + $outNodeInput + "\n" );
+    string $inNodeList[] = `listConnections -source true $outNodeInput`;
+//    print ( "The inNode is " + $inNodeList[0] + "\n" );
+    string $inNode;
+    string $inNodeOutput;
+    
+    // Check the validity of the upstream node.
+    if( size( $inNodeList ) == 1 )
+    {
+        $inNode = $inNodeList[0];
+
+        // print ( $inNode + " is the upstream node\n" );
+
+        // Check if the upstream node is also a polyColorPerVertex node
+        if( `nodeType $inNode` == "polyColorPerVertex" )
+        {
+            // print ( "...however it is a polyColorPerVertex node\n" );
+
+            // Two polyCPVs should not be adjacent.  So delete the previous one
+            // and replace it with this new one, $polyCPVNode.
+            delete $inNode;
+            
+            $inNodeList = `listConnections -source true $outNodeInput`;
+            if( size( $inNodeList ) == 1 )
+            {
+// Is the following ever needed?
+//                $inNodeList = `listRelatives -s -path $inNodeList[0]`;
+                $inNode = $inNodeList[0];
+                // print ( $inNode + " is now the upstream node\n" );
+            }
+            else
+            {
+                // print ( "There is now no upstream node\n" );
+            }
+        }
+    }
+
+    // Make sure there is actually an upstream node to attach to $polyCPVNode
+    if( size( $inNodeList ) == 0 )
+    {
+        // print ( "Creating a new intermediate duplicate node\n" );
+
+        // There is no upstream node so it must be made by duplication.
+        $inNodeList = `duplicate $mesh`;
+        $inNodeList = `listRelatives -s -path $inNodeList[0]`;
+        $inNode = $inNodeList[0];
+
+        // print ( $inNode + " is now the upstream node\n" );
+        
+        // Disconnect it from downstream connections
+        string $downstreamList[] = `listConnections -destination true -plugs true $inNode`;
+        // print ( "disconnectAttr " + $inNode + ".instObjGroups" + 
+//            " " + $downstreamList[0] + "\n" );
+
+        disconnectAttr ( $inNode + ".instObjGroups" ) $downstreamList[0];
+
+        // To use this duplicate, it must be tagged as an intermediate.
+        // print ( "setAttr " + $inNode + ".intermediateObject true \n" );
+        setAttr ( $inNode + ".intermediateObject" ) true;
+
+        $inNodeOutput = ( $inNode + ".outMesh" );
+    }
+    else
+    {
+        // Disconnect it from the outNode
+        string $tmpList[] = `listConnections -source true -plugs true $outNodeInput`;
+        $inNodeOutput = $tmpList[0];
+            
+        // print ( "disconnectAttr " + $inNodeOutput + $outNodeInput );
+        disconnectAttr $inNodeOutput $outNodeInput;
+    }
+    
+    // print ( "The new inNodeOutput is " + $inNodeOutput + "\n" );
+        
+    // Finally, connect up the nodes.
+    // print ( "Connecting nodes" + "\n" );
+
+    // print ( "connectAttr " + $inNodeOutput+ " " + $polyCPVNode + ".inputPolymesh\n" );
+    connectAttr $inNodeOutput ( $polyCPVNode + ".inputPolymesh" );
+    // print ( "connectAttr " + $polyCPVNode + ".output" + $outNodeInput + "\n" );
+    connectAttr ( $polyCPVNode + ".output" ) $outNodeInput;
+}
+
+global proc int polyColorPerVertexArray( int $vertexIndex[], int $faceIndex[],
+                                         float $red[], float $green[], float $blue[],
+                                         string $mesh )
+{
+    // print ( "The node is " + $mesh + "\n" );
+    // Make sure that $mesh is really the mesh.
+    if( `nodeType $mesh` != "mesh" )
+    {
+        // $mesh is not the mesh.  Perhaps its child is.
+        string $meshes[] = `listRelatives -s -path $mesh`;
+        $mesh = $meshes[0];
+        // print ( "Its child is " + $mesh + "\n" );
+        
+        if( `nodeType $mesh` != "mesh" )
+        {
+            warning ( "Unable to process " + $mesh );
+            return false;
+        }
+    }
+
+    // Check that valid data was passed to this function.
+    int $maxIndex = size( $vertexIndex );
+
+    if( $maxIndex == 0 )
+    {
+        return false;
+    }
+    
+    if( $maxIndex != size( $faceIndex ) ||
+        $maxIndex != size( $red ) ||
+        $maxIndex != size( $green ) ||
+        $maxIndex != size( $blue ) )
+    {
+        warning -showLineNumber "array must match in size";
+        return false;
+    }
+
+    string $meshHistory[] = `listConnections ( $mesh + ".inMesh" )`;
+    // Is there construction history?
+    int    $hasConstructionHistory = ( size( $meshHistory ) != 0 );
+    clear $meshHistory;
+
+    string $newNode;  // Name of new node ( if any ).
+    string $pcpvNode; // Name of poly color per vertex node.
+    if( $hasConstructionHistory )
+    {
+        // Create a new pcpv node.
+        $newNode = nextValidName();
+        createNode polyColorPerVertex -n $newNode;
+        //    setAttr ".uopa"
+        $pcpvNode = ( $newNode + ".vclr" );    
+    }
+    else
+    {
+        // No construction history - just modify the mesh.
+        $pcpvNode = ( $mesh + ".vclr" );
+    }
+        
+    setAttr -s $maxIndex $pcpvNode;
+
+    int $vertexFaceCount[];
+    int $i;
+    // Look ahead to find how many entries belong to each vertex.
+    for( $i = 0; $i < $maxIndex; $i++ )
+    {
+        $vertexFaceCount[ $vertexIndex[$i] ] += 1;
+    }
+    
+    for( $i = 0; $i < $maxIndex; $i++ )
+    {
+        int $vIdx;
+        $vIdx = $vertexIndex[$i];
+        int $fIdx;
+        $fIdx = $faceIndex[$i];
+        
+        // Allocate the memory for the vertex faces if not already done.
+        if( $vertexFaceCount[$vIdx] != 0 )
+        {
+            setAttr -s $vertexFaceCount[$vIdx] ( $pcpvNode + "[" + $vIdx + "].vfcl" );
+            $vertexFaceCount[$vIdx] = 0;
+        }
+        
+        // Set the rgb colors for this vertex face.
+        string $vf = ( $pcpvNode + "[" + $vIdx + "].vfcl[" + $fIdx + "].frgb" );
+        setAttr $vf -type "float3" $red[$i] $green[$i] $blue[$i];
+    }
+    clear $vertexFaceCount;
+    
+    // If a new node was created, connect the new node to the mesh.
+    if( $hasConstructionHistory )
+    {
+        connectPolyColorPerVertex( $newNode, $mesh );
+    }
+    
+    return true;
+}

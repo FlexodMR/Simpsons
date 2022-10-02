@@ -1,0 +1,85 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>validate - run many filetest checks on a tree
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+validate - run many filetest checks on a tree
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use <A HREF="File::CheckTree">File::CheckTree</A>;
+</PRE>
+
+<P>
+
+<PRE>    $warnings += validate( q{
+        /vmunix                 -e || die
+        /boot                   -e || die
+        /bin                    cd
+            csh                 -ex
+            csh                 !-ug
+            sh                  -ex
+            sh                  !-ug
+        /usr                    -d || warn &quot;What happened to $file?\n&quot;
+    });
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>validate()</CODE> routine takes a single multiline string
+consisting of lines containing a filename plus a file test to try on it.
+(The file test may also be a ``cd'', causing subsequent relative filenames
+to be interpreted relative to that directory.) After the file test you may
+put <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item__die">|| die</A> to make it a fatal error if the file test fails. The default is <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#item__warn">|| warn</A>. The file test may optionally have a ``!' prepended to test for the
+opposite condition. If you do a cd and then list some relative filenames,
+you may want to indent them slightly for readability. If you supply your
+own <CODE>die()</CODE> or <CODE>warn()</CODE> message, you can use
+<CODE>$file</CODE> to interpolate the filename.
+
+
+<P>
+
+Filetests may be bunched: ``-rwx'' tests for all of <CODE>-r</CODE>, <CODE>-w</CODE>, and <CODE>-x</CODE>. Only the first failed test of the bunch will produce a warning.
+
+
+<P>
+
+The routine returns the number of warnings issued.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

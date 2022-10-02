@@ -1,0 +1,160 @@
+SelectMission("m1");
+
+//SetMissionResetPlayerInCar("level4_carstart");
+SetMissionResetPlayerOutCar("m6_marge_start","level4_carstart");
+//SetDynaLoadData("l4z1.p3d;l4r1.p3d;l4r7.p3d;l4i07.p3d@", "bartroom");
+SetDynaLoadData("l4z1.p3d;l4r1.p3d;l4r7.p3d;");
+
+//AddStage(0);
+//	SetStageMessageIndex(250);
+//	AddObjective("goto");
+//		SetDestination("outside_Simpsons_house_locator");
+//	CloseObjective();
+//CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(12);
+	AddObjective("goto");
+		AddStageVehicle("cPolice","m1_police_carstart","NULL","Missions\level04\M1evade.con");
+		SetDestination("m1_police_trigger");
+	CloseObjective();
+CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(12);
+//	AddObjective("getin", "neither");
+//		SetObjTargetVehicle("current");
+//		AddStageVehicle("cPolice","m1_police_carstart","NULL","Missions\level04\M1evade.con");
+//	CloseObjective();
+//CloseStage();
+
+AddStage(0);
+	SetHUDIcon( "lardlads" );
+	SetStageMessageIndex(162);
+	ActivateVehicle("cPolice","NULL","evade");	//race makes it very easy, for a level 1 "tutorial" chase.
+							//The difference is that 'race' has slow-down catch-up logic, 
+							// 'evade' doesn't
+	SetVehicleAIParams( "cPolice", 0, 1 ); 		//  <=== name, min, max; 0,1 = really dumb, no shortcuts
+	AddStageWaypoint( "m1_police_end" );
+	AddObjective("follow","neither");
+		SetObjTargetVehicle("cPolice");
+	CloseObjective();
+	AddCondition("followdistance");
+		SetFollowDistances(0, 120);
+		SetCondTargetVehicle("cPolice");
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(104);
+	SetHUDIcon( "wiggum" );
+	AddObjective("talkto");
+		AddNPC("wiggum","m1_wiggum_place");
+		AddObjectiveNPCWaypoint( "wiggum", "m1_wiggum_walk1" );
+		AddObjectiveNPCWaypoint( "wiggum", "m1_wiggum_walk2" );
+		AddObjectiveNPCWaypoint( "wiggum", "m1_wiggum_place" );
+		SetTalkToTarget("wiggum", 0, 0); // 0 - eclamation, 1 is gift, with optional hieight offset
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		SetConversationCam( 3, "pc_far" );
+		SetCamBestSide("m1_bestside");
+		SetDialogueInfo("marge","wiggum","cure",0);
+		SetDialoguePositions("m1_wiggum_walk1","m1_wiggum_walk2","m5_carstart");
+	CloseObjective();
+CloseStage();
+
+AddStage(22);
+	SetStageMessageIndex(134);
+	SetHUDIcon( "donuts" );
+	AddStageVehicle("cDonut","m1_donut_carstart","target","Missions\level04\M1dump.con");
+	SetVehicleAIParams( "cDonut", -10, -9 );   // no shortcuts
+	AddStageWaypoint( "m1_donut_path2a" );
+	AddStageWaypoint( "m1_donut_path12" );
+	AddStageWaypoint( "m1_donut_path13" );
+	AddStageWaypoint( "m1_donut_path14" );
+	AddObjective("dump");
+		SetObjTargetVehicle("cDonut");
+		AddCollectible("m1_collectible_1","donut");
+		AddCollectible("m1_collectible_2","donut");
+		AddCollectible("m1_collectible_3","donut");
+		AddCollectible("m1_collectible_4","donut");
+		AddCollectible("m1_collectible_5","donut");
+		AddCollectible("m1_collectible_6","donut");
+		AddCollectible("m1_collectible_7","donut");
+		AddCollectible("m1_collectible_8","donut");
+		AddCollectible("m1_collectible_9","donut");
+		AddCollectible("m1_collectible_10","donut");
+	CloseObjective();
+	SetStageTime(120);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage();
+	SetStageMessageIndex(262);
+	SetHUDIcon( "lardlads" );
+	AddObjective("goto");
+		AddNPC("wiggum","m1_wiggum_place"); //wiggum should go here
+		SetDestination("m1_lardlads", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddStageTime(45);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage(1);
+	SetStageMessageIndex(262);
+	SetHUDIcon( "wiggum" );
+	AddObjective("talkto");
+		AddNPC("wiggum","m1_wiggum_place"); 
+		AddObjectiveNPCWaypoint( "wiggum", "m1_wiggum_walk1" );
+		AddObjectiveNPCWaypoint( "wiggum", "m1_wiggum_walk2" );
+		AddObjectiveNPCWaypoint( "wiggum", "m1_wiggum_place" );
+		SetTalkToTarget("wiggum", 0, 0); // 0 - eclamation, 1 is gift, with optional hieight offset
+	CloseObjective();
+CloseStage();
+
+AddStage(0,"final");
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide("m1_bestside");
+		SetDialogueInfo("marge","wiggum","shack",0);
+		SetDialoguePositions("m1_marge","m1_wiggum","m1_donut_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

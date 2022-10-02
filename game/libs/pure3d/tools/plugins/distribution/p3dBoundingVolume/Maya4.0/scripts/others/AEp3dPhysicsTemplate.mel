@@ -1,0 +1,126 @@
+global proc AEp3dPhysicsTemplate( string $node, int $isTransform )
+{
+    editorTemplate -beginLayout "Pure3D Physics" -collapse 1;
+
+        editorTemplate -callCustom 
+            ( "AEp3dPhysicsIsDynamicNew " + $isTransform )
+            ( "AEp3dPhysicsIsDynamicReplace " + $isTransform )
+                "isDynamic";
+
+        editorTemplate -suppress "isDynamic";
+        editorTemplate -addControl "canBounce";
+        editorTemplate -addControl "canRoll";
+        editorTemplate -addControl "canSlide";
+        editorTemplate -addControl "canSpin";
+        editorTemplate -addControl "areaTag";
+        editorTemplate -addControl "stringData";
+
+        editorTemplate -endLayout;
+}
+
+global proc AEp3dPhysicsIsDynamicNew( int $isTransform, string $attr )
+{
+	setUITemplate -pushTemplate attributeEditorTemplate;
+
+    string $dynamicUI = "AEp3dPhysicsIsDynamicUI";
+    string $dynamicWarningUI = "AEp3dPhysicsIsDynamicWarningUI";
+    string $transformWarningUI = "AEp3dPhysicsTransformWarningUI";
+
+    rowLayout -nc 2 -rowAttach 1 "top" 0 $transformWarningUI;
+        text -height 8 -label "Note:";
+        columnLayout -adj true;
+            text -label "Physics Attributes assigned to a Transform" -align "left";
+            text -label "node are valid ONLY if node is tagged as" -align "left";
+            text -label "'Skeleton Root'." -align "left";
+            separator -height 8 -style "none";
+            setParent ..;
+        setParent ..;
+
+    optionMenuGrp -label "Physics Mode" $dynamicUI;
+        menuItem -label "Static"    -data 0;
+        menuItem -label "Moveable"  -data 1;
+
+// ---- 13 Jun 2002 - So naturally this was a Bad Idea(R).
+//      Even though it had been in place for over a month, as soon as it
+//      was publicly announced I became Public Enemy Number One(R).
+
+//        // 02 May 2002: TEMPORARY BUG FIX 
+//        // Skeletons cannot be made "Dynamic" until such time that we can
+//        // flag joint properties for the physics simulation.
+//        // Martin C. may offer an "automatic" mode which will assign properties
+//        // based on joint names.
+//        if ( !$isTransform )
+        {
+            menuItem -label "Dynamic"   -data 2;
+        }
+
+    rowLayout -nc 2 -rowAttach 1 "top" 0 $dynamicWarningUI;
+        text -height 8 -label "Note:";
+        columnLayout -adj true;
+            text -label "Do not assign 'Dynamic' if object has a" -align "left";
+            text -label "Plane Bounding Volume." -align "left";
+            setParent ..;
+        setParent ..;
+
+    setUITemplate -ppt;
+
+    AEp3dPhysicsIsDynamicReplace $isTransform $attr;
+}
+
+global proc AEp3dPhysicsIsDynamicReplace( int $isTransform, string $attr )
+{
+    string $dynamicUI = "AEp3dPhysicsIsDynamicUI";
+    string $dynamicWarningUI = "AEp3dPhysicsIsDynamicWarningUI";
+    string $transformWarningUI = "AEp3dPhysicsTransformWarningUI";
+
+    string $node = `match "[^\.]*" $attr`;
+
+    int $physicsExists = `attributeQuery -node $node -exists "isDynamic"`;
+
+    if ( $physicsExists )
+    {
+        connectControl -index 2 $dynamicUI $attr;
+
+// ---- 13 Jun 2002 - So naturally this was a Bad Idea(R).
+//      Even though it had been in place for over a month, as soon as it
+//      was publicly announced I became Public Enemy Number One(R).
+
+//        if ( $isTransform && ( `getAttr $attr` == 2 ) )
+//        {
+//            // 02 May 2002: TEMPORARY BUG FIX 
+//            // Skeletons cannot be made "Dynamic" until such time that we can
+//            // flag joint properties for the physics simulation.
+//            // Martin C. may offer an "automatic" mode which will assign properties
+//            // based on joint names.
+//            setAttr $attr 1;
+//        }
+
+    }
+
+    rowLayout -e 
+        -visible ( $physicsExists && $isTransform )
+            $transformWarningUI;
+
+    optionMenuGrp -e 
+        -manage $physicsExists 
+        -cc ( "AEp3dPhysicsShowHideWarning " + $attr )
+            $dynamicUI;
+
+    AEp3dPhysicsShowHideWarning( $attr );
+}
+
+global proc AEp3dPhysicsShowHideWarning( string $attr )
+{
+    string $node = `match "[^\.]*" $attr`;
+    string $dynamicWarningUI = "AEp3dPhysicsIsDynamicWarningUI";
+
+    int $physicsExists = `attributeQuery -node $node -exists "isDynamic"`;
+    int $showWarning = false;
+
+    if ( $physicsExists )
+    {
+        $showWarning = ( `getAttr ( $node + ".isDynamic" )` == 2 );
+    }
+
+    rowLayout -e -visible $showWarning $dynamicWarningUI;
+}

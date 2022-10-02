@@ -1,0 +1,99 @@
+SelectMission("m5");
+
+SetMissionResetPlayerInCar("m5_wiggumcar_sd");
+SetDynaLoadData("l3r2.p3d;l3z2.p3d;l3z3.p3d;");
+InitLevelPlayerVehicle("wiggu_v","m5_wiggumcar_sd","OTHER");
+
+SetForcedCar();
+
+AddStage(0);
+	RESET_TO_HERE();
+	DisableHitAndRun();
+	SetMaxTraffic(3); 
+	SetStageMessageIndex(14);
+	SetHUDIcon( "sjail" );
+	AddStageVehicle("snake_v","m5_snake_carstart","evade","Missions\level03\M5dump.con", "snake" );
+	//SetStageAIRaceCatchupParams("smith_v", 80, 0.5, 1.1, 1.7); 
+//	SetStageAIRaceCatchupParams("snake_v", 80, 1.0, 1.3, 2.3); 
+
+	AddStageWaypoint( "m5_AI_path_4" );
+	AddStageWaypoint( "m5_AI_path_7" );
+	AddStageWaypoint( "m5_AI_path_10" );
+	AddStageWaypoint( "m5_AI_path_16" );
+	AddObjective("dump");
+		AddNPC("wiggum", "m5_wiggum_hide");
+		SetObjTargetVehicle("snake_v");
+		AddCollectible("m5_collectible_1","jeans","jeans");
+		AddCollectible("m5_collectible_2","molemanr","elderly");
+		AddCollectible("m5_collectible_3","h_soda");
+		BindCollectibleTo(0, 0);
+		BindCollectibleTo(1, 1);
+		BindCollectibleTo(2, 2);
+	CloseObjective();
+	AddCondition("followdistance");
+		SetFollowDistances(0, 150);
+		SetCondTargetVehicle("snake_v");
+	CloseCondition();
+	AddCondition("race");
+		SetCondTargetVehicle("snake_v");
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "wiggu_v" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	DisableHitAndRun();
+	SetStageMessageIndex(187);
+	SetHUDIcon( "casino" );
+	AddObjective("goto");
+		SetDestination("m5_casino_sd", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "wiggu_v" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	SetStageTime(60);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	SetFadeOut( 1.0 );
+	SwapInDefaultCar();
+	SetSwapDefaultCarLocator("m5_carstart");
+	SetSwapForcedCarLocator("m5_wiggumcar_sd");
+	SetSwapPlayerLocator("m5_lisa_start");
+	ShowStageComplete();
+CloseStage();
+
+AddStage();
+	SetStageMessageIndex(104);
+	SetHUDIcon( "wiggum" );
+	AddObjective("talkto");
+		//AddStageCharacter("lisa", "m5_lisa_start", "", "wiggu_v", "m5_wiggumcar_sd" );
+		AddNPC("wiggum", "m5_wiggum_sd");
+		AddObjectiveNPCWaypoint( "wiggum", "m5_wiggum_walk1_sd" );
+		AddObjectiveNPCWaypoint( "wiggum", "m5_wiggum_walk2_sd" );
+		SetCamBestSide("m5_bestside");
+		SetTalkToTarget("wiggum", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis03_05.p3d" );
+		SetDialogueInfo("lisa","wiggum","lowlife",0);
+		SetDialoguePositions("m5_lisa_loc","m5_wiggum_sd","m5_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+

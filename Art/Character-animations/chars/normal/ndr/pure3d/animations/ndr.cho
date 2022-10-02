@@ -1,0 +1,146 @@
+//---------------------------------------------------------------------------
+// ndr
+//---------------------------------------------------------------------------
+
+// skeleton rig
+rig "ndr"
+{
+    skeleton "ndr";
+
+    // roots
+    jointIndex_AIRoot 0;
+    jointIndex_OrientationRoot 0;
+    joint_MotionRoot "Motion_Root";
+    joint_BalanceRoot "Balance_Root";
+    joint_CharacterRoot "Character_Root";
+
+    // balance root
+    maxBalanceRootCompress 0.25;
+
+    // legs
+    leg "left"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 1;
+
+        joint_FKMin "Hip_L";
+        joint_FKMax "Ball_L";
+
+        joint_Thigh "Hip_L";
+        joint_Knee "Knee_L";
+        joint_Ankle "Ankle_L";
+
+        //joint_Effector "Left_Foot";
+        //joint_PoleVector "Left_Knee";
+        //joint_OrientOffset "L_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+
+    leg "right"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 0;
+
+        joint_FKMin "Hip_R";
+        joint_FKMax "Ball_R";
+
+        joint_Thigh "Hip_R";
+        joint_Knee "Knee_R";
+        joint_Ankle "Ankle_R";
+
+        //joint_Effector "Right_Foot";
+        //joint_PoleVector "Right_Knee";
+        //joint_OrientOffset "R_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+};
+
+// bank
+bank "ndr"
+{
+    // reference to skeleton configuration
+    rig "ndr";
+
+    default animation.blendOutTime 0.1;
+    default animation.blendInTime 0.1;
+
+    animation "accelerate"
+    {
+	    animation "ndr_accelerate";
+    };
+
+     animation "crash"
+    {
+	    animation "ndr_crash";
+    };
+
+     animation "decelerate"
+    {
+	    animation "ndr_decelerate";
+    };
+
+     animation "look_back"
+    {
+	    animation "ndr_look_back";
+    };
+
+     animation "sway_left"
+    {
+	    animation "ndr_sway_left";
+    };
+
+     animation "sway_right"
+    {
+	    animation "ndr_sway_right";
+    };
+
+     animation "turn_left"
+    {
+	    animation "ndr_turn_left";
+    };
+
+     animation "turn_right"
+    {
+	    animation "ndr_turn_right";
+    };
+
+     animation "turn_head"
+    {
+	    animation "ndr_turn_head";
+    };
+
+     animation "wave"
+    {
+	    animation "ndr_wave";
+    };
+
+     animation "wave_goodbye"
+    {
+	    animation "ndr_wave_goodbye";
+    };
+     
+     animation "in_car_victory_large"
+    {
+	    animation "ndr_in_car_victory_large";
+    };
+  
+     animation "in_car_victory_small"
+    {
+	    animation "ndr_in_car_victory_small";
+    };
+
+
+    animation "in_car_idle"
+    {
+	    animation "ndr_in_car_idle";
+        blendInTime 0;
+        blendOutTime 0;
+    };
+   
+};
+
+
+
+// End of file.

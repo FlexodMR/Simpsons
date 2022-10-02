@@ -1,0 +1,119 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Pod::Text - convert POD data to formatted ASCII text
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#TODO">TODO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Pod::Text - convert 
+<FONT SIZE=-1>POD</FONT> data to formatted 
+<FONT SIZE=-1>ASCII</FONT> text
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use Pod::Text;
+</PRE>
+
+<P>
+
+<PRE>        pod2text(&quot;<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html">perlfunc</A>.pod&quot;);
+</PRE>
+
+<P>
+
+Also:
+
+
+<P>
+
+<PRE>        pod2text [B&lt;-a&gt;] [B&lt;-&gt;I&lt;width&gt;] &lt; input.pod
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Pod::Text is a module that can convert documentation in the 
+<FONT SIZE=-1>POD</FONT> format (such as can be found throughout the Perl distribution) into formatted 
+<FONT SIZE=-1>ASCII.</FONT> Termcap is optionally supported for boldface/underline, and can enabled via
+
+<CODE>$Pod::Text::termcap=1</CODE>. If termcap has not been enabled, then backspaces will be used to simulate
+bold and underlined text.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> separate <EM>pod2text</EM> program is included that is primarily a wrapper for Pod::Text.
+
+
+<P>
+
+The single function <CODE>pod2text()</CODE> can take the optional options <STRONG>-a</STRONG>
+for an alternative output format, then a <STRONG>-</STRONG><EM>width</EM> option with the max terminal width, followed by one or two arguments. The
+first should be the name of a file to read the pod from, or ``&lt;
+<FONT SIZE=-1>&amp;STDIN''</FONT> to read from 
+<FONT SIZE=-1>STDIN.</FONT> 
+<FONT SIZE=-1>A</FONT> second argument, if provided, should be a filehandle glob where output should be sent.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Christiansen &lt;<EM>tchrist@mox.perl.com</EM>&gt;
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="TODO">TODO
+
+</A></H1>
+Cleanup work. The input and output locations need to be more flexible,
+termcap shouldn't be a global variable, and the terminal speed needs to be
+properly calculated.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

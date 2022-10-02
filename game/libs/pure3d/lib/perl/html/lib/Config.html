@@ -1,0 +1,199 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Config - access Perl configuration information
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#WARNING">WARNING</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Config - access Perl configuration information
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Config;
+    if ($Config{'cc'} =~ /gcc/) {
+        print &quot;built by gcc\n&quot;;
+    } 
+</PRE>
+
+<P>
+
+<PRE>    use Config qw(myconfig config_sh config_vars);
+</PRE>
+
+<P>
+
+<PRE>    print myconfig();
+</PRE>
+
+<P>
+
+<PRE>    print config_sh();
+</PRE>
+
+<P>
+
+<PRE>    config_vars(qw(osname archname));
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The Config module contains all the information that was available to the <CODE>Configure</CODE> program at Perl build time (over 900 values).
+
+
+<P>
+
+Shell variables from the <EM>config.sh</EM> file (written by Configure) are stored in the readonly-variable <A HREF="#item__Config">%Config</A>, indexed by their names.
+
+
+<P>
+
+Values stored in config.sh as 'undef' are returned as undefined values. The
+perl <A HREF="#item_exists">exists</A> function can be used to check if a named variable exists.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_myconfig">myconfig()
+
+</A></STRONG><DD>
+Returns a textual summary of the major perl configuration values. See also <A HREF="#item__V">-V</A> in <A HREF="/n|/perl/html/./lib/Pod/perlrun.html#Switches">Switches</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_config_sh">config_sh()
+
+</A></STRONG><DD>
+Returns the entire perl configuration information in the form of the
+original config.sh shell variable assignment script.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_config_vars">config_vars(@names)
+
+</A></STRONG><DD>
+Prints to 
+<FONT SIZE=-1>STDOUT</FONT> the values of the named configuration variable.
+Each is printed on a separate line in the form:
+
+
+<P>
+
+<PRE>  name='value';
+</PRE>
+
+<P>
+
+Names which are unknown are output as <CODE>name='UNKNOWN';</CODE>. See also <CODE>-V:name</CODE> in <A HREF="/n|/perl/html/./lib/Pod/perlrun.html#Switches">Switches</A>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+Here's a more sophisticated example of using %Config:
+
+
+<P>
+
+<PRE>    use Config;
+    use strict;
+</PRE>
+
+<P>
+
+<PRE>    my %sig_num;
+    my @sig_name;
+    unless($Config{sig_name} &amp;&amp; $Config{sig_num}) {
+        die &quot;No sigs?&quot;;
+    } else {
+        my @names = split ' ', $Config{sig_name};
+        @sig_num{@names} = split ' ', $Config{sig_num};
+        foreach (@names) {
+            $sig_name[$sig_num{$_}] ||= $_;
+        }   
+    }
+</PRE>
+
+<P>
+
+<PRE>    print &quot;signal #17 = $sig_name[17]\n&quot;;
+    if ($sig_num{ALRM}) { 
+        print &quot;SIGALRM is $sig_num{ALRM}\n&quot;;
+    }   
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="WARNING">WARNING
+
+</A></H1>
+Because this information is not stored within the perl executable itself it
+is possible (but unlikely) that the information does not relate to the
+actual perl binary which is being used to access it.
+
+
+<P>
+
+The Config module is installed into the architecture and version specific
+library directory ($Config{installarchlib}) and it checks the perl version
+number when loaded.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+This module contains a good example of how to use tie to implement a cache
+and an example of how to make a tied variable readonly to those outside of
+it.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

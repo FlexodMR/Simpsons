@@ -1,0 +1,70 @@
+; rad1394.inf
+;
+; Installation file (.inf) for the Radical 1394 Driver device.
+;
+; (c) Copyright 2001 Radical Entertainment Inc 
+;
+
+[Version]
+Signature="$Windows NT$"
+Provider=%Radical%
+ClassGUID={24E72B3A-0D7F-4931-8475-F46E187B0955}
+Class=Radical1394
+DriverVer=07/11/2001,1.0
+
+[ClassInstall32]
+Addreg=Radical1394ClassReg
+
+[DestinationDirs]
+defaultdestdir=11
+Radical1394.CopyDriver=10,system32\drivers
+
+[SourceDisksNames]
+1=%Radical1394.DriverDiskName%,"",1
+
+[SourceDisksFiles]
+rad1394.sys=1
+
+[Radical1394ClassReg]
+HKR,,,,%Radical1394ClassName%
+HKR,,Icon,,-21
+
+[Manufacturer]
+"Radical Entertainment"=Radical
+
+[Radical]
+%1394\994446&1A1122.DeviceDesc%=RADICAL1394,1394\993346&1A1122
+
+[RADICAL1394]
+AddReg=RADICAL1394.AddReg
+CopyFiles=Radical1394.CopyDriver
+
+
+[RADICAL1394.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,rad1394.sys
+
+[RADICAL1394.NT]
+AddReg=RADICAL1394.AddReg
+CopyFiles=Radical1394.CopyDriver
+
+[RADICAL1394.NT.Services] 
+AddService=RADICAL1394,2,RADICAL1394_ServiceInstall
+
+[RADICAL1394_ServiceInstall]
+DisplayName=%1394\994446&1A1122.DeviceDesc%
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary=%10%\system32\drivers\rad1394.sys
+
+[Strings]
+Radical="Radical Entertainment"
+Radical1394ClassName="Radical 1394 Driver"
+1394\994446&1A1122.DeviceDesc="Radical 1394 Driver"
+Radical1394.DriverDiskName="Radical 1394 Driver Installation Disk"
+
+[Radical1394.CopyDriver]
+rad1394.sys
+
+

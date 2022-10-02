@@ -1,0 +1,150 @@
+/*===========================================================================
+    File:    avePrelight.mel
+    Created: January 28, 2002
+    Author:  Harold Westlund
+
+    Copyright (c) 2002 Radical Entertainment, Inc.
+    All rights reserved.
+
+    Version: 1.0.0
+
+=============================================================================
+
+    This averages vertex colour of a mesh.  Averaging takes place across
+    neighboring faces, as determined by soft and hard edge boundaries.
+    A face's neighbors are those bounded by the same hard edges, and
+    connected with soft edges ( neighbors of neighbors are themselves
+    neighbors ).
+
+===========================================================================*/
+
+global proc avePrelight ( )
+{
+    print "Averaging side vertex colours.\n";
+
+    float $startTime = `timerX`;
+
+    string $selection[] = `ls -selection`;
+
+    string $mesh[] = `filterExpand -sm 12 -ex true`;
+
+    int $i, $j;
+
+    // Step through all selected meshes
+    for( $i = 0; $i < size($mesh); $i++ )
+    {
+        print ( "Sampling " + $mesh[$i] + "\n" );
+
+        // The colours associated with each side.
+        float $sideRed[], $sideGreen[], $sideBlue[];
+        // The side associated with each face.
+        int $faceSide[];
+
+        int $sideIndex = 0; // The index of the current side.
+
+        int $edgesA[] = `polyEvaluate -e ( $mesh[$i] )`;
+        int $numEdges = $edgesA[0];
+        clear $edgesA;
+        
+        int $facesA[] = `polyEvaluate -f ( $mesh[$i] )`;
+        int $numFaces = $facesA[0];
+        clear $facesA;
+        
+        int $faceVisited[1]; // Keep track of which faces have been processed.
+        $faceeVisited[$numFaces] = 0;  // Can't initialize with variable as size.
+
+        // Step through the faces in the mesh
+        for( $j = 0; $j < $numFaces; $j++ )
+        {
+            // string $face = $mesh[$i] + ".f[" + $j+ "]";
+            int $neighbors[];
+            float $aveColour[3];
+            
+            if( $faceVisited[$j] == 0 )
+            {
+                getNeighborFaces( $neighbors, $j, $mesh[$i], $faceVisited );
+                getAveFaceColour( $aveColour, $mesh[$i], $neighbors );
+
+                // Set this side colour to be the average colour.
+                $sideRed[$sideIndex]   = $aveColour[0];
+                $sideGreen[$sideIndex] = $aveColour[1];
+                $sideBlue[$sideIndex]  = $aveColour[2];
+
+                // Colours are set, now record face - side correlation.
+                int $nIdx; // Neighbor index
+                int $maxNIdx = size ( $neighbors );
+                for( $nIdx = 0; $nIdx < $maxNIdx; $nIdx++ )
+                {
+                    $faceSide[ $neighbors[$nIdx] ] = $sideIndex;
+                }
+
+                $sideIndex++;
+            }
+            clear $neighbors;
+            clear $aveColour;
+        }
+        // Create a vertex index list $vi[] and a face index list $fi[]
+        // with vertex indices listed in increasing order.
+        int $vi[];
+        int $fi[];
+        // Create the list of vertexFace colours in $red[], $green[],
+        // and $blue[].
+        float $red[];
+        float $green[];
+        float $blue[];
+
+        int $index = 0; // Unique for each vertexFace.
+
+        int $verticesEval[];
+        $verticesEval = `polyEvaluate -v ( $mesh[$i] )`;
+        int $numVertices = $verticesEval[0];
+        clear $verticesEval;
+        // Step through vertices of this face.
+        for( $vIdx = 0; $vIdx < $numVertices; $vIdx++ )
+        {
+            string $vertex  = $mesh[$i] + ".vtx[" + $vIdx + "]";
+            string $faceInfo[] = `polyInfo -vertexToFace $vertex`;
+            string $faceIndex[];
+            int $tokCount = `tokenize $faceInfo[0] $faceIndex`;
+            clear $faceInfo;
+        
+            // Step through the faces of this vertex.
+            for( $j = 2; $j < $tokCount; $j++ )
+            {
+                int $fIdx = $faceIndex[$j];
+                
+                $vi[$index] = $vIdx;
+                $fi[$index]   = $fIdx;
+                $red[$index]   = $sideRed  [ $faceSide[ $fIdx ] ];
+                $green[$index] = $sideGreen[ $faceSide[ $fIdx ] ];
+                $blue[$index]  = $sideBlue [ $faceSide[ $fIdx ] ];
+
+                $index++;
+                
+            }
+        }
+        
+        // Use the collected information to colour the mesh.
+        polyColorPerVertexArray( $vi, $fi, $red, $green, $blue, $mesh[$i] );
+
+        clear $faceVisited;
+        clear $sideRed;
+        clear $sideGreen;
+        clear $sideBlue;
+        clear $faceSide;
+        clear $vi;
+        clear $fi;
+        clear $red;
+        clear $green;
+        clear $blue;
+    }
+    clear $mesh;
+
+    select $selection;
+
+    float $dTime = `timerX -st $startTime`;
+    
+    print ( "Averaging time = " + $dTime + "\n");
+
+    print "Finished averaging.\n";
+}

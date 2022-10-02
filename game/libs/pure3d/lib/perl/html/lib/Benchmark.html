@@ -1,0 +1,426 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Benchmark - benchmark running times of code
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Methods">Methods</A>
+		<LI><A HREF="#Standard_Exports">Standard Exports</A>
+		<LI><A HREF="#Optional_Exports">Optional Exports</A>
+	</UL>
+
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#INHERITANCE">INHERITANCE</A>
+	<LI><A HREF="#CAVEATS">CAVEATS</A>
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+	<LI><A HREF="#MODIFICATION_HISTORY">MODIFICATION HISTORY</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Benchmark - benchmark running times of code
+
+
+<P>
+
+timethis - run a chunk of code several times
+
+
+<P>
+
+timethese - run several chunks of code several times
+
+
+<P>
+
+timeit - run a chunk of code and see how long it goes
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    timethis ($count, &quot;code&quot;);
+</PRE>
+
+<P>
+
+<PRE>    # Use Perl code in strings...
+    timethese($count, {
+        'Name1' =&gt; '...code1...',
+        'Name2' =&gt; '...code2...',
+    });
+</PRE>
+
+<P>
+
+<PRE>    # ... or use subroutine references.
+    timethese($count, {
+        'Name1' =&gt; sub { ...code1... },
+        'Name2' =&gt; sub { ...code2... },
+    });
+</PRE>
+
+<P>
+
+<PRE>    $t = timeit($count, '...other code...')
+    print &quot;$count loops of other code took:&quot;,timestr($t),&quot;\n&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The Benchmark module encapsulates a number of routines to help you figure
+out how long it takes to execute some code.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Methods">Methods
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_new">new
+
+</A></STRONG><DD>
+Returns the current time. Example:
+
+
+<P>
+
+<PRE>    use Benchmark;
+    $t0 = new Benchmark;
+    # ... your code here ...
+    $t1 = new Benchmark;
+    $td = timediff($t1, $t0);
+    print &quot;the code took:&quot;,timestr($td),&quot;\n&quot;;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_debug">debug
+
+</A></STRONG><DD>
+Enables or disable debugging by setting the <CODE>$Benchmark::Debug</CODE> flag:
+
+
+<P>
+
+<PRE>    debug Benchmark 1;
+    $t = timeit(10, ' 5 ** $Global ');
+    debug Benchmark 0;
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Standard_Exports">Standard Exports
+
+</A></H2>
+The following routines will be exported into your namespace if you use the
+Benchmark module:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_timeit">timeit(COUNT, CODE)
+
+</A></STRONG><DD>
+Arguments: 
+<FONT SIZE=-1>COUNT</FONT> is the number of times to run the loop, and 
+<FONT SIZE=-1>CODE</FONT> is the code to run. 
+<FONT SIZE=-1>CODE</FONT> may be either a code reference or a string to be eval'd; either way it will be run in the caller's package.
+
+
+
+<P>
+
+Returns: a Benchmark object.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_timethis">timethis ( COUNT, CODE, [ TITLE, [ STYLE ]] )
+
+</A></STRONG><DD>
+Time 
+<FONT SIZE=-1>COUNT</FONT> iterations of 
+<FONT SIZE=-1>CODE.</FONT> 
+<FONT SIZE=-1>CODE</FONT> may be a string to eval or a code reference; either way the 
+<FONT SIZE=-1>CODE</FONT> will run in the caller's package. Results will be printed to 
+<FONT SIZE=-1>STDOUT</FONT> as 
+<FONT SIZE=-1>TITLE</FONT> followed by the times. 
+<FONT SIZE=-1>TITLE</FONT> defaults to ``timethis 
+<FONT SIZE=-1>COUNT''</FONT> if none is provided. 
+<FONT SIZE=-1>STYLE</FONT> determines the format of the output, as described for <CODE>timestr()</CODE> below.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_timethese">timethese ( COUNT, CODEHASHREF, [ STYLE ] )
+
+</A></STRONG><DD>
+The 
+<FONT SIZE=-1>CODEHASHREF</FONT> is a reference to a hash containing names as keys and either a string to eval or a code reference for each value. For each 
+<FONT SIZE=-1>(KEY,</FONT> 
+<FONT SIZE=-1>VALUE)</FONT> pair in the 
+<FONT SIZE=-1>CODEHASHREF,</FONT> this routine will call
+
+
+
+<P>
+
+<PRE>        timethis(COUNT, VALUE, KEY, STYLE)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_timediff">timediff ( T1, T2 )
+
+</A></STRONG><DD>
+Returns the difference between two Benchmark times as a Benchmark object
+suitable for passing to <CODE>timestr().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_timestr">timestr ( TIMEDIFF, [ STYLE, [ FORMAT ]] )
+
+</A></STRONG><DD>
+Returns a string that formats the times in the 
+<FONT SIZE=-1>TIMEDIFF</FONT> object in the requested 
+<FONT SIZE=-1>STYLE.</FONT> 
+<FONT SIZE=-1>TIMEDIFF</FONT> is expected to be a Benchmark object similar to that returned by <CODE>timediff().</CODE>
+
+
+
+<P>
+
+
+<FONT SIZE=-1>STYLE</FONT> can be any of 'all', 'noc', 'nop' or 'auto'.
+'all' shows each of the 5 times available ('wallclock' time, user time,
+system time, user time of children, and system time of children). 'noc'
+shows all except the two children times. 'nop' shows only wallclock and the
+two children times. 'auto' (the default) will act as 'all' unless the
+children times are both zero, in which case it acts as 'noc'.
+
+
+<P>
+
+
+<FONT SIZE=-1>FORMAT</FONT> is the <EM>printf(3)</EM>-style format specifier (without the leading '%') to use to print the
+times. It defaults to '5.2f'.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Optional_Exports">Optional Exports
+
+</A></H2>
+The following routines will be exported into your namespace if you
+specifically ask that they be imported:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_clearcache">clearcache ( COUNT )
+
+</A></STRONG><DD>
+Clear the cached time for 
+<FONT SIZE=-1>COUNT</FONT> rounds of the null loop.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_clearallcache">clearallcache ( )
+
+</A></STRONG><DD>
+Clear all cached times.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_disablecache">disablecache ( )
+
+</A></STRONG><DD>
+Disable caching of timings for the null loop. This will force Benchmark to
+recalculate these timings for each new piece of code timed.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_enablecache">enablecache ( )
+
+</A></STRONG><DD>
+Enable caching of timings for the null loop. The time taken for 
+<FONT SIZE=-1>COUNT</FONT> rounds of the null loop will be calculated only once for each different 
+<FONT SIZE=-1>COUNT</FONT> used.
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="NOTES">NOTES
+
+</A></H1>
+The data is stored as a list of values from the time and times functions:
+
+
+<P>
+
+<PRE>      ($real, $user, $system, $children_user, $children_system)
+</PRE>
+
+<P>
+
+in seconds for the whole loop (not divided by the number of rounds).
+
+
+<P>
+
+The timing is done using <CODE>time(3)</CODE> and <CODE>times(3).</CODE>
+
+
+<P>
+
+Code is executed in the caller's package.
+
+
+<P>
+
+The time of the null loop (a loop with the same number of rounds but empty
+loop body) is subtracted from the time of the real loop.
+
+
+<P>
+
+The null loop times are cached, the key being the number of rounds. The
+caching can be controlled using calls like these:
+
+
+<P>
+
+<PRE>    clearcache($key);
+    clearallcache();
+</PRE>
+
+<P>
+
+<PRE>    disablecache();
+    enablecache();
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="INHERITANCE">INHERITANCE
+
+</A></H1>
+Benchmark inherits from no other class, except of course for Exporter.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CAVEATS">CAVEATS
+
+</A></H1>
+Comparing eval'd strings with code references will give you inaccurate
+results: a code reference will show a slower execution time than the
+equivalent eval'd string.
+
+
+<P>
+
+The real time timing is done using <CODE>time(2)</CODE> and the granularity
+is therefore only one second.
+
+
+<P>
+
+Short tests may produce negative figures because perl can appear to take
+longer to execute the empty loop than a short test; try:
+
+
+<P>
+
+<PRE>    timethis(100,'1');
+</PRE>
+
+<P>
+
+The system time of the null loop might be slightly more than the system
+time of the loop with the actual code and therefore the difference might
+end up being &lt; 0.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+Jarkko Hietaniemi &lt;<EM>jhi@iki.fi</EM>&gt;, Tim Bunce &lt;<EM>Tim.Bunce@ig.co.uk</EM>&gt;
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="MODIFICATION_HISTORY">MODIFICATION HISTORY
+
+</A></H1>
+September 8th, 1994; by Tim Bunce.
+
+
+<P>
+
+March 28th, 1997; by Hugo van der Sanden: added support for code references
+and the already documented 'debug' method; revamped documentation.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

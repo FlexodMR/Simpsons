@@ -1,0 +1,689 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Devel::Peek - A data debugging tool for the XS programmer
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<UL>
+
+		<LI><A HREF="#A_simple_scalar_string">A simple scalar string</A>
+		<LI><A HREF="#A_simple_scalar_number">A simple scalar number</A>
+		<LI><A HREF="#A_simple_scalar_with_an_extra_re">A simple scalar with an extra reference</A>
+		<LI><A HREF="#A_reference_to_a_simple_scalar">A reference to a simple scalar</A>
+		<LI><A HREF="#A_reference_to_an_array">A reference to an array</A>
+		<LI><A HREF="#A_reference_to_a_hash">A reference to a hash</A>
+		<LI><A HREF="#Dumping_a_large_array_or_hash">Dumping a large array or hash</A>
+		<LI><A HREF="#A_reference_to_an_SV_which_holds">A reference to an SV which holds a C pointer</A>
+		<LI><A HREF="#A_reference_to_a_subroutine">A reference to a subroutine</A>
+	</UL>
+
+	<LI><A HREF="#EXPORTS">EXPORTS</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Devel::Peek - 
+<FONT SIZE=-1>A</FONT> data debugging tool for the 
+<FONT SIZE=-1>XS</FONT> programmer
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use Devel::Peek;
+        Dump( $a );
+        Dump( $a, 5 );
+        DumpArray( 5, $a, $b, ... );
+        mstat &quot;Point 5&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Devel::Peek contains functions which allows raw Perl datatypes to be manipulated from a Perl script. This is used by those who do 
+<FONT SIZE=-1>XS</FONT> programming to check that the data they are sending from 
+<FONT SIZE=-1>C</FONT> to Perl looks as they think it should look. The trick, then, is to know what the raw datatype is supposed to look like when it gets to Perl. This document offers some tips and hints to describe good and bad raw data.
+
+
+
+<P>
+
+It is very possible that this document will fall far short of being useful
+to the casual reader. The reader is expected to understand the material in
+the first few sections of <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A>.
+
+
+<P>
+
+Devel::Peek supplies a <CODE>Dump()</CODE> function which can dump a raw Perl datatype, and <CODE>mstat("marker")</CODE> function to report on memory usage (if perl is compiled with corresponding
+option). The function <CODE>DeadCode()</CODE> provides statistics on the
+data ``frozen'' into inactive
+<CODE>CV</CODE>. Devel::Peek also supplies <A HREF="#item_SvREFCNT">SvREFCNT()</A>, <A HREF="#item_SvREFCNT_inc">SvREFCNT_inc()</A>, and
+<A HREF="#item_SvREFCNT_dec">SvREFCNT_dec()</A> which can query, increment, and decrement reference counts on SVs. This
+document will take a passive, and safe, approach to data debugging and for
+that it will describe only the <CODE>Dump()</CODE>
+function.
+
+
+<P>
+
+Function <CODE>DumpArray()</CODE> allows dumping of multiple values (useful when you need to analize returns
+of functions).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+The following examples don't attempt to show everything as that would be a
+monumental task, and, frankly, we don't want this manpage to be an
+internals document for Perl. The examples do demonstrate some basics of the
+raw Perl datatypes, and should suffice to get most determined people on
+their way. There are no guidewires or safety nets, nor blazed trails, so be
+prepared to travel alone from this point and on and, if at all possible,
+don't fall into the quicksand (it's bad for business).
+
+
+<P>
+
+Oh, one final bit of advice: take <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A> with you. When you return we expect to see it well-thumbed.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="A_simple_scalar_string">A simple scalar string
+
+</A></H2>
+Let's begin by looking a simple scalar which is holding a string.
+
+
+<P>
+
+<PRE>        use Devel::Peek 'Dump';
+        $a = &quot;hello&quot;;
+        Dump $a;
+</PRE>
+
+<P>
+
+The output:
+
+
+<P>
+
+<PRE>        SV = PVIV(0xbc288)
+          REFCNT = 1
+          FLAGS = (POK,pPOK)
+          IV = 0
+          PV = 0xb2048 &quot;hello&quot;
+          CUR = 5
+          LEN = 6
+</PRE>
+
+<P>
+
+This says <A HREF="#item__a">$a</A> is an 
+<FONT SIZE=-1>SV,</FONT> a scalar. The scalar is a 
+<FONT SIZE=-1>PVIV,</FONT> a string. Its reference count is 1. It has the
+ <CODE>POK</CODE> flag set, meaning its current 
+<FONT SIZE=-1>PV</FONT> field is valid. Because 
+<FONT SIZE=-1>POK</FONT> is set we look at the 
+<FONT SIZE=-1>PV</FONT> item to see what is in the scalar. If the 
+<FONT SIZE=-1>FLAGS</FONT> had been 
+<FONT SIZE=-1>IOK</FONT> we would look at the 
+<FONT SIZE=-1>IV</FONT> item. 
+<FONT SIZE=-1>CUR</FONT> indicates the number of characters in the 
+<FONT SIZE=-1>PV.</FONT> 
+<FONT SIZE=-1>LEN</FONT> indicates the number of bytes requested for the 
+<FONT SIZE=-1>PV</FONT> (one more than 
+<FONT SIZE=-1>CUR,</FONT> in this case, because 
+<FONT SIZE=-1>LEN</FONT> includes an extra byte for the end-of-string marker).
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="A_simple_scalar_number">A simple scalar number
+
+</A></H2>
+If the scalar contains a number the raw 
+<FONT SIZE=-1>SV</FONT> will be leaner.
+
+
+<P>
+
+<PRE>        use Devel::Peek 'Dump';
+        $a = 42;
+        Dump $a;
+</PRE>
+
+<P>
+
+The output:
+
+
+<P>
+
+<PRE>        SV = IV(0xbc818)
+          REFCNT = 1
+          FLAGS = (IOK,pIOK)
+          IV = 42
+</PRE>
+
+<P>
+
+This says <A HREF="#item__a">$a</A> is an 
+<FONT SIZE=-1>SV,</FONT> a scalar. The scalar is an 
+<FONT SIZE=-1>IV,</FONT> a number. Its reference count is 1. It has the
+ <CODE>IOK</CODE> flag set, meaning it is currently being evaluated as a number. Because 
+<FONT SIZE=-1>IOK</FONT> is set we look at the 
+<FONT SIZE=-1>IV</FONT> item to see what is in the scalar.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="A_simple_scalar_with_an_extra_re">A simple scalar with an extra reference
+
+</A></H2>
+If the scalar from the previous example had an extra reference:
+
+
+<P>
+
+<PRE>        use Devel::Peek 'Dump';
+        $a = 42;
+        $b = \$a;
+        Dump $a;
+</PRE>
+
+<P>
+
+The output:
+
+
+<P>
+
+<PRE>        SV = IV(0xbe860)
+          REFCNT = 2
+          FLAGS = (IOK,pIOK)
+          IV = 42
+</PRE>
+
+<P>
+
+Notice that this example differs from the previous example only in its
+reference count. Compare this to the next example, where we dump <A HREF="#item__b">$b</A>
+instead of <A HREF="#item__a">$a</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="A_reference_to_a_simple_scalar">A reference to a simple scalar
+
+</A></H2>
+This shows what a reference looks like when it references a simple scalar.
+
+
+<P>
+
+<PRE>        use Devel::Peek 'Dump';
+        $a = 42;
+        $b = \$a;
+        Dump $b;
+</PRE>
+
+<P>
+
+The output:
+
+
+<P>
+
+<PRE>        SV = RV(0xf041c)
+          REFCNT = 1
+          FLAGS = (ROK)
+          RV = 0xbab08
+        SV = IV(0xbe860)
+          REFCNT = 2
+          FLAGS = (IOK,pIOK)
+          IV = 42
+</PRE>
+
+<P>
+
+Starting from the top, this says <A HREF="#item__b">$b</A> is an 
+<FONT SIZE=-1>SV.</FONT> The scalar is an 
+<FONT SIZE=-1>RV,</FONT> a reference. It has the
+ <CODE>ROK</CODE> flag set, meaning it is a reference. Because 
+<FONT SIZE=-1>ROK</FONT> is set we have an 
+<FONT SIZE=-1>RV</FONT> item rather than an 
+<FONT SIZE=-1>IV</FONT> or 
+<FONT SIZE=-1>PV.</FONT> Notice that Dump follows the reference and shows us what
+ <A HREF="#item__b">$b</A> was referencing. We see the same <A HREF="#item__a">$a</A> that we found in the previous example.
+
+
+<P>
+
+Note that the value of <CODE>RV</CODE> coincides with the numbers we see when we stringify $b. The addresses
+inside <CODE>RV()</CODE> and <CODE>IV()</CODE> are addresses of
+<A HREF="#item_X_">X***</A> structure which holds the current state of an <A HREF="#item_SV">SV</A>. This address may change during lifetime of an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="A_reference_to_an_array">A reference to an array
+
+</A></H2>
+This shows what a reference to an array looks like.
+
+
+<P>
+
+<PRE>        use Devel::Peek 'Dump';
+        $a = [42];
+        Dump $a;
+</PRE>
+
+<P>
+
+The output:
+
+
+<P>
+
+<PRE>        SV = RV(0xf041c)
+          REFCNT = 1
+          FLAGS = (ROK)
+          RV = 0xb2850
+        SV = PVAV(0xbd448)
+          REFCNT = 1
+          FLAGS = ()
+          IV = 0
+          NV = 0
+          ARRAY = 0xb2048
+          ALLOC = 0xb2048
+          FILL = 0
+          MAX = 0
+          ARYLEN = 0x0
+          FLAGS = (REAL)
+        Elt No. 0 0xb5658
+        SV = IV(0xbe860)
+          REFCNT = 1
+          FLAGS = (IOK,pIOK)
+          IV = 42
+</PRE>
+
+<P>
+
+This says <A HREF="#item__a">$a</A> is an 
+<FONT SIZE=-1>SV</FONT> and that it is an 
+<FONT SIZE=-1>RV.</FONT> That 
+<FONT SIZE=-1>RV</FONT> points to another 
+<FONT SIZE=-1>SV</FONT> which is a 
+<FONT SIZE=-1>PVAV,</FONT> an array. The array has one element, element zero, which is another 
+<FONT SIZE=-1>SV.</FONT> The field
+ <CODE>FILL</CODE> above indicates the last element in the array, similar to <A HREF="#item__a">$#$a</A>.
+
+
+<P>
+
+If <A HREF="#item__a">$a</A> pointed to an array of two elements then we would see the following.
+
+
+<P>
+
+<PRE>        use Devel::Peek 'Dump';
+        $a = [42,24];
+        Dump $a;
+</PRE>
+
+<P>
+
+The output:
+
+
+<P>
+
+<PRE>        SV = RV(0xf041c)
+          REFCNT = 1
+          FLAGS = (ROK)
+          RV = 0xb2850
+        SV = PVAV(0xbd448)
+          REFCNT = 1
+          FLAGS = ()
+          IV = 0
+          NV = 0
+          ARRAY = 0xb2048
+          ALLOC = 0xb2048
+          FILL = 0
+          MAX = 0
+          ARYLEN = 0x0
+          FLAGS = (REAL)
+        Elt No. 0  0xb5658
+        SV = IV(0xbe860)
+          REFCNT = 1
+          FLAGS = (IOK,pIOK)
+          IV = 42
+        Elt No. 1  0xb5680
+        SV = IV(0xbe818)
+          REFCNT = 1
+          FLAGS = (IOK,pIOK)
+          IV = 24
+</PRE>
+
+<P>
+
+Note that <CODE>Dump</CODE> will not report <EM>all</EM> the elements in the array, only several first (depending on how deep it
+already went into the report tree).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="A_reference_to_a_hash">A reference to a hash
+
+</A></H2>
+The following shows the raw form of a reference to a hash.
+
+
+<P>
+
+<PRE>        use Devel::Peek 'Dump';
+        $a = {hello=&gt;42};
+        Dump $a;
+</PRE>
+
+<P>
+
+The output:
+
+
+<P>
+
+<PRE>        SV = RV(0xf041c)
+          REFCNT = 1
+          FLAGS = (ROK)
+          RV = 0xb2850
+        SV = PVHV(0xbd448)
+          REFCNT = 1
+          FLAGS = ()
+          IV = 1
+          NV = 0
+          ARRAY = 0xbd748
+          KEYS = 1
+          FILL = 1
+          MAX = 7
+          RITER = -1
+          EITER = 0x0
+        Elt &quot;hello&quot; =&gt; 0xbaaf0
+        SV = IV(0xbe860)
+          REFCNT = 1
+          FLAGS = (IOK,pIOK)
+          IV = 42
+</PRE>
+
+<P>
+
+This shows <A HREF="#item__a">$a</A> is a reference pointing to an 
+<FONT SIZE=-1>SV.</FONT> That 
+<FONT SIZE=-1>SV</FONT> is a 
+<FONT SIZE=-1>PVHV,</FONT> a hash. Fields 
+<FONT SIZE=-1>RITER</FONT> and 
+<FONT SIZE=-1>EITER</FONT> are used by
+ <CODE><EM>each</EM></CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Dumping_a_large_array_or_hash">Dumping a large array or hash
+
+</A></H2>
+The <CODE>Dump()</CODE> function, by default, dumps up to 4 elements from a toplevel array or hash.
+This number can be increased by supplying a second argument to the
+function.
+
+
+<P>
+
+<PRE>        use Devel::Peek 'Dump';
+        $a = [10,11,12,13,14];
+        Dump $a;
+</PRE>
+
+<P>
+
+Notice that <CODE>Dump()</CODE> prints only elements 10 through 13 in the above code. The following code
+will print all of the elements.
+
+
+<P>
+
+<PRE>        use Devel::Peek 'Dump';
+        $a = [10,11,12,13,14];
+        Dump $a, 5;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="A_reference_to_an_SV_which_holds">A reference to an SV which holds a C pointer
+
+</A></H2>
+This is what you really need to know as an 
+<FONT SIZE=-1>XS</FONT> programmer, of course. When an 
+<FONT SIZE=-1>XSUB</FONT> returns a pointer to a 
+<FONT SIZE=-1>C</FONT> structure that pointer is stored in an 
+<FONT SIZE=-1>SV</FONT> and a reference to that 
+<FONT SIZE=-1>SV</FONT> is placed on the 
+<FONT SIZE=-1>XSUB</FONT> stack. So the output from an 
+<FONT SIZE=-1>XSUB</FONT> which uses something like the 
+<FONT SIZE=-1>T_PTROBJ</FONT> map might look something like this:
+
+
+
+<P>
+
+<PRE>        SV = RV(0xf381c)
+          REFCNT = 1
+          FLAGS = (ROK)
+          RV = 0xb8ad8
+        SV = PVMG(0xbb3c8)
+          REFCNT = 1
+          FLAGS = (OBJECT,IOK,pIOK)
+          IV = 729160
+          NV = 0
+          PV = 0
+          STASH = 0xc1d10       &quot;CookBookB::Opaque&quot;
+</PRE>
+
+<P>
+
+This shows that we have an 
+<FONT SIZE=-1>SV</FONT> which is an 
+<FONT SIZE=-1>RV.</FONT> That 
+<FONT SIZE=-1>RV</FONT> points at another 
+<FONT SIZE=-1>SV.</FONT> In this case that second 
+<FONT SIZE=-1>SV</FONT> is a 
+<FONT SIZE=-1>PVMG,</FONT> a blessed scalar. Because it is blessed it has the
+ <A HREF="#item_OBJECT">OBJECT</A> flag set. Note that an 
+<FONT SIZE=-1>SV</FONT> which holds a 
+<FONT SIZE=-1>C</FONT> pointer also has the
+ <CODE>IOK</CODE> flag set. The <CODE>STASH</CODE> is set to the package name which this 
+<FONT SIZE=-1>SV</FONT> was blessed into.
+
+
+<P>
+
+The output from an 
+<FONT SIZE=-1>XSUB</FONT> which uses something like the 
+<FONT SIZE=-1>T_PTRREF</FONT> map, which doesn't bless the object, might look something like this:
+
+
+
+<P>
+
+<PRE>        SV = RV(0xf381c)
+          REFCNT = 1
+          FLAGS = (ROK)
+          RV = 0xb8ad8
+        SV = PVMG(0xbb3c8)
+          REFCNT = 1
+          FLAGS = (IOK,pIOK)
+          IV = 729160
+          NV = 0
+          PV = 0
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="A_reference_to_a_subroutine">A reference to a subroutine
+
+</A></H2>
+Looks like this:
+
+
+<P>
+
+<PRE>        SV = RV(0x798ec)
+          REFCNT = 1
+          FLAGS = (TEMP,ROK)
+          RV = 0x1d453c
+        SV = PVCV(0x1c768c)
+          REFCNT = 2
+          FLAGS = ()
+          IV = 0
+          NV = 0
+          COMP_STASH = 0x31068  &quot;main&quot;
+          START = 0xb20e0
+          ROOT = 0xbece0
+          XSUB = 0x0
+          XSUBANY = 0
+          GVGV::GV = 0x1d44e8   &quot;MY&quot; :: &quot;top_targets&quot;
+          FILEGV = 0x1fab74     &quot;_&lt;(eval 5)&quot;
+          DEPTH = 0
+          PADLIST = 0x1c9338
+</PRE>
+
+<P>
+
+This shows that 
+
+
+<P>
+
+<DL>
+<DT><STRONG></STRONG><DD>
+the subroutine is not an 
+<FONT SIZE=-1>XSUB</FONT> (since <CODE>START</CODE> and <CODE>ROOT</CODE> are non-zero, and <CODE>XSUB</CODE> is zero);
+
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+that it was compiled in the package <CODE>main</CODE>;
+
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+under the name <CODE>MY::top_targets</CODE>; 
+
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+inside a 5th eval in the program;
+
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+it is not currently executed (see <CODE>DEPTH</CODE>);
+
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+it has no prototype (<CODE>PROTOTYPE</CODE> field is missing).
+
+
+<P>
+
+<H1><A NAME="EXPORTS">EXPORTS
+
+</A></H1>
+<CODE>Peek</CODE>, <CODE>mstats</CODE>, <CODE>DeadCode</CODE> by default. Additionally available <A HREF="#item_SvREFCNT">SvREFCNT</A>,
+<A HREF="#item_SvREFCNT_inc">SvREFCNT_inc</A>, <A HREF="#item_SvREFCNT_dec">SvREFCNT_dec</A>.
+
+
+<P>
+
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Readers have been known to skip important parts of <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A>, causing much frustration for all.
+
+
+<P>
+
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A>, and <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A>, again.
+
+
+<P>
+
+</DL>
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

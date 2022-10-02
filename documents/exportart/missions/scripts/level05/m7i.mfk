@@ -1,0 +1,83 @@
+SelectMission("m7");
+
+SetMissionResetPlayerInCar("m7_carstart");
+SetDynaLoadData("l5z2.p3d;l5r1.p3d;l5r2.p3d;");
+InitLevelPlayerVehicle("bart_v","m7_carstart","OTHER");
+
+//This is a forced car mission
+SetForcedCar();
+
+AddStage();
+	RESET_TO_HERE();
+	SetMaxTraffic(3);
+	SetStageMessageIndex(125);
+	SetHUDIcon( "museum" );
+	AddObjective("goto");
+		AddNPC("bart", "m7_bart_hide");
+		SetDestination("m7_AI_path4", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(30);
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition("timeout");
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "bart_v" );
+	CloseCondition();
+CloseStage();
+
+AddStage();
+ 	SetMaxTraffic(2);
+	SetStageMessageIndex(257);
+	SetHUDIcon( "key" );
+	AddStageVehicle("cCurator","m7_AI_1start","target","Missions\level05\M7dest.con");
+	SetVehicleAIParams( "cCurator", 15, 25 ); //  no shorctuts
+	SetStageAITargetCatchupParams( "cCurator", 50, 100);
+//	crowflydistofwhenAIisnearenoughplayer, // when we'll apply no catchup (drive normally)
+//	crowflydistofwhenAIistoofarfromplayer ); // when we'll perform most poorly for player to catchup
+
+	AddStageWaypoint( "m7_AI_path0" );
+	AddStageWaypoint( "m7_AI_path2" );
+	AddStageWaypoint( "m7_AI_path1" );
+	AddStageWaypoint( "m7_AI_path3" );
+	AddObjective("dump");
+		SetObjTargetVehicle("cCurator");
+		AddCollectible("m7_redkey","key");
+	CloseObjective();
+	AddStageTime(135);
+	AddCondition("timeout");
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "bart_v" );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(final);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(125);
+	SetHUDIcon( "museum" );
+	AddObjective("goto");
+		SetDestination("m7_AI_path4", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddStageTime(30);
+	AddCondition("timeout");
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "bart_v" );
+	CloseCondition();
+CloseStage();
+
+CloseMission();

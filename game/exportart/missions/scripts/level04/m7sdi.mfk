@@ -1,0 +1,74 @@
+SelectMission("m7sd");
+
+SetMissionStartCameraName( "mission7camShape" );
+SetMissionStartMulticontName( "mission7cam" );
+SetAnimatedCameraName( "mission7camShape" );
+SetAnimCamMulticontName( "mission7cam" );
+
+SetMissionResetPlayerOutCar("m7_marge_start","m7_carstart");
+SetDynaLoadData("l4z2.p3d;l4r1.p3d;l4r2.p3d;");
+
+UsePedGroup(1);
+
+AddStage(0);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(131);
+	SetHUDIcon("kwike");
+	AddObjective( "goto" );
+		SetDestination( "m7_kwik", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(1);
+	RESET_TO_HERE();
+	SetStageMessageIndex(102);
+	SetHUDIcon("kwike");
+	AddObjective("interior");
+		SetDestination("KwikEMart", "kwik_mission_doorstar");
+	CloseObjective();
+CloseStage();
+
+AddStage(25);
+	SetStageMessageIndex(157);
+	SetHUDIcon( "apu" );
+	AddObjective("talkto");
+		AddNPC("apu", "m7_apu_sd", "KwikEMart" ); 
+		SetTalkToTarget("apu", 0, -0.2, "3.0");
+	CloseObjective();
+CloseStage();
+
+AddStage(1);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis04_07.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_thinking" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_cross_arms" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		SetConversationCam( 3, "pc_far" );
+		SetDialogueInfo("marge","apu","tainted",0);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

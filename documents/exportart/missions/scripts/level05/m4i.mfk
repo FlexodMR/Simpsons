@@ -1,0 +1,74 @@
+SelectMission("m4");
+
+SetMissionResetPlayerInCar("m4_carstart");
+SetDynaLoadData("l5r1.p3d;l5z1.p3d;l5z2.p3d;");
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin", "neither");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(8);
+	RESET_TO_HERE();
+	SetMaxTraffic(5);
+	SetStageMessageIndex(264);
+	SetHUDIcon( "donuts" );
+	AddObjective("delivery", "neither");
+		AddStageVehicle("wiggu_v","m4_wiggum_carstart","NULL","Missions\level05\M4chase.con", "wiggum");
+		AddCollectible("m4_donut_1","donut");
+		AddCollectible("m4_donut_2","donut");
+		AddCollectible("m4_donut_3","donut");
+		AddCollectible("m4_donut_4","donut");
+		AddCollectible("m4_donut_5","donut");
+		AddCollectible("m4_donut_6","donut");
+		AddCollectible("m4_donut_7","donut");
+		AddCollectible("m4_donut_8","donut");
+		AddCollectible("m4_donut_9","donut");
+		AddCollectible("m4_donut_10","donut");
+		AddCollectible("m4_donut_11","donut");
+		AddCollectible("m4_donut_12","donut");
+		AddCollectible("m4_donut_13","donut");
+		AddCollectible("m4_donut_14","donut");
+		AddCollectible("m4_donut_15","donut");
+		AddCollectible("m4_donut_16","donut");
+		AddCollectible("m4_donut_17","donut");
+		AddCollectible("m4_donut_18","donut");
+		AddCollectible("m4_donut_19","donut");
+		AddCollectible("m4_donut_20","donut");
+		AddCollectible("m4_donut_21","donut");
+	CloseObjective();
+	SetStageTime(55);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(final);
+	SetStageMessageIndex(75);
+	SetHUDIcon( "wiggu_v" );
+	ActivateVehicle("wiggu_v","NULL","evade");
+	SetVehicleAIParams( "wiggu_v", 50, 51 ); //  all shortcuts
+	AddStageWaypoint( "m4_wiggum1" );
+	AddStageWaypoint( "m4_wiggum2" );
+	AddStageWaypoint( "m4_wiggum3" );
+	AddStageWaypoint( "m4_wiggum4" );
+	AddStageWaypoint( "m4_wiggum_path8" );
+	AddStageWaypoint( "m4_wiggum_path10" );
+	//AddStageWaypoint( "m4_wiggum_path11" );
+	AddObjective("follow", "neither");
+		//AddNPC("snake", "m5_snake_sd");
+		//SetDestination("m4_wiggum_path10");
+		SetObjTargetVehicle("wiggu_v");
+	CloseObjective();
+	AddCondition("followdistance");
+		SetFollowDistances(0, 150);
+		SetCondTargetVehicle("wiggu_v");
+	CloseCondition();
+CloseStage();
+
+CloseMission();
+
+

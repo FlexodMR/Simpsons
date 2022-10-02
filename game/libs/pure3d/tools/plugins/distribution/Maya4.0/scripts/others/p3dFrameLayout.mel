@@ -1,0 +1,230 @@
+//===========================================================================
+// validBMP
+//===========================================================================
+// Description: Maya's UI layout will BOMB if you attempt to create a UI
+//              control that contains an image (a 'symbolButton' for example)
+//              where the specified image does not exist.
+//
+//              This function queries the folders specified in the XBMLANGPATH 
+//              environment variable for the specified BMP image.  If the
+//              image is found, its name is returned.  If the image is not
+//              found, the default image "vacantCell.xpm" is returned instead.
+//
+//              Suggested use is to specify the image for a control by 
+//              wrapping it within validBMP(); e.g.:
+//
+//                  symbolButton -image ( validBMP( "myImage.bmp" );
+//
+// Constraints: 
+//
+//  Parameters: string $bmp: The name of the BMP image (no path, please).
+//
+//      Return: (string): If specified BMP is valid, the BMP name is
+//                        returned; if the BMP is not valid "vacantCell.xpm"
+//                        is returned.
+//
+//===========================================================================
+proc string validBMP( string $bmp )
+{
+    string $validBMP = "vacantCell.xpm";
+    
+    string $pathEnv = `getenv XBMLANGPATH`;
+    string $paths[];
+    tokenize $pathEnv ";" $paths;
+    for ( $p in $paths )
+    {
+        string $bmpPath = ( $p + "/" + $bmp );
+        if ( `file -q -exists $bmpPath` )
+        {
+            $validBMP = $bmp;
+            break;
+        }
+    }
+    
+    return $validBMP;
+}
+
+//===========================================================================
+// p3dFrameLayout
+//===========================================================================
+// Description: Creates a "URL frameLayout" -- by use of formLayout trickery
+//              adds a frameLayout with an "inline" symbolButton.  The button
+//              appears right-justified in the frameLayout's label area
+//              and offers access to a help page via URL.
+//
+//              Use PopP3dFrameLayout() to restore the UI parent.
+//
+// Constraints: The "Show Help" button is available only in Maya v4.
+//
+//  Parameters: string $frameLabel: Label for the frameLayout UI control.
+//              string $url: URL to assign to the "info" button control.
+//              int $collapsable: TRUE if frame is collapsable.
+//              int $collapse: TRUE to create the frameLayout collapsed.
+//              string $uiName: String to identify name of formLayout UI.
+//
+//      Return: (string): Name for the formLayout UI control.
+//
+//===========================================================================
+global proc string[] p3dFrameLayout( string $frameLabel, string $url, int $collapsable, int $collapse )
+{
+    string $layout[2];
+
+    string $var = $frameLabel;
+    while ( $var != ( $var = `substitute " " $var "_"` ) );
+    $var += "FrameUI";
+
+    if ( `optionVar -exists $var` )
+        $collapse = `optionVar -q $var`;
+
+    string $infoButtonUI;
+
+    $layout[1] = `formLayout`;
+
+        if ( `exists showHelp` )
+        {
+            $infoButtonUI = `symbolButton -image ( validBMP( "p3dInfo.bmp" ) ) -width 36 -height 14`;
+            symbolButton -e
+                -c ( "showHelp -absolute \"" + $url + "\"" )
+                    $infoButtonUI;
+        }
+
+        $layout[0] = `frameLayout -label $frameLabel -collapsable $collapsable -collapse $collapse`;
+
+        frameLayout -e
+            -cc ( "optionVar -intValue " + $var + " 1" )
+            -ec ( "optionVar -intValue " + $var + " 0" )
+                $layout[0];
+            
+    if ( `exists showHelp` )
+    {
+        formLayout -e
+            -af     $infoButtonUI     "top"       4
+            -af     $infoButtonUI     "right"     4
+
+            -af     $layout[0]          "top"       0
+            -af     $layout[0]          "left"      0
+            -af     $layout[0]          "right"     0
+                $layout[1];
+    }
+    else
+    {
+        formLayout -e
+            -af     $layout[0]          "top"       0
+            -af     $layout[0]          "left"      0
+            -af     $layout[0]          "right"     0
+                $layout[1];
+    }
+
+    return $layout;
+}
+
+//===========================================================================
+// p3dFrameLayout
+//===========================================================================
+// Description: Creates a "URL frameLayout" -- by use of formLayout trickery
+//              adds a frameLayout with an "inline" symbolButton.  The button
+//              appears right-justified in the frameLayout's label area
+//              and offers access to a help page via URL.
+//
+//              Use PopP3dFrameLayout() to restore the UI parent.
+//
+// Constraints: The "Show Help" button is available only in Maya v4.
+//
+//  Parameters: string $frameLabel: Label for the frameLayout UI control.
+//              string $url: URL to assign to the "info" button control.
+//              int $collapsable: TRUE if frame is collapsable.
+//              int $collapse: TRUE to create the frameLayout collapsed.
+//              string $uiName: String to identify name of formLayout UI.
+//
+//      Return: (string): Name for the formLayout UI control.
+//
+//===========================================================================
+global proc string[] p3dFrameLayoutEx( string $frameLabel, string $url, int $collapsable, int $collapse, string $uiName )
+{
+    string $layout[2];
+
+    string $var = $frameLabel;
+    while ( $var != ( $var = `substitute " " $var "_"` ) );
+    $var += "FrameUI";
+
+    if ( `optionVar -exists $var` )
+        $collapse = `optionVar -q $var`;
+
+    string $infoButtonUI;
+
+    if ( $uiName != "" )
+    {
+        $layout[1] = `formLayout $uiName`;
+    }
+    else
+    {
+        $layout[1] = `formLayout`;
+    }
+
+
+        if ( `exists showHelp` )
+        {
+            $infoButtonUI = `symbolButton -image ( validBMP( "p3dInfo.bmp" ) ) -width 36 -height 14`;
+            symbolButton -e
+                -c ( "showHelp -absolute \"" + $url + "\"" )
+                    $infoButtonUI;
+        }
+
+        $layout[0] = `frameLayout -label $frameLabel -collapsable $collapsable -collapse $collapse`;
+
+        frameLayout -e
+            -cc ( "optionVar -intValue " + $var + " 1" )
+            -ec ( "optionVar -intValue " + $var + " 0" )
+                $layout[0];
+            
+    if ( `exists showHelp` )
+    {
+        formLayout -e
+            -af     $infoButtonUI     "top"       4
+            -af     $infoButtonUI     "right"     4
+
+            -af     $layout[0]          "top"       0
+            -af     $layout[0]          "left"      0
+            -af     $layout[0]          "right"     0
+                $layout[1];
+    }
+    else
+    {
+        formLayout -e
+            -af     $layout[0]          "top"       0
+            -af     $layout[0]          "left"      0
+            -af     $layout[0]          "right"     0
+                $layout[1];
+    }
+
+    return $layout;
+}
+
+//===========================================================================
+// PopP3dFrameLayout
+//===========================================================================
+// Description: Because the p3dFrameLayout is actually two layouts -- a
+//              formLayout containing a frameLayout -- this is a convenience
+//              function to "pop" back the two levels required to get back
+//              to where you were before you "pushed" the p3dFrameLayout.
+//
+// Constraints: The $p3dFrameLayout argument is actually a formLayout;
+//              this shouldn't matter to the end user, but it's important
+//              to keep this in mind.
+//
+//  Parameters: string $p3dFrameLayout: This is the name of the control
+//                                      returned by p3dFrameLayout().
+//
+//      Return: (string): The current parent UI control.
+//
+//===========================================================================
+global proc string PopP3dFrameLayout( string $p3dFrameLayout[] )
+{
+    if ( `formLayout -q -exists $p3dFrameLayout[1]` )
+    {
+        setParent $p3dFrameLayout[1];
+        setParent ..;
+    }
+
+    return `setParent -q`;
+}

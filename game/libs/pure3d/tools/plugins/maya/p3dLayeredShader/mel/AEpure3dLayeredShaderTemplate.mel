@@ -1,0 +1,220 @@
+global proc AEshaderBottomNew (string $attrName)
+{
+   setUITemplate -pst attributeEditorTemplate;
+
+   attrNavigationControlGrp 
+      -l "Texture 1"
+      -at $attrName
+      bottomControl;
+
+   setUITemplate -ppt;
+}
+
+global proc AEshaderTopNew (string $attrName)
+{
+   setUITemplate -pst attributeEditorTemplate;
+
+   attrNavigationControlGrp 
+      -l "Texture 2"
+      -at $attrName
+      topControl;
+
+   setUITemplate -ppt;
+}
+
+
+global proc AEshaderBottomReplace (string $attrName)
+{
+   attrNavigationControlGrp -edit
+      -at $attrName
+      bottomControl;
+}
+
+global proc AEshaderTopReplace (string $attrName)
+{
+   attrNavigationControlGrp -edit
+      -at $attrName
+      topControl;
+}
+
+global proc AEsetupLayersNew (string $nodeName)
+{
+   string $nodes[];
+   tokenize ($nodeName, ".", $nodes);
+   setUITemplate -pst attributeEditorTemplate;
+   button -l "Setup Layered Shader" -c ("SetupLayers " + $nodes[0]) setuplayersbutton;
+   setUITemplate -ppt;
+}
+
+global proc AEsetupLayersReplace (string $nodeName)
+{
+   string $nodes[];
+   tokenize ($nodeName, ".", $nodes);
+   button -e -c ("SetupLayers " + $nodes[0]) setuplayersbutton;
+}
+
+global proc AEpure3dLayeredShaderTogglePrelight ( string $nodeName )
+{
+    int $dynamicallyLit = `getAttr ( $nodeName + ".dynamicallyLit" )`;
+
+    if( $dynamicallyLit == 0 )
+    {
+        editorTemplate -dimControl $nodeName "prelightMode" false; 
+    }
+    else
+    {
+        editorTemplate -dimControl $nodeName "prelightMode" true;
+    }
+}
+
+global proc AEpure3dLayeredShaderTemplate ( string $nodeName )
+{
+    AEswatchDisplay $nodeName;
+    editorTemplate -beginScrollLayout;
+    editorTemplate -callCustom AEshaderTypeNew AEshaderTypeReplace "message";
+
+    editorTemplate -beginLayout "Common Material Attributes" -collapse 0; 
+        editorTemplate -callCustom "AEshaderBottomNew" "AEshaderBottomReplace" "bottomtex";
+        editorTemplate -callCustom "AEshaderTopNew" "AEshaderTopReplace" "toptex";
+        editorTemplate -addControl "diffuse";
+        editorTemplate -addControl "ambient";
+        editorTemplate -addControl "emissive";
+        editorTemplate -callCustom "AEsetupLayersNew" "AEsetupLayersReplace" "dummy";		
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Specular Shading" -collapse 0;
+        editorTemplate -addControl "specular";
+        editorTemplate -addControl "shininess";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Material Attributes" -collapse true;
+        editorTemplate -addControl "shadeMode";
+        editorTemplate -addControl "blendMode";
+        editorTemplate -label "Dynamically Lit (will NOT work on PS2)" -addControl "dynamicallyLit" "AEpure3dLayeredShaderTogglePrelight";
+        editorTemplate -label "P3D Prelight Mode" -addControl "prelightMode"; 
+        editorTemplate -suppress "zTest";
+        editorTemplate -suppress "zWrite";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Texture Attributes" -collapse true;
+        editorTemplate -addControl "uvMode";
+        editorTemplate -addControl "texBlendMode";
+        editorTemplate -addControl "filterMode";
+        editorTemplate -addControl "alphaTest";
+        editorTemplate -addControl "alphaCompare";
+//        editorTemplate -callCustom AEpure3dLayeredShaderNewACTH AEpure3dLayeredShaderReplaceACTH "alphaCompareThreshold";
+        editorTemplate -suppress "alphaCompareThreshold";
+        editorTemplate -addControl "proceduralXRes";
+        editorTemplate -addControl "proceduralYRes";
+		editorTemplate -label "Apply CBV to Both Layers" -addControl "cbv2layers";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Mipmap Control" -collapse true;
+        editorTemplate -label "Generate Mipmaps During Export" -addControl "exportMipmaps";
+        editorTemplate -addControl "mmsharpness";
+        editorTemplate -addControl "mipmapmin";
+        editorTemplate -addControl "mipmapmax";        
+    editorTemplate -endLayout;
+
+    // supressed attributes
+    editorTemplate -suppress "pointCamera";
+    editorTemplate -suppress "normalCamera";
+    editorTemplate -suppress "rayDirection";
+    editorTemplate -suppress "vertexShaderName";
+	editorTemplate -suppress "shaderExport";
+    editorTemplate -suppress "toptex";
+    editorTemplate -suppress "bottomtex";
+    editorTemplate -suppress "toptrans";
+    editorTemplate -suppress "bottomtrans";
+    editorTemplate -suppress "color";
+    editorTemplate -suppress "transparency";
+    editorTemplate -suppress "lightmap";
+    editorTemplate -suppress "isLit";
+    editorTemplate -suppress "isLightMapped";
+
+    // include/call base class/node attributes
+    AElambertCommonInclude $nodeName;
+
+    editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+        AEhardwareTextureTemplate $nodeName ("color bottomtex toptex");
+    editorTemplate -endLayout;
+
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+}
+
+global proc SetupLayers (string $nodeName)
+{
+   print ("SetupLayers nodeName = " + $nodeName + "\n");
+
+   string $cmd;
+   string $layered;
+
+   $cmd = "shadingNode -asTexture layeredTexture";
+   $layered = `evalEcho $cmd`;
+
+   $cmd = ("connectAttr -f " + $layered + ".outColor " + $nodeName + ".color");
+   evalEcho $cmd;
+   
+   string $connectedNode[] = `listConnections ($nodeName + ".bottomtex")`;
+   if( size($connectedNode) != 0 )
+   {
+      $cmd = ("connectAttr -f " + $connectedNode[0] + ".outColor " + $layered + ".inputs[0].color");
+      evalEcho $cmd;
+   }
+
+   $connectedNode = `listConnections ($nodeName + ".toptex")`;
+   if( size($connectedNode) != 0 )
+   {
+      $cmd = ("connectAttr -f " + $connectedNode[0] + ".outColor " + $layered + ".inputs[1].color");
+      evalEcho $cmd;
+   }
+
+   $connectedNode = `listConnections ($nodeName + ".bottomtrans")`;
+   if( size($connectedNode) != 0 )
+   {
+      $cmd = ("connectAttr -f " + $connectedNode[0] + ".outTransparency " + $layered + ".inputs[0].transparency");
+      evalEcho $cmd;
+   }
+
+   $connectedNode = `listConnections ($nodeName + ".toptrans")`;
+   if( size($connectedNode) != 0 )
+   {
+      $cmd = ("connectAttr -f " + $connectedNode[0] + ".outTransparency " + $layered + ".inputs[1].transparency");
+      evalEcho $cmd;
+   }
+
+   int $mode = getAttr ($nodeName + ".texBlendMode");
+   int $mapping[] = {
+      0,  // none = none
+      1,  // alpha = over
+      4,  // add = add
+      5,  // subtract = subtract
+      6,  // modulate = multiply
+      6,  // modulate2 = multiply
+      6  // modulateAlpha = multiply
+      };
+
+   $cmd = ("setAttr " + $layered + ".inputs[0].blendMode " + $mapping[$mode]);
+   evalEcho $cmd;
+}
+
+global proc AEpure3dLayeredShaderNewACTH( string $attr )
+{
+	global int $gTextColumnWidthIndex;
+
+    string $acthUI = "p3dLayeredShaderActhUI";
+
+    float $acth = `getAttr $attr`;
+
+    p3dColorSwatch( `setParent -q`, { $acth, $acth, $acth }, true, "Alpha Compare Threshold", $gTextColumnWidthIndex, true, false, 2, "", $acthUI );
+
+    AEpure3dLayeredShaderReplaceACTH $attr;
+}
+
+global proc AEpure3dLayeredShaderReplaceACTH( string $attr )
+{
+    string $acthUI = "p3dLayeredShaderActhUI";
+
+    p3dColorSwatch_ConnectControl( $acthUI, $attr );
+}

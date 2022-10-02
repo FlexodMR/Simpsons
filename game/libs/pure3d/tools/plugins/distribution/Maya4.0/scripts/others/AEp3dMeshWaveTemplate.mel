@@ -1,0 +1,161 @@
+global proc AEp3dMeshWaveTemplate( string $nodeName )
+{
+    editorTemplate -beginScrollLayout;
+
+    // Don't use editorTemplate for layout .. use p3dFrameLayout instead.
+//    editorTemplate -beginLayout "p3dMeshWave" -collapse 0; 
+
+        editorTemplate -callCustom 
+            "AEp3dMeshWaveNew"
+            "AEp3dMeshWaveReplace"
+                "";
+
+
+        editorTemplate -suppress "waveType";
+        editorTemplate -suppress "uvSetName";
+        editorTemplate -suppress "startTime";
+        editorTemplate -suppress "endTime";
+        editorTemplate -suppress "time";
+        editorTemplate -suppress "timeAmplitude";
+        editorTemplate -suppress "waveAmplitude";
+
+//    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Ripple" -collapse 1; 
+        editorTemplate -addControl "rippleSeamless";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Raindrop" -collapse 1; 
+        editorTemplate -addControl "raindropCount";
+        editorTemplate -addControl "raindropSeamless";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Wave" -collapse 1; 
+        editorTemplate -addControl "waveSource";
+        editorTemplate -addControl "waveDirection";
+        editorTemplate -addControl "wavelength";
+        editorTemplate -addControl "waveDistance";
+        editorTemplate -addControl "waveSeamless";
+        editorTemplate -addControl "waveTile";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Perturb" -collapse 1; 
+        editorTemplate -addControl "perturbGridSize";
+        editorTemplate -addControl "perturbFrequency";
+        editorTemplate -addControl "perturbAmplitude";
+    editorTemplate -endLayout;
+
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+    
+}
+
+global proc AEp3dMeshWaveNew( string $node )
+{
+    string $p3dMeshWaveWaveTypeUI = "p3dMeshWaveWaveTypeUI";
+    string $p3dMeshWaveUVSetNameUI = "p3dMeshWaveUVSetNameUI";
+    string $p3dMeshWaveStartTimeUI = "p3dMeshWaveStartTimeUI";
+    string $p3dMeshWaveEndTimeUI = "p3dMeshWaveEndTimeUI";
+    string $p3dMeshWaveUseTimeSliderUI = "p3dMeshWaveUseTimeSliderUI";
+    string $p3dMeshWaveTimeUI = "p3dMeshWaveTimeUI";
+    string $p3dMeshWaveTimeAmplitudeUI = "p3dMeshWaveTimeAmplitudeUI";
+    string $p3dMeshWaveWaveAmplitudeUI = "p3dMeshWaveWaveAmplitudeUI";
+
+    string $p3dFrameLayout[] = p3dFrameLayout( "Pure3D Procedural Mesh Animation", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Procedural%20Mesh%20Animation.html", true, true );
+
+        columnLayout -adj true;
+
+        rowLayout -nc 2 -columnAlign2 "right" "left";
+            text -label "Wave Type";
+            optionMenu $p3dMeshWaveWaveTypeUI;
+                menuItem -label "Ripple" -data 0;
+                menuItem -label "Raindrop" -data 1;
+                menuItem -label "Wave" -data 2;
+                menuItem -label "Perturb" -data 3;
+
+            setParent ..;
+
+        rowLayout -nc 2 -columnAlign2 "right" "left";
+            text -label "UV Set Name";
+            textField -text "" $p3dMeshWaveUVSetNameUI;
+            setParent ..;
+
+        rowLayout -nc 5 -columnAlign2 "right" "left";
+            text -label "Start Time";
+            floatField -value 0.0 $p3dMeshWaveStartTimeUI;
+            setParent ..;
+
+        rowLayout -nc 5 -columnAlign2 "right" "left";
+            text -label "End Time";
+            floatField -value 0.0 $p3dMeshWaveEndTimeUI;
+            setParent ..;
+
+        rowLayout -nc 2 -columnAlign2 "right" "left";
+            text -label "";
+            checkBox -label "Use Time Slider" -align "left" $p3dMeshWaveUseTimeSliderUI;
+            setParent ..;
+
+        rowLayout -nc 5 -columnAlign2 "right" "left";
+            text -label "Now";
+            floatField -value 0.0 $p3dMeshWaveTimeUI;
+            setParent ..;
+
+        rowLayout -nc 5 -columnAlign2 "right" "left";
+            text -label "Speed";
+            floatField -value 1.0 $p3dMeshWaveTimeAmplitudeUI;
+            setParent ..;
+
+        rowLayout -nc 5 -columnAlign2 "right" "left";
+            text -label "Amplitude";
+            floatField -value 1.0 $p3dMeshWaveWaveAmplitudeUI;
+            setParent ..;
+
+        setParent ..;
+
+    PopP3dFrameLayout( $p3dFrameLayout );
+
+    AEp3dMeshWaveReplace( $node );
+}
+
+global proc AEp3dMeshWaveReplace( string $node )
+{
+    string $p3dMeshWaveWaveTypeUI = "p3dMeshWaveWaveTypeUI";
+    string $p3dMeshWaveUVSetNameUI = "p3dMeshWaveUVSetNameUI";
+    string $p3dMeshWaveStartTimeUI = "p3dMeshWaveStartTimeUI";
+    string $p3dMeshWaveEndTimeUI = "p3dMeshWaveEndTimeUI";
+    string $p3dMeshWaveUseTimeSliderUI = "p3dMeshWaveUseTimeSliderUI";
+    string $p3dMeshWaveTimeUI = "p3dMeshWaveTimeUI";
+    string $p3dMeshWaveTimeAmplitudeUI = "p3dMeshWaveTimeAmplitudeUI";
+    string $p3dMeshWaveWaveAmplitudeUI = "p3dMeshWaveWaveAmplitudeUI";
+
+    connectControl $p3dMeshWaveWaveTypeUI ( $node + "waveType" );
+    connectControl $p3dMeshWaveUVSetNameUI ( $node + "uvSetName" );
+    connectControl $p3dMeshWaveStartTimeUI ( $node + "startTime" );
+    connectControl $p3dMeshWaveEndTimeUI ( $node + "endTime" );
+    connectControl $p3dMeshWaveUseTimeSliderUI ( $node + "useTimeSlider" );
+    connectControl $p3dMeshWaveTimeUI ( $node + "time" );
+    connectControl $p3dMeshWaveTimeAmplitudeUI ( $node + "timeAmplitude" );
+    connectControl $p3dMeshWaveWaveAmplitudeUI ( $node + "waveAmplitude" );
+
+    checkBox -e
+        -cc "AEp3dEnableStartEndTime"
+            $p3dMeshWaveUseTimeSliderUI;
+
+    floatField -e
+        -enable ( !`connectionInfo -isDestination ( $node + "time" )` )
+            $p3dMeshWaveTimeUI;
+
+    AEp3dEnableStartEndTime();
+}
+
+global proc AEp3dEnableStartEndTime()
+{
+    string $p3dMeshWaveStartTimeUI = "p3dMeshWaveStartTimeUI";
+    string $p3dMeshWaveEndTimeUI = "p3dMeshWaveEndTimeUI";
+    string $p3dMeshWaveUseTimeSliderUI = "p3dMeshWaveUseTimeSliderUI";
+
+    int $enable = !`checkBox -q -value $p3dMeshWaveUseTimeSliderUI`;
+    
+    floatField -e -enable $enable $p3dMeshWaveStartTimeUI;
+    floatField -e -enable $enable $p3dMeshWaveEndTimeUI;
+}

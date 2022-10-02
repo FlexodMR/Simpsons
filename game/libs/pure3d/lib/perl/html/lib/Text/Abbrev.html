@@ -1,0 +1,82 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>abbrev - create an abbreviation table from a list
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+abbrev - create an abbreviation table from a list
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Text::Abbrev;
+    abbrev $hashref, LIST
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Stores all unambiguous truncations of each element of 
+<FONT SIZE=-1>LIST</FONT> as keys key in the associative array referenced
+to by <CODE>$hashref</CODE>. The values are the original list elements.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+<PRE>    $hashref = abbrev qw(list edit send abort gripe);
+</PRE>
+
+<P>
+
+<PRE>    %hash = abbrev qw(list edit send abort gripe);
+</PRE>
+
+<P>
+
+<PRE>    abbrev $hashref, qw(list edit send abort gripe);
+</PRE>
+
+<P>
+
+<PRE>    abbrev(*hash, qw(list edit send abort gripe));
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

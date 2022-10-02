@@ -1,0 +1,239 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>LWP::Protocol - Base class for LWP protocols
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#METHODS_AND_FUNCTIONS">METHODS AND FUNCTIONS</A>
+	<UL>
+
+		<LI><A HREF="#_prot_new_HTTP_Protocol_">$prot = new HTTP::Protocol;</A>
+		<LI><A HREF="#_prot_LWP_Protocol_create_u">$prot = LWP::Protocol::create($url)</A>
+		<LI><A HREF="#_class_LWP_Protocol_implemen">$class = LWP::Protocol::implementor($scheme, [$class])</A>
+		<LI><A HREF="#_prot_request_">$prot->request(...)</A>
+		<LI><A HREF="#_prot_timeout_seconds_">$prot->timeout($seconds)</A>
+		<LI><A HREF="#_prot_use_alarm_yesno_">$prot->use_alarm($yesno)</A>
+		<LI><A HREF="#_prot_parse_head_yesno_">$prot->parse_head($yesno)</A>
+		<LI><A HREF="#_prot_collect_arg_response_">$prot->collect($arg, $response, $collector)</A>
+		<LI><A HREF="#_prot_collect_once_arg_respo">$prot->collect_once($arg, $response, $content)</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+LWP::Protocol - Base class for 
+<FONT SIZE=-1>LWP</FONT> protocols
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> package LWP::Protocol::foo;
+ require LWP::Protocol;
+ @ISA=qw(LWP::Protocol);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This class is used a the base class for all protocol implementations supported by the 
+<FONT SIZE=-1>LWP</FONT> library.
+
+
+
+<P>
+
+When creating an instance of this class using
+<CODE>LWP::Protocol::create($url)</CODE>, and you get an initialised subclass appropriate for that access method.
+In other words, the LWP::Protocol::create() function calls the constructor
+for one of its subclasses.
+
+
+<P>
+
+All derived LWP::Protocol classes need to override the
+<CODE>request()</CODE> method which is used to service a request. The
+overridden method can make use of the <CODE>collect()</CODE> function to
+collect together chunks of data as it is received.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Inspect the <EM>LWP/Protocol/file.pm</EM> and <EM>LWP/Protocol/http.pm</EM> files for examples of usage.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS_AND_FUNCTIONS">METHODS AND FUNCTIONS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="_prot_new_HTTP_Protocol_">$prot = new HTTP::Protocol;
+
+</A></H2>
+The LWP::Protocol constructor is inherited by subclasses. As this is a
+virtual base class this method should <STRONG>not</STRONG> be called directly.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_prot_LWP_Protocol_create_u">$prot = LWP::Protocol::create($url)
+
+</A></H2>
+Create an object of the class implementing the protocol to handle the given
+scheme. This is a function, not a method. It is more an object factory than
+a constructor. This is the function user agents should use to access
+protocols.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_class_LWP_Protocol_implemen">$class = LWP::Protocol::implementor($scheme, [$class])
+
+</A></H2>
+Get and/or set implementor class for a scheme. Returns '' if the specified
+scheme is not supported.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_prot_request_">$prot->request(...)
+
+</A></H2>
+<PRE> $response = $protocol-&gt;request($request, $proxy, undef);
+ $response = $protocol-&gt;request($request, $proxy, '/tmp/sss');
+ $response = $protocol-&gt;request($request, $proxy, \&amp;callback, 1024);
+</PRE>
+
+<P>
+
+Dispactches a request over the protocol, and returns a response object.
+This method needs to be overridden in subclasses. Referer to
+<A HREF="/n|/perl/html/./lib/site/LWP/UserAgent.html">UserAgent</A> for description of the arguments.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_prot_timeout_seconds_">$prot->timeout($seconds)
+
+</A></H2>
+Get and set the timeout value in seconds
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_prot_use_alarm_yesno_">$prot->use_alarm($yesno)
+
+</A></H2>
+Indicates if the library is allowed to use the core <CODE>alarm()</CODE>
+function to implement timeouts.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_prot_parse_head_yesno_">$prot->parse_head($yesno)
+
+</A></H2>
+Should we initialize response headers from the &lt;head&gt; section of 
+<FONT SIZE=-1>HTML</FONT> documents.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_prot_collect_arg_response_">$prot->collect($arg, $response, $collector)
+
+</A></H2>
+Called to collect the content of a request, and process it appropriately
+into a scalar, file, or by calling a callback. If <CODE>$arg</CODE> is
+undefined, then the content is stored within the $response. If
+<CODE>$arg</CODE> is a simple scalar, then <CODE>$arg</CODE> is interpreted
+as a file name and the content is written to this file. If
+<CODE>$arg</CODE> is a reference to a routine, then content is passed to
+this routine.
+
+
+<P>
+
+The <CODE>$collector</CODE> is a routine that will be called and which is reponsible for returning pieces (as ref to scalar) of the content to process. The <CODE>$collector</CODE> signals 
+<FONT SIZE=-1>EOF</FONT> by returning a reference to an empty sting.
+
+
+
+<P>
+
+The return value from <CODE>collect()</CODE> is the <CODE>$response</CODE>
+object reference.
+
+
+<P>
+
+<STRONG>Note:</STRONG> We will only use the callback or file argument if
+$response-&gt;is_success(). This avoids sendig content data for redirects
+and authentization responses to the callback which would be confusing.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_prot_collect_once_arg_respo">$prot->collect_once($arg, $response, $content)
+
+</A></H2>
+Can be called when the whole response content is available as $content.
+This will invoke <CODE>collect()</CODE> with a collector callback that
+returns a reference to <A HREF="#item__content">$content</A> the first time
+and an empty string the next.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,94 @@
+// p3dRemapAttr converts a Maya file with old style P3D Exporter (V 13.xxx)
+// attributes to the new style that is compatible with Maya 3.0.
+// This script needs to be run in Maya 2.5 before a file is loaded into 3.0
+//
+// Report any problems to Jean-Luc Duprat <jduprat@radical.ca>
+//
+// p3dRemapAttr V1 Dec 11 2000.
+//
+// Copyright (c) 2000 Radical Entertainment Ltd. All rights reserved.
+
+global proc p3dRemapAttr()
+{
+   // get all transforms
+   string $transforms[] = `ls -type transform`;
+   int $transform_count = size($transforms);
+
+   int $i;
+   for ($i = 0; $i < $transform_count; $i++)
+   {
+      string $transform = $transforms[$i];
+      string $attributes[] = `listAttr $transform`;
+      int $attribute_count = size($attributes);
+
+	// if this node has already been converted, skip it.
+	$known = `attributeQuery -node $transform -exists "p3dBooleanAttributes"`;
+
+      // check all the attributes
+      int $j;
+      int $flags = 0;
+      for ($j = 0; $j < $attribute_count; $j++)
+      {
+         string $attribute = $attributes[$j];
+         string $transform_attr = $transform + "." + $attribute;
+
+         if($attribute == "p3dScenegraphRoot")
+         {
+              int $value = `getAttr $transform_attr`;
+              if($value) $flags += 1;
+		  deleteAttr $transform_attr;
+         }
+         if($attribute == "p3dSkeletonRoot")
+         {
+              int $value = `getAttr $transform_attr`;
+              if($value) $flags += 2;
+		  deleteAttr $transform_attr;
+         }
+         if($attribute == "p3dTraversalStop")
+         {
+              int $value = `getAttr $transform_attr`;
+              if($value) $flags += 4;
+		  deleteAttr $transform_attr;
+         }
+         if($attribute == "p3dNoCull")
+         {
+              int $value = `getAttr $transform_attr`;
+              if($value) $flags += 8;
+		  deleteAttr $transform_attr;
+         }
+         if($attribute == "p3dPreserveBoneLength")
+         {
+              int $value = `getAttr $transform_attr`;
+              if($value) $flags += 16;
+		  deleteAttr $transform_attr;
+         }
+         if($attribute == "p3dXAxisMirror")
+         {
+              int $value = `getAttr $transform_attr`;
+              if($value) $flags += 32;
+		  deleteAttr $transform_attr;
+         }
+         if($attribute == "p3dYAxisMirror")
+         {
+              int $value = `getAttr $transform_attr`;
+              if($value) $flags += 64;
+		  deleteAttr $transform_attr;
+         }
+         if($attribute == "p3dZAxisMirror")
+         {
+              int $value = `getAttr $transform_attr`;
+              if($value) $flags += 128;
+		  deleteAttr $transform_attr;
+         }
+      }
+
+	// do we want to add these attributes unconditionally or only if $flags > 0 ???
+	select $transform;
+   if ($known == 0) addAttr -at long -ln p3dBooleanAttributes;
+
+	$newattr = $transform+".p3dBooleanAttributes";
+      setAttr $newattr $flags;
+   }
+}
+
+p3dRemapAttr();

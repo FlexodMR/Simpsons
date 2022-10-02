@@ -1,0 +1,112 @@
+global proc AEp3dExporterOptionsShapeTemplate( string $nodeName )
+{
+   editorTemplate -beginScrollLayout;
+
+      //now you can i.e. hide some of every Maya nodes default attributes
+      editorTemplate -suppress "input";
+      editorTemplate -suppress "caching";
+      editorTemplate -suppress "nodeState";
+      editorTemplate -suppress "controlPoints";
+      editorTemplate -suppress "weights";
+      editorTemplate -suppress "tweak";
+      editorTemplate -suppress "relativeTweak";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "compInstObjGroups";
+      editorTemplate -suppress "castsShadows";
+      editorTemplate -suppress "motionBlur";
+      editorTemplate -suppress "primaryVisibility";
+      editorTemplate -suppress "visibleInReflections";
+      editorTemplate -suppress "visibleInRefractions";
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "geometryAntialiasingOverride";
+      editorTemplate -suppress "antialiasingLevel";
+      editorTemplate -suppress "shadingSamplesOverride";
+      editorTemplate -suppress "shadingSamples";
+      editorTemplate -suppress "maxShadingSamples";
+      editorTemplate -suppress "volumeSamplesOverride";
+      editorTemplate -suppress "volumeSamples";
+      editorTemplate -suppress "maxVisibilitySamplesOverride";
+      editorTemplate -suppress "maxVisibilitySamples";
+      editorTemplate -suppress "boundingBoxScale"; 
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "smoothShading";
+      editorTemplate -suppress "drawOverride";
+      editorTemplate -suppress "useObjectColor";
+      editorTemplate -suppress "objectColor";
+      editorTemplate -suppress "intermediateObject";
+      editorTemplate -suppress "visibility";
+      editorTemplate -suppress "lodVisibility";
+      editorTemplate -suppress "template";
+      editorTemplate -suppress "uvSet";
+      editorTemplate -suppress "currentUVSet";
+      editorTemplate -suppress "featureDisplacement";
+      editorTemplate -suppress "initialSampleRate";
+      editorTemplate -suppress "extraSampleRate";
+      editorTemplate -suppress "initialSampleRate";
+      editorTemplate -suppress "textureThreshold";
+      editorTemplate -suppress "normalThreshold";
+      editorTemplate -suppress "renderInfo";
+
+   editorTemplate -beginLayout "Export Setting";
+      
+      editorTemplate -beginNoOptimize;
+      editorTemplate -addControl "backgroundColour";
+
+      editorTemplate -callCustom "AEp3dExporterOptionsDropDownMenu" "AEp3dExporterOptionsDropDownMenu";
+
+      editorTemplate -endNoOptimize;
+
+   editorTemplate -endLayout;
+
+	editorTemplate -addExtraControls;
+
+   editorTemplate -endScrollLayout;
+}
+
+global proc AEp3dExporterOptionsDropDownMenu() 
+{
+   string $settings[] = `ls -type p3dExportSettingNode`;
+
+   if (`optionMenuGrp -exists AEp3dExporterSettingList`==1)
+   {
+      deleteUI AEp3dExporterSettingList;
+   }
+
+   optionMenuGrp -label "Current Exporter Setting" AEp3dExporterSettingList;
+   string $command = "AEp3dSetCurrentExporterSetting()";
+   optionMenuGrp -edit -changeCommand $command AEp3dExporterSettingList;
+
+   int $currentStillValid = 0;
+   string $currentSetting = `getAttr p3dExporterOptions.currentSetting`;
+
+   for ($setting in $settings)
+   {
+      menuItem $setting;
+      if ($setting == $currentSetting)
+      {
+         $currentStillValid = 1;
+      }
+   }  
+   
+   if ($currentStillValid == 1)
+   {
+      optionMenuGrp -edit -value $currentSetting AEp3dExporterSettingList;
+   }
+   else
+   {
+      optionMenuGrp -edit -select 1 AEp3dExporterSettingList;
+      AEp3dSetCurrentExporterSetting();
+   }
+}
+
+global proc AEp3dSetCurrentExporterSetting()
+{
+   string $setting = `optionMenuGrp -query -value AEp3dExporterSettingList`;
+
+   if (size(`ls $setting`)!=0)
+   {
+      setAttr -type "string" p3dExporterOptions.currentSetting $setting;
+   }
+}

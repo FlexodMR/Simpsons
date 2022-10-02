@@ -1,0 +1,138 @@
+#!/bin/perl 
+
+use FindBin;
+use lib "$FindBin::Bin";
+use Tk;
+use BasicTemplate;
+
+sub finish
+{
+  my $name = $toolname;
+  print "Making tool $name\n";
+  mkdir($name,0755) || die "Can't create directory $name";
+
+  my $desc = $description->get('0.0','end');
+  print "Description: $desc\n";
+
+  if($perlscript)
+  {
+    $template = "script";
+  }else{
+    $template = "param";
+  }
+
+  $template = "$FindBin::Bin/$template.dsp";
+
+
+  my $bt;
+  my $buf;
+
+  print "Creating $name.dsp\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push($template,"NAME=$name");
+  open(OUT, ">$name/$name.dsp") || die "Can't open $name/$name.dsp";
+  print OUT $buf;
+
+  print "Creating Makefile\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("Makefile","NAME=$name");
+  open(OUT, ">$name/Makefile") || die "Can't open $name/Makefile";
+  print OUT $buf;
+
+  print "Creating main.cpp\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("main.cpp","NAME=$name","DESCRIPTION=$desc");
+  open(OUT, ">$name/main.cpp") || die "Can't open $name/main.cpp";
+  print OUT $buf;
+
+  print "Creating version.cpp\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("version.cpp","NAME=$name","DESCRIPTION=$desc");
+  open(OUT, ">$name/version.cpp") || die "Can't open $name/version.cpp";
+  print OUT $buf;
+
+  print "Creating version.hpp\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("version.hpp","NAME=$name","DESCRIPTION=$desc");
+  open(OUT, ">$name/version.hpp") || die "Can't open $name/version.hpp";
+  print OUT $buf;
+
+  print "Creating $name.sc\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("Param.sc","NAME=$name","DESCRIPTION=$desc");
+  open(OUT, ">$name/$name.sc") || die "Can't open $name/$name.sc";
+  print OUT $buf;
+  print "Done.\n";
+
+  close OUT;
+
+  exit;
+}
+
+
+$main = new MainWindow();
+$main->title("New Tool");
+$main->Label(-text => 'Create a new tool')->pack;
+
+$labelwidth = 12;
+
+my $frame;
+my $label;
+
+$frame = $main->Frame->pack(-side => 'top', -fill => 'x');
+$frame->Label(
+              -text => 'Tool name:',
+              -width => $labelwidth,
+              -anchor => 'w'
+             )->pack(
+                     -side => 'left'
+                    );
+
+$frame->Entry(-textvariable => \$toolname)
+  ->pack(
+         -side => 'left',
+         -anchor => 'w',
+         -fill => 'x',
+         -expand => 1
+        );
+
+$toolname ='p3dtool';
+
+$frame = $main->Frame->pack(-side => 'top', -fill => 'both', -expand => 1);
+$frame->Label(
+              -text => 'Description:',
+              -width => $labelwidth,
+              -anchor => 'w'
+             )->pack(-side => 'left');
+
+$description = $frame->Scrolled("Text", 
+                                -scrollbars => 'e', 
+                                -height => 4,
+                                -width => 60
+                               )->pack( 
+                                       -side => 'left',
+                                       -anchor => 'w',
+                                       -fill => 'both',
+                                       -expand => 1
+                                      );
+$description->insert('0.0','This tool does something cool to a Pure3D file');
+
+
+$frame = $main->Frame;
+
+$frame->pack(qw/-side bottom/);
+
+$frame->Checkbutton(
+                   -text => "Use Perl scripting",
+                   -variable => \$perlscript) -> pack(qw/-side left/);
+$frame->Button(-text => 'Do it!',
+              -command => sub{finish;}
+             )->pack(-side => 'left');
+
+$frame->Button(-text => 'Quit',
+              -command => sub{exit}
+             )->pack(-side => 'right');;
+
+
+MainLoop();
+

@@ -1,0 +1,149 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     02 April, 2002
+//
+// Component:   selectJointVertices.mel
+//
+// Description: Selects all the vertex components influenced by the selected 
+//              joints on a smooth-bound mesh.
+//
+// Constraints: Only smooth-bound meshes are supported.
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+//     History: 1.0  - 02 Apr 2002
+//
+//===========================================================================
+proc float version()
+{
+    return ( 1.0 );
+}
+
+// ////////////////////////////////////////////////////////////////
+//  rootNode
+//
+// Description: Strips the dot-suffix of the specified string.
+//  e.g. "object.attribute" is returned as "object"
+
+proc string rootNode( string $object )
+{
+    string $buffer[];
+    tokenize $object "." $buffer;
+    return $buffer[0];
+}
+
+proc string getShape( string $xform )
+{
+    string $shapes[];
+    
+    $shapes[0] = $xform;
+    
+    if ( "transform" == `nodeType $xform` )
+    // If given node is not a transform, assume it is a shape 
+    // and pass it through
+    {
+        $shapes = `listRelatives -fullPath -shapes $xform`;
+    }
+    
+    return $shapes[0];
+}
+
+
+//===========================================================================
+// selectJointVertices
+//===========================================================================
+// Description: Selects all the vertex components influenced by the selected 
+//              joints on a smooth-bound mesh.
+//
+//              To use:
+//
+//                1. Select one or more joints which are bound to a mesh.
+//
+//                2. Call this script. The joint selection will be replaced
+//                   with the vertices influenced by the selected joint(s).
+//
+// Constraints: Only smooth-bound meshes are supported.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc selectJointVertices()
+{
+    int $VERTEX_MASK = 31;
+    
+    float $epsilon = 0.001;
+    
+    string $jointVertices[];
+
+    string $meshes[] = `ls -type "mesh"`;    
+    string $joints[] = `ls -sl -type "joint"`;
+    string $allClusters[] = `ls -type "skinCluster" -type "cluster"`;
+    
+    waitCursor -state on;
+    
+    // Consider all joints the user has selected.
+    for ( $j in $joints )
+    {
+        string $associatedCluster = "";
+        
+        // Find the associated skinCluster or cluster using this
+        // joint as a deformer influence.
+        for ( $cluster in $allClusters )
+        {
+            string $influences[];
+
+            if ( `nodeType $cluster` == "skinCluster" )
+            {
+                $influences = `skinCluster -q -inf $cluster`;
+            }
+            else
+            if ( `nodeType $cluster` == "cluster" )
+            {
+            }
+
+            for ( $inf in $influences )
+            {
+                if ( $inf == $j )
+                {
+                    $associatedCluster = $cluster;
+                    break;
+                }
+            }
+            
+            if ( $associatedCluster != "" )
+            {
+                // Consider each mesh
+                for ( $mesh in $meshes )
+                {
+                    int $numVtx[] = `polyEvaluate -v $mesh`;
+
+                    for ( $v = 0; $v < $numVtx[0]; $v++ )
+                    {
+                        string $vtx = ( $mesh + ".vtx[" + $v + "]" );
+                        float $percent = `skinPercent -t $j -q $associatedCluster $vtx`;
+
+                        if ( $percent > $epsilon )
+                        {
+                            $jointVertices[`size $jointVertices`] = $vtx;
+                        }
+                    }
+                }
+            }       // if ( joint is associated with cluster )
+        }       // for ( $cluster )
+    }
+
+    waitCursor -state off;
+    
+    select $jointVertices;
+}

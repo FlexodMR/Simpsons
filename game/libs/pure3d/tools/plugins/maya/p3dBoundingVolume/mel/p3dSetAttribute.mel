@@ -1,0 +1,231 @@
+// This script sets the the p3dBooleanAttributes values according to the 
+// boolean attribute names
+// 
+// Copyright (c) 2000 Radical Entertainment Ltd. All rights reserved.
+global proc p3dSetBoolAttr2
+(
+	string $jointName, 
+	string $attName,
+	int $value
+)
+{
+
+   string $fullAttributeName = $jointName + ".p3dBooleanAttributes";
+   int $flags = `getAttr $fullAttributeName`;
+
+   if($attName == "p3dScenegraphRoot")
+   {
+      $flags = p3dSetFlag( $flags, 0, $value );
+   }
+   else
+   if($attName == "p3dSkeletonRoot")
+   {
+      $flags = p3dSetFlag( $flags, 1, $value );
+   }
+   else
+   if($attName == "p3dTraversalStop")
+   {
+      $flags = p3dSetFlag( $flags, 2, $value );
+   }
+   else
+   if($attName == "p3dNoCull")
+   {
+      $flags = p3dSetFlag( $flags, 3, $value );
+   }
+   else
+   if($attName == "p3dPreserveBoneLength")
+   {
+      $flags = p3dSetFlag( $flags, 4, $value );
+   }
+   else
+   if($attName == "p3dXAxisMirror")
+   {
+      $flags = p3dSetFlag( $flags, 5, $value );
+   }
+   else
+   if($attName == "p3dYAxisMirror")
+   {
+      $flags = p3dSetFlag( $flags, 6, $value );
+   }
+   else
+   if($attName == "p3dZAxisMirror")
+   {
+      $flags = p3dSetFlag( $flags, 7, $value );
+   }
+   else
+   if($attName == "p3dCyclicAnimation")
+   {
+      $flags = p3dSetFlag( $flags, 8, $value );
+   }
+   else
+   if($attName == "p3dNotInSkeleton")
+   {
+      $flags = p3dSetFlag( $flags, 9, $value );
+   }
+   //
+   // Set the modified Value
+   //
+   setAttr $fullAttributeName $flags;
+}
+
+global  proc int p3dSetFlag( int $bitFlag, int $flagBit, int $value )
+{
+
+   //
+   // Only handle 32bit values
+   // 
+   if(0<=$flagBit && $flagBit<32)
+   {
+//      print "Here Sec";
+
+      int $tempBitFlag = $bitFlag;
+      int $divisor = 1;
+      int $i;
+
+      for($i=0;$i<$flagBit;$i++)
+      {
+         $divisor*=2;
+      }
+      
+//      print "Divisor";
+//      print $divisor;
+
+      if(($tempBitFlag / $divisor) % 2)
+      {
+//      print "Set";
+         //
+         // This means the bit is set
+         //
+         if($value == 0)
+         {
+//            print "Fixing UnSet:";
+//            print $bitFlag;
+
+            $bitFlag -= $divisor;
+
+//            print "Now:";
+//            print $bitFlag;
+         }
+      }
+      else
+      {
+//      print "Not Set";
+         //
+         // This means that it wasn't set
+         //
+         if($value != 0)
+         {
+//            print "Fixing Set";
+//            print $bitFlag;
+
+            $bitFlag += $divisor;
+
+//            print "Now:";
+//            print $bitFlag;
+
+         }
+      }
+   }
+
+   return $bitFlag;
+}
+
+global proc P3DSetAttributeTool_Operation
+(
+   string $selectedNodes[], 
+   string $attribute, 
+   float $attrValue
+)
+{
+   print "called P3DSetAttributeTool_Operation for:";
+   print $selectedNodes;
+   print "\n";
+   for($node in $selectedNodes)
+   {      
+      string $nodeAttribute = $node+"."+$attribute;
+      if($nodeAttribute != "")
+      {             
+         setAttr ($nodeAttribute) $attrValue;      
+      }
+   }
+}
+
+//------------------------------------------------------------------
+// Global gui stuff
+//------------------------------------------------------------------
+global string $g_P3DAttributeNameField;
+global string $g_P3DAttributeValueField;
+
+global proc P3DSetAttributeTool_OnSelected()
+{
+   global string $g_P3DAttributeNameField;
+   global string $g_P3DAttributeValueField;
+
+   string $attribute = `textField -q -text $g_P3DAttributeNameField`;
+   float  $attrValue = `floatField -q -v $g_P3DAttributeValueField`;
+
+   string $selectedNodes[] = `ls -sl`;
+
+   P3DSetAttributeTool_Operation( $selectedNodes, $attribute, $attrValue );
+}
+
+
+global proc P3DSetAttributeTool_OnHierarchy()
+{
+   global string $g_P3DAttributeNameField;
+   global string $g_P3DAttributeValueField;
+
+   string $attribute = `textField -q -text $g_P3DAttributeNameField`;
+   float  $attrValue = `floatField -q -v $g_P3DAttributeValueField`;
+
+   select -add -hi;
+   string $selectedNodes[] = `ls -sl`;
+   
+   P3DSetAttributeTool_Operation( $selectedNodes, $attribute, $attrValue );
+}
+
+global proc P3DSetAttributeTool_GUICreate()
+{
+   string $windowName = "P3DSetAttributeTool";
+
+   global string $g_P3DAttributeNameField;
+   global string $g_P3DAttributeValueField;
+
+   if (`window -query -exists $windowName`!=1)
+   {
+      window 
+            -width 200 
+            -height 150
+            -minimizeButton false 
+            -maximizeButton false 
+            -sizeable false 
+            -title $windowName 
+            $windowName;
+
+      columnLayout 
+         -adjustableColumn true
+	      -columnAlign "left" 
+         -cat "left" 3;
+
+         text -l "Attribute Name";
+         $g_P3DAttributeNameField = `textField -width 200`;
+
+         text -l "Attribute Value";
+         $g_P3DAttributeValueField = `floatField -width 200`;
+
+      button
+         -label "Set On Selected"
+         -command "P3DSetAttributeTool_OnSelected()";
+      button
+         -label "Set On Hierarchy"
+         -command "P3DSetAttributeTool_OnHierarchy()";
+
+      showWindow $windowName;
+   }
+}
+
+//
+// The main routine
+// 
+//P3DSetAttributeTool_GUICreate();
+// Not callable directly anymore

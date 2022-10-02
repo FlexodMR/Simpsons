@@ -1,0 +1,122 @@
+global proc AEp3dEmitterShapeTemplate( string $nodeName )
+{
+   editorTemplate -beginScrollLayout;
+
+      //now you can i.e. hide some of every Maya nodes default attributes
+      editorTemplate -suppress "input";
+      editorTemplate -suppress "caching";
+      editorTemplate -suppress "nodeState";
+      editorTemplate -suppress "controlPoints";
+      editorTemplate -suppress "weights";
+      editorTemplate -suppress "tweak";
+      editorTemplate -suppress "relativeTweak";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "compInstObjGroups";
+      editorTemplate -suppress "castsShadows";
+      editorTemplate -suppress "motionBlur";
+      editorTemplate -suppress "primaryVisibility";
+      editorTemplate -suppress "visibleInReflections";
+      editorTemplate -suppress "visibleInRefractions";
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "geometryAntialiasingOverride";
+      editorTemplate -suppress "antialiasingLevel";
+      editorTemplate -suppress "shadingSamplesOverride";
+      editorTemplate -suppress "shadingSamples";
+      editorTemplate -suppress "maxShadingSamples";
+      editorTemplate -suppress "volumeSamplesOverride";
+      editorTemplate -suppress "volumeSamples";
+      editorTemplate -suppress "maxVisibilitySamplesOverride";
+      editorTemplate -suppress "maxVisibilitySamples";
+      editorTemplate -suppress "boundingBoxScale"; 
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "smoothShading";
+      editorTemplate -suppress "drawOverride";
+      editorTemplate -suppress "visibility";
+      editorTemplate -suppress "lodVisibility";
+      editorTemplate -suppress "useObjectColor";
+      editorTemplate -suppress "objectColor";
+      editorTemplate -suppress "intermediateObject";
+      editorTemplate -suppress "template";
+      editorTemplate -suppress "uvSet";
+      editorTemplate -suppress "currentUVSet";
+      editorTemplate -suppress "featureDisplacement";
+      editorTemplate -suppress "initialSampleRate";
+      editorTemplate -suppress "extraSampleRate";
+      editorTemplate -suppress "initialSampleRate";
+      editorTemplate -suppress "textureThreshold";
+      editorTemplate -suppress "normalThreshold";
+      editorTemplate -suppress "renderInfo";
+      editorTemplate -suppress "ghosting";
+      editorTemplate -suppress "receiveShadows";
+      editorTemplate -suppress "depthJitter";
+
+      editorTemplate -beginLayout "Generator Attributes";
+         editorTemplate -addControl "generatorType";
+         editorTemplate -addControl "horizEmissionSpread";
+         editorTemplate -addControl "vertEmissionSpread";
+         editorTemplate -addControl "radialVariance";
+         editorTemplate -addControl "length";
+         editorTemplate -addControl "height";
+         editorTemplate -addControl "width";
+      editorTemplate -endLayout;
+
+      editorTemplate -beginLayout "Emitter Attributes";
+         editorTemplate -addControl "emissionRate";
+         editorTemplate -addControl "maxNumberOfParticles";
+         editorTemplate -addControl "numberOfParticles";
+         editorTemplate -addControl "enableZTest";
+         editorTemplate -addControl "enableZWrite";
+         editorTemplate -addControl "enableFog";
+      editorTemplate -endLayout;
+
+      editorTemplate -beginLayout "Particle Attributes";
+         editorTemplate -addControl "particleType";
+         editorTemplate -addControl "infiniteLife";
+         editorTemplate -addControl "life";
+         editorTemplate -addControl "lifeVariance";
+         editorTemplate -addControl "speed";
+         editorTemplate -addControl "speedVariance";
+         editorTemplate -addControl "speedOverLife";
+         editorTemplate -addControl "weight";
+         editorTemplate -addControl "weightVariance";
+         editorTemplate -addControl "weightOverLife";
+         editorTemplate -addControl "gravity";
+         editorTemplate -addControl "drag";
+         editorTemplate -addControl "rotationalCohesion";
+         editorTemplate -addControl "translationalCohesion";
+
+         editorTemplate -beginLayout "Sprite Particle Attributes";
+            editorTemplate -addControl "particleAngleType";
+            editorTemplate -addControl "particleAngle";
+            editorTemplate -addControl "colour";
+            editorTemplate -addControl "colourVariance";
+            editorTemplate -addControl "colourOverLife";
+            editorTemplate -addControl "alpha";
+            editorTemplate -addControl "alphaVariance";            
+            editorTemplate -addControl "alphaOverLife";
+            editorTemplate -addControl "spin";
+            editorTemplate -addControl "spinVariance";
+            editorTemplate -addControl "spinOverLife";
+            editorTemplate -addControl "size";
+            editorTemplate -addControl "sizeVariance";
+            editorTemplate -addControl "sizeOverLife";
+
+            editorTemplate -beginLayout "Texture Attributes";
+               editorTemplate -addControl "textureAnimationMode";
+               editorTemplate -addControl "numberOfTextureFrames";
+               editorTemplate -addControl "textureFrameRate";
+               editorTemplate -addControl "textureFrameOverLife";
+            editorTemplate -endLayout;      
+
+         editorTemplate -endLayout;
+
+      editorTemplate -endLayout;
+
+    AEshapeTemplate $nodeName;
+
+	editorTemplate -addExtraControls;
+
+   editorTemplate -endScrollLayout;
+}

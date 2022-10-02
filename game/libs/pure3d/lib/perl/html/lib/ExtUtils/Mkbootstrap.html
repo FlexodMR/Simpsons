@@ -1,0 +1,84 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>ExtUtils::Mkbootstrap - make a bootstrap file for use by DynaLoader
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+ExtUtils::Mkbootstrap - make a bootstrap file for use by DynaLoader
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<CODE>mkbootstrap</CODE>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Mkbootstrap typically gets called from an extension Makefile.
+
+
+<P>
+
+There is no <CODE>*.bs</CODE> file supplied with the extension. Instead a
+<CODE>*_BS</CODE> file which has code for the special cases, like posix for berkeley db on
+the NeXT.
+
+
+<P>
+
+This file will get parsed, and produce a maybe empty
+<CODE>@DynaLoader::dl_resolve_using</CODE> array for the current architecture. That will be extended by 
+<FONT SIZE=-1>$BSLOADLIBS,</FONT> which was computed by
+ExtUtils::Liblist::ext(). If this array still is empty, we do nothing, else
+we write a .bs file with an <CODE>@DynaLoader::dl_resolve_using</CODE>
+array.
+
+
+<P>
+
+The <CODE>*_BS</CODE> file can put some code into the generated <CODE>*.bs</CODE> file by placing it in <CODE>$bscode</CODE>. This is a handy 'escape' mechanism that may prove useful in complex
+situations.
+
+
+<P>
+
+If @DynaLoader::dl_resolve_using contains <CODE>-L*</CODE> or <CODE>-l*</CODE> entries then Mkbootstrap will automatically add a
+<CODE>dl_findfile()</CODE> call to the generated <CODE>*.bs</CODE> file.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

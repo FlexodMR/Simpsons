@@ -1,0 +1,109 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>IO::Seekable - supply seek based methods for I/O objects
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#HISTORY">HISTORY</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+IO::Seekable - supply seek based methods for 
+<FONT SIZE=-1>I/O</FONT> objects
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use IO::Seekable;
+    package IO::Something;
+    @ISA = qw(IO::Seekable);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>IO::Seekable</CODE> does not have a constuctor of its own as is intended to be inherited by
+other <CODE>IO::Handle</CODE> based objects. It provides methods which allow seeking of the file
+descriptors.
+
+
+<P>
+
+If the 
+<FONT SIZE=-1>C</FONT> functions <CODE>fgetpos()</CODE> and
+<CODE>fsetpos()</CODE> are available, then
+<CODE>IO::File::getpos</CODE> returns an opaque value that represents the current position of the
+IO::File, and <CODE>IO::File::setpos</CODE> uses that value to return to a previously visited position.
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A> for complete descriptions of each of the following supported <CODE>IO::Seekable</CODE> methods, which are just front ends for the corresponding built-in
+functions:
+
+
+<P>
+
+<PRE>    seek
+    tell
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>, 
+<A HREF="/n|/perl/html/./lib/Pod/perlop.html#I_O_Operators">I/O Operators</A>,
+<A HREF="/n|/perl/html/./lib/IO/Handle.html">Handle</A>
+
+<A HREF="/n|/perl/html/./lib/IO/File.html">File</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="HISTORY">HISTORY
+
+</A></H1>
+Derived from FileHandle.pm by Graham Barr &lt;<A HREF="MAILTO:bodg@tiuk.ti.com">bodg@tiuk.ti.com</A>&gt;
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

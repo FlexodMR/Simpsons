@@ -1,0 +1,150 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>encode_base64 - Encode string using base64 encoding
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+encode_base64 - Encode string using base64 encoding
+
+
+<P>
+
+decode_base64 - Decode base64 string
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use MIME::Base64;
+</PRE>
+
+<P>
+
+<PRE> $encoded = encode_base64('Aladdin:open sesame');
+ $decoded = decode_base64($encoded);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provides functions to encode and decode strings into the Base64 encoding specified in 
+<FONT SIZE=-1>RFC</FONT> 2045 -
+ <EM>MIME (Multipurpose Internet
+Mail Extensions)</EM>. The Base64 encoding is designed to represent arbitrary sequences of octets in a form that need not be humanly readable. 
+<FONT SIZE=-1>A</FONT> 65-character subset ([A-Za-z0-9+/=]) of 
+<FONT SIZE=-1>US-ASCII</FONT> is used, enabling 6 bits to be represented per printable character.
+
+
+
+<P>
+
+The following functions are provided:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_encode_base64">encode_base64($str, [$eol])
+
+</A></STRONG><DD>
+Encode data by calling the <CODE>encode_base64()</CODE> function. The first
+argument is the string to encode. The second argument is the line ending
+sequence to use (it is optional and defaults to <A HREF="#item__n_">"\n"</A>). The returned encoded string is broken into lines of no more than 76
+characters each and it will end with <CODE>$eol</CODE> unless it is empty.
+Pass an empty string as second argument if you do not want the encoded
+string broken into lines.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_decode_base64">decode_base64($str)
+
+</A></STRONG><DD>
+Decode a base64 string by calling the <CODE>decode_base64()</CODE>
+function. This function takes a single argument which is the string to
+decode and returns the decoded data. Any character not part of the legal
+base64 chars is ignored.
+
+
+<P>
+
+</DL>
+If you prefer not to import these routines into your namespace you can call
+them as:
+
+
+<P>
+
+<PRE>    use MIME::Base64 ();
+    $encoded = MIME::Base64::encode($decoded);
+    $decoded = MIME::Base64::decode($encoded);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1995-1997 Gisle Aas.
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+Distantly based on LWP::Base64 written by Martijn Koster <A
+HREF="MAILTO:<m.koster@nexor.co.uk>"><m.koster@nexor.co.uk></A> and Joerg
+Reichelt <A
+HREF="MAILTO:<j.reichelt@nexor.co.uk>"><j.reichelt@nexor.co.uk></A> and
+code posted to comp.lang.perl <A
+HREF="MAILTO:<3pd2lp$6gf@wsinti07.win.tue.nl>"><3pd2lp$6gf@wsinti07.win.tue.nl></A>
+by Hans Mulder <A
+HREF="MAILTO:<hansm@wsinti07.win.tue.nl>"><hansm@wsinti07.win.tue.nl></A>
+
+
+<P>
+
+The 
+<FONT SIZE=-1>XS</FONT> implementation use code from metamail. Copyright
+1991 Bell Communications Research, Inc. (Bellcore)
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

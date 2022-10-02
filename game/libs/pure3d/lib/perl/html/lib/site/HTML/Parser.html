@@ -1,0 +1,208 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTML::Parser - SGML parser class
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTML::Parser - 
+<FONT SIZE=-1>SGML</FONT> parser class
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require HTML::Parser;
+ $p = HTML::Parser-&gt;new;  # should really a be subclass
+ $p-&gt;parse($chunk1);
+ $p-&gt;parse($chunk2);
+ #...
+ $p-&gt;eof;                 # signal end of document
+</PRE>
+
+<P>
+
+<PRE> # Parse directly from file
+ $p-&gt;parse_file(&quot;foo.html&quot;);
+ # or
+ open(F, &quot;foo.html&quot;) || die;
+ $p-&gt;parse_file(\*F);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>HTML::Parser</CODE> will tokenize a 
+<FONT SIZE=-1>HTML</FONT> document when the $p-&gt;parse() method is
+called. The document to parse can be supplied in arbitrary chunks. Call
+$p-&gt;eof() the end of the document to flush any remaining text. The
+return value from <CODE>parse()</CODE> is a reference to the parser object.
+
+
+<P>
+
+The $p-&gt;parse_file() method can be called to parse text from a file. The
+argument can be a filename or an already opened file handle. The return
+value from <CODE>parse_file()</CODE> is a reference to the parser object.
+
+
+<P>
+
+In order to make the parser do anything interesting, you must make a
+subclass where you override one or more of the following methods as
+appropriate:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__self_declaration_decl_">$self->declaration($decl)
+
+</A></STRONG><DD>
+This method is called when a <EM>markup declaration</EM> has been recognized. For typical 
+<FONT SIZE=-1>HTML</FONT> documents, the only declaration you are likely to
+find is &lt;
+<FONT SIZE=-1>!DOCTYPE</FONT> ...&gt;. The initial ``&lt;!'' and ending ``&gt;'' is not part of the string passed as argument.
+Comments are removed and entities have <STRONG>not</STRONG> been expanded yet.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__self_start_tag_">$self->start($tag, $attr, $attrseq, $origtext)
+
+</A></STRONG><DD>
+This method is called when a complete start tag has been recognized. The first argument is the tag name (in lower case) and the second argument is a reference to a hash that contain all attributes found within the start tag. The attribute keys are converted to lower case. Entities found in the attribute values are already expanded. The third argument is a reference to an array with the lower case attribute keys in the original order. The fourth argument is the original 
+<FONT SIZE=-1>HTML</FONT> text.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__self_end_tag_">$self->end($tag)
+
+</A></STRONG><DD>
+This method is called when an end tag has been recognized. The argument is
+the lower case tag name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__self_text_text_">$self->text($text)
+
+</A></STRONG><DD>
+This method is called when plain text in the document is recognized. The
+text is passed on unmodified and might contain multiple lines. Note that
+for efficiency reasons entities in the text are <STRONG>not</STRONG>
+expanded. You should call HTML::Entities::decode($text) before you process
+the text any further.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__self_comment_comment_">$self->comment($comment)
+
+</A></STRONG><DD>
+This method is called as comments are recognized. The leading and trailing
+``--'' sequences have been stripped off the comment text.
+
+
+<P>
+
+</DL>
+The default implementation of these methods does nothing, <EM>i.e.,</EM> the tokens are just ignored.
+
+
+<P>
+
+There is really nothing in the basic parser that is 
+<FONT SIZE=-1>HTML</FONT> specific, so it is likely that the parser can parse many kinds of 
+<FONT SIZE=-1>SGML</FONT> documents, but 
+<FONT SIZE=-1>SGML</FONT> has many obscure features (not implemented by this module) that prevent us from renaming this module as
+ <CODE>SGML::Parse</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+You can instruct the parser to parse comments the way Netscape does it by calling the <CODE>netscape_buggy_comment()</CODE> method with a 
+<FONT SIZE=-1>TRUE</FONT> argument. This means that comments will always be terminated by the first occurence of ``--&gt;''.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/HTML/TreeBuilder.html">TreeBuilder</A>, <A HREF="/n|/perl/html/./lib/site/HTML/HeadParser.html">HeadParser</A>, <A HREF="/n|/perl/html/./lib/site/HTML/Entities.html">Entities</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1996 Gisle Aas. All rights reserved.
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gisle Aas <A HREF="MAILTO:<aas@sn.no>"><aas@sn.no></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

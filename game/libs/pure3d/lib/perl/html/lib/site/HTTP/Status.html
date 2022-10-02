@@ -1,0 +1,220 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTTP::Status - HTTP Status code processing
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTANTS">CONSTANTS</A>
+	<LI><A HREF="#FUNCTIONS">FUNCTIONS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTTP::Status - 
+<FONT SIZE=-1>HTTP</FONT> Status code processing
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use <A HREF="HTTP::Status">HTTP::Status</A>;
+</PRE>
+
+<P>
+
+<PRE> if ($rc != RC_OK) {
+     print status_message($rc), &quot;\n&quot;;
+ }
+</PRE>
+
+<P>
+
+<PRE> if (is_success($rc)) { ... }
+ if (is_error($rc)) { ... }
+ if (is_redirect($rc)) { ... }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<EM>HTTP::Status</EM> is a library of routines for defining and classification of 
+<FONT SIZE=-1>HTTP</FONT> status codes for libwww-perl. Status codes are used to encode the overall outcome of a 
+<FONT SIZE=-1>HTTP</FONT> response message. Codes correspond to those defined in 
+<FONT SIZE=-1>RFC</FONT> 2068.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTANTS">CONSTANTS
+
+</A></H1>
+The following constant functions can be used as mnemonic status code names:
+
+
+<P>
+
+<PRE>   RC_CONTINUE                          (100)
+   RC_SWITCHING_PROTOCOLS               (101)
+</PRE>
+
+<P>
+
+<PRE>   RC_OK                                (200)
+   RC_CREATED                           (201)
+   RC_ACCEPTED                          (202)
+   RC_NON_AUTHORITATIVE_INFORMATION     (203)
+   RC_NO_CONTENT                        (204)
+   RC_RESET_CONTENT                     (205)
+   RC_PARTIAL_CONTENT                   (206)
+</PRE>
+
+<P>
+
+<PRE>   RC_MULTIPLE_CHOICES                  (300)
+   RC_MOVED_PERMANENTLY                 (301)
+   RC_MOVED_TEMPORARILY                 (302)
+   RC_SEE_OTHER                         (303)
+   RC_NOT_MODIFIED                      (304)
+   RC_USE_PROXY                         (305)
+</PRE>
+
+<P>
+
+<PRE>   RC_BAD_REQUEST                       (400)
+   RC_UNAUTHORIZED                      (401)
+   RC_PAYMENT_REQUIRED                  (402)
+   RC_FORBIDDEN                         (403)
+   RC_NOT_FOUND                         (404)
+   RC_METHOD_NOT_ALLOWED                (405)
+   RC_NOT_ACCEPTABLE                    (406)
+   RC_PROXY_AUTHENTICATION_REQUIRED     (407)
+   RC_REQUEST_TIMEOUT                   (408)
+   RC_CONFLICT                          (409)
+   RC_GONE                              (410)
+   RC_LENGTH_REQUIRED                   (411)
+   RC_PRECONDITION_FAILED               (412)
+   RC_REQUEST_ENTITY_TOO_LARGE          (413)
+   RC_REQUEST_URI_TOO_LARGE             (414)
+   RC_UNSUPPORTED_MEDIA_TYPE            (415)
+</PRE>
+
+<P>
+
+<PRE>   RC_INTERNAL_SERVER_ERROR             (500)
+   RC_NOT_IMPLEMENTED                   (501)
+   RC_BAD_GATEWAY                       (502)
+   RC_SERVICE_UNAVAILABLE               (503)
+   RC_GATEWAY_TIMEOUT                   (504)
+   RC_HTTP_VERSION_NOT_SUPPORTED        (505)
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="FUNCTIONS">FUNCTIONS
+
+</A></H1>
+The following additional functions are provided. Most of them are exported
+by default.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_status_message">status_message($code)
+
+</A></STRONG><DD>
+The <CODE>status_message()</CODE> function will translate status codes to
+human readable strings. The string is the same as found in the constant
+names above.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_is_info">is_info($code)
+
+</A></STRONG><DD>
+Return 
+<FONT SIZE=-1>TRUE</FONT> if <CODE>$code</CODE> is an <EM>Informational</EM> status code.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_is_success">is_success($code)
+
+</A></STRONG><DD>
+Return 
+<FONT SIZE=-1>TRUE</FONT> if <CODE>$code</CODE> is a <EM>Successful</EM> status code.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_is_redirect">is_redirect($code)
+
+</A></STRONG><DD>
+Return 
+<FONT SIZE=-1>TRUE</FONT> if <CODE>$code</CODE> is a <EM>Redirection</EM> status code.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_is_error">is_error($code)
+
+</A></STRONG><DD>
+Return 
+<FONT SIZE=-1>TRUE</FONT> if <CODE>$code</CODE> is an <EM>Error</EM> status code. The function return 
+<FONT SIZE=-1>TRUE</FONT> for both client error or a server error status
+codes.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_is_client_error">is_client_error($code)
+
+</A></STRONG><DD>
+Return 
+<FONT SIZE=-1>TRUE</FONT> if <CODE>$code</CODE> is an <EM>Client Error</EM> status code. This function is <STRONG>not</STRONG> exported by default.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_is_server_error">is_server_error($code)
+
+</A></STRONG><DD>
+Return 
+<FONT SIZE=-1>TRUE</FONT> if <CODE>$code</CODE> is an <EM>Server Error</EM> status code. This function is <STRONG>not</STRONG> exported by default.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

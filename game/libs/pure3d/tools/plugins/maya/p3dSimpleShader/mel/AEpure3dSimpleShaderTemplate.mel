@@ -1,0 +1,177 @@
+// ////////////////////////////////////////////////////////////////
+//  rootNode
+//
+// Description: Strips the dot-suffix of the specified string.
+//  e.g. "object.attribute" is returned as "object"
+proc string rootNode( string $object )
+{
+	string $buffer[];
+	tokenize $object "." $buffer;
+	return $buffer[0];
+}
+
+global proc p3dSimpleShaderTogglePrelight ( string $nodeName )
+{
+    int $dynamicallyLit = `getAttr ( $nodeName + ".dynamicallyLit" )`;
+
+    if( $dynamicallyLit == 0 )
+    {
+        editorTemplate -dimControl $nodeName "prelightMode" false;
+    }
+    else
+    {
+        editorTemplate -dimControl $nodeName "prelightMode" true;
+    }
+
+    // Changing prelight will affect ability to use multiple CBVs.
+    p3dSimpleShaderToggleMultiCBV ( $nodeName );
+}
+
+global proc p3dSimpleShaderToggleMultiCBV ( string $nodeName )
+{
+    int $dynamicallyLit = `getAttr ( $nodeName + ".dynamicallyLit" )`;
+
+    if( $dynamicallyLit == 0 ) /* Statically lit */
+    {
+
+        editorTemplate -dimControl $nodeName "useMultiCBV" false;
+        int $useMultiCBV = `getAttr ( $nodeName + ".useMultiCBV" )`;
+
+        if( $useMultiCBV == 0 )
+        {
+            editorTemplate -dimControl $nodeName "multiCBVMode" true; 
+            editorTemplate -dimControl $nodeName "multiCBVValue" true;
+            editorTemplate -dimControl $nodeName "multiCBVColour" true;
+            editorTemplate -dimControl $nodeName "multiCBVSetA" true;
+            editorTemplate -dimControl $nodeName "multiCBVSetB" true;
+        }
+        else
+        {
+            editorTemplate -dimControl $nodeName "multiCBVMode" false; 
+            editorTemplate -dimControl $nodeName "multiCBVValue" false;
+            editorTemplate -dimControl $nodeName "multiCBVColour" false;
+            editorTemplate -dimControl $nodeName "multiCBVSetA" false;
+            editorTemplate -dimControl $nodeName "multiCBVSetB" false;
+        }
+    }
+    else /* Dynamically lit */
+    {
+        editorTemplate -dimControl $nodeName "useMultiCBV" true; 
+        editorTemplate -dimControl $nodeName "multiCBVMode" true; 
+        editorTemplate -dimControl $nodeName "multiCBVValue" true; 
+        editorTemplate -dimControl $nodeName "multiCBVColour" true;
+        editorTemplate -dimControl $nodeName "multiCBVSetA" true;
+        editorTemplate -dimControl $nodeName "multiCBVSetB" true;
+    }
+}
+
+
+global proc AEpure3dSimpleShaderTemplate ( string $nodeName )
+{
+    AEswatchDisplay $nodeName;
+    editorTemplate -beginScrollLayout;
+    editorTemplate -callCustom AEshaderTypeNew AEshaderTypeReplace "message";
+
+    editorTemplate -beginLayout "Common Material Attributes" -collapse 0; 
+        editorTemplate -addControl "diffuse";
+        editorTemplate -label "Texture" -addControl "color";
+        editorTemplate -label "Transparency" -addControl "transparency";
+        editorTemplate -addControl "ambient";
+        editorTemplate -addControl "emissive";
+        editorTemplate -addControl "emissiveAlpha";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Specular Shading" -collapse 0;
+        editorTemplate -addControl "specular";
+        editorTemplate -addControl "shininess";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Material Attributes" -collapse true;
+        editorTemplate -addControl "shadeMode";
+        editorTemplate -addControl "blendMode";
+        editorTemplate -addControl "dynamicallyLit" "p3dSimpleShaderTogglePrelight";
+        editorTemplate -label "P3D Prelight Mode" -addControl "prelightMode"; 
+
+        int $tempIgnoreMultiCBV = false;        // Temporarily suppress the multiple cbv attributes
+        if( $tempIgnoreMultiCBV )
+        {
+            editorTemplate -suppress "useMultiCBV";
+            editorTemplate -suppress "multiCBVMode";
+            editorTemplate -suppress "multiCBVValue";
+            editorTemplate -suppress "multiCBVColour";  
+            editorTemplate -suppress "multiCBVSetA";  
+            editorTemplate -suppress "multiCBVSetB";
+        }
+        else
+        {
+            editorTemplate -label "Use Multiple CBVs" -addControl "useMultiCBV" "p3dSimpleShaderToggleMultiCBV";
+            editorTemplate -label "Multiple CBV Blend Mode" -addControl "multiCBVMode";
+            editorTemplate -label "Multiple CBV Blend Value" -addControl "multiCBVValue";
+            editorTemplate -label "Multiple CBV Blend Colour" -addControl "multiCBVColour";  
+            editorTemplate -label "Multiple CBV SetA" -addControl "multiCBVSetA";  
+            editorTemplate -label "Multiple CBV SetB" -addControl "multiCBVSetB";
+        }
+            
+        editorTemplate -addControl "doubleSided";
+        
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Texture Attributes" -collapse true;
+        editorTemplate -addControl "uvMode";
+        editorTemplate -addControl "filterMode";
+        editorTemplate -addControl "alphaTest";
+        editorTemplate -addControl "alphaCompare";
+        editorTemplate -callCustom AEpure3dSimpleShaderNewACTH AEpure3dSimpleShaderReplaceACTH "alphaCompareThreshold";
+        editorTemplate -addControl "proceduralXRes";
+        editorTemplate -addControl "proceduralYRes";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Mipmap Control" -collapse true;
+        editorTemplate -label "Generate Mipmaps During Export" -addControl "exportMipmaps";
+        editorTemplate -addControl "L";
+		editorTemplate -addControl "K";
+        editorTemplate -addControl "mipmapmin";
+        editorTemplate -addControl "mipmapmax";
+    editorTemplate -endLayout;
+
+    // supressed attributes
+    editorTemplate -suppress "pointCamera";
+    editorTemplate -suppress "normalCamera";
+    editorTemplate -suppress "rayDirection";
+    editorTemplate -suppress "vertexShaderName";
+    editorTemplate -suppress "mmsharpness";
+    editorTemplate -suppress "lightmap";
+    editorTemplate -suppress "isLit";
+    editorTemplate -suppress "isLightMapped";
+    editorTemplate -suppress "shaderExport";
+
+    // include/call base class/node attributes
+    AElambertCommonInclude $nodeName;
+
+    editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+        AEhardwareTextureTemplate $nodeName ("color");
+    editorTemplate -endLayout;
+
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+}
+
+global proc AEpure3dSimpleShaderNewACTH( string $attr )
+{
+	global int $gTextColumnWidthIndex;
+
+    string $acthUI = "p3dSimpleShaderActhUI";
+
+    float $acth = `getAttr $attr`;
+
+    p3dColorSwatch( `setParent -q`, { $acth, $acth, $acth }, true, "Alpha Compare Threshold", $gTextColumnWidthIndex, true, false, 2, "", $acthUI );
+
+    AEpure3dSimpleShaderReplaceACTH $attr;
+}
+
+global proc AEpure3dSimpleShaderReplaceACTH( string $attr )
+{
+    string $acthUI = "p3dSimpleShaderActhUI";
+
+    p3dColorSwatch_ConnectControl( $acthUI, $attr );
+}

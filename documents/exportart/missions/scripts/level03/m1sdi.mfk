@@ -1,0 +1,59 @@
+SelectMission("m1sd");
+
+// Set up intro transition camera for Level 03
+//
+SetMissionStartCameraName( "mission1camShape" );
+SetMissionStartMulticontName( "mission1cam" );
+SetAnimatedCameraName( "mission1camShape" );
+SetAnimCamMulticontName( "mission1cam" );
+
+SetMissionResetPlayerOutCar("level3_lisa_start","level3_carstart");
+SetDynaLoadData("l3z1.p3d;l3r1.p3d;l3r5.p3d;l3r5_dam.p3d;");
+
+SetInitialWalk("level3_lisa_walkto");
+
+AddStage(0);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(176);
+	SetHUDIcon( "android" );
+	AddObjective("interior");
+		SetDestination("Android", "ad_mission_doorstar");
+		//AddStageVehicle("comic_v","m1_cbgcar_sd","NULL","EasyRace\AI_5th.con");
+	CloseObjective();
+CloseStage();
+
+AddStage(5);
+	SetStageMessageIndex(54);
+	SetHUDIcon( "cbg" );
+	AddObjective("talkto", "neither");
+		AddNPC("cbg", "m1_cbg_sd");
+		SetTalkToTarget("cbg", 0, -0.2, "3.0");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis03_01.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		//SetCamBestSide("bestside_m1");
+		SetDialogueInfo("lisa","cbg","brother",0);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

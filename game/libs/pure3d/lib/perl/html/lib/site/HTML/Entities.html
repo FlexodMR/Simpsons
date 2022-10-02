@@ -1,0 +1,121 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>decode - Expand HTML entities in a string
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+decode - Expand 
+<FONT SIZE=-1>HTML</FONT> entities in a string
+
+
+<P>
+
+encode - Encode chars in a string using 
+<FONT SIZE=-1>HTML</FONT> entities
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use HTML::Entities;
+</PRE>
+
+<P>
+
+<PRE> $a = &quot;V&amp;aring;re norske tegn b&amp;oslash;r &amp;#230res&quot;;
+ decode_entities($a);
+ encode_entities($a, &quot;\200-\377&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>decode_entities()</CODE> routine replaces valid 
+<FONT SIZE=-1>HTML</FONT> entities found in the string with the corresponding 
+<FONT SIZE=-1>ISO-8859/1</FONT> character.
+
+
+
+<P>
+
+The <CODE>encode_entities()</CODE> routine replaces the characters
+specified by the second argument with their entity representation. The
+default set of characters to expand are control chars, high-bit chars and
+the '&lt;', '&amp;', '&gt;' and '``' character.
+
+
+<P>
+
+Both routines modify the string passed in as the first argument and return
+it.
+
+
+<P>
+
+If you prefer not to import these routines into your namespace you can call
+them as:
+
+
+<P>
+
+<PRE>  use HTML::Entities ();
+  $encoded = HTML::Entities::encode($a);
+  $decoded = HTML::Entities::decode($a);
+</PRE>
+
+<P>
+
+The module can also export the <CODE>%char2entity</CODE> and the
+<CODE>%entity2char</CODE> hashes which contains the mapping from all
+characters to the corresponding entities.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1995-1997 Gisle Aas. All rights reserved.
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

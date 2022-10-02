@@ -1,0 +1,81 @@
+SelectMission("m3sd");
+
+SetMissionResetPlayerOutCar("m3_bestside","m3_carstart");
+SetDynaLoadData("l5z1.p3d;l5r1.p3d;l5r4.p3d;");
+
+SetMissionStartCameraName( "mission3camShape" );
+SetMissionStartMulticontName( "mission3cam" );
+SetAnimatedCameraName( "mission3camShape" );
+SetAnimCamMulticontName( "mission3cam" );
+
+AddStage(0);
+	SetStageMessageIndex(72);
+	SetHUDIcon( "drhibert" );
+	AddObjective("talkto");
+		AddNPC("hibbert", "m3_hibbert_sd");
+		AddObjectiveNPCWaypoint( "hibbert", "m3_hibbert_walk1" );
+		AddObjectiveNPCWaypoint( "hibbert", "m3_hibbert_walk2" );
+		AddObjectiveNPCWaypoint( "hibbert", "m3_hibbert_walk3" );
+		AddObjectiveNPCWaypoint( "hibbert", "m3_hibbert_sd" );
+		SetTalkToTarget("hibbert", 0, 0);
+	CloseObjective();
+CloseStage();
+
+//LOCKED STAGE FOR MR PLOW
+//
+//THIS DIALOGUE WILL INCLUDE THE GATED LINES
+AddStage("locked","car","carhom_v");
+	SetStageMessageIndex(6);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis05_03.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "npc_far" );
+		SetConversationCam( 1, "pc_far" );
+		SetConversationCam( 2, "npc_far" );
+		AddAmbientNpcAnimation( "dialogue_cross_arms" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );	
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		SetCamBestSide("m3_bestside");
+		SetDialogueInfo("apu","hibbert","emergency",0);
+		SetDialoguePositions("m3_apu_start","m3_hibbert_walk2","m3_carstart");
+	CloseObjective();
+CloseStage();
+
+//THIS DIALOGUE WILL NOT INCLUDE THE GATED LINES AND WILL START THE MISSION
+AddStage(1);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis05_03.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "npc_far" );
+		SetConversationCam( 1, "pc_far" );
+		SetConversationCam( 2, "npc_far" );
+		AddAmbientNpcAnimation( "dialogue_cross_arms" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );	
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide("m3_bestside");
+		SetDialogueInfo("apu","hibbert","emergency2",0);
+		SetDialoguePositions("m3_apu_start","m3_hibbert_walk2","m3_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

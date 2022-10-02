@@ -1,0 +1,108 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::Time - time and daytime network client interface
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::Time - time and daytime network client interface
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Net::Time qw(inet_time inet_daytime);
+    
+    print inet_time();          # use default host from Net::Config
+    print inet_time('localhost');
+    print inet_time('localhost', 'tcp');
+    
+    print inet_daytime();       # use default host from Net::Config
+    print inet_daytime('localhost');
+    print inet_daytime('localhost', 'tcp');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>Net::Time</CODE> provides subroutines that obtain the time on a remote machine.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_inet_time">inet_time ( [HOST [, PROTOCOL [, TIMEOUT]]])
+
+</A></STRONG><DD>
+Obtain the time on <CODE>HOST</CODE>, or some default host if <CODE>HOST</CODE> is not given or not defined, using the protocol as defined in 
+<FONT SIZE=-1>RFC868.</FONT> The optional argument <CODE>PROTOCOL</CODE> should define the protocol to use, either <CODE>tcp</CODE> or
+<CODE>udp</CODE>. The result will be a unix-like time value or <EM>undef</EM> upon failure.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_inet_daytime">inet_daytime ( [HOST [, PROTOCOL [, TIMEOUT]]])
+
+</A></STRONG><DD>
+Obtain the time on <CODE>HOST</CODE>, or some default host if <CODE>HOST</CODE> is not given or not defined, using the protocol as defined in 
+<FONT SIZE=-1>RFC867.</FONT> The optional argument <CODE>PROTOCOL</CODE> should define the protocol to use, either <CODE>tcp</CODE> or
+<CODE>udp</CODE>. The result will be an 
+<FONT SIZE=-1>ASCII</FONT> string or <EM>undef</EM> upon failure.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1997 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

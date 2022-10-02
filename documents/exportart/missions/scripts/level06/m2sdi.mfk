@@ -1,0 +1,74 @@
+SelectMission("m2sd");
+
+SetMissionResetPlayerOutCar("m2_bart_start","level6_carstart");
+SetDynaLoadData("l6z4.p3d;l6r3.p3d;l6r4.p3d;");
+
+SetMissionStartCameraName( "mission2camShape" );
+SetMissionStartMulticontName( "mission2cam" );
+SetAnimatedCameraName( "mission2camShape" );
+SetAnimCamMulticontName( "mission2cam" );
+
+AddStage(5);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(43);
+	SetHUDIcon("barneuni");
+	AddObjective("talkto");
+		AddNPC("brn_unf", "m2_barney_sd");
+		AddObjectiveNPCWaypoint( "brn_unf", "m2_barney_walk1" );
+		AddObjectiveNPCWaypoint( "brn_unf", "m2_barney_walk2" );
+		AddObjectiveNPCWaypoint( "brn_unf", "m2_barney_walk3" );
+		AddObjectiveNPCWaypoint( "brn_unf", "m2_barney_walk4" );
+		AddObjectiveNPCWaypoint( "brn_unf", "m2_barney_walk5" );
+		AddObjectiveNPCWaypoint( "brn_unf", "m2_barney_walk6" );
+		AddObjectiveNPCWaypoint( "brn_unf", "m2_barney_walk5" );
+		AddObjectiveNPCWaypoint( "brn_unf", "m2_barney_walk4" );
+		AddObjectiveNPCWaypoint( "brn_unf", "m2_barney_walk3" );
+		SetTalkToTarget("brn_unf", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis06_02.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_near" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_near" );
+		SetConversationCam( 4, "pc_far" );
+		SetConversationCam( 5, "npc_near" );
+		SetConversationCam( 6, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_cross_arms" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		SetCamBestSide( "m2_bestside" );
+		SetDialogueInfo("bart","brn_unf","duff",0);
+		SetDialoguePositions("bart_barneytalk","m2_barney_sd","m2_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

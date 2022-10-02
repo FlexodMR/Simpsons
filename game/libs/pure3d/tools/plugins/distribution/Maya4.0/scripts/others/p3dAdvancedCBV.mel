@@ -1,0 +1,1463 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     16 July, 2002
+//
+// Component:   p3dAdvancedCBV.mel
+//
+// Description: UI for p3dAdvancedCBV plug-in.
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+// Constraints: 
+//
+//===========================================================================
+proc float version()
+{
+    return ( 2.0 );
+}
+
+//===========================================================================
+// pluginVersion
+//===========================================================================
+// Description: Returns a float value representing the current version of
+//              the Pure3D Maya Exporter plug-in.  This wrapper call 
+//              prevents errors when attempting to assign a version of
+//              "17.9.1" to a float variable.
+//
+// Constraints: Only the major and first minor components of the version
+//              are returned.  For example, if the true version is "17.9.1"
+//              the ".1" component will be ignored.
+//
+//  Parameters: (none)
+//
+//      Return: (float): The plug-in version (sans any minor/path revision
+//                       extensions).
+//
+//===========================================================================
+proc float pluginVersion( string $mll )
+{
+    float $version = 0.0;
+
+    if ( `pluginInfo -q -loaded $mll` )
+    {
+        string $tokens[];
+        string $versionStr = `pluginInfo -q -version $mll`;
+        tokenize $versionStr "." $tokens;
+        $versionStr = ( $tokens[0] + "." + $tokens[1] );
+        $version = (float)$versionStr;
+    }
+
+    return $version;
+}
+
+//===========================================================================
+// isPluginValid
+//===========================================================================
+// Description: Determines if the p3dAdvancedCBV plug-in is loaded
+//              AND if it matches the version expected by this script.
+//
+// Constraints: 
+//
+// Return:      TRUE if plug-in is loaded; else FALSE.
+//
+//===========================================================================
+proc int isPluginValid( string $mll )
+{
+    int $isValid = ( version() == pluginVersion( $mll ) );
+
+    return $isValid;
+}
+
+proc string[] AddFloatSlider( int $hasQuery, string $label, int $labelWidth, float $min, float $max, float $default, int $fieldWidth, string $fieldLabel, string $optionVar, string $uiName )
+{
+    string $form = `formLayout`;
+
+        string $queryUI = `symbolButton -image "inArrow.xpm" -width 20 -height 20`;
+        string $textUI = `text -label $label -align "right" -width $labelWidth`;
+        string $fieldUI = `floatField -min $min -max $max -value $default -width $fieldWidth $uiName`;
+        string $fieldLabelUI = `text -label $fieldLabel`;
+        string $sliderUI = `floatSlider -min $min -max $max -value $default`;
+        
+        setParent ..;
+        
+    formLayout -e
+        -af     $queryUI            "top"       0
+        -af     $queryUI            "left"      0
+
+        -af     $textUI             "top"       2
+        -ac     $textUI             "left"      2       $queryUI
+
+        -af     $fieldUI            "top"       0
+        -ac     $fieldUI            "left"      4       $textUI
+
+        -af     $fieldLabelUI       "top"       2
+        -ac     $fieldLabelUI       "left"      2       $fieldUI
+
+        -af     $sliderUI           "top"       0
+        -ac     $sliderUI           "left"      2       $fieldLabelUI
+        -af     $sliderUI           "right"     0
+        
+            $form;
+
+    symbolButton -e
+        -visible $hasQuery
+            $queryUI;
+
+    if ( $optionVar != "" )
+    {
+        floatField -e
+            -cc ( "optionVar -floatValue " + $optionVar + " (#1); floatSlider -e -value (#1) " + $sliderUI )
+                $fieldUI;
+
+        floatSlider -e
+            -dc ( "optionVar -floatValue " + $optionVar + " (#1); floatField -e -value (#1) " + $fieldUI )
+                $sliderUI;
+
+        if ( `optionVar -exists $optionVar` )
+        {
+            $default = `optionVar -q $optionVar`;
+            floatSlider -e -value $default $sliderUI;
+            floatField -e -value $default $fieldUI;
+        }
+    }
+    else
+    {
+        floatField -e
+            -cc ( "floatSlider -e -value (#1) " + $sliderUI )
+                $fieldUI;
+
+        floatSlider -e
+            -dc ( "floatField -e -value (#1) " + $fieldUI )
+                $sliderUI;
+    }
+
+    string $returnUI[];
+    $returnUI[0] = $form;
+    $returnUI[1] = $queryUI;
+    $returnUI[2] = $fieldUI;
+    $returnUI[3] = $sliderUI;
+    
+    return $returnUI;
+}
+
+
+// ----------------  hilitecbv  ----------------
+
+global proc PerformHiliteCBV( string $layoutUI, string $rgbSwatchUI, string $alphaSwatchUI, string $toleranceUI )
+{
+    setParent $layoutUI;
+
+    // .vtxFace option from optionVar
+    int $vtxFace = `optionVar -q p3dAdvancedCBV_hiliteVtxFace`;
+
+    // Command options are obtained from the UI
+
+    string $CBVhiliteToleranceUI    = "CBVhiliteToleranceUI";
+
+    string $CBVhiliteModeExpandUI   = "CBVhiliteModeExpandUI";
+
+    string $CBVhiliteRedUI          = "CBVhiliteRedUI";
+    string $CBVhiliteGreenUI        = "CBVhiliteGreenUI";
+    string $CBVhiliteBlueUI         = "CBVhiliteBlueUI";
+    string $CBVhiliteAlphaUI        = "CBVhiliteAlphaUI";
+    string $CBVhiliteHueUI          = "CBVhiliteHueUI";
+    string $CBVhiliteSatUI          = "CBVhiliteSatUI";
+    string $CBVhiliteValueUI        = "CBVhiliteValueUI";
+
+    float $tolerance = `floatField -q -value $toleranceUI`;
+    $tolerance = $tolerance / 100.0;
+
+    int $bExpandMode = `radioButton -q -select $CBVhiliteModeExpandUI`;
+
+    float $rgb[3] = p3dColorSwatch_getRGB( $rgbSwatchUI );
+    float $alpha[3] = p3dColorSwatch_getRGB( $alphaSwatchUI );
+
+    int $bR = `checkBox -q -value $CBVhiliteRedUI`;
+    int $bG = `checkBox -q -value $CBVhiliteGreenUI`;
+    int $bB = `checkBox -q -value $CBVhiliteBlueUI`;
+    int $bA = `checkBox -q -value $CBVhiliteAlphaUI`;
+    int $bH = `checkBox -q -value $CBVhiliteHueUI`;
+    int $bS = `checkBox -q -value $CBVhiliteSatUI`;
+    int $bV = `checkBox -q -value $CBVhiliteValueUI`;
+
+    // Assemble the command
+
+    string $cmd = "hilitecbv ";
+
+    if ( $vtxFace ) { $cmd = $cmd + "-vf "; }
+
+    if ( $bExpandMode ) { $cmd = $cmd + "-ex "; }
+
+    if ( $bA )
+    {
+        $cmd = $cmd + "-rgba " + $rgb[0] + " " + $rgb[1] + " " + $rgb[2] + " " + $alpha[2] + " ";
+    }
+    else
+    {
+        $cmd = $cmd + "-rgb " + $rgb[0] + " " + $rgb[1] + " " + $rgb[2] + " ";
+    }
+
+    if ( $bR ) { $cmd = $cmd + "-r "; }
+    if ( $bG ) { $cmd = $cmd + "-g "; }
+    if ( $bB ) { $cmd = $cmd + "-b "; }
+    if ( $bH ) { $cmd = $cmd + "-hue "; }
+    if ( $bS ) { $cmd = $cmd + "-sat "; }
+    if ( $bV ) { $cmd = $cmd + "-val "; }
+
+    $cmd = ( $cmd + "-t " + $tolerance );
+
+    eval $cmd;
+}
+
+//===========================================================================
+// AddHiliteCBVUI
+//===========================================================================
+// Description: Creates the tab UI for the 'hilitecbv' controls.
+//
+// Constraints: 
+//
+//  Parameters: string $tabUI: The tabLayout for all p3dAdvancedCBV commands.
+//
+//      Return: (string): The main formLayout that holds the controls.
+//
+//===========================================================================
+proc string AddHiliteCBVUI( string $tabUI )
+{
+    string $CBVhiliteQueryRgbUI     = "CBVhiliteQueryRgbUI";
+    string $CBVhiliteRgbSwatchUI    = "CBVhiliteRgbSwatchUI";
+    string $CBVhiliteRgbSwatchVar   = "CBVhiliteRgbSwatch";
+
+    string $CBVhiliteQueryAlphaUI   = "CBVhiliteQueryAlphaUI";
+    string $CBVhiliteAlphaSwatchUI  = "CBVhiliteAlphaSwatchUI";
+    string $CBVhiliteAlphaSwatchVar = "CBVhiliteAlphaSwatch";
+
+    string $CBVhiliteToleranceUI    = "CBVhiliteToleranceUI";
+    string $CBVhiliteToleranceVar   = "CBVhiliteTolerance";
+
+    string $CBVhiliteModeFilterUI   = "CBVhiliteModeFilterUI";
+    string $CBVhiliteModeExpandUI   = "CBVhiliteModeExpandUI";
+    string $CBVhiliteModeVar        = "CBVhiliteModeVar";
+
+    string $CBVhiliteRedUI          = "CBVhiliteRedUI";
+    string $CBVhiliteRedVar         = "CBVhiliteRed";
+    string $CBVhiliteGreenUI        = "CBVhiliteGreenUI";
+    string $CBVhiliteGreenVar       = "CBVhiliteGreen";
+    string $CBVhiliteBlueUI         = "CBVhiliteBlueUI";
+    string $CBVhiliteBlueVar        = "CBVhiliteBlue";
+    string $CBVhiliteAlphaUI        = "CBVhiliteAlphaUI";
+    string $CBVhiliteAlphaVar       = "CBVhiliteAlpha";
+    string $CBVhiliteHueUI          = "CBVhiliteHueUI";
+    string $CBVhiliteHueVar         = "CBVhiliteHue";
+    string $CBVhiliteSatUI          = "CBVhiliteSatUI";
+    string $CBVhiliteSatVar         = "CBVhiliteSat";
+    string $CBVhiliteValueUI        = "CBVhiliteValueUI";
+    string $CBVhiliteValueVar       = "CBVhiliteValue";
+
+    string $CBVhiliteGoUI           = "CBVhiliteGoUI";
+
+    int $uiWidth = 400;
+    int $labelWidth = 48;
+    int $fieldWidth = 56;
+    int $arrowWidth = 20;
+
+    float $BLACK[3] = { 0.0, 0.0, 0.0 };
+    float $WHITE[3] = { 1.0, 1.0, 1.0 };
+
+    string $form;
+    
+    string $hiliteScroller = `scrollLayout -width $uiWidth`;
+    string $url = "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/p3dAdvancedCBV.html#_hilitecbv";
+    string $p3dFrameLayout[] = p3dFrameLayout( "", $url, false, false );
+
+    string $hiliteForm = `formLayout -width $uiWidth`;
+
+        string $vtxFaceLayoutUI = `rowLayout -nc 2`;
+            
+            radioCollection;
+
+                string $vertexUI = `radioButton -label "Vertex" -select`;
+                string $vtxFaceUI = `radioButton -label "Vertex-Face"`;
+
+            setParent ..;
+
+//        string $rgbaFrameUI = `frameLayout -label "Settings" -collapsable true`;
+
+            $form = `formLayout`;
+
+                symbolButton -image "inArrow.xpm" -width $arrowWidth -height 20 $CBVhiliteQueryRgbUI;
+                p3dColorSwatch( $form, $BLACK, true, "RGB", $labelWidth, true, true, 2, $CBVhiliteRgbSwatchVar, $CBVhiliteRgbSwatchUI );
+
+                symbolButton -image "inArrow.xpm" -width $arrowWidth -height 20 $CBVhiliteQueryAlphaUI;
+                p3dColorSwatch( $form, $WHITE, true, "Alpha", $labelWidth, true, false, 2, $CBVhiliteAlphaSwatchVar, $CBVhiliteAlphaSwatchUI );
+
+                string $toleranceUI[] = AddFloatSlider( false, "Tolerance", $labelWidth, 0.0, 100.0, 1.0, $fieldWidth, "%", $CBVhiliteToleranceVar, $CBVhiliteToleranceUI );
+
+                string $modeUI = `text -label "Mode" -width ( $arrowWidth + $labelWidth ) -align "right"`;
+                radioCollection;
+                    radioButton -label "Filter" -select $CBVhiliteModeFilterUI;
+                    radioButton -label "Expand" $CBVhiliteModeExpandUI;
+
+                checkBox -label "Red"           $CBVhiliteRedUI;
+                checkBox -label "Green"         $CBVhiliteGreenUI;
+                checkBox -label "Blue"          $CBVhiliteBlueUI;
+                checkBox -label "Alpha"         $CBVhiliteAlphaUI;
+                checkBox -label "Hue"           $CBVhiliteHueUI;
+                checkBox -label "Saturation"    $CBVhiliteSatUI;
+                checkBox -label "Value"         $CBVhiliteValueUI;
+
+                button -label "Hilite CBV" $CBVhiliteGoUI;
+
+                setParent ..;
+
+            formLayout -e
+
+                -af     $CBVhiliteQueryRgbUI        "top"       4
+                -af     $CBVhiliteQueryRgbUI        "left"      4
+
+                -af     $CBVhiliteRgbSwatchUI       "top"       4
+                -ac     $CBVhiliteRgbSwatchUI       "left"      4       $CBVhiliteQueryRgbUI
+                -af     $CBVhiliteRgbSwatchUI       "right"     4
+
+                -ac     $CBVhiliteQueryAlphaUI      "top"       4       $CBVhiliteRgbSwatchUI
+                -af     $CBVhiliteQueryAlphaUI      "left"      4
+
+                -ac     $CBVhiliteAlphaSwatchUI     "top"       4       $CBVhiliteRgbSwatchUI
+                -ac     $CBVhiliteAlphaSwatchUI     "left"      4       $CBVhiliteQueryAlphaUI
+                -af     $CBVhiliteAlphaSwatchUI     "right"     4
+
+                -ac     $toleranceUI[0]             "top"       4       $CBVhiliteAlphaSwatchUI
+                -af     $toleranceUI[0]             "left"      4
+                -af     $toleranceUI[0]             "right"     4
+
+                -ac     $modeUI                     "top"       4       $toleranceUI[0]
+                -af     $modeUI                     "left"      4
+                -ac     $CBVhiliteModeFilterUI      "top"       4       $toleranceUI[0]
+                -ac     $CBVhiliteModeFilterUI      "left"      4       $modeUI
+                -ac     $CBVhiliteModeExpandUI      "top"       4       $toleranceUI[0]
+                -ac     $CBVhiliteModeExpandUI      "left"      4       $CBVhiliteModeFilterUI
+
+                -ac     $CBVhiliteRedUI             "top"       4       $CBVhiliteModeFilterUI
+                -af     $CBVhiliteRedUI             "left"      $labelWidth
+                -ac     $CBVhiliteGreenUI           "top"       4       $CBVhiliteModeFilterUI
+                -ac     $CBVhiliteGreenUI           "left"      4       $CBVhiliteRedUI
+                -ac     $CBVhiliteBlueUI            "top"       4       $CBVhiliteModeFilterUI
+                -ac     $CBVhiliteBlueUI            "left"      4       $CBVhiliteGreenUI
+                -ac     $CBVhiliteAlphaUI           "top"       4       $CBVhiliteModeFilterUI
+                -ac     $CBVhiliteAlphaUI           "left"      4       $CBVhiliteBlueUI
+
+                -ac     $CBVhiliteHueUI             "top"       4       $CBVhiliteRedUI
+                -af     $CBVhiliteHueUI             "left"      $labelWidth
+                -ac     $CBVhiliteSatUI             "top"       4       $CBVhiliteRedUI
+                -ac     $CBVhiliteSatUI             "left"      4       $CBVhiliteHueUI
+                -ac     $CBVhiliteValueUI           "top"       4       $CBVhiliteRedUI
+                -ac     $CBVhiliteValueUI           "left"      4       $CBVhiliteSatUI
+
+                -ac     $CBVhiliteGoUI              "top"       8       $CBVhiliteHueUI
+                -af     $CBVhiliteGoUI              "left"      4
+                -af     $CBVhiliteGoUI              "right"     4
+
+                    $form;
+
+//            setParent ..;
+
+        setParent ..;
+
+    PopP3dFrameLayout( $p3dFrameLayout );
+    setParent ..;
+
+    // Restore user settings
+
+    if ( `optionVar -q p3dAdvancedCBV_hiliteVtxFace` )
+        radioButton -e -select $vtxFaceUI;
+    else
+        radioButton -e -select $vertexUI;
+
+    if ( `optionVar -q $CBVhiliteModeVar` )
+        radioButton -e -select $CBVhiliteModeExpandUI;
+    else
+        radioButton -e -select $CBVhiliteModeFilterUI;
+
+    if ( `optionVar -exists $CBVhiliteRedVar` )
+    {
+        checkBox -e -value `optionVar -q $CBVhiliteRedVar` $CBVhiliteRedUI;
+    }
+    checkBox -e 
+        -cc ( "optionVar -iv " + $CBVhiliteRedVar + " (#1)" )
+            $CBVhiliteRedUI;
+
+    if ( `optionVar -exists $CBVhiliteGreenVar` )
+    {
+        checkBox -e -value `optionVar -q $CBVhiliteGreenVar` $CBVhiliteGreenUI;
+    }
+    checkBox -e 
+        -cc ( "optionVar -iv " + $CBVhiliteGreenVar + " (#1)" )
+            $CBVhiliteGreenUI;
+
+    if ( `optionVar -exists $CBVhiliteBlueVar` )
+    {
+        checkBox -e -value `optionVar -q $CBVhiliteBlueVar` $CBVhiliteBlueUI;
+    }
+    checkBox -e 
+        -cc ( "optionVar -iv " + $CBVhiliteBlueVar + " (#1)" )
+            $CBVhiliteBlueUI;
+
+    if ( `optionVar -exists $CBVhiliteAlphaVar` )
+    {
+        checkBox -e -value `optionVar -q $CBVhiliteAlphaVar` $CBVhiliteAlphaUI;
+    }
+    checkBox -e 
+        -cc ( "optionVar -iv " + $CBVhiliteAlphaVar + " (#1)" )
+            $CBVhiliteAlphaUI;
+
+    if ( `optionVar -exists $CBVhiliteHueVar` )
+    {
+        checkBox -e -value `optionVar -q $CBVhiliteHueVar` $CBVhiliteHueUI;
+    }
+    checkBox -e 
+        -cc ( "optionVar -iv " + $CBVhiliteHueVar + " (#1)" )
+            $CBVhiliteHueUI;
+
+    if ( `optionVar -exists $CBVhiliteSatVar` )
+    {
+        checkBox -e -value `optionVar -q $CBVhiliteSatVar` $CBVhiliteSatUI;
+    }
+    checkBox -e 
+        -cc ( "optionVar -iv " + $CBVhiliteSatVar + " (#1)" )
+            $CBVhiliteSatUI;
+
+    if ( `optionVar -exists $CBVhiliteValueVar` )
+    {
+        checkBox -e -value `optionVar -q $CBVhiliteValueVar` $CBVhiliteValueUI;
+    }
+    checkBox -e 
+        -cc ( "optionVar -iv " + $CBVhiliteValueVar + " (#1)" )
+            $CBVhiliteValueUI;
+
+    radioButton -e
+        -onc ( "optionVar -intValue p3dAdvancedCBV_hiliteVtxFace 0;" )
+            $vertexUI;
+            
+    radioButton -e
+        -onc ( "optionVar -intValue p3dAdvancedCBV_hiliteVtxFace 1;" )
+            $vtxFaceUI;
+    
+    radioButton -e
+        -onc ( "optionVar -intValue " + $CBVhiliteModeVar + " 0;" )
+            $CBVhiliteModeFilterUI;
+            
+    radioButton -e
+        -onc ( "optionVar -intValue " + $CBVhiliteModeVar + " 1;" )
+            $CBVhiliteModeExpandUI;
+            
+    symbolButton -e
+        -c ( "PerformQueryRGB 6 \"" + $CBVhiliteRgbSwatchUI + "\"" )
+            $CBVhiliteQueryRgbUI;
+
+    symbolButton -e
+        -c ( "PerformQueryRGB 7 \"" + $CBVhiliteAlphaSwatchUI + "\"" )
+            $CBVhiliteQueryAlphaUI;
+
+    button -e
+        // $toleranceUI[2] is the floatField control
+        -c ( "PerformHiliteCBV \"" + $form + "\" \"" + $CBVhiliteRgbSwatchUI + "\" \"" + $CBVhiliteAlphaSwatchUI + "\" \"" + $toleranceUI[2] + "\"" )
+            $CBVhiliteGoUI;  
+
+    formLayout -e
+
+        -af     $vtxFaceLayoutUI            "top"       4
+        -af     $vtxFaceLayoutUI            "left"      4
+
+//        -ac     $rgbaFrameUI                "top"       4       $vtxFaceLayoutUI
+//        -af     $rgbaFrameUI                "left"      4
+//        -af     $rgbaFrameUI                "right"     4
+
+        -ac     $form                "top"       4       $vtxFaceLayoutUI
+        -af     $form                "left"      4
+        -af     $form                "right"     4
+
+            $hiliteForm;
+
+    tabLayout -e -tabLabel $hiliteScroller "Hilite CBV" $tabUI;
+    
+    return $hiliteForm;
+
+}
+
+
+// ----------------  tweakCBV  ----------------
+
+global proc PerformQueryRGB( int $mode, string $swatchUI )
+{
+    float $tweak[] = `tweakcbv -q`;
+
+    float $rgb[3] = { $tweak[0], $tweak[1], $tweak[2] };
+    float $alpha[3] = { $tweak[3], $tweak[3], $tweak[3] };
+    
+    switch ( $mode )
+    {
+        case 0:     // Red
+        case 1:     // Green
+        case 2:     // Blue
+        case 6:     // RGB
+        {
+            p3dColorSwatch_setRGB( $swatchUI, $rgb );
+            break;
+        }
+        case 7:     // Alpha
+        {
+            p3dColorSwatch_setRGB( $swatchUI, $alpha );
+            break;
+        }
+    }
+}
+
+global proc PerformQueryHSV( int $mode, string $fieldUI, string $sliderUI )
+{
+    float $tweak[] = `tweakcbv -q`;
+    
+    switch ( $mode )
+    {
+        case 3:     // Hue
+        {
+            float $h = $tweak[4] * 360.0;
+            floatField -e -value $h $fieldUI;
+            floatSlider -e -value $h $sliderUI;
+            break;
+        }
+        case 4:     // Saturation
+        {
+            float $s = $tweak[5] * 100.0;
+            floatField -e -value $s $fieldUI;
+            floatSlider -e -value $s $sliderUI;
+            break;
+        }
+        case 5:     // Value
+        {
+            float $v = $tweak[6] * 100.0;
+            floatField -e -value $v $fieldUI;
+            floatSlider -e -value $v $sliderUI;
+            break;
+        }
+    }
+}
+
+global proc PerformTweakCBV( int $mode, float $factor, string $ui, string $blendUI )
+{
+    float $rgb[3] = p3dColorSwatch_getRGB( $ui );
+    float $blend = `floatField -q -value $blendUI`;
+   
+    int $vtxFace = `optionVar -q p3dAdvancedCBV_vtxFace`;
+
+    $rgb[0] = $rgb[0] * $factor;
+    $rgb[1] = $rgb[1] * $factor;
+    $rgb[2] = $rgb[2] * $factor;
+    
+    string $cmd = "tweakcbv ";
+
+    $cmd = ( $cmd + "-bl " + $blend + " " );
+
+    if ( $mode > 31 )
+    {
+        $mode = $mode - 32;
+        $cmd = ( $cmd + "-abs " );
+    }
+    
+    if ( !$vtxFace )
+    {
+        $cmd = $cmd + "-vtx ";
+    }
+        
+    switch ( $mode )
+    {
+        case 0:     // Red
+        {
+            $cmd = ( $cmd + "-r " + $rgb[0] );
+            break;
+        }
+        case 1:     // Green
+        {
+            $cmd = ( $cmd + "-g " + $rgb[1] );
+            break;
+        }
+        case 2:     // Blue
+        {
+            $cmd = ( $cmd + "-b " + $rgb[2] );
+            break;
+        }
+        case 6:     // RGB
+        {
+            $cmd = ( $cmd + "-r " + $rgb[0] + " -g " + $rgb[1] + " -b " + $rgb[2] );
+            break;
+        }
+        case 7:     // Alpha
+        {
+            $cmd = ( $cmd + "-a " + $rgb[1] );
+            break;
+        }
+    }
+
+    eval $cmd;    
+}
+
+global proc PerformTweakHSV( int $mode, float $factor, string $ui, string $blendUI )
+{
+    float $value = `floatField -q -value $ui` * $factor;
+    float $blend = `floatField -q -value $blendUI`;
+   
+    int $vtxFace = `optionVar -q p3dAdvancedCBV_vtxFace`;
+
+    string $cmd = "tweakcbv ";
+    
+    $cmd = ( $cmd + "-bl " + $blend + " " );
+
+    if ( $mode > 31 )
+    {
+        $mode = $mode - 32;
+        $cmd = $cmd + "-abs ";
+    }
+
+    if ( !$vtxFace )
+    {
+        $cmd = $cmd + "-vtx ";
+    }
+        
+    switch ( $mode )
+    {
+        case 3:     // Hue
+        {
+            $cmd = ( $cmd + "-hue " + ( $value / 360.0 ) );
+            break;
+        }
+        case 4:     // Saturation
+        {
+            $cmd = ( $cmd + "-sat " + ( $value / 100.0 ) );
+            break;
+        }
+        case 5:     // Value
+        {
+            $cmd = ( $cmd + "-val " + ( $value / 100.0 ) );
+            break;
+        }
+    }
+
+    eval $cmd;    
+}
+
+global proc PerformTweakOther( int $mode, float $factor, string $fieldUI, string $blendUI )
+{
+    float $value = `floatField -q -value $fieldUI` * $factor;
+    float $blend = `floatField -q -value $blendUI`;
+   
+    int $vtxFace = `optionVar -q p3dAdvancedCBV_vtxFace`;
+
+    string $cmd = "tweakcbv ";
+
+    $cmd = ( $cmd + "-bl " + $blend + " " );
+
+    if ( !$vtxFace )
+    {
+        $cmd = $cmd + "-vtx ";
+    }
+
+    switch ( $mode )
+    {
+        case 0:     // gamma
+        {
+            $cmd = $cmd + "-gam " + $value;
+            break;
+        }
+        case 1:     // contrast
+        {
+            $cmd = $cmd + "-con " + $value;
+            break;
+        }
+        case 2:     // brightness
+        {
+            $cmd = $cmd + "-bri " + $value;
+            break;
+        }
+        default:
+        {
+            error ( "PerformTweakOther - invalid mode" );
+        }
+    }
+
+    eval $cmd;
+}
+
+//===========================================================================
+// AddTweakCBVUI
+//===========================================================================
+// Description: Creates the tab UI for the 'tweakcbv' controls.
+//
+// Constraints: 
+//
+//  Parameters: string $tabUI: The tabLayout for all p3dAdvancedCBV commands.
+//
+//      Return: (string): The main formLayout that holds the controls.
+//
+//===========================================================================
+proc string AddTweakCBVUI( string $tabUI )
+{
+    string $CBVtweakBlendUI         = "CBVtweakBlendUI";
+    string $CBVtweakBlendVar        = "CBVtweakBlend";
+
+    string $CBVqueryRGBUI           = "CBVqueryRGBUI";
+    string $CBVtweakRGBswatchUI     = "CBVtweakRGBswatchUI";
+    string $CBVtweakRGBswatchVar    = "CBVtweakRGBswatch";
+    string $CBVtweakRGBupUI         = "CBVtweakRGBupUI";
+    string $CBVtweakRGBdownUI       = "CBVtweakRGBdownUI";
+    string $CBVsetRGBUI             = "CBVsetRGBUI";
+
+    string $CBVRGBSwitchUI          = "CBVRGBSwitchUI";
+    string $CBVsetAlphaswatchUI     = "CBVsetAlphaswatchUI";
+    string $CBVAlphaSwitchUI        = "CBVAlphaSwitchUI";
+
+    string $CBVqueryRedUI           = "CBVqueryRedUI";
+    string $CBVtweakRswatchUI       = "CBVtweakRswatchUI";
+    string $CBVtweakRswatchVar      = "CBVtweakRswatch";
+    string $CBVtweakRupUI           = "CBVtweakRupUI";
+    string $CBVtweakRdownUI         = "CBVtweakRdownUI";
+    string $CBVsetRedUI             = "CBVsetRedUI";
+
+    string $CBVqueryGreenUI         = "CBVqueryGreenUI";
+    string $CBVtweakGswatchUI       = "CBVtweakGswatchUI";
+    string $CBVtweakGswatchVar      = "CBVtweakGswatch";
+    string $CBVtweakGupUI           = "CBVtweakGupUI";
+    string $CBVtweakGdownUI         = "CBVtweakGdownUI";
+    string $CBVsetGreenUI           = "CBVsetGreenUI";
+
+    string $CBVqueryBlueUI          = "CBVqueryBlueUI";
+    string $CBVtweakBswatchUI       = "CBVtweakBswatchUI";
+    string $CBVtweakBswatchVar      = "CBVtweakBswatch";
+    string $CBVtweakBupUI           = "CBVtweakBupUI";
+    string $CBVtweakBdownUI         = "CBVtweakBdownUI";
+    string $CBVsetBlueUI            = "CBVsetBlueUI";
+
+    string $CBVqueryAlphaUI         = "CBVqueryAlphaUI";
+    string $CBVtweakAswatchUI       = "CBVtweakAswatchUI";
+    string $CBVtweakAswatchVar      = "CBVtweakAswatch";
+    string $CBVtweakAupUI           = "CBVtweakAupUI";
+    string $CBVtweakAdownUI         = "CBVtweakAdownUI";
+    string $CBVsetAlphaUI           = "CBVsetAlphaUI";
+
+    string $CBVtweakHueUI           = "CBVtweakHueUI";
+    string $CBVtweakHueVar          = "CBVtweakHue";
+    string $CBVtweakHueUpUI         = "CBVtweakHueUpUI";
+    string $CBVtweakHueDownUI       = "CBVtweakHueDownUI";
+    string $CBVsetHueUI             = "CBVsetHueUI";
+
+    string $CBVtweakSatUI           = "CBVtweakSatUI";
+    string $CBVtweakSatVar          = "CBVtweakSat";
+    string $CBVtweakSatUpUI         = "CBVtweakSatUpUI";
+    string $CBVtweakSatDownUI       = "CBVtweakSatDownUI";
+    string $CBVsetSatUI             = "CBVsetSatUI";
+
+    string $CBVtweakValueUI         = "CBVtweakValueUI";
+    string $CBVtweakValueVar        = "CBVtweakValue";
+    string $CBVtweakValueUpUI       = "CBVtweakValueUpUI";
+    string $CBVtweakValueDownUI     = "CBVtweakValueDownUI";
+    string $CBVsetValueUI           = "CBVsetValueUI";
+
+    string $CBVtweakGamUI           = "CBVtweakGamUI";
+    string $CBVtweakGamVar          = "CBVtweakGam";
+    string $CBVperformTweakGamUI    = "CBVperformTweakGamUI";
+
+    string $CBVtweakConUI           = "CBVtweakConUI";
+    string $CBVtweakConVar          = "CBVtweakCon";
+    string $CBVperformTweakConUI    = "CBVperformTweakConUI";
+
+    string $CBVtweakBrightUI        = "CBVtweakBrightUI";
+    string $CBVtweakBrightVar       = "CBVtweakBright";
+    string $CBVperformTweakBrightUI = "CBVperformTweakBrightUI";
+
+    int $uiWidth = 400;
+    int $labelWidth = 48;
+    int $fieldWidth = 56;
+
+    float $BLACK[3] = { 0.0, 0.0, 0.0 };
+    float $WHITE[3] = { 1.0, 1.0, 1.0 };
+    float $RED[3]   = { 1.0, 0.0, 0.0 };
+    float $GREEN[3] = { 0.0, 1.0, 0.0 };
+    float $BLUE[3]  = { 0.0, 0.0, 1.0 };
+
+    string $form;
+    
+    string $tweakScroller = `scrollLayout -width $uiWidth`;
+    string $url = "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/p3dAdvancedCBV.html#_tweakcbv";
+    string $p3dFrameLayout[] = p3dFrameLayout( "", $url, false, false );
+    string $tweakForm = `formLayout -width $uiWidth`;
+
+        string $vtxFaceLayoutUI = `rowLayout -nc 2`;
+            
+            radioCollection;
+
+                string $vertexUI = `radioButton -label "Vertex"`;
+                string $vtxFaceUI = `radioButton -label "Vertex-Face" -select`;
+
+            setParent ..;
+
+        string $blendFrameUI = `frameLayout -label "Blend Factor" -collapsable true`;
+
+            $form = `formLayout`;
+
+                string $blendUI[] = AddFloatSlider( false, "Blend", $labelWidth, 0.0, 1.0, 1.0, $fieldWidth, "", $CBVtweakBlendVar, $CBVtweakBlendUI );
+
+                setParent ..;
+
+            formLayout -e
+
+                -af     $blendUI[0]                 "top"       4
+                -af     $blendUI[0]                 "left"      4
+                -af     $blendUI[0]                 "right"     4
+
+                    $form;
+
+            setParent ..;
+                            
+        string $rgbaFrameUI = `frameLayout -label "RGBA" -collapsable true`;
+
+            $form = `formLayout`;
+
+//                checkBox -label "" -value on $CBVRGBSwitchUI;                
+//                p3dColorSwatch( $form, true, "RGB", $labelWidth, false, true, 2, $CBVsetRGBswatchUI );
+//                checkBox -label "" -value on $CBVAlphaSwitchUI;                
+//                p3dColorSwatch( $form, true, "Alpha", $labelWidth, true, false, 2, $CBVsetAlphaswatchUI );
+//                string $setRGBA = `button -label "Set RGBA"`;
+
+                symbolButton -image "inArrow.xpm" -width 20 -height 20 $CBVqueryRedUI;
+                p3dColorSwatch( $form, $RED, true, "Red", $labelWidth, true, false, 3, $CBVtweakRswatchVar, $CBVtweakRswatchUI );
+                symbolButton -image "setEdAddCmd.xpm" -width 24 -height 22 $CBVtweakRupUI;
+                symbolButton -image "setEdRemoveCmd.xpm" -width 24 -height 22 $CBVtweakRdownUI;
+                button -label "Set" $CBVsetRedUI;
+                
+                symbolButton -image "inArrow.xpm" -width 20 -height 20 $CBVqueryGreenUI;
+                p3dColorSwatch( $form, $GREEN, true, "Green", $labelWidth, true, false, 4, $CBVtweakGswatchVar, $CBVtweakGswatchUI );
+                symbolButton -image "setEdAddCmd.xpm" -width 24 -height 22 $CBVtweakGupUI;
+                symbolButton -image "setEdRemoveCmd.xpm" -width 24 -height 22 $CBVtweakGdownUI;
+                button -label "Set" $CBVsetGreenUI;
+
+                symbolButton -image "inArrow.xpm" -width 20 -height 20 $CBVqueryBlueUI;
+                p3dColorSwatch( $form, $BLUE, true, "Blue", $labelWidth, true, false, 5, $CBVtweakBswatchVar, $CBVtweakBswatchUI );
+                symbolButton -image "setEdAddCmd.xpm" -width 24 -height 22 $CBVtweakBupUI;
+                symbolButton -image "setEdRemoveCmd.xpm" -width 24 -height 22 $CBVtweakBdownUI;
+                button -label "Set" $CBVsetBlueUI;
+
+                symbolButton -image "inArrow.xpm" -width 20 -height 20 $CBVqueryRGBUI;
+                p3dColorSwatch( $form, $BLACK, true, "RGB", $labelWidth, true, true, 2, $CBVtweakRGBswatchVar, $CBVtweakRGBswatchUI );
+                symbolButton -image "setEdAddCmd.xpm" -width 24 -height 22 $CBVtweakRGBupUI;
+                symbolButton -image "setEdRemoveCmd.xpm" -width 24 -height 22 $CBVtweakRGBdownUI;
+                button -label "Set" $CBVsetRGBUI;
+
+                symbolButton -image "inArrow.xpm" -width 20 -height 20 $CBVqueryAlphaUI;
+                p3dColorSwatch( $form, $WHITE, true, "Alpha", $labelWidth, true, false, 2, $CBVtweakAswatchVar, $CBVtweakAswatchUI );
+                symbolButton -image "setEdAddCmd.xpm" -width 24 -height 22 $CBVtweakAupUI;
+                symbolButton -image "setEdRemoveCmd.xpm" -width 24 -height 22 $CBVtweakAdownUI;
+                button -label "Set" $CBVsetAlphaUI;
+
+                setParent ..;
+
+            formLayout -e
+                -af     $CBVqueryRedUI              "top"       4
+                -af     $CBVqueryRedUI              "left"      4
+                -af     $CBVsetRedUI                "top"       4
+                -af     $CBVsetRedUI                "right"     4
+                -af     $CBVtweakRdownUI            "top"       4
+                -ac     $CBVtweakRdownUI            "right"     2   $CBVsetRedUI
+                -af     $CBVtweakRupUI              "top"       4
+                -ac     $CBVtweakRupUI              "right"     2   $CBVtweakRdownUI
+                
+                -af     $CBVtweakRswatchUI          "top"       4
+                -ac     $CBVtweakRswatchUI          "left"      2   $CBVqueryRedUI
+                -ac     $CBVtweakRswatchUI          "right"     4   $CBVtweakRupUI
+                
+                -ac     $CBVqueryGreenUI            "top"       4   $CBVsetRedUI
+                -af     $CBVqueryGreenUI            "left"      4
+                -ac     $CBVsetGreenUI              "top"       4   $CBVsetRedUI
+                -af     $CBVsetGreenUI              "right"     4
+                -ac     $CBVtweakGdownUI            "top"       4   $CBVsetRedUI
+                -ac     $CBVtweakGdownUI            "right"     2   $CBVsetGreenUI
+                -ac     $CBVtweakGupUI              "top"       4   $CBVsetRedUI
+                -ac     $CBVtweakGupUI              "right"     2   $CBVtweakGdownUI
+                
+                -ac     $CBVtweakGswatchUI          "top"       2   $CBVtweakRswatchUI
+                -ac     $CBVtweakGswatchUI          "left"      2   $CBVqueryGreenUI
+                -ac     $CBVtweakGswatchUI          "right"     4   $CBVtweakGupUI
+                
+                -ac     $CBVqueryBlueUI             "top"       4   $CBVsetGreenUI
+                -af     $CBVqueryBlueUI             "left"      4
+                -ac     $CBVsetBlueUI               "top"       4   $CBVsetGreenUI
+                -af     $CBVsetBlueUI               "right"     4
+                -ac     $CBVtweakBdownUI            "top"       4   $CBVsetGreenUI
+                -ac     $CBVtweakBdownUI            "right"     2   $CBVsetBlueUI
+                -ac     $CBVtweakBupUI              "top"       4   $CBVsetGreenUI
+                -ac     $CBVtweakBupUI              "right"     2   $CBVtweakBdownUI
+                
+                -ac     $CBVtweakBswatchUI          "top"       2   $CBVtweakGswatchUI
+                -ac     $CBVtweakBswatchUI          "left"      2   $CBVqueryBlueUI
+                -af     $CBVtweakBswatchUI          "right"     4
+                -ac     $CBVtweakBswatchUI          "right"     4   $CBVtweakBupUI
+                
+
+                -ac     $CBVqueryRGBUI              "top"       4   $CBVsetBlueUI
+                -af     $CBVqueryRGBUI              "left"      4
+                -ac     $CBVsetRGBUI                "top"       4   $CBVsetBlueUI
+                -af     $CBVsetRGBUI                "right"     4
+                -ac     $CBVtweakRGBdownUI          "top"       4   $CBVsetBlueUI
+                -ac     $CBVtweakRGBdownUI          "right"     2   $CBVsetRGBUI
+                -ac     $CBVtweakRGBupUI            "top"       4   $CBVsetBlueUI
+                -ac     $CBVtweakRGBupUI            "right"     2   $CBVtweakBdownUI
+                
+                -ac     $CBVtweakRGBswatchUI        "top"       2   $CBVtweakBswatchUI
+                -ac     $CBVtweakRGBswatchUI        "left"      2   $CBVqueryRGBUI
+                -af     $CBVtweakRGBswatchUI        "right"     4
+                -ac     $CBVtweakRGBswatchUI        "right"     4   $CBVtweakRGBupUI
+                
+
+                -ac     $CBVqueryAlphaUI            "top"       4   $CBVsetRGBUI
+                -af     $CBVqueryAlphaUI            "left"      4
+                -ac     $CBVsetAlphaUI              "top"       4   $CBVsetRGBUI
+                -af     $CBVsetAlphaUI              "right"     4
+                -ac     $CBVtweakAdownUI            "top"       4   $CBVsetRGBUI
+                -ac     $CBVtweakAdownUI            "right"     2   $CBVsetAlphaUI
+                -ac     $CBVtweakAupUI              "top"       4   $CBVsetRGBUI
+                -ac     $CBVtweakAupUI              "right"     2   $CBVtweakAdownUI
+                
+                -ac     $CBVtweakAswatchUI          "top"       2   $CBVtweakRGBswatchUI
+                -ac     $CBVtweakAswatchUI          "left"      2   $CBVqueryAlphaUI
+                -ac     $CBVtweakAswatchUI          "right"     4   $CBVtweakAupUI
+                
+                    $form;
+
+            setParent ..;
+
+        string $hsvFrameUI = `frameLayout -label "HSV" -collapsable true`;
+
+            $form = `formLayout`;
+
+                string $hueUI[] = AddFloatSlider( true, "Hue", $labelWidth, 0, 360.0, 0.0, $fieldWidth, "°", $CBVtweakHueVar, $CBVtweakHueUI );
+                symbolButton -image "setEdAddCmd.xpm" -width 24 -height 22 $CBVtweakHueUpUI;
+                symbolButton -image "setEdRemoveCmd.xpm" -width 24 -height 22 $CBVtweakHueDownUI;
+                button -label "Set" $CBVsetHueUI;
+
+                string $satUI[] = AddFloatSlider( true, "Saturation", $labelWidth, 0.0, 100.0, 0.0, $fieldWidth, "%", $CBVtweakSatVar, $CBVtweakSatUI );
+                symbolButton -image "setEdAddCmd.xpm" -width 24 -height 22 $CBVtweakSatUpUI;
+                symbolButton -image "setEdRemoveCmd.xpm" -width 24 -height 22 $CBVtweakSatDownUI;
+                button -label "Set" $CBVsetSatUI;
+                
+                string $valueUI[] = AddFloatSlider( true, "Value", $labelWidth, 0.0, 100.0, 0.0, $fieldWidth, "%", $CBVtweakValueVar, $CBVtweakValueUI );
+                symbolButton -image "setEdAddCmd.xpm" -width 24 -height 22 $CBVtweakValueUpUI;
+                symbolButton -image "setEdRemoveCmd.xpm" -width 24 -height 22 $CBVtweakValueDownUI;
+                button -label "Set" $CBVsetValueUI;
+                
+                setParent ..;
+                
+            formLayout -e
+            
+                -af     $CBVsetHueUI                        "top"       4
+                -af     $CBVsetHueUI                        "right"     4
+                -af     $CBVtweakHueUpUI                    "top"       4
+                -ac     $CBVtweakHueUpUI                    "right"     2       $CBVsetHueUI
+                -af     $CBVtweakHueDownUI                  "top"       4
+                -ac     $CBVtweakHueDownUI                  "right"     2       $CBVtweakHueUpUI
+                
+                -af     $hueUI[0]                           "top"       4
+                -af     $hueUI[0]                           "left"      4
+                -ac     $hueUI[0]                           "right"     4       $CBVtweakHueDownUI
+                
+                -ac     $CBVsetSatUI                        "top"       4       $hueUI[0]
+                -af     $CBVsetSatUI                        "right"     4
+                -ac     $CBVtweakSatUpUI                    "top"       4       $hueUI[0]
+                -ac     $CBVtweakSatUpUI                    "right"     2       $CBVsetSatUI
+                -ac     $CBVtweakSatDownUI                  "top"       4       $hueUI[0]
+                -ac     $CBVtweakSatDownUI                  "right"     2       $CBVtweakSatUpUI
+                
+                -ac     $satUI[0]                           "top"       4       $hueUI[0]
+                -af     $satUI[0]                           "left"      4
+                -ac     $satUI[0]                           "right"     4       $CBVtweakSatDownUI
+                
+                -ac     $CBVsetValueUI                      "top"       4       $satUI[0]
+                -af     $CBVsetValueUI                      "right"     4
+                -ac     $CBVtweakValueUpUI                  "top"       4       $satUI[0]
+                -ac     $CBVtweakValueUpUI                  "right"     2       $CBVsetValueUI
+                -ac     $CBVtweakValueDownUI                "top"       4       $satUI[0]
+                -ac     $CBVtweakValueDownUI                "right"     2       $CBVtweakValueUpUI
+                
+                -ac     $valueUI[0]                         "top"       4       $satUI[0]
+                -af     $valueUI[0]                         "left"      4
+                -ac     $valueUI[0]                         "right"     4       $CBVtweakValueDownUI
+                
+                $form;
+
+            setParent ..;
+            
+        string $otherFrameUI = `frameLayout -label "Other" -collapsable true`;
+
+            $form = `formLayout`;
+
+                string $gammaUI[] = AddFloatSlider( false, "Gamma", $labelWidth, 0.0, 2.0, 1.0, $fieldWidth, "", $CBVtweakGamVar, $CBVtweakGamUI );
+                button -label "Apply" $CBVperformTweakGamUI;
+
+                string $contrastUI[] = AddFloatSlider( false, "Contrast", $labelWidth, -100, 100.0, 0.0, $fieldWidth, "%", $CBVtweakConVar, $CBVtweakConUI );
+                button -label "Apply" $CBVperformTweakConUI;
+
+                string $brightUI[] = AddFloatSlider( false, "Brightness", $labelWidth, -100, 100.0, 0.0, $fieldWidth, "%", $CBVtweakBrightVar, $CBVtweakBrightUI );
+                button -label "Apply" $CBVperformTweakBrightUI;
+
+                setParent ..;
+
+            formLayout -e
+
+                -af     $CBVperformTweakGamUI       "top"       4
+                -af     $CBVperformTweakGamUI       "right"     4
+
+                -af     $gammaUI[0]                 "top"       4
+                -af     $gammaUI[0]                 "left"      4
+                -ac     $gammaUI[0]                 "right"     4       $CBVperformTweakGamUI
+
+                -ac     $CBVperformTweakConUI       "top"       4       $gammaUI[0]
+                -af     $CBVperformTweakConUI       "right"     4
+
+                -ac     $contrastUI[0]              "top"       4       $gammaUI[0]
+                -af     $contrastUI[0]              "left"      4
+                -ac     $contrastUI[0]              "right"     4       $CBVperformTweakConUI
+
+                -ac     $CBVperformTweakBrightUI    "top"       4       $contrastUI[0]
+                -af     $CBVperformTweakBrightUI    "right"     4
+
+                -ac     $brightUI[0]                "top"       4       $contrastUI[0]
+                -af     $brightUI[0]                "left"      4
+                -ac     $brightUI[0]                "right"     4       $CBVperformTweakBrightUI
+
+                    $form;
+
+            setParent ..;
+
+        setParent ..;
+
+    PopP3dFrameLayout( $p3dFrameLayout );
+    setParent ..;
+
+    // Assign callbacks
+
+    if ( `optionVar -q p3dAdvancedCBV_vtxFace` )
+        radioButton -e -select $vtxFaceUI;
+    else
+        radioButton -e -select $vertexUI;
+
+    radioButton -e
+        -onc ( "optionVar -intValue p3dAdvancedCBV_vtxFace 0;" )
+            $vertexUI;
+            
+    radioButton -e
+        -onc ( "optionVar -intValue p3dAdvancedCBV_vtxFace 1;" )
+            $vtxFaceUI;
+    
+    symbolButton -e
+        -c ( "PerformQueryRGB 0 \"" + $CBVtweakRswatchUI + "\"" )
+            $CBVqueryRedUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 0 -1.0 \"" + $CBVtweakRswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakRdownUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 0 1.0 \"" + $CBVtweakRswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakRupUI;
+        
+    button -e
+        -c ( "PerformTweakCBV 32 1.0 \"" + $CBVtweakRswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVsetRedUI;
+        
+    symbolButton -e
+        -c ( "PerformQueryRGB 1 \"" + $CBVtweakGswatchUI + "\"" )
+            $CBVqueryGreenUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 1 -1.0 \"" + $CBVtweakGswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakGdownUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 1 1.0 \"" + $CBVtweakGswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakGupUI;
+        
+    button -e
+        -c ( "PerformTweakCBV 33 1.0 \"" + $CBVtweakGswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVsetGreenUI;
+        
+    symbolButton -e
+        -c ( "PerformQueryRGB 2 \"" + $CBVtweakBswatchUI + "\"" )
+            $CBVqueryBlueUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 2 -1.0 \"" + $CBVtweakBswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakBdownUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 2 1.0 \"" + $CBVtweakBswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakBupUI;
+        
+    button -e
+        -c ( "PerformTweakCBV 34 1.0 \"" + $CBVtweakBswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVsetBlueUI;
+        
+    symbolButton -e
+        -c ( "PerformQueryRGB 6 \"" + $CBVtweakRGBswatchUI + "\"" )
+            $CBVqueryRGBUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 6 -1.0 \"" + $CBVtweakRGBswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakRGBdownUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 6 1.0 \"" + $CBVtweakRGBswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakRGBupUI;
+        
+    button -e
+        -c ( "PerformTweakCBV 38 1.0 \"" + $CBVtweakRGBswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVsetRGBUI;
+        
+    symbolButton -e
+        -c ( "PerformQueryRGB 7 \"" + $CBVtweakAswatchUI + "\"" )
+            $CBVqueryAlphaUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 7 -1.0 \"" + $CBVtweakAswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakAdownUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakCBV 7 1.0 \"" + $CBVtweakAswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakAupUI;
+        
+    button -e
+        -c ( "PerformTweakCBV 39 1.0 \"" + $CBVtweakAswatchUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVsetAlphaUI;
+        
+    symbolButton -e
+        -c ( "PerformQueryHSV 3 \"" + $hueUI[2] + "\" \"" + $hueUI[3] + "\"" )
+            $hueUI[1];
+            
+    symbolButton -e
+        -c ( "PerformTweakHSV 3 1.0 \"" + $CBVtweakHueUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakHueUpUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakHSV 3 -1.0 \"" + $CBVtweakHueUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakHueDownUI;
+        
+    button -e
+        -c ( "PerformTweakHSV 35 1.0 \"" + $CBVtweakHueUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVsetHueUI;
+        
+    symbolButton -e
+        -c ( "PerformQueryHSV 4 \"" + $satUI[2] + "\" \"" + $satUI[3] + "\"" )
+            $satUI[1];
+            
+    symbolButton -e
+        -c ( "PerformTweakHSV 4 1.0 \"" + $CBVtweakSatUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakSatUpUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakHSV 4 -1.0 \"" + $CBVtweakSatUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakSatDownUI;
+        
+    button -e
+        -c ( "PerformTweakHSV 36 1.0 \"" + $CBVtweakSatUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVsetSatUI;
+        
+    symbolButton -e
+        -c ( "PerformQueryHSV 5 \"" + $valueUI[2] + "\" \"" + $valueUI[3] + "\"" )
+            $valueUI[1];
+            
+    symbolButton -e
+        -c ( "PerformTweakHSV 5 1.0 \"" + $CBVtweakValueUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakValueUpUI;
+        
+    symbolButton -e
+        -c ( "PerformTweakHSV 5 -1.0 \"" + $CBVtweakValueUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVtweakValueDownUI;
+        
+    button -e
+        -c ( "PerformTweakHSV 37 1.0 \"" + $CBVtweakValueUI + "\" \"" + $blendUI[2] + "\"" )
+            $CBVsetValueUI;
+
+    button -e
+        // $gammaUI[2] is the floatField
+        -c ( "PerformTweakOther 0 1.0 \"" + $gammaUI[2] + "\" \"" + $blendUI[2] + "\"" )
+            $CBVperformTweakGamUI;
+        
+    button -e
+        // $contrastUI[2] is the floatField
+        -c ( "PerformTweakOther 1 0.01 \"" + $contrastUI[2] + "\" \"" + $blendUI[2] + "\"" )
+            $CBVperformTweakConUI;
+        
+    button -e
+        // $brightUI[2] is the floatField
+        -c ( "PerformTweakOther 2 0.01 \"" + $brightUI[2] + "\" \"" + $blendUI[2] + "\"" )
+            $CBVperformTweakBrightUI;
+        
+        
+    // Layout
+    
+    formLayout -e
+        -af     $vtxFaceLayoutUI    "top"       4
+        -af     $vtxFaceLayoutUI    "left"      4
+
+        -ac     $blendFrameUI        "top"       4       $vtxFaceLayoutUI
+        -af     $blendFrameUI        "left"      4
+        -af     $blendFrameUI        "right"     4
+
+        -ac     $rgbaFrameUI        "top"       4       $blendFrameUI
+        -af     $rgbaFrameUI        "left"      4
+        -af     $rgbaFrameUI        "right"     4
+
+        -ac     $hsvFrameUI         "top"       4       $rgbaFrameUI
+        -af     $hsvFrameUI         "left"      4
+        -af     $hsvFrameUI         "right"     4
+
+        -ac     $otherFrameUI       "top"       4       $hsvFrameUI
+        -af     $otherFrameUI       "left"      4
+        -af     $otherFrameUI       "right"     4
+
+            $tweakForm;
+            
+    tabLayout -e -tabLabel $tweakScroller "Tweak CBV" $tabUI;
+    
+    return $tweakForm;
+}
+
+// ----------------  gangCBV  ----------------
+
+global proc p3dAdvancedCBV_PerformGangCBV( string $gangUI )
+{
+}
+
+proc string AddGangCBVUI( string $tabUI )
+{
+    string $performGangCBVUI = "performGangCBVUI";
+    string $performUngangCBVUI = "performUngangCBVUI";
+
+    int $uiWidth = 400;
+
+    string $gangScroller = `scrollLayout -width $uiWidth`;
+    string $url = "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/p3dAdvancedCBV.html#_gangcbv";
+    string $p3dFrameLayout[] = p3dFrameLayout( "", $url, false, false );    
+    string $form = `formLayout -width $uiWidth`;
+    
+        button -label "Gang CBV" -command "gangcbv" $performGangCBVUI;
+        button -label "Ungang CBV" -command "ungangcbv" $performUngangCBVUI;
+        
+        setParent ..;
+
+    PopP3dFrameLayout( $p3dFrameLayout );
+    setParent ..;
+
+    formLayout -e
+        -af     $performGangCBVUI       "top"       4
+        -af     $performGangCBVUI       "left"      4
+        -af     $performGangCBVUI       "right"     4
+
+        -ac     $performUngangCBVUI       "top"     4   $performGangCBVUI
+        -af     $performUngangCBVUI       "left"    4
+        -af     $performUngangCBVUI       "right"   4
+            $form;
+            
+    tabLayout -e -tabLabel $gangScroller "Gang/Ungang CBV" $tabUI;
+    
+    return $form;
+}
+
+// ----------------  display  ----------------
+
+global proc p3dAdvancedCBV_PerformDisplay( int $mode )
+{
+    string $channels[] = 
+    {
+        "none", "ambient", "ambientDiffuse", "diffuse", "specular", "emission"
+    };
+
+    string $p3dColorDisplayMenuUI = "p3dColorDisplayMenuUI";
+    string $p3dColorDisplayApplyUI = "p3dColorDisplayApplyUI";
+
+    string $meshes[] = `ls -sl -dag -leaf -type "mesh"`;
+
+    if ( $mode < 0 ) $mode = `optionMenu -q -select $p3dColorDisplayMenuUI` - 1;
+    int $bColorShadedDisplay = ( $mode > 0 );
+    int $bGlobal = ( `size $meshes` == 0 );
+
+    string $command = "polyOptions ";
+
+    if ( $bGlobal )
+    {
+        $command = ( $command + "-global " );
+    }
+
+    $command = $command + ( "-activeObjects -colorShadedDisplay " + $bColorShadedDisplay );
+
+    if ( $mode )
+    {
+        $command = ( $command + " -colorMaterialChannel \"" + $channels[$mode-1] + "\"" );
+    }
+
+    evalEcho $command;
+}
+
+proc string AddDisplayUI( string $tabUI )
+{
+    string $p3dColorDisplayMenuUI = "p3dColorDisplayMenuUI";
+    string $p3dColorDisplayOnUI = "p3dColorDisplayOnUI";
+    string $p3dColorDisplayOffUI = "p3dColorDisplayOffUI";
+    string $p3dColorDisplayApplyUI = "p3dColorDisplayApplyUI";
+    string $p3dColorDisplayRemoveUI = "p3dColorDisplayRemoveUI";
+
+    int $uiWidth = 400;
+
+    string $displayScroller = `scrollLayout -width $uiWidth`;
+    string $url = "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/p3dAdvancedCBV.html#_display";
+    string $p3dFrameLayout[] = p3dFrameLayout( "", $url, false, false );    
+    string $form = `formLayout -width $uiWidth`;
+    
+        string $label = `text -label "Color Display"`;
+        optionMenu $p3dColorDisplayMenuUI;
+            menuItem -label "OFF";
+            menuItem -label "None";
+            menuItem -label "Ambient";
+            menuItem -label "Ambient+Diffuse";
+            menuItem -label "Diffuse";
+            menuItem -label "Specular";
+            menuItem -label "Emission";
+
+        button -label " On " -width 32 $p3dColorDisplayOnUI;
+        button -label " Off " -width 32 $p3dColorDisplayOffUI;
+        button -label " Apply " $p3dColorDisplayApplyUI;
+        button -label "Remove Vertex Color" $p3dColorDisplayRemoveUI;
+        
+        setParent ..;
+
+    PopP3dFrameLayout( $p3dFrameLayout );
+    setParent ..;
+
+    formLayout -e
+        -af     $label                      "top"       6
+        -ap     $label                      "right"     2   25
+
+        -af     $p3dColorDisplayMenuUI      "top"       2
+        -ap     $p3dColorDisplayMenuUI      "left"      2   25
+
+        -af     $p3dColorDisplayApplyUI     "top"       4
+        -af     $p3dColorDisplayApplyUI     "right"     4
+
+        -af     $p3dColorDisplayOffUI       "top"       4
+        -ac     $p3dColorDisplayOffUI       "right"     4   $p3dColorDisplayApplyUI
+
+        -af     $p3dColorDisplayOnUI        "top"       4
+        -ac     $p3dColorDisplayOnUI        "right"     4   $p3dColorDisplayOffUI
+
+        -ac     $p3dColorDisplayRemoveUI    "top"       4   $p3dColorDisplayApplyUI
+        -af     $p3dColorDisplayRemoveUI    "right"     4
+        
+            $form;
+
+    int $colorShadedMode = 1;       // OFF
+    if ( `optionVar -exists p3dAdvancedCBV_colorShadedMode` )
+    {
+        $colorShadedMode = `optionVar -q p3dAdvancedCBV_colorShadedMode`;
+    }
+
+    optionMenu -e
+        -select $colorShadedMode
+        -cc ( "optionVar -intValue p3dAdvancedCBV_colorShadedMode `optionMenu -q -select " + $p3dColorDisplayMenuUI + "`; p3dAdvancedCBV_PerformDisplay (-1)" )
+            $p3dColorDisplayMenuUI;
+
+    button -e
+        -c "p3dAdvancedCBV_PerformDisplay 1"
+            $p3dColorDisplayOnUI;
+
+    button -e
+        -c "p3dAdvancedCBV_PerformDisplay 0"
+            $p3dColorDisplayOffUI;
+
+    button -e
+        -c "p3dAdvancedCBV_PerformDisplay (-1)"
+            $p3dColorDisplayApplyUI;
+
+    button -e
+        -c "polyColorPerVertex -remove;"
+            $p3dColorDisplayRemoveUI;
+
+    tabLayout -e -tabLabel $displayScroller "Display" $tabUI;
+    
+    return $form;
+}
+
+// ----------------  MAIN  --------------------
+
+global proc p3dAdvancedCBV()
+{
+    string $winUI = "p3dAdvancedCBVUI";
+    
+    if ( `window -exists $winUI` )
+        deleteUI -window $winUI;
+        
+    window -title "Pure3D Advanced CBV" -iconName "Pure3D CBV" $winUI;
+    string $form = `formLayout`;
+
+    if ( isPluginValid( "p3dAdvancedCBV.mll" ) )
+    {
+        string $version = `pluginInfo -q -version "p3dAdvancedCBV"`;
+        window -e -title ( "Pure3D Advanced CBV v" + $version ) $winUI;
+
+            string $tabUI = `tabLayout`;
+        
+                string $tweakUI = AddTweakCBVUI( $tabUI );
+                string $hiliteUI = AddHiliteCBVUI( $tabUI );
+                string $gangUI = AddGangCBVUI( $tabUI );
+
+                string $displayUI = AddDisplayUI( $tabUI );
+            
+                setParent ..;
+            setParent ..;
+
+        formLayout -e
+            -af     $tabUI          "top"       2
+            -af     $tabUI          "left"      2
+            -af     $tabUI          "right"     2
+            -af     $tabUI          "bottom"    2
+                $form;
+
+        // Restore user preferences
+        int $currentTool = 1;
+        if ( `optionVar -exists p3dAdvancedCBV_currentTool` )
+        {
+            $currentTool = `optionVar -q p3dAdvancedCBV_currentTool`;
+        }
+        tabLayout -e -selectTabIndex $currentTool $tabUI;
+
+        tabLayout -e
+            -cc ( "optionVar -intValue p3dAdvancedCBV_currentTool `tabLayout -q -sti " + $tabUI + "`;" )
+                $tabUI;
+    }
+    else
+    {
+        string $errorText = ( "p3dAdvancedCBV is not loaded or not valid. Expected v" + version() + "." );
+        text -label $errorText;
+        warning ( $errorText );
+    }
+
+    showWindow;    
+}
+
+/*
+source p3dColorSwatch; source p3dAdvancedCBV; p3dAdvancedCBV;
+*/

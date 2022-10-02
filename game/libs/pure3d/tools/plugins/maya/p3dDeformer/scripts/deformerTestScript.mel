@@ -1,0 +1,66 @@
+// Copyright (C) 2001 Radical Entertainment
+// 
+// Name:   deformerTestScript.mel
+// Author: Pamela Chow.
+//
+// Description: Useful for regression testing UI changes.
+//
+//
+
+//note: you need to execute these tests one-by-one in the order given. Some wierd Maya issue does not
+//allow us to execute them both at once.
+
+global proc p3dDeformerCreateExprTest()
+{
+	//select geometry
+		select -r mx_head_geo;
+
+	//create a new group
+		p3dDeformCallbackMgr("CreateGroup",{});
+
+	//create an expression for this group
+		p3dDeformCallbackMgr("CreateExprSC",{"p3dGroup1"});
+
+	//create neutral pose
+		p3dDeformCallbackMgr("SetNeutralPoseSC", {"p3dGroup1"});
+
+}
+
+global proc p3dDeformerCreateAnim()
+{
+		
+	//select this expr now	 
+		p3dDeformCallbackMgr("SelectExprFromMenuSC", {"test", "p3dGroup1"}); //select an expression in this group	
+
+	//enter a key value as 0.5
+		p3dDeformCallbackMgr("EnterNewKeySC", {"p3dGroup1", "0.5"});
+
+	//move some poimts
+		select -r mx_head_geo ;
+		hilite mx_head_geo ;
+		select -r mx_head_geo.vtx[7] mx_head_geo.vtx[53:55] mx_head_geo.vtx[63:66] mx_head_geo.vtx[68:74] mx_head_geo.vtx[105:106] mx_head_geo.vtx[533] mx_head_geo.vtx[535:539] mx_head_geo.vtx[541] mx_head_geo.vtx[701:734] mx_head_geo.vtx[752] mx_head_geo.vtx[784:785] mx_head_geo.vtx[1212] mx_head_geo.vtx[1214:1218] mx_head_geo.vtx[1220] mx_head_geo.vtx[1380:1413] mx_head_geo.vtx[1431] ;
+		move -r 0.0150581 0.0787521 -0.000487656 ;
+
+	//press Set Pose
+		p3dDeformCallbackMgr("SetPoseSC", {"p3dGroup1"});
+		
+		pause -sec 3;
+
+	//click tab
+		p3dDeformCallbackMgr("SelectAnimLayoutSC", {});
+
+	//expand frame
+		p3dDeformCallbackMgr("ExpandFrameSC", {"p3dGroup1"});
+
+	//create keyframe at t=0
+		currentTime 0 ;
+		p3dDeformCallbackMgr("SetState", {"test", "0.0"});
+		p3dDeformCallbackMgr("KeyExpr", {"test"});
+
+	//create new keyframe at t=20
+		currentTime 20 ;
+		p3dDeformCallbackMgr("SetState", {"test", "1.0"});
+		p3dDeformCallbackMgr("KeyExpr", {"test"});
+
+
+}

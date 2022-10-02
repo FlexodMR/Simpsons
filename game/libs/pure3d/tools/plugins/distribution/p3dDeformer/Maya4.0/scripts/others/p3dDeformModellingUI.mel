@@ -1,0 +1,359 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformModellingUI.mel
+// Author: Bryan Brandt
+//
+// Description: Functions that draw the UI in the Modelling tab
+//
+
+/*************************************************************************
+// Description:	This is the proc to lay out the UI for the 'modelling' tab of
+// the deformer window.
+//
+// Parameters:
+//
+// Returns:
+//
+***************************************************************************/
+global proc p3dDeformModellingUI(string $tabs)
+{
+   //debug
+   p3dDeformDebugTrace("In p3dDeformModellingUI()");
+   //debug
+
+   //Variable declarations
+   string $exprMenuName[];		//list of expression for each deformer group
+   string $group_list[];
+   string $state_list[];
+   
+   string $p3dKeyPoseSlider[];  //the names of all the sliders relating to the expression keys -one per group
+   string $keyListName[];
+   string $group;				//an iterator - the current group
+   string $cur_state;
+   string $destination;
+   string $tmpStr;
+   int $group_count;
+   string $curColumn[];
+   string $grpForm;
+   string $curPoseKeyButton;
+   string $butGridLayout[];
+   string $stage_grp[];
+   
+   int $i = 0;
+   
+   $group_list = `ls -type p3dDeformExpressionGroup`;
+   $state_list = `ls -type p3dDeformExpressionState`;
+   $group_count = size($group_list);  
+
+   if (!`formLayout -exists p3dDeformSetupForm`)
+   {
+      setParent $tabs;
+      string $p3dDeformSetupForm = `formLayout p3dDeformSetupForm`;
+      tabLayout -edit
+                -tabLabel $p3dDeformSetupForm "Modelling"
+                $tabs;
+   }
+
+   if ($group_count > 0)
+   {
+      setParent p3dDeformSetupForm;
+      if (!`scrollLayout -exists p3dDeformSetupScrollForm`)
+      {
+         
+         scrollLayout -cr true
+                      p3dDeformSetupScrollForm;
+      }
+      
+	  setParent p3dDeformSetupScrollForm;
+      if (!`columnLayout -exists p3dDeformSetupScrollColumnForm`)
+      {
+         columnLayout -columnAttach "both" 0
+                      -adj true 
+                      -rs 5
+                      -p p3dDeformSetupScrollForm
+                      p3dDeformSetupScrollColumnForm;
+      }
+      
+   }
+  
+
+   //Create frameLayout and UI components for each existing deformer group node.
+   
+   for ($group in $group_list)
+   {
+      setParent p3dDeformSetupScrollColumnForm;
+
+      int $newly_created = 1;
+      int $group_found = 0;
+      
+      //check to see if the current group already has its frame
+      string $allControls[] = `lsUI -type controlLayout`;
+      string $frameName;
+      int $lastFrameInt = 0;
+      int $curNum;
+      string $tmpArr[];
+
+      for ($frameName in $allControls)
+      {
+         if (`frameLayout -exists $frameName`)
+         {
+            tokenize $frameName "_" $tmpArr;       //figure out which frameLayout # is the current group's
+            if ( (size($tmpArr) > 1) && ($tmpArr[0] == "p3dDeformSetupFrameLayout") )
+			{
+               $curNum = $tmpArr[size($tmpArr)-1];
+			    if ($lastFrameInt < $curNum)           //the highest number so far
+               $lastFrameInt = $curNum;
+				string $annName = `frameLayout -q -ann $frameName`;
+				if ($annName == $group) //Each frame layout is given an annotated name that is same as its group
+				{
+					$group_found = 1;
+					$i = $curNum;
+					break;
+				}
+			}
+         }
+      }
+
+      //if the frame layout for this group does not already exist
+      if ($group_found == 0)
+      {
+         $i = $lastFrameInt + 1;
+         $frameName = "p3dDeformSetupFrameLayout_" + $i;
+         frameLayout -borderStyle "in" 
+                     -labelVisible true 
+                     -label $group 
+                     -ann $group
+                     -borderVisible true 
+                     -cll true 
+                     $frameName;
+      }
+      else
+      {
+         $newly_created = 0;
+      }
+
+    
+
+	  setParent $frameName; 
+      string $columnName = "p3dDeformSetupColumnLayout_" + $i;
+      if (!`columnLayout -exists $columnName`)
+      {
+         columnLayout $columnName;
+      }
+
+      setParent $columnName;
+      string $exprMenuName = "p3dDeformExpressionMenu_" + $i;
+   
+      if (!`optionMenu -exists $exprMenuName`)
+      {
+         optionMenu -label "" 
+                    -width 150 
+                    $exprMenuName;
+         
+		 //find all the states (i.e. expressions) belonging to this group
+         int $numConnectedStates = 0;
+         for ($cur_state in $state_list)
+         {
+            if (`connectionInfo -isSource ($cur_state + ".output")`)
+            {
+               string $destination_list[];
+ 
+               $destination_list = `connectionInfo -dfs ($cur_state + ".output")`;
+               for ($destination in $destination_list)
+               {
+                  string $tmpArr[];
+                  tokenize $destination "." $tmpArr; //example of $destination: p3dgroup1.states[0]
+                  if ($tmpArr[0] == $group)
+                  {
+                     menuItem -label $cur_state -ann $cur_state;
+                     $numConnectedStates++;
+                  }
+               }
+            }
+         }
+         if ($numConnectedStates == 0)
+            optionMenu -e -en false $exprMenuName;
+
+         string $popupMenuName = "p3dDeformOptionPopupMenu_" + $i;
+         popupMenu -parent $frameName;
+            menuItem -label "Rename Expression" -command ("p3dDeformCallbackMgr \"RenameExpr\"" + "{\"" + $i + "\"}");   
+            menuItem -label "Delete Expression" -command ("p3dDeformCallbackMgr \"DeleteExpr\"" + "{\"" + $i + "\"}");
+            menuItem -label "Rename Group" -command ("p3dDeformCallbackMgr \"RenameGroup\"" + "{\"" + $i + "\"}");
+            menuItem -label "Delete Group" -command ("p3dDeformCallbackMgr \"DeleteGroup\"" + "{\"" + $i + "\"}");
+      
+       
+      }
+   
+      string $stage_grp = "p3dDeformSetupRadioButtonGrp_" + $i;
+      if (!`radioButtonGrp -exists $stage_grp`)
+      {
+         radioButtonGrp -numberOfRadioButtons 3
+                        -labelArray3 "Blend Stage 0" "Blend Stage 1" "Blend Stage 2"
+                        -data1 0 
+                        -data2 1 
+                        -data3 2
+                        $stage_grp;
+      }
+
+      radioButtonGrp -edit 
+                     -cc ("p3dDeformCallbackMgr \"SetBlendStage\"" + "{\"" + $i + "\",\"0\"}")
+                     $stage_grp;
+      
+   
+      // now we've created the optionMenu for the current group.  it is parented by $columnName
+      // so that's what we have to deal with
+   
+   
+      // we want to do the rest here- add all the buttons + sliders and whatnot
+      string $grpForm = "p3dDeformSetupGroupFormLayout_" + $i;
+      if (!`formLayout -exists $grpForm`)
+         formLayout $grpForm;
+   
+      setParent $grpForm;
+   
+      // now we're dealing with a formLayout
+      // construct all buttons and sliders here
+   
+      //create key value list box (one per group)
+      string $p3dKeyPoseSlider = "p3dDeformSetupKeyPoseSlider_" + $i;
+      if (!`floatSliderButtonGrp -exists $p3dKeyPoseSlider`)
+      {
+         floatSliderButtonGrp -buttonLabel "Set Pose Key"
+                              -min -1 
+                              -max 1
+                              -ss 0.0001
+                              -fs 0.001
+                              -precision 4
+                              -field true
+                              $p3dKeyPoseSlider; 
+      }
+
+	  floatSliderButtonGrp -edit 
+                           -buttonCommand ("p3dDeformCallbackMgr \"SetPose\"" + "{\"" + $i + "\"}") 
+                           $p3dKeyPoseSlider;
+   
+      string $keyListName = "p3dDeformSetupTextScrollList_" + $i; 
+      if (!`textScrollList -exists $keyListName`)
+      {
+         textScrollList -nr 5
+                        -ams true 
+                        -width 75 
+                        $keyListName;
+      }
+   
+      //add double click function to list box
+      textScrollList -edit 
+                     -dcc ("p3dDeformCallbackMgr \"ChangePoseKey\"" + "{\"" + $i + "\"}")
+                     $keyListName;
+
+         string $popupMenuName = "p3dDeformTextScrollListPopupMenu_" + $i;
+         popupMenu -parent $keyListName;
+            menuItem -label "Change Pose Key" -command ("p3dDeformCallbackMgr \"ChangePoseKey\"" + "{\"" + $i + "\"}");  
+            menuItem -label "Remove Pose Key" -command ("p3dDeformCallbackMgr \"RemovePoseKey\"" + "{\"" + $i + "\"}");
+         
+         
+      //now that we've instantiated the text list boxes, add a callback to the dropdown box to call an update function with its name      
+      optionMenu -edit 
+                 -cc ("p3dDeformCallbackMgr \"UpdateKeyList\"" + "{\"" + $i + "\"}")
+                 $exprMenuName;
+   
+
+   
+      popupMenu -parent $p3dKeyPoseSlider;
+            menuItem -label "Set Pose Key" -command ("p3dDeformCallbackMgr \"SetPose\"" + "{\"" + $i + "\"}");
+   
+   
+      textScrollList -edit
+                     -sc ("p3dDeformCallbackMgr \"UpdateMesh\"" + "{\"" + $i + "\"}")
+                     $keyListName;
+
+
+      //create various UI buttons
+      string $butGridLayout = "p3dDeformSetupButtonGridLayout_" + $i;
+   
+      if (!`gridLayout -exists $butGridLayout`)
+      {
+         gridLayout -nrc 3 2 
+                    -cwh 120 25 
+                    -ag true 
+                    $butGridLayout;
+
+		 //$i is the frame number (== group no e.g. for p3dgroup1, $i = 1)
+         button -label "Create Expression" -command ("p3dDeformCallbackMgr \"CreateExpr\" " + "{\"" + $i + "\"}" ); 
+         button -label "Neutral Pose" -command ("p3dDeformCallbackMgr \"NeutralPose\" " + "{\"" + $i + "\"}" );
+         
+		 button -label "Add Vertices" -command ("p3dDeformCallbackMgr \"AddVertices\" " + "{\"" + $i + "\", \"1\"}" ); //1 is for Add mode
+         button -label "Remove Vertices" -command ("p3dDeformCallbackMgr \"AddVertices\" " + "{\"" + $i + "\", \"0\"}" );//0 is for remove mode
+         
+		 string $p3dTestSlider = "p3dTestSlider_" + $i;
+         floatSliderGrp -cw2 50 50 -label "Test" -ss 0.01 -minValue -1.0 -maxValue 1.0 -value 0.0 -dc ("p3dDeformCallbackMgr \"UpdateTestSlider\" " + "{\"" + $i + "\"}" ) $p3dTestSlider;
+         setParent $grpForm;
+      }
+   
+      //now add everything to the formLayout
+      if ($newly_created == 1)
+      {
+         formLayout -edit -af $p3dKeyPoseSlider left 5
+                       -af $p3dKeyPoseSlider top  5
+                       -af $p3dKeyPoseSlider right 5
+                       -an $p3dKeyPoseSlider bottom
+                       -ac $keyListName top 5 $p3dKeyPoseSlider
+                       -af $keyListName left 5
+                       -an $keyListName bottom
+                       -an $keyListName right
+                       -aoc $butGridLayout top 5 $keyListName
+                       -ac $butGridLayout left 5 $keyListName
+                       //-af $butGridLayout right 5
+                       -an $butGridLayout right
+                       //-af $butGridLayout bottom 5
+                       -an $butGridLayout bottom
+                       $grpForm;
+      }
+   
+      p3dDeformListBoxUpdate($i);
+      p3dDeformBlendStageUpdate($i, 0);     
+   
+      $i++;
+   }  //end for all groups
+   //finished creating dropdown list boxes
+
+   setParent p3dDeformSetupForm;
+   if (!`button -exists p3dDeformExpressionCreateGroupButton`)
+   {
+      button -l "Create Group"
+                -annotation "Create an expression group"
+                -c "p3dDeformCallbackMgr \"CreateGroup\" {}"
+                p3dDeformExpressionCreateGroupButton;
+   }
+
+   if (!`button -exists p3dDeformExpressionSetNeutralButton`)
+   {
+      button -l "Change Neutral"
+                -annotation "Modify the mesh\'s neutral state"
+                -c "p3dDeformCallbackMgr \"ChangeNeutral\" {}"
+                p3dDeformExpressionSetNeutralButton;
+   }
+   
+   if (`scrollLayout -exists p3dDeformSetupScrollForm`)
+   {
+      formLayout -edit 
+                 -attachForm p3dDeformSetupScrollForm top 5 //attach scrollform to formLayout
+                 -af p3dDeformSetupScrollForm right 5
+                 -af p3dDeformSetupScrollForm left 5
+                 -ac p3dDeformSetupScrollForm bottom 5 p3dDeformExpressionCreateGroupButton
+                 p3dDeformSetupForm;
+   }
+   
+   formLayout  -edit
+               -an p3dDeformExpressionCreateGroupButton top
+               -an p3dDeformExpressionCreateGroupButton right
+               -af p3dDeformExpressionCreateGroupButton left 5
+               -af p3dDeformExpressionCreateGroupButton bottom 5
+               
+               -an p3dDeformExpressionSetNeutralButton right
+               -ac p3dDeformExpressionSetNeutralButton left 5 p3dDeformExpressionCreateGroupButton
+               -an p3dDeformExpressionSetNeutralButton top
+               -af p3dDeformExpressionSetNeutralButton bottom 5
+               p3dDeformSetupForm;
+
+}

@@ -1,0 +1,118 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>packAdjust - Allow size of packed widgets to be adjusted by user
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::Adjuster, packAdjust - Allow size of packed widgets to be adjusted by
+user
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use Tk;
+  use Tk::Adjuster;
+</PRE>
+
+<P>
+
+<PRE>  $widget-&gt;packAdjust([pack options]);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>packAdjust</CODE> calls pack on the widget and then creates an instance of Tk::Adjuster and
+packs that ``after'' the widget. Tk::Adjust is a Frame containing a
+``line'' and a blob. 
+
+
+<P>
+
+Dragging either with Mouse Button-1 results in a line being dragged to
+indicate new size. Releasing Button submits GeometryRequests on behalf of
+the widget which will cause the packer to change widget's size. 
+
+
+<P>
+
+If Drag is done with Shift button down, then GeometryRequests are made in
+``real time'' so that text-flow effects can be seen, but as a lot more work
+is done behaviour may be sluggish.
+
+
+<P>
+
+If widget is packed with -side =&gt; left or -side =&gt; right then width
+is adjusted. If packed -side =&gt; top or -side =&gt; bottom then height is
+adjusted.
+
+
+<P>
+
+<CODE>packPropagate</CODE> is turned off for the master window to prevent adjustment changing overall
+window size. Similarly <CODE>packPropagate</CODE> is turned off for the managed widget if it has things packed inside it.
+This is so that the GeometryRequests that Tk::Adjuster are not overriden by
+pack.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTES">NOTES
+
+</A></H1>
+The 'line' which is used to feedback position is in fact a 'Menu' widget
+set to an unorthodox shape, and with a black background.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+If the size of adjustable widget is increased to the limit there is no
+longer room for the Tk::Ajuster widget. As a work-round it forcibly makes
+room for itself if it is unmapped. However the ``grab'' it held will have
+been lost and button-motion events may be sent to other widgets which are
+not expecting them, which can result in error messages. 
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,356 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>sigtrap - Perl pragma to enable simple signal handling
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OPTIONS">OPTIONS</A>
+	<UL>
+
+		<LI><A HREF="#SIGNAL_HANDLERS">SIGNAL HANDLERS</A>
+		<LI><A HREF="#SIGNAL_LISTS">SIGNAL LISTS</A>
+		<LI><A HREF="#OTHER">OTHER</A>
+	</UL>
+
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+sigtrap - Perl pragma to enable simple signal handling
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use sigtrap;
+    use sigtrap qw(stack-trace old-interface-signals);  # equivalent
+    use sigtrap qw(BUS SEGV PIPE ABRT);
+    use sigtrap qw(die INT QUIT);
+    use sigtrap qw(die normal-signals);
+    use sigtrap qw(die untrapped normal-signals);
+    use sigtrap qw(die untrapped normal-signals
+                    stack-trace any error-signals);
+    use sigtrap 'handler' =&gt; \&amp;my_handler, 'normal-signals';
+    use sigtrap qw(handler my_handler normal-signals
+                    stack-trace error-signals);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <STRONG>sigtrap</STRONG> pragma is a simple interface to installing signal handlers. You can have it
+install one of two handlers supplied by
+<STRONG>sigtrap</STRONG> itself (one which provides a Perl stack trace and one which simply <A HREF="#item_die">die()</A>s), or alternately you can supply your own handler for it to install. It
+can be told only to install a handler for signals which are either
+untrapped or ignored. It has a couple of lists of signals to trap, plus you
+can supply your own list of signals.
+
+
+<P>
+
+The arguments passed to the <A HREF="#item_use">use</A> statement which invokes <STRONG>sigtrap</STRONG>
+are processed in order. When a signal name or the name of one of
+<STRONG>sigtrap</STRONG>'s signal lists is encountered a handler is immediately installed, when an
+option is encountered it affects subsequently installed handlers.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="OPTIONS">OPTIONS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="SIGNAL_HANDLERS">SIGNAL HANDLERS
+
+</A></H2>
+These options affect which handler will be used for subsequently installed
+signals.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_stack">stack-trace
+
+</A></STRONG><DD>
+The handler used for subsequently installed signals outputs a Perl stack trace to 
+<FONT SIZE=-1>STDERR</FONT> and then tries to dump core. This is the default signal handler.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_die">die
+
+</A></STRONG><DD>
+The handler used for subsequently installed signals calls <A HREF="#item_die">die</A>
+(actually <A HREF="#item_croak">croak</A>) with a message indicating which signal was caught.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_handler">handler your-handler
+
+</A></STRONG><DD>
+<EM>your-handler</EM> will be used as the handler for subsequently installed signals.  <EM>your-handler</EM> can be any value which is valid as an assignment to an element of <A HREF="#item__SIG">%SIG</A>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="SIGNAL_LISTS">SIGNAL LISTS
+
+</A></H2>
+<STRONG>sigtrap</STRONG> has a few built-in lists of signals to trap. They are:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_normal">normal-signals
+
+</A></STRONG><DD>
+These are the signals which a program might normally expect to encounter and which by default cause it to terminate. They are 
+<FONT SIZE=-1>HUP,</FONT> 
+<FONT SIZE=-1>INT,</FONT> 
+<FONT SIZE=-1>PIPE</FONT> and 
+<FONT SIZE=-1>TERM.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_error">error-signals
+
+</A></STRONG><DD>
+These signals usually indicate a serious problem with the Perl interpreter or with your script. They are 
+<FONT SIZE=-1>ABRT,</FONT> 
+<FONT SIZE=-1>BUS,</FONT> 
+<FONT SIZE=-1>EMT,</FONT> 
+<FONT SIZE=-1>FPE,</FONT> 
+<FONT SIZE=-1>ILL,</FONT> 
+<FONT SIZE=-1>QUIT,</FONT> 
+<FONT SIZE=-1>SEGV,</FONT> 
+<FONT SIZE=-1>SYS</FONT> and 
+<FONT SIZE=-1>TRAP.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_old">old-interface-signals
+
+</A></STRONG><DD>
+These are the signals which were trapped by default by the old
+<STRONG>sigtrap</STRONG> interface, they are 
+<FONT SIZE=-1>ABRT,</FONT> 
+<FONT SIZE=-1>BUS,</FONT> 
+<FONT SIZE=-1>EMT,</FONT> 
+<FONT SIZE=-1>FPE,</FONT> 
+<FONT SIZE=-1>ILL,</FONT> 
+<FONT SIZE=-1>PIPE,</FONT> 
+<FONT SIZE=-1>QUIT,</FONT> 
+<FONT SIZE=-1>SEGV,</FONT> 
+<FONT SIZE=-1>SYS,</FONT> 
+<FONT SIZE=-1>TERM,</FONT> and 
+<FONT SIZE=-1>TRAP.</FONT> If no signals or signals lists are passed to
+
+<STRONG>sigtrap</STRONG>, this list is used.
+
+
+<P>
+
+</DL>
+For each of these three lists, the collection of signals set to be trapped
+is checked before trapping; if your architecture does not implement a
+particular signal, it will not be trapped but rather silently ignored.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="OTHER">OTHER
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_untrapped">untrapped
+
+</A></STRONG><DD>
+This token tells <STRONG>sigtrap</STRONG> to install handlers only for subsequently listed signals which aren't
+already trapped or ignored.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_any">any
+
+</A></STRONG><DD>
+This token tells <STRONG>sigtrap</STRONG> to install handlers for all subsequently listed signals. This is the
+default behavior.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_signal">signal
+
+</A></STRONG><DD>
+Any argument which looks like a signal name (that is,
+<CODE>/^[A-Z][A-Z0-9]*$/</CODE>) indicates that <STRONG>sigtrap</STRONG> should install a handler for that name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_number">number
+
+</A></STRONG><DD>
+Require that at least version <EM>number</EM> of <STRONG>sigtrap</STRONG> is being used.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+Provide a stack trace for the old-interface-signals:
+
+
+<P>
+
+<PRE>    use sigtrap;
+</PRE>
+
+<P>
+
+Ditto:
+
+
+<P>
+
+<PRE>    use sigtrap qw(stack-trace old-interface-signals);
+</PRE>
+
+<P>
+
+Provide a stack trace on the 4 listed signals only:
+
+
+<P>
+
+<PRE>    use sigtrap qw(BUS SEGV PIPE ABRT);
+</PRE>
+
+<P>
+
+Die on 
+<FONT SIZE=-1>INT</FONT> or 
+<FONT SIZE=-1>QUIT:</FONT>
+
+
+<P>
+
+<PRE>    use sigtrap qw(die INT QUIT);
+</PRE>
+
+<P>
+
+Die on 
+<FONT SIZE=-1>HUP,</FONT> 
+<FONT SIZE=-1>INT,</FONT> 
+<FONT SIZE=-1>PIPE</FONT> or 
+<FONT SIZE=-1>TERM:</FONT>
+
+
+
+<P>
+
+<PRE>    use sigtrap qw(die normal-signals);
+</PRE>
+
+<P>
+
+Die on 
+<FONT SIZE=-1>HUP,</FONT> 
+<FONT SIZE=-1>INT,</FONT> 
+<FONT SIZE=-1>PIPE</FONT> or 
+<FONT SIZE=-1>TERM,</FONT> except don't change the behavior for signals which are already trapped or ignored:
+
+
+
+<P>
+
+<PRE>    use sigtrap qw(die untrapped normal-signals);
+</PRE>
+
+<P>
+
+Die on receipt one of an of the <STRONG>normal-signals</STRONG> which is currently
+<STRONG>untrapped</STRONG>, provide a stack trace on receipt of <STRONG>any</STRONG> of the
+<STRONG>error-signals</STRONG>:
+
+
+<P>
+
+<PRE>    use sigtrap qw(die untrapped normal-signals
+                    stack-trace any error-signals);
+</PRE>
+
+<P>
+
+Install <CODE>my_handler()</CODE> as the handler for the <STRONG>normal-signals</STRONG>:
+
+
+<P>
+
+<PRE>    use sigtrap 'handler', \&amp;my_handler, 'normal-signals';
+</PRE>
+
+<P>
+
+Install <CODE>my_handler()</CODE> as the handler for the normal-signals,
+provide a Perl stack trace on receipt of one of the error-signals:
+
+
+<P>
+
+<PRE>    use sigtrap qw(handler my_handler normal-signals
+                    stack-trace error-signals);
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

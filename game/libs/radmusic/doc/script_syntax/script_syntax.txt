@@ -1,0 +1,234 @@
+radmusic scripting syntax - January 07, 2003
+=========================
+
+global attributes
+-----------------
+
+memoryconstraints cache <x> sound <y>
+
+	x - maximum number uncompressed cache memory bytes allowed 
+		in the composition. (preloaded streams).
+
+	y - maximum number of uncompressed sound memory bytes allowed
+		in the composition. (clips). 
+
+streamconstraints <x>
+
+	x - minimum size (in ms) of a non-preloaded stream.
+
+group root_group { group my_group { group your_group { ... } } } 
+
+	the composition must have a single root group.  You can nest groups within groups.
+
+group attributes
+================
+
+group <group_name> {
+	stream ...
+	clip ...
+	trans_fade ...
+	trans_stitch ...
+	event ...
+	state ... 
+	event_matrix ...
+	region ... }
+
+
+stream <stream_name> {
+	filename: "<file_name_no_extension>"
+	type: <streamed|preloaded>
+	tempo: { bpm:<x> time_sig:<y/y> start_beat:<z> } }
+
+	Example:
+
+		stream my_stream {
+			filename:"file1"
+			type:streamed
+			tempo: {
+				bpm:130
+				time_sig:4/4
+				start_beat:1 } }
+
+
+clip <clip_name> {
+	filename: "<file_name_no_extension>"
+	volume: <v>
+	tempo: { bpm:<x> time_sig:<y/y> start_beat:<z> }
+
+	Example:
+
+		clip water {
+			filename:"waterdrip1"
+			volume:0.5,
+			tempo: {
+				bpm:130
+				time_sig:4/4
+				start_beat:1 } }
+
+
+trans_fade {
+	target:<region|anything>
+	source:<region|anything>
+	st: <ms|beats:tempo>
+	ss: <ms|beats:tempo>
+	tt: <ms|beats:tempo>
+	ts: <ms>
+	beats: { <b1> <b2> <b3> ... } }
+
+	Example:
+
+		trans_fade {
+			target:anything
+			source:my_region
+			st:500              // source fades for 500ms
+			ss:4.0:120          // source starts fade after 4 beats of 120
+			ts:1.0:120          // target starts fade after 1 beat  of 120
+			tt:1000             // target fades for 1 second
+			beats: { 1.0 3.5 } } // only transition on beat 1.0 or 3.5
+
+
+trans_stitch {
+	source:<region|anything>
+	target:<region|anything>
+	transition:<region|nothing> }
+
+
+event <event_name> { <event_actions (see below)> }
+
+
+state <state_name> { <value1> <value2> ... }
+
+	Example:
+
+		state mission { mission1, mission2 }
+
+
+event_matrix[ <state1> ][ <state2> ]... {
+	<event_name>[<state_value1>][<state_value2>]... { <event_actions (see below)> }
+	<event_name>[<state_value1>][<state_value2>]... { <event_actions (see below)> }
+    ... }
+
+	Example:
+
+		event_matrix [mission][style] {
+			intro[mission1][jazz] { play_region:{ region:mission1_jazz_intro } }
+			chase[mission1][jazz] { play_region:{ region:mission1_jazz_chase } }
+			search[mission1][jazz] { play_region:{ region:mission1_jazz_search } }
+			intro[mission2][jazz] { play_region:{ region:mission2_jazz_intro } }
+			chase[mission2][jazz] { play_region:{ region:mission2_jazz_chase } }
+			search[mission2][jazz] { play_region:{ region:mission2_jazz_search } }
+		}
+
+
+region <region_name> {
+	exit_region:<region_name>
+	volume:<v>
+	layer <layer_name> {
+		volume:<v>
+		type:<constant|event>
+		seq:<sequence_statement (see below) }
+	
+	layer { ... }
+	...
+		
+
+event actions
+=============
+
+	push_region: {
+		region:<region_name>
+		current_resume_type:<restart|resume>
+		target_resume_type:<restart|resume> }
+
+	pop_region: {
+		region:<region_name> }
+
+	play_region: {
+		region:<region_name>
+		resume_type:<restart|resume> }
+
+	start_layer: { layer:<layer_name> }
+		
+	stop_layer:  { layer:<layer_name> }
+
+	rand_state:  { state:<state_name> }
+
+
+sequence statements
+===================
+
+	<stream_name>
+	<clip_name>
+
+	infinite repeat: ~<sequence_to_repeat>
+
+	repeat:          <times><sequence_to_repeat> or
+					 <min_times-max_times><sequence_to_repeat>
+
+	randomize:       ?{ <sequence1, sequence2, etc> }
+
+	play_in_order:   { <sequence1>, <sequence2>, etc }
+
+	silence: $(<time_value>) $(<time_value_min>-<time_value_max>)
+		
+		play time ms of silence or
+		play time_value_min to time_value_max silence randomly.
+
+		Examples
+
+			$(10)         - 10 ms of silence
+			$(10:150)     - 10 beats of 1150 bpm
+			$(1000-3:120) - randomize between 1 second and 3 beats of 120
+
+	callback: *("<string_to_send_to_game>")
+
+	variable: ^(<variable_name>:<value>)
+
+		standard variables
+		------------------
+
+			volume:<0.0 to 1.0>
+			pitch:<0.0 to ?>
+			aux:			 <aux_number>:<gain 0.0 to 1.0 >
+
+		standard randomization variables
+		-----------------------
+			volume_rand_min: < 0.0 to 1.0 >
+			volume_rand_max: < 0.0 to 1.0 >
+			pitch_rand_min:  < 0.0 to ? >
+			pitch_rand_max:  < 0.0 to ? >
+
+		
+		3d randomization varibles
+		-------------------------
+
+			positional:<true|false>        - enable/disable 3d randomization
+			pos_falloff:     <0.0 to ? >   - distance at which sound is inaudible
+			pos_dist_min:    <0.0 to ? >   - minimum rand val
+			pos_dist_max:    <0.0 to ? >   - maximum positional distance rand val.
+
+
+	Examples:
+
+		seq:stream1
+
+		seq:{stream1,stream2}
+
+		seq:1{intro_fill_stream,~{loop_body_stream}}
+
+		seq: {
+				^(positional:true),
+				^(pos_falloff:300),
+				^(pos_dist_min:10),
+				^(pos_dist_max:1000),
+				~{
+					^(volume:0.5),
+					?{
+						1-2bird_clip,
+						3{wolf_stream},
+						{
+							*("dog!"),
+							^(volume:0.75), dog_clip } } } }
+
+
+

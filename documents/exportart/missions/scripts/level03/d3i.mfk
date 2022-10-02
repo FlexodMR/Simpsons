@@ -1,0 +1,55 @@
+SelectMission("d3");
+
+SetMissionResetPlayerInCar("demo_carstart");
+SetDynaLoadData("l3z1.p3d;l3r1.p3d;l3r5.p3d;l3r5_dam.p3d;");
+
+PlacePlayerCar("current", "demo_carstart");
+
+AddStage(0);
+RESET_TO_HERE();
+SetMaxTraffic(2); //for this race, reduce traffic to prevent overwhelming the user
+SetChaseSpawnRate("cSedan",2);
+AddStageVehicle("cNerd","d2_AI_start_1","waypoint","HardRace\AI_2nd.con");
+AddStageVehicle("compactA","d2_AI_start_2","waypoint","HardRace\AI_3rd.con");
+AddStageVehicle("sportsA","d2_AI_start_3","waypoint","HardRace\AI_4th.con");
+AddStageVehicle("pickupA","d2_AI_start_4","waypoint","HardRace\AI_5th.con");
+//AddStageVehicle("cletu_v","d1_cletus_carstart","waypoint","HardRace\AI_2nd.con");
+
+AddStageWaypoint( "d1_path1" );
+AddStageWaypoint( "d1_path2" );
+AddStageWaypoint( "d1_path3" );
+AddStageWaypoint( "d1_path4" );
+AddStageWaypoint( "d1_path5" );
+AddStageWaypoint( "d1_path6" );
+AddStageWaypoint( "d1_path6a" );
+AddStageWaypoint( "d1_path7" );
+AddStageWaypoint( "d1_path8" );
+AddStageWaypoint( "d1_path9" );
+AddStageWaypoint( "d1_path10" );
+AddStageWaypoint( "d1_path11" );
+AddStageWaypoint( "d1_path12" );
+AddStageWaypoint( "d1_path13" );
+
+AddObjective( "race" );
+AddCollectible("d1_path1");
+AddCollectible("d1_path2");
+AddCollectible("d1_path3");
+AddCollectible("d1_path4");
+AddCollectible("d1_path5");
+AddCollectible("d1_path6");
+AddCollectible("d1_path6a");
+AddCollectible("d1_path7");
+AddCollectible("d1_path8");
+AddCollectible("d1_path9");
+AddCollectible("d1_path10");
+AddCollectible("d1_path11");
+AddCollectible("d1_path12");
+AddCollectible("d1_path13");
+SetRaceLaps(2);
+CloseObjective();
+
+SetDemoLoopTime(500000);
+
+CloseStage();
+
+CloseMission();

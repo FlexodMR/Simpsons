@@ -1,0 +1,113 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>ChangeNotify - monitor events related to files
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#MEMBERS">MEMBERS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+ChangeNotify - monitor events related to files
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use Win32::ChangeNotify;
+</PRE>
+
+<P>
+
+<PRE>        Win32::ChangeNotify::FindFirst($Obj,$PathName,$WatchSubTreeFlag,$filter);
+        $Obj-&gt;FindNext();
+        $Obj-&gt;Wait(INFINITE) or warn &quot;Something failed: $!\n&quot;;
+        # There has been a change.
+        $Obj-&gt;Close();
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module allows the user to create a change notification event object in
+Perl. This object allows the Perl program to monitor events relating to
+files and directory trees.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="MEMBERS">MEMBERS
+
+</A></H1>
+The ChangeNotify module is written entirely in 
+<FONT SIZE=-1>C++.</FONT> So here is a list of the members etc. (Note: no
+functions are exported)
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_FindFirst">FindFirst($Obj,$PathName,$WathSubTree,$Filter)
+
+</A></STRONG><DD>
+This is the constructor for the object. An instantiated object is returned in $Obj. Args: <CODE>$Obj</CODE> The container for the created object. <CODE>$WatchSubTree</CODE> 
+<FONT SIZE=-1>A</FONT> boolean value defining whether the subtree should be included. <CODE>$Filter</CODE> See the exported values below to see the options for this.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FindNext">FindNext()
+
+</A></STRONG><DD>
+This method starts the monitoring.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Wait">Wait( $TimeOut )
+
+</A></STRONG><DD>
+This method starts the waiting on the change.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Close">Close()
+
+</A></STRONG><DD>
+This method stops the monitoring.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

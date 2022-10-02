@@ -1,0 +1,241 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>CallingTk -  what is Perl Tk interface doing when you call Tk functions.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+CallingTk - what is Perl Tk interface doing when you call Tk functions.
+
+
+<P>
+
+This information is worse than useless for <CODE>perlTk</CODE> users, but can of some help for people interested in using modified Tk
+source with
+<CODE>perlTk</CODE>.
+
+
+<P>
+
+<EM>This document is under construction. The information is believed to
+be pertinent to the version of</EM>  <CODE>portableTk</CODE>  <EM>available when it was
+created. All the details are subject to change.</EM>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_PreCompiling">PreCompiling
+
+</A></STRONG><DD>
+Before the actual compilation stage a script scans the source and extracts
+the subcommands of different commands. This information resides in the file <CODE>pTk/Methods.def</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Compilation">Compilation
+
+</A></STRONG><DD>
+During compilation the above file is included in the source of booting
+routine of dynamic (or static) library. More precisely, the booting code of
+module <CODE>Tk</CODE> calls the subroutine <CODE>Boot_Glue()</CODE> from the module
+<CODE>tkGlue.c</CODE>, and this subroutine includes the file (with appropriate macro
+definitions).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Inside">Inside use Tk;
+
+</A></STRONG><DD>
+The module bootstraps the 
+<FONT SIZE=-1>C</FONT> code, then loads the Perl libraries. The heart of
+the Perl code is contained in the <CODE>Tk::Widget</CODE> library, all the widgets inherit from this module. Code for toplevels is
+loaded from
+<CODE>Tk::MainWindow</CODE>. 
+
+
+<P>
+
+During bootstrap of the 
+<FONT SIZE=-1>C</FONT> glue code the <CODE>Xevent::?</CODE> codes and a handful of <CODE>Tk::Widget</CODE> and <CODE>Tk::Image</CODE> routines are defined. (Much more XSUBs are created from <CODE>Tk.xs</CODE> code.) The widget subcommands are glued to Perl basing on the list included
+from <CODE>pTk/Methods.def</CODE>. In fact all the subcommands are glued to XSUBs that are related to the same 
+<FONT SIZE=-1>C</FONT> subroutine <CODE>XStoWidget(),</CODE> but have different data parts.
+
+
+
+<P>
+
+During the Perl code bootstrap the method <CODE>Tk::Widget::import</CODE> is called. This call requires all the code from particular widget packages.
+
+
+<P>
+
+Code from the widget packages calls an obscure command like
+
+
+<P>
+
+<PRE>  (bless \&quot;Text&quot;)-&gt;WidgetClass;
+</PRE>
+
+<P>
+
+This command (actually Tk::Widget::WidgetClass()) creates three routines:
+Tk::Widget::Text(), Tk::Widget::isText(), and Tk::Text::isText(). The first
+one is basically <A HREF="#item_new">new</A> of <CODE>Tk::Text</CODE>, the other two return constants. It also puts the class into depository.
+
+
+<P>
+
+<DT><STRONG>Inside $top = MainWindow-gtnew;
+
+</A></STRONG><DD>
+This is quite intuitive. This call goes direct to
+<CODE>Tk::MainWindow::new</CODE>, that calls 
+<FONT SIZE=-1>XSUB</FONT>
+<CODE>Tk::MainWindow::CreateMainWindow</CODE>, that calls 
+<FONT SIZE=-1>C</FONT> subroutine <CODE>Tk_CreateMainWindow().</CODE> It is
+a <CODE>Tk</CODE> subroutine, so here black magic ends (almost).
+
+
+<P>
+
+The only remaining black magic is that the <CODE>Tk</CODE> initialization routine creates a lot of commands, but the subroutine for
+creation is usurped by <STRONG>portableTk</STRONG> and the commands are created in the package
+<CODE>Tk</CODE>. They are associated to XSUBs that are related to one of three 
+<FONT SIZE=-1>C</FONT> subroutines <CODE>XStoSubCmd(),</CODE>
+<CODE>XStoBind(),</CODE> or <CODE>XStoTk(),</CODE> but have different data
+parts.
+
+
+<P>
+
+The result of the call is blessed into <CODE>Tk::MainWindow</CODE>, as it should.
+
+
+<P>
+
+<DT><STRONG>Inside $top-gttitle('Text demo');
+
+</A></STRONG><DD>
+The package <CODE>Tk::Toplevel</CODE> defines a lot of subroutines on the fly on some list. All the commands from
+the list are converted to the corresponding subcommands of <CODE>wm</CODE> method of the widget. Here subcommand is a command with some particular
+second argument (in this case <A HREF="#item__title_">"title"</A>). Recall that the first argument is $self.
+
+
+<P>
+
+Now <CODE>Tk::Toplevel</CODE> <CODE>@ISA</CODE> <CODE>Tk::Widget</CODE>, that in turn <CODE>@ISA</CODE> <CODE>Tk</CODE>. So a call to <CODE>$top-&gt;wm('title','Text demo')</CODE> calls <CODE>Tk::wm</CODE>, that is defined during call to <CODE>Tk_CreateMainWindow().</CODE> As it is described above, the 
+<FONT SIZE=-1>XSUB</FONT> associated to <CODE>XStoSubCmd()</CODE> is called.
+
+
+
+<P>
+
+This 
+<FONT SIZE=-1>C</FONT> routine is defined in <CODE>tkGlue.c</CODE>. It gets the data part of 
+<FONT SIZE=-1>XSUB,</FONT> creates a <A HREF="#item_SV">SV</A> with the name of the command, and calls <CODE>Call_Tk()</CODE> with the 
+<FONT SIZE=-1>XSUB</FONT> data as the first argument, and with the name of 
+<FONT SIZE=-1>XSUB</FONT> stuffed into the Perl stack in the place there
+ <CODE>tk</CODE> expects it. (In fact it can also reorder the arguments if it thinks it is
+what you want).
+
+
+<P>
+
+The latter procedure extracts name of <CODE>tk</CODE> procedure and
+<CODE>clientData</CODE> from the first argument and makes a call, using Perl stack as <CODE>argv</CODE> for the procedure. 
+<FONT SIZE=-1>A</FONT> lot of black magic is performed afterwards to
+convert result of the procedure to a Perl array return.
+
+
+<P>
+
+<DT><STRONG>Inside $text = $top-gtText(background =gt $txtBg);
+
+</A></STRONG><DD>
+Above we discussed how the command <CODE>Tk::Widget::Text</CODE> is created. The above command calls it via inheritance. It is translated to 
+
+
+<P>
+
+<PRE>  Tk::Text::new($top, background =&gt; $txtBg);
+</PRE>
+
+<P>
+
+The package <CODE>Tk::Text</CODE> has no method <A HREF="#item_new">new</A>, so the
+<CODE>Tk::Widget::new</CODE> is called. In turn it calls
+<CODE>Tk::Text-&gt;DoInit($top)</CODE>, that is
+<CODE>Tk::Widget::DoInit(Tk::Text,$top)</CODE>, that initializes the bindings if necessary. Then it creates the name for
+the widget of the form
+<CODE>.text0</CODE>, and calls <CODE>Tk::text('.text0', background =&gt; $txtBg)</CODE>
+(note lowercase). The result of the call is blessed into <CODE>Tk::Text</CODE>, and the method <CODE>bindtags</CODE> for this object is called. 
+
+
+<P>
+
+Now the only thing to discuss is who defines the methods <CODE>text</CODE> and
+<CODE>bindtags</CODE>. The answer is that they are defined in <CODE>tkWindow.c</CODE>, and these commands are created in the package <CODE>Tk</CODE> in the same sweep that created the command <CODE>Tk::wm</CODE> discussed above.
+
+
+<P>
+
+So the the same 
+<FONT SIZE=-1>C</FONT> code that corresponds to the processing of corresponding 
+<FONT SIZE=-1>TCL</FONT> commands is called here as well (this time via
+
+<CODE>XStoTk</CODE> interface).
+
+
+<P>
+
+<DT><STRONG>Inside $text-gtinsert('insert','Hello, world!');
+
+</A></STRONG><DD>
+As we discussed above, the subcommands of widget procedures correspond to 
+<FONT SIZE=-1>XSUB</FONT> <CODE>XStoWidget</CODE>. This 
+<FONT SIZE=-1>XSUB</FONT> substitutes the first argument <CODE>$text</CODE> (that is a hash reference) to an appropriate value from this hash, adds the additional argument after the first one that contains the name of the subcommand extracted from the data part of 
+<FONT SIZE=-1>XSUB,</FONT> and calls the corresponding Tk 
+<FONT SIZE=-1>C</FONT> subroutine via
+ <CODE>Call_Tk</CODE>.
+
+
+<P>
+
+</DL>
+Ilya Zakharevich <A
+HREF="MAILTO:<ilya@math.ohio-state.edu>"><ilya@math.ohio-state.edu></A> 
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

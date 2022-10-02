@@ -1,0 +1,120 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>User::grent - by-name interface to Perl's built-in getgr*() functions
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+User::grent - by-name interface to Perl's built-in getgr*() functions
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use User::grent;
+ $gr = getgrgid(0) or die &quot;No group zero&quot;;
+ if ( $gr-&gt;name eq 'wheel' &amp;&amp; @{$gr-&gt;members} &gt; 1 ) {
+     print &quot;gid zero name wheel, with other members&quot;;
+ } 
+</PRE>
+
+<P>
+
+<PRE> use User::grent qw(:FIELDS;
+ getgrgid(0) or die &quot;No group zero&quot;;
+ if ( $gr_name eq 'wheel' &amp;&amp; @gr_members &gt; 1 ) {
+     print &quot;gid zero name wheel, with other members&quot;;
+ } 
+</PRE>
+
+<P>
+
+<PRE> $gr = getgr($whoever);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module's default exports override the core <CODE>getgrent(),</CODE>
+<CODE>getgruid(),</CODE> and <CODE>getgrnam()</CODE> functions, replacing
+them with versions that return ``User::grent'' objects. This object has
+methods that return the similarly named structure field name from the C's
+passwd structure from <EM>grp.h</EM>; namely name, passwd, gid, and members (not mem). The first three return
+scalars, the last an array reference.
+
+
+<P>
+
+You may also import all the structure fields directly into your namespace as regular variables using the 
+<FONT SIZE=-1>:FIELDS</FONT> import tag. (Note that this still overrides your core functions.) Access these fields as variables named with a preceding
+ <CODE>gr_</CODE>. Thus, <CODE>$group_obj-&gt;gid()</CODE> corresponds to <CODE>$gr_gid</CODE> if you import the fields. Array
+references are available as regular array variables, so <CODE>@{ $group_obj-&gt;members() }</CODE> would be simply @gr_members.
+
+
+<P>
+
+The <CODE>getpw()</CODE> funtion is a simple front-end that forwards a
+numeric argument to <CODE>getpwuid()</CODE> and the rest to
+<CODE>getpwnam().</CODE>
+
+
+<P>
+
+To access this functionality without the core overrides, pass the <A HREF="#item_use">use</A> an empty import list, and then access function functions with their full
+qualified names. On the other hand, the built-ins are still available via
+the <CODE>CORE::</CODE> pseudo-package.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+While this class is currently implemented using the Class::Struct module to
+build a struct-like class, you shouldn't rely upon this.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Christiansen
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

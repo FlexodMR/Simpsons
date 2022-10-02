@@ -1,0 +1,1160 @@
+//===========================================================================
+// Copyright ©2001 Radical Entertainment Ltd.  All rights reserved.
+//
+// Component:   animChannelTable: Displays event keys for p3dEventAnim & 
+//              p3dEventKey nodes.
+//
+// Creator:     Bryan Ewert
+//
+// Last Update: 5 Dec 2001
+//
+// Version:     1.0
+//
+//===========================================================================
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+// Constraints: Used with assertCurrent().
+//
+//===========================================================================
+proc float version()
+{
+    return ( 1.0 );
+}
+
+/*
+    if ( assertCurrent() ) return;
+*/
+
+//===========================================================================
+// assertCurrent
+//===========================================================================
+// Description: Used to determine if this MEL script's current version 
+//              matches that from Version Control (equal or newer).
+//              
+// Parameters:  (none)
+//
+// Return:      (int): ZERO if everything is OK; NON-ZERO if fails assert.
+//
+//===========================================================================
+proc int assertCurrent()        // returns non-zero if error
+{
+    int $assert = false;
+    
+    // ** ASSERT NEWEST VERSION **
+    if ( `exists hasCurrentTool` ) $assert = ( !hasCurrentTool( "amdLinkPanel.mel", version() ) );
+    
+    return $assert;
+}
+
+// ////////////////////////////////////////////////////////////////
+//  rootNode
+//
+// Description: Strips the dot-suffix of the specified string.
+//  e.g. "object.attribute" is returned as "object"
+proc string rootNode( string $object )
+{
+    string $buffer[];
+    tokenize $object "." $buffer;
+    return $buffer[0];
+}
+
+//===========================================================================
+// precision
+//===========================================================================
+// Description: Rounds a float value to the specified number of decimal places.
+//
+// Constraints: Negative precision (to round to 10's, 100's, etc.) will not work.
+//
+//              See < http://www.ewertb.com/maya/mel/mel_a39.html >
+//
+// Parameters:  float $value: The float value upon which to apply precision.
+//              int $dec: Number of decimal places.
+//
+// Return:      (float): Value represented with desired precision.
+//
+//===========================================================================
+proc float precision( float $value, int $dec )
+{
+    float $bump = 0.5;
+    if ($value < 0.0)
+        $bump = -0.5;
+        
+    $value = trunc( $value * ( pow ( 10, $dec ) ) + $bump) / ( pow ( 10, $dec ) );
+    return $value;
+}
+
+//===========================================================================
+// getScrollUI
+//===========================================================================
+// Description: Returns the scrollLayout control for the animChannelTable group.
+//
+// Constraints: 
+//
+// Parameters:  string $actUI: The main UI control returned by animChannelTable().
+//
+// Return:      (string) The scrollLayout UI control.
+//
+//===========================================================================
+proc string getScrollUI( string $actUI )
+{
+    string $scrollUI = "";
+    string $children[];
+
+    if ( `formLayout -q -exists $actUI` )
+    {
+        setParent $actUI;
+
+        $children = `formLayout -q -ca $actUI`;
+        $scrollUI = $children[0];
+    }
+
+    return $scrollUI;
+}
+
+//===========================================================================
+// getTableUI
+//===========================================================================
+// Description: Returns the formLayout control that contains the event key rows.
+//
+// Constraints: 
+//
+// Parameters:  string $actUI: The main UI control returned by animChannelTable().
+//
+// Return:      (string) The formLayout UI control.
+//
+//===========================================================================
+proc string getTableUI( string $actUI )
+{
+    string $tableUI = "";
+    string $children[];
+    
+    if ( `formLayout -q -exists $actUI` )
+    {
+        setParent $actUI;
+    
+        $children = `formLayout -q -ca $actUI`;
+        $children = `scrollLayout -q -ca $children[0]`;
+        $tableUI = $children[0];
+    }
+    else
+    {
+        error ( "getTableUI FAILED!" );
+    }
+    
+    return $tableUI;
+}
+
+//===========================================================================
+// resizeScrollArea
+//===========================================================================
+// Description: Was _supposed_ to alleviate Maya's obnoxious behavior when
+//              dynamically adding controls to a scrollLayout.
+//
+// Constraints: Doesn't bloody work.
+//
+// Parameters:  string $actUI: The main UI control returned by animChannelTable()
+//
+// Return:      (none)
+//
+//===========================================================================
+proc resizeScrollArea( string $actUI )
+{
+/* ** DOESN'T BLOODY WORK! **
+    string $scrollUI = getScrollUI( $actUI );
+    string $tableUI = getTableUI( $actUI );
+    print ( "resize table: " + $tableUI + ": " + ( `scrollLayout -q -saw $scrollUI` -8 ) + "\n" );
+    formLayout -e -width ( `scrollLayout -q -saw $scrollUI` -8 ) $tableUI;
+*/
+}
+
+//===========================================================================
+// getDataIndices
+//===========================================================================
+// Description: Returns an array for all active indices on the specified
+//              array attribute for the specified node.
+//  
+//              See < http://www.ewertb.com/maya/mel/mel_a75.html >
+//
+// Constraints: 
+//
+// Parameters:  string $node: The node to query.
+//              string $attr: The array attribute to query.
+//              string $match: The pattern to match for a unique sub-attr 
+//                             that will identify a single instance for
+//                             the attribute.
+//
+// Example:     A 'ramp' texture node has an array attribute for its 
+//              .colorEntryList.  To determine which elements within this
+//              array are active:
+//
+//                this "ramp1" "colorEntryList" "*color";
+//
+//              "*color" is used as the match because it will match the
+//              sub-attributes, e.g. "colorEntryList[0].color".
+//
+// Return:      (int[]): The array of active array indices.
+//
+//===========================================================================
+proc int[] getDataIndices( string $node, string $attr, string $match )
+{
+    int $data[];
+    
+    string $tokens[];
+
+    if ( `objExists $node` )
+    {
+        string $multi[] = `listAttr -multi ( $node + "." + $attr )`;
+        
+        for ( $attr in $multi )
+        {
+            tokenize $attr "[]" $tokens;
+
+            if ( `size $tokens` > 1 )
+            {
+                if ( `gmatch $attr $match` )
+                {
+                    $data[`size $data`] = $tokens[1];
+                }
+            }
+        }
+    }
+    
+    return $data;
+}
+
+//===========================================================================
+// FirstAvailableKeyDataIndex
+//===========================================================================
+// Description: Returns the index for the first available/unused index on the
+//              specified array attribute for the specified node.
+//
+// Constraints: Uses getDataIndices().
+//
+// Parameters:  string $node: The node to query.
+//              string $attr: The array attribute to query.
+//              string $match: The pattern to match for a unique sub-attr 
+//                             that will identify a single instance for
+//                             the attribute.
+//
+// Example:     A 'ramp' texture node has an array attribute for its 
+//              .colorEntryList.  To determine which elements within this
+//              array are active:
+//
+//                this "ramp1" "colorEntryList" "*color";
+//
+//              "*color" is used as the match because it will match the
+//              sub-attributes, e.g. "colorEntryList[0].color".
+//
+// Return:      (int): The first available/unused array index.
+//
+//===========================================================================
+proc int FirstAvailableDataIndex( string $node, string $attr, string $match )
+{
+    int $nextIndex = 0;
+    int $useThisIndex = false;
+    
+    int $indices[] = getDataIndices( $node , $attr, $match);
+    
+    while ( !$useThisIndex )
+    {
+        $useThisIndex = true;
+        
+        for ( $index in $indices )
+        {
+            if ( $index == $nextIndex )
+            {
+                $useThisIndex = false;
+                $nextIndex++;
+                break;
+            }
+        }
+    }
+    
+    return $nextIndex;
+}
+
+//===========================================================================
+// getSortedKeys
+//===========================================================================
+// Description: Returns the indices for the p3dEventAnim.key array attribute
+//              sorted by the .time attribute for the p3dEventKey connected
+//              nodes.
+//
+// Constraints: 
+//
+// Parameters:  string $node: The p3dEventAnim node from which to query the
+//                            sorted index list.
+//
+// Return:      (int[]): Array of indices sorted by .time.
+//
+//===========================================================================
+proc string[] getSortedKeys( string $node )
+{
+    string $keys[];
+
+    string $tokens[];
+    string $array[];
+    
+    int $time, $index;
+    
+    if ( `objExists $node` )
+    {
+        // results returned in pairs
+        string $connect[] = `listConnections -plugs false -connections true ( $node + ".key" )`;
+        
+        for ( $i = 0; $i < `size $connect`; $i += 2 )
+        {
+            string $connectTo     = $connect[$i+1];
+            
+            if ( `nodeType $connectTo` == "p3dEventKey" )
+            {
+                $time = `getAttr ( $connectTo + ".time" )`;
+                
+                // Pad with zeros
+                string $timeAsString = $time;
+                while ( `size $timeAsString` < 8 )
+                {
+                    $timeAsString = "0" + $timeAsString;
+                }
+
+                // The time and array index are compiled into a string array,
+                // each of which is in the format "<time>*<index>".  This
+                // way the array can be sorted by <time> and the correlation to
+                // the <index> will be maintained.
+                $array[`size $array`] = ( $timeAsString + "*" + $connectTo );
+            }
+        }
+        
+        // Sort the array by Time
+        $array = `sort $array`;
+        
+        // Extract indices from array
+        for ( $key in $array )
+        {
+            tokenize $key "*" $tokens;
+            $keys[`size $keys`] = $tokens[1];
+        }
+    }
+
+    return $keys;
+}
+
+//===========================================================================
+// findEventAnimNode
+//===========================================================================
+// Description: Determines the p3dEventAnim node (if any) that is connected
+//              to the specified p3dEventKey node.
+//
+// Constraints: I had originally wanted this system to be flexible enough
+//              to allow a single p3dEventKey node to connect to multiple
+//              p3dEventAnim node.   While empirically this is still true,
+//              there is little benefit due to the fact that the UI update
+//              relies on a 1:1 relationship.
+//
+// Parameters:  string $eventKeyNode: The p3dEventKey node from which to
+//                                    query the connections.
+//
+// Return:      (string): The p3dEventAnim node, if found; else empty string.
+//
+//===========================================================================
+proc string findEventAnimNode( string $eventKeyNode )
+{
+    string $eventAnimNode = "";
+    
+    string $connections[] = `listConnections -plugs true -connections true ( $eventKeyNode + ".connect" )`;
+    
+    if ( `size $connections` > 0 )
+    {
+        $eventAnimNode = rootNode( $connections[1] );
+    }
+    
+    return $eventAnimNode;
+}
+
+//===========================================================================
+// EnforceDataStructure
+//===========================================================================
+// Description: The nature of event data imposes the restriction that ALL 
+//              data structures for each event list must have the same number
+//              of data elements, and that these elements must be of the
+//              same types.  This function queries a sorted key list from
+//              the specified p3dEventAnim node and enforces that the data
+//              structure for the first key be imposed upon all subsequent
+//              keys.
+//
+// Constraints: 
+//
+// Parameters:  string $eventAnimNode: The p3dEventAnim node - all keys
+//                                     associated with this node will be
+//                                     modified to meet the requirements.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc EnforceDataStructure( string $eventAnimNode )
+{
+    string $keys[] = getSortedKeys( $eventAnimNode );
+    
+    if ( `size $keys` > 1 )
+    {
+        string $baseNode = $keys[0];
+        
+        for ( $k = 1; $k < `size $keys`; $k++ )
+        {
+            int $numData = `getAttr -size ( $keys[0] + ".key" )`;
+            int $numExtra = `getAttr -size ( $keys[$k] + ".key" )`;
+            
+            // If data structure of additional keys contains more data elements
+            // than the first data structure, remove the excess.
+            while ( $numExtra > $numData )
+            {
+                $numExtra--;
+                removeMultiInstance -break true ( $keys[$k] + ".key[" + $numExtra + "]" );   
+
+            }
+
+            // Now set the types for all data elements so that they
+            // match across all keys.
+            while( $numData-- )
+            {
+                setAttr ( $keys[$k] + ".key[" + $numData + "].type" ) `getAttr ( $keys[0] + ".key[" + $numData + "].type" )`;
+            }
+        }
+    }
+}
+
+//===========================================================================
+// animChannelTable_FillRow
+//===========================================================================
+// Description: Generates the data content for an Event Key row.  The UI for 
+//              the Event's time, name and parameter has already been created;
+//              this is being created underneath it.
+//
+// Constraints: Only the row representing the first Event Key will offer
+//              a "Remove Data" function and the ability to change the
+//              type for a data element.
+//
+// Parameters:  string $actUI: The main formLayout generated for the
+//                             animChannelTable group, returned by
+//                             animChannelTable().
+//              string $keyUI: The columnLayout created to hold the data content.
+//                             This must be created prior to calling this function.
+//              string $eventKeyNode: The p3dEventKey node used to populate the
+//                                    row.
+//
+// Return:      (none)
+//
+//===========================================================================
+proc animChannelTable_FillRow( string $actUI, string $keyUI, string $eventKeyNode )
+{
+    setParent $keyUI;
+    
+    string $childArray[] = `columnLayout -q -ca $keyUI`;
+    for ( $child in $childArray )
+    {
+        deleteUI $child;
+    }
+
+    string $keys[] = getSortedKeys( findEventAnimNode( $eventKeyNode ) );
+    int $isBaseRow = $eventKeyNode == $keys[0];
+    
+    string $originalParent = `setParent -q`;
+
+    int $dataIndices[] = getDataIndices( $eventKeyNode, "key", "*type" );
+
+    for ( $key in $dataIndices )
+    {
+        string $attr = ( $eventKeyNode + ".key[" + $key + "]" );
+
+        string $rowUI = `rowLayout -width 200 -numberOfColumns 3 -columnWidth 1 24 -columnWidth 2 64 -adjustableColumn3 3`;
+
+            string $removeData = `symbolButton -width 24 -height 24 -image "smallTrash.xpm"`;
+            
+            string $keyTypeUI = `optionMenu`;
+                menuItem -label "bool";
+                menuItem -label "int";
+                menuItem -label "float";
+                menuItem -label "vector";
+                menuItem -label "string";
+                
+            string $keyDataUI = `textField`;
+            
+            setParent ..;
+        
+        int $keyType = `getAttr ( $eventKeyNode + ".key[" + $key + "].type" )`;
+        string $keyData = `getAttr ( $eventKeyNode + ".key[" + $key + "].data" )`;
+        
+        symbolButton -e
+            -c ( "animChannelTable_RemoveData " + $actUI + " " + $eventKeyNode + " " + $key )
+            -annotation "Remove this data element."
+            -visible $isBaseRow
+                $removeData;
+
+        // I wanted to implement this "inline" but it appears Maya imposes a 128-character limit
+        // for a -changeCommand, and this was exceeded given the length of the path to the
+        // optionMenu control.  Thus, it is implemented as a callback.
+        optionMenu -e 
+            -select ( $keyType + 1 )
+            -cc ( "animChannelTable_ReflectType \"#1\" " + $actUI + " " + $eventKeyNode + " " + $key )
+            -enable $isBaseRow
+            -annotation "Sets the type for this data element."
+                $keyTypeUI;
+        textField -e 
+            -cc ( "animChannelTable_SetData " + $keyDataUI + " " + $eventKeyNode + " " + $key )
+            -annotation "Contents of the data element."
+                $keyDataUI;
+                
+        animChannelTable_InterpretType( $eventKeyNode, $key, $keyDataUI );
+    }
+
+    if ( `setParent -q` != $originalParent )
+        error ( "animChannelTable_FillRow: Parent not restored!" );
+
+}
+
+//===========================================================================
+// animChannelTable_AddRow
+//===========================================================================
+// Description: Adds an Event Key row.  
+//
+//              Note: "Event Key" describes the line that displays the Time,
+//                    Name and Parameter fields.  An Event Key row corresponds 
+//                    to one p3dEventKey node connected to the p3dEventAnim node.
+//
+// Constraints: Only the row representing the first Event Key will offer an
+//              "Add Data Element" function.
+//
+// Parameters:  string $actUI: The main UI control created for this animChannelTable.
+//              string $tableUI: The formLayout UI control created to hold
+//                               the contents of this row.  This formLayout
+//                               must be created prior to calling this function.
+//              string $eventKeyNode: The p3dEventKey node used to populate
+//                                    this row.
+//
+// Return:      (none)
+//
+//===========================================================================
+proc animChannelTable_AddRow( string $actUI, string $tableUI, string $eventKeyNode )
+{
+    setParent $tableUI;
+
+    int $clientWidth = 200;
+    
+    string $originalParent = `setParent -q`;
+
+    int $vSpace = 2;
+    int $grouping = 0;
+    int $rMargin = 0;
+
+    // Get a list of layouts already in the UI
+    string $existingLayouts[] = `formLayout -q -ca $tableUI`;
+    int $isBaseRow = ( `size $existingLayouts` == 0 );
+
+    string $rowForm = `formLayout -width $clientWidth`;
+    
+        string $time = `intField -annotation "Event Time"`;
+        string $name = `textField -annotation "Event Name"`;
+        string $parameter = `intField -annotation "Event Parameter"`;
+        string $opMenu = `symbolButton -image "shelfOptions.xpm" -width 20 -annotation "Click for menu."`;
+            string $opPopMenu = `popupMenu -b 1`;
+
+        string $keyUI = `columnLayout -adj true -width $clientWidth`;
+
+            animChannelTable_FillRow( $actUI, $keyUI, $eventKeyNode );
+
+            setParent ..;
+        string $sep = `separator -height 8`;
+
+        setParent ..;
+        
+    formLayout -e
+        -af     $time           "top"       $vSpace
+        -af     $time           "left"      $grouping
+        -ap     $time           "right"     $grouping   10
+        -af     $name           "top"       $vSpace
+        -ap     $name           "left"      $grouping   10
+        -ap     $name           "right"     $grouping   80
+        -af     $opMenu         "top"       ( $vSpace + 2 )
+        -af     $opMenu         "right"     ( $grouping + $rMargin )
+        -af     $parameter      "top"       $vSpace
+        -ap     $parameter      "left"      $grouping   80
+        -ac     $parameter      "right"     $grouping   $opMenu
+        -ac     $keyUI          "top"       $grouping   $time
+        -ap     $keyUI          "left"      $grouping   10
+        -af     $keyUI          "right"     ( $grouping + $rMargin )
+        -ac     $sep            "top"       $grouping   $keyUI
+        -af     $sep            "left"      $grouping
+        -af     $sep            "right"     ( $grouping + $rMargin )
+            $rowForm;
+
+    // Fill values
+    intField -e 
+        -value ( `getAttr ( $eventKeyNode + ".time" )` ) 
+        -cc ( "setAttr " + $eventKeyNode + ".time #1" )
+            $time;
+
+    textField -e 
+        -text ( `getAttr ( $eventKeyNode + ".name" )` ) 
+        -cc ( "setAttr -type \"string\"" + $eventKeyNode + ".name \"#1\"" )
+            $name;
+    
+    intField -e
+        -value ( `getAttr ( $eventKeyNode + ".parameter" )` )
+        -cc ( "setAttr " + $eventKeyNode + ".parameter #1" )
+            $parameter;
+
+    // Assign commands
+    if ( $isBaseRow )
+    {
+        menuItem 
+            -parent $opPopMenu
+            -label "Add Data Element"
+            -c ( "animChannelTable_AddData " + $actUI + " " + $keyUI + " " + $eventKeyNode );
+    }
+
+    menuItem 
+        -parent $opPopMenu
+        -label "Delete Key"
+        -c ( "animChannelTable_DeleteKey " + $actUI + " " + $eventKeyNode );
+            
+    // If other layouts exist, attach this one below the previous.
+    if ( `size $existingLayouts` > 0 )
+    {
+        formLayout -e
+            -ac     $rowForm            "top"       $grouping   $existingLayouts[(`size $existingLayouts`)-1]
+                $tableUI;
+    }
+    // else attach it to the top of the formLayout.
+    else
+    {
+        formLayout -e
+            -af     $rowForm            "top"       $grouping
+                $tableUI;
+    }
+    
+    formLayout -e
+        -af     $rowForm            "left"      $grouping
+        -af     $rowForm            "right"     $grouping
+            $tableUI;
+
+    if ( `setParent -q` != $originalParent )
+        error ( "animChannelTable_AddRow: Parent not restored!" );
+}
+
+//===========================================================================
+// animChannelTable_Clear
+//===========================================================================
+// Description: Clears all Event Key rows from the specified animChannelTable group.
+//
+// Constraints: 
+//
+// Parameters:  string $actUI: The main formLayout generated for the
+//                             animChannelTable group, returned by
+//                             animChannelTable().
+//
+// Return:      (none)
+//
+//===========================================================================
+proc animChannelTable_Clear( string $actUI )
+{
+    string $tableUI = getTableUI( $actUI );
+    
+    if ( `formLayout -q -exists $tableUI` )
+    {
+        string $ca[] = `formLayout -q -childArray $tableUI`;
+        
+        for ( $child in $ca )
+        {
+            deleteUI $child;
+        }
+    }
+}
+
+//===========================================================================
+// animChannelTable_SetData
+//===========================================================================
+// Description: This is the -enterCallback for the textField representing a
+//              data element for an Event Key.  It writes the contents from
+//              the textField into the '.data' attribute on the p3dEventKey
+//              node.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $keyDataUI: The textField UI control representing the
+//                                 data element from the p3dEventKey node.
+//              string $eventKeyNode: The p3dEventKey node into which the
+//                                    data will be assigned.
+//              int $key: The index to the array for the data element;
+//                        specifically, p3dEventKey.key[ $key ].
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc animChannelTable_SetData( string $keyDataUI, string $eventKeyNode, int $key )
+{
+    string $data = `textField -q -text $keyDataUI`;
+    setAttr -type "string" ( $eventKeyNode + ".key[" + $key + "].data" ) $data;
+    animChannelTable_InterpretType( $eventKeyNode, $key, $keyDataUI );
+}
+
+//===========================================================================
+// animChannelTable_ReflectType
+//===========================================================================
+// Description: Uses the setting from the Type optionMenu and sets the 
+//              .type attribute on the p3dEventKey accordingly.  The entire
+//              UI is then rebuilt.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $type: The value returned by the optionMenu; one of
+//                            "bool", "int", "float", "vector" or "string".
+//              string $actUI: The main formLayout generated for the
+//                             animChannelTable group, returned by
+//                             animChannelTable().
+//              string $eventKeyNode: The p3dEventKey node for which the
+//                                    .type attribute is assigned.
+//              int $key: The index for the .key array attribute.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc animChannelTable_ReflectType( string $type, string $actUI, string $eventKeyNode, int $key )
+{
+    string $attr = ( $eventKeyNode + ".key[" + $key + "].type" );
+    int $typeValue = 0;
+    
+    switch ( $type )
+    {
+        case "bool":
+        {
+            $typeValue = 0;
+            break;
+        }
+        case "int":
+        {
+            $typeValue = 1;
+            break;
+        }
+        case "float":
+        {
+            $typeValue = 2;
+            break;
+        }
+        case "vector":
+        {
+            $typeValue = 3;
+            break;
+        }
+        case "string":
+        {
+            $typeValue = 4;
+            break;
+        }
+        default:
+        {
+            error "animChannelTable_ReflectType: Unknown type!";
+        }
+    }
+    
+    setAttr $attr $typeValue;
+    
+//    animChannelTable_InterpretType( $eventKeyNode, $key, $keyDataUI );
+
+    animChannelTable_Update( $actUI, findEventAnimNode( $eventKeyNode ) );
+}
+
+//===========================================================================
+// animChannelTable_InterpretType
+//===========================================================================
+// Description: Interprets the current Type for a data element, and queries
+//              the appropriate .data* attribute from the p3dEventKey node,
+//              writing the returned value into the textField UI control
+//              that represents the data element.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $eventKeyNode: The p3dEventKey node from which the
+//                                    data is queried.
+//              int $key: Zero-based index for the .key array attribute.
+//              string $keyDataUI: The textField UI control into which 
+//                                 the data is displayed.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc animChannelTable_InterpretType( string $eventKeyNode, int $key, string $keyDataUI )
+{
+    int $type = `getAttr ( $eventKeyNode + ".key[" + $key + "].type" )`;
+
+    string $data;
+    
+    switch( $type )
+    {
+        case 0:     // bool
+        {
+            int $boolValue = `getAttr ( $eventKeyNode + ".key[" + $key + "].dataBool" )`;
+            $data = ( $boolValue ? "true" : "false" );
+            break;
+        }
+        case 1:     // int
+        {
+            $data = `getAttr ( $eventKeyNode + ".key[" + $key + "].dataInt" )`;
+            break;
+        }
+        case 2:     // float
+        {
+            float $floatValue = `getAttr ( $eventKeyNode + ".key[" + $key + "].dataFloat" )`;
+            $data = precision( $floatValue, 4 );
+            break;
+        }
+        case 3:     // vector
+        {
+            float $floatArray[3] = `getAttr ( $eventKeyNode + ".key[" + $key + "].dataVector" )`;
+            $data = ( precision( $floatArray[0], 4 ) + " " + precision( $floatArray[1], 4 ) + " " + precision( $floatArray[2], 4 ) );
+            break;
+        }
+        case 4:     // string
+        default:
+        {
+            $data = `getAttr ( $eventKeyNode + ".key[" + $key + "].data" )`;
+            break;
+        }
+    }
+    
+    textField -e -text $data $keyDataUI;
+}
+
+//===========================================================================
+// animChannelTable_Update
+//===========================================================================
+// Description: Completely reconstructs the animChannelTable.  All contents
+//              of the table are deleted and recreated.
+//
+// Constraints: Callback; must be global
+//
+// Parameters:  string $actUI: The main formLayout generated for the
+//                             animChannelTable group, returned by
+//                             animChannelTable().
+//              string $eventAnimNode: The p3dEventAnim node for which the
+//                                     data will represent.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc animChannelTable_Update( string $actUI, string $eventAnimNode )
+{
+    string $newKeyUI = "animChannelNewKeyUI";
+    string $refreshUI = "animChannelRefreshUI";
+
+    EnforceDataStructure( $eventAnimNode );
+    
+    string $tableUI = getTableUI( $actUI );
+    
+    if ( $tableUI != "" )
+    {
+        setParent $tableUI;
+
+        if ( `formLayout -q -exists $tableUI` && `objExists $eventAnimNode` )
+        {
+            animChannelTable_Clear( $actUI );
+
+            string $eventAnimKeys[] = getSortedKeys( $eventAnimNode );
+
+            // Add time/name/parameter rows
+            for ( $eventAnimKey in $eventAnimKeys )
+            {
+                string $eventKeyNode = rootNode( $eventAnimKey );
+                animChannelTable_AddRow( $actUI, $tableUI, $eventKeyNode );
+            }
+
+            button -e
+                -c ( "animChannelTable_AddKey " + $actUI + " " + $eventAnimNode )
+                    $newKeyUI;
+            
+            button -e
+                -c ( "animChannelTable_Update " + $actUI + " " + $eventAnimNode )
+                    $refreshUI;
+        }
+
+    }
+    
+    resizeScrollArea( $actUI );
+}
+
+//===========================================================================
+// animChannelTable_AddData
+//===========================================================================
+// Description: Adds a new data element to an Event Key.
+//              A new data element is "create" simply by assigning the
+//              .key[].data attribute to a NULL string.  Maya automatically
+//              generates a logical index from the assignment, and this new
+//              index then appears in a 'listAttr' query.
+//
+//              Note: "Data Element" describes the one or more data items
+//                    displayed below each Event Key.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $actUI: The main formLayout generated for the
+//                             animChannelTable group, returned by
+//                             animChannelTable().
+//              string $keyUI: The columnLayout created to hold the data content.
+//              string $eventKeyNode: The p3dEventKey node used to populate the
+//                                    row.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc animChannelTable_AddData( string $actUI, string $keyUI, string $eventKeyNode )
+{
+    int $index = FirstAvailableDataIndex( $eventKeyNode, "key", "*type" );
+    setAttr -type "string" ( $eventKeyNode + ".key[" + $index + "].data" ) "";
+    
+//    animChannelTable_FillRow( $actUI, $keyUI, $eventKeyNode );
+//    resizeScrollArea( $actUI );
+
+    animChannelTable_Update( $actUI, findEventAnimNode( $eventKeyNode ) );
+}
+
+//===========================================================================
+// animChannelTable_RemoveData
+//===========================================================================
+// Description: Removes a data element from an Event Key.  (The _only_ way
+//              to remove an array element is to use the 'removeMultiInstance'
+//              MEL command.)  The entire UI is then rebuilt.
+//
+//              Note: "Data Element" describes the one or more data items
+//                    displayed below each Event Key.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $actUI: The main formLayout generated for the
+//                             animChannelTable group, returned by
+//                             animChannelTable().
+//              string $eventKeyNode: The p3dEventKey node from which
+//                                    the data element is deleted.
+//              int $key: Zero-based index for the array the represents
+//                        the data element to be removed.
+//
+// Return:      
+//
+//===========================================================================
+global proc animChannelTable_RemoveData( string $actUI, string $eventKeyNode, int $key )
+{
+    removeMultiInstance -break true ( $eventKeyNode + ".key[" + $key + "]" );   
+//    animChannelTable_FillRow( $actUI, $keyUI, $eventKeyNode );
+//    resizeScrollArea( $actUI );
+
+    animChannelTable_Update( $actUI, findEventAnimNode( $eventKeyNode ) );
+}
+
+//===========================================================================
+// animChannelTable_AddKey
+//===========================================================================
+// Description: Adds an Event Key.  This is done by created a p3dEventKey node
+//              and connecting the '.key' attribute on the specified p3dEventAnim
+//              node to the '.connect' attribute on the new p3dEventKey node.
+//
+//              Note: "Event Key" describes the line that displays the Time,
+//                    Name and Parameter fields.  An Event Key row corresponds 
+//                    to one p3dEventKey node connected to the p3dEventAnim node.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $actUI: The main formLayout generated for the
+//                             animChannelTable group, returned by
+//                             animChannelTable().
+//              string $eventAnimNode: The p3dEventNode node for which
+//                                     the Event Key is created/connected.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc animChannelTable_AddKey( string $actUI, string $eventAnimNode )
+{
+    string $select[] = `ls -sl`;
+    string $node = `createNode p3dEventKey`;
+//    connectAttr -na ( $node + ".time" ) ( $eventAnimNode + ".key" );
+    connectAttr ( $eventAnimNode + ".key" ) ( $node + ".connect" );
+
+    // Set this new key's time to be 1 greater than the largest time.    
+    string $keys[] = `getSortedKeys( $eventAnimNode )`;
+    int $numKeys = `size $keys`;
+    if ( $numKeys > 0 )
+    {
+        setAttr ( $node + ".time" ) ( `getAttr ( $keys[ $numKeys - 1 ]  + ".time" )` + 1 );
+    }
+
+    select -r $select;
+
+    animChannelTable_Update( $actUI, $eventAnimNode );
+    
+}
+
+//===========================================================================
+// animChannelTable_DeleteKey
+//===========================================================================
+// Description: Deletes an Event Key.  This is done by disconnecting and
+//              deleting the specified p3dEventKey node.  The entire UI
+//              is then rebuilt.
+//
+//              Note: "Event Key" describes the line that displays the Time,
+//                    Name and Parameter fields.  An Event Key row corresponds 
+//                    to one p3dEventKey node connected to the p3dEventAnim node.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $actUI: The main formLayout generated for the
+//                             animChannelTable group, returned by
+//                             animChannelTable().
+//              string $eventKeyNode: The p3dEventKey node that is to be
+//                                    deleted.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc animChannelTable_DeleteKey( string $actUI, string $eventKeyNode )
+{
+    if ( `objExists $eventKeyNode` ) 
+    {
+        string $eventAnimNode = "";
+        
+        // Maya _deletes_ the p3dEventAnim node along with the p3dEventKey node
+        // if the two are connected!  (What the hell??)
+        // Thus, must disconnect the two before deleting the node.
+        if ( `connectionInfo -isDestination ( $eventKeyNode + ".connect" )` )
+        {
+            string $connections[] = `listConnections -plugs true -connections true ( $eventKeyNode + ".connect" )`;
+            disconnectAttr $connections[1] $connections[0];
+            
+            $eventAnimNode = rootNode( $connections[1] );
+        }
+
+        delete $eventKeyNode;
+        
+        if ( `objExists $eventAnimNode` && ( `nodeType $eventAnimNode` == "p3dEventAnim" ) )
+        {
+            animChannelTable_Update( $actUI, $eventAnimNode );
+        }
+    }
+
+    resizeScrollArea( $actUI );
+}
+
+//===========================================================================
+// animChannelTable
+//===========================================================================
+// Description: This is the main call to generate a table UI to display the
+//              contents/connections to a p3dEventAnim node.
+//
+//              This is an example of a OOP-based MEL control, whereby all
+//              related functions are derived from the UI control represented
+//              by the returned string from this function.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The UI control which serves as the parent
+//                              for this control group.
+//              string $eventAnimNode: The p3dEventAnim node for which the
+//                                     data in this table will represent.
+//              string $name: The name for the root UI control created
+//                            for this group.
+//
+// Return:      
+//
+//===========================================================================
+global proc string animChannelTable( string $parent, string $eventAnimNode, string $name )
+{
+    if ( assertCurrent() ) error ( "Please update animChannel.mel" );
+    
+    string $newKeyUI = "animChannelNewKeyUI";
+    string $refreshUI = "animChannelRefreshUI";
+
+    setParent $parent;
+    
+    string $originalParent = `setParent -q`;
+
+    string $actUI = `formLayout $name`;
+
+        string $scrollUI = `scrollLayout -childResizable true actScrollUI`;
+
+            string $tableUI = `formLayout`;
+
+                setParent ..;
+
+            if ( `setParent -q` != $scrollUI ) error ( "animChannelTable_Update() did not restore parent!" );
+            
+            setParent ..;
+
+        if ( `setParent -q` != $actUI ) error ( "animChannelTable did not restore formLayout parent!" );
+            
+        button -label "New Key" -annotation "Append a new Event Key." $newKeyUI;
+        button -label "Refresh" -annotation "Redraw the Event Table." $refreshUI;
+
+        setParent ..;
+
+    formLayout -e
+        -af     $scrollUI               "top"       0
+        -af     $scrollUI               "left"      0
+        -af     $scrollUI               "right"     0
+        -ac     $scrollUI               "bottom"    4   $newKeyUI
+        
+        -af     $newKeyUI               "left"      0
+        -ap     $newKeyUI               "right"     2   50
+        -af     $newKeyUI               "bottom"    0
+        -ap     $refreshUI              "left"      2   50
+        -af     $refreshUI              "right"     0               
+        -af     $refreshUI              "bottom"    0
+            $actUI;
+
+    button -e
+        -c ( "animChannelTable_AddKey " + $actUI + " " + $eventAnimNode )
+            $newKeyUI;
+            
+    button -e
+        -c ( "animChannelTable_Update " + $actUI + " " + $eventAnimNode )
+            $refreshUI;
+            
+    animChannelTable_Update( $actUI, $eventAnimNode );
+
+//    if ( `setParent -q` != $originalParent )
+//        error ( "Parent not restored!" );
+        
+    return $actUI;
+}
+
+/*
+if ( `window -exists actWindow` ) deleteUI -window actWindow;
+window actWindow;
+// frameLayout actFrame;
+//string $form = `columnLayout -adj true`;
+showWindow actWindow;
+
+animChannelTable actWindow p3dEventAnim1 actUI;
+*/
+
+/* 
+
+file -f -new;
+createNode p3dEventAnim;
+createNode p3dEventKey;
+createNode p3dEventKey;
+connectAttr -na p3dEventKey1.time p3dEventAnim1.key;
+connectAttr -na p3dEventKey2.time p3dEventAnim1.key;
+
+setAttr p3dEventKey1.time 42;
+setAttr p3dEventKey1.key[0].type 3;
+setAttr -type "string" p3dEventKey1.key[0].data "3.14 1.23 0.707";
+
+setAttr p3dEventKey2.time 16;
+setAttr p3dEventKey2.key[0].type 2;
+setAttr -type "string" p3dEventKey2.key[0].data "42.616687";
+
+source animChannelTable;
+
+*/

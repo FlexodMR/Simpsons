@@ -1,0 +1,313 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>ExtUtils::Liblist - determine libraries to use and how to use them
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#EXTRALIBS">EXTRALIBS</A>
+		<LI><A HREF="#LDLOADLIBS_and_LD_RUN_PATH">LDLOADLIBS and LD_RUN_PATH</A>
+		<LI><A HREF="#BSLOADLIBS">BSLOADLIBS</A>
+	</UL>
+
+	<LI><A HREF="#PORTABILITY">PORTABILITY</A>
+	<UL>
+
+		<LI><A HREF="#VMS_implementation">VMS implementation</A>
+		<LI><A HREF="#Win32_implementation">Win32 implementation</A>
+	</UL>
+
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+ExtUtils::Liblist - determine libraries to use and how to use them
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<CODE>require ExtUtils::Liblist;</CODE>
+
+
+
+
+<P>
+
+<CODE>ExtUtils::Liblist::ext($self, $potential_libs, $verbose);</CODE>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This utility takes a list of libraries in the form <CODE>-llib1 -llib2
+-llib3</CODE> and prints out lines suitable for inclusion in an extension Makefile. Extra
+library paths may be included with the form
+<CODE>-L/another/path</CODE> this will affect the searches for all subsequent libraries.
+
+
+<P>
+
+It returns an array of four scalar values: 
+<FONT SIZE=-1>EXTRALIBS,</FONT> 
+<FONT SIZE=-1>BSLOADLIBS,</FONT> 
+<FONT SIZE=-1>LDLOADLIBS,</FONT> and 
+<FONT SIZE=-1>LD_RUN_PATH.</FONT> Some of these don't mean anything on 
+<FONT SIZE=-1>VMS</FONT> and Win32. See the details about those platform specifics below.
+
+
+
+<P>
+
+Dependent libraries can be linked in one of three ways:
+
+
+<P>
+
+<UL>
+<LI><STRONG><A NAME="item_For">For static extensions
+
+</A></STRONG>
+by the ld command when the perl binary is linked with the extension library. See 
+<FONT SIZE=-1>EXTRALIBS</FONT> below.
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_For">For dynamic extensions
+
+</A></STRONG>
+by the ld command when the shared object is built/linked. See 
+<FONT SIZE=-1>LDLOADLIBS</FONT> below.
+
+
+<P>
+
+<LI><STRONG>For dynamic extensions
+
+</A></STRONG>
+by the DynaLoader when the shared object is loaded. See 
+<FONT SIZE=-1>BSLOADLIBS</FONT> below.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H2><A NAME="EXTRALIBS">EXTRALIBS
+
+</A></H2>
+List of libraries that need to be linked with when linking a perl binary
+which includes this extension Only those libraries that actually exist are
+included. These are written to a file and used when linking perl.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="LDLOADLIBS_and_LD_RUN_PATH">LDLOADLIBS and LD_RUN_PATH
+
+</A></H2>
+List of those libraries which can or must be linked into the shared library when created using ld. These may be static or dynamic libraries. 
+<FONT SIZE=-1>LD_RUN_PATH</FONT> is a colon separated list of the directories in 
+<FONT SIZE=-1>LDLOADLIBS.</FONT> It is passed as an environment variable to the process that links the shared library.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="BSLOADLIBS">BSLOADLIBS
+
+</A></H2>
+List of those libraries that are needed but can be linked in dynamically at run time on this platform. SunOS/Solaris does not need this because ld records the information (from 
+<FONT SIZE=-1>LDLOADLIBS)</FONT> into the object file. This list is used to create a .bs (bootstrap) file.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="PORTABILITY">PORTABILITY
+
+</A></H1>
+This module deals with a lot of system dependencies and has quite a few
+architecture specific <STRONG>if</STRONG>s in the code.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="VMS_implementation">VMS implementation
+
+</A></H2>
+The version of <CODE>ext()</CODE> which is executed under 
+<FONT SIZE=-1>VMS</FONT> differs from the Unix-OS/2 version in several
+respects:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+Input library and path specifications are accepted with or without the
+<CODE>-l</CODE> and <CODE>-L</CODE> prefices used by Unix linkers. If neither prefix is present, a token is considered a directory to search if it is in fact a directory, and a library to search for otherwise. Authors who wish their extensions to be portable to Unix or 
+<FONT SIZE=-1>OS/2</FONT> should use the Unix prefixes, since the Unix-OS/2 version of <CODE>ext()</CODE> requires them.
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Wherever possible, shareable images are preferred to object libraries, and object libraries to plain object files. In accordance with 
+<FONT SIZE=-1>VMS</FONT> naming conventions, <CODE>ext()</CODE> looks for files named
+ <EM>lib</EM>shr and <EM>lib</EM>rtl; it also looks for <EM>lib</EM>lib and lib<EM>lib</EM> to accomodate Unix conventions used in some ported software.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+For each library that is found, an appropriate directive for a linker
+options file is generated. The return values are space-separated strings of
+these directives, rather than elements used on the linker command line.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+
+<FONT SIZE=-1>LDLOADLIBS</FONT> and 
+<FONT SIZE=-1>EXTRALIBS</FONT> are always identical under 
+<FONT SIZE=-1>VMS,</FONT> and 
+<FONT SIZE=-1>BSLOADLIBS</FONT> and 
+<FONT SIZE=-1>LD_RIN_PATH</FONT> are always empty.
+
+
+
+<P>
+
+</UL>
+In addition, an attempt is made to recognize several common Unix library names, and filter them out or convert them to their 
+<FONT SIZE=-1>VMS</FONT> equivalents, as appropriate.
+
+
+
+<P>
+
+In general, the 
+<FONT SIZE=-1>VMS</FONT> version of <CODE>ext()</CODE> should properly handle input from extensions originally designed for a Unix or 
+<FONT SIZE=-1>VMS</FONT> environment. If you encounter problems, or discover cases where the search could be improved, please let us know.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Win32_implementation">Win32 implementation
+
+</A></H2>
+The version of <CODE>ext()</CODE> which is executed under Win32 differs
+from the Unix-OS/2 version in several respects:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+Input library and path specifications are accepted with or without the
+<CODE>-l</CODE> and <CODE>-L</CODE> prefices used by Unix linkers.  <CODE>-lfoo</CODE> specifies the library <CODE>foo.lib</CODE> and <CODE>-Ls:ome\dir</CODE> specifies a directory to look for the libraries that follow. If neither
+prefix is present, a token is considered a directory to search if it is in
+fact a directory, and a library to search for otherwise. The <CODE>$Config{lib_ext}</CODE> suffix will be appended to any entries that are not directories and don't already have the suffix. Authors who wish their extensions to be portable to Unix or 
+<FONT SIZE=-1>OS/2</FONT> should use the Unix prefixes, since the Unix-OS/2 version of <CODE>ext()</CODE> requires them.
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Entries cannot be plain object files, as many Win32 compilers will not
+handle object files in the place of libraries.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+If <CODE>$potential_libs</CODE> is empty, the return value will be empty. Otherwise, the libraries
+specified by <CODE>$Config{libs}</CODE> (see Config.pm) will be appended to the list of <CODE>$potential_libs</CODE>. The libraries will be searched for in the directories specified in <CODE>$potential_libs</CODE>
+as well as in <CODE>$Config{libpth}</CODE>. For each library that is found, a space-separated list of fully qualified
+library pathnames is generated. You may specify an entry that matches <CODE>/:nodefault/i</CODE> in
+<CODE>$potential_libs</CODE> to disable the appending of default libraries found in <CODE>$Config{libs}</CODE> (this should be only needed very rarely).
+
+
+<P>
+
+<LI><STRONG></STRONG>
+The libraries specified may be a mixture of static libraries and import
+libraries (to link with DLLs). Since both kinds are used pretty
+transparently on the win32 platform, we do not attempt to distinguish
+between them.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+
+<FONT SIZE=-1>LDLOADLIBS</FONT> and 
+<FONT SIZE=-1>EXTRALIBS</FONT> are always identical under Win32, and 
+<FONT SIZE=-1>BSLOADLIBS</FONT> and 
+<FONT SIZE=-1>LD_RUN_PATH</FONT> are always empty (this may change in future).
+
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/ExtUtils/MakeMaker.html">MakeMaker</A>
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,211 @@
+;=========================================================================================
+; VU1 snow
+; Amit Bakshi
+;=========================================================================================
+
+
+#define TIME         VF25x
+#define MAXY         VF25y
+#define MINY         VF25z
+#define NUMP         VF25w
+
+
+#define _SNOWGIFTAG      VI15
+
+#define _UV1         VF19
+#define _UV0         VF20
+#define _COL         VF21
+#define _SQ1         VF22
+#define _SQ0         VF23
+#define _SNOWPOS     VF24
+#define _CTX         VF25
+#define _CTM0        VF26
+#define _CTM1        VF27
+#define _CTM2        VF28
+#define _CTM3        VF29
+#define _VPS         VF30
+#define _VPO         VF31
+
+.macro DBREAK
+   nop[d] nop
+   nop    nop
+.endm   
+
+
+VU_SNOW:
+
+; amb jun27/2002
+; for now I have to comment this out cause we ran out of vu code
+#if 1
+   nop[e]                  nop
+   nop                     nop
+#else
+   nop                     b VU_SNOW
+   nop                     nop
+
+   ; load context
+   nop                     xitop vi01
+   nop                     xitop vi02
+   
+   nop                     lq _CTM0 , 0(vi01)
+   nop                     lq _CTM1 , 1(vi01)
+   nop                     lq _CTM2 , 2(vi01)
+   nop                     lq _CTM3 , 3(vi01)
+   
+   nop                     lq _VPS  , 4(vi01)
+   nop                     lq _VPO  , 5(vi01)
+   
+   nop                     lq _SNOWPOS , 6(vi01)
+   nop                     lq _CTX  , 7(vi01)
+   nop                     lq _SQ0  , 8(vi01)
+   nop                     lq _SQ1  , 9(vi01)
+   nop                     lq _COL  ,10(vi01)
+   nop                     lq _UV0  ,11(vi01)
+   nop                     lq _UV1  ,12(vi01)
+
+   ; 13 is giftag  
+   nop                     lq     vf01, 13(vi01)
+   
+   nop                     mtir   vi05, NUMP   
+   nop                     iaddiu vi04, vi01 , 16   ; start of source verts
+
+   nop                     iadd   vi06, vi04 , vi05 ; dest = contextSize + numVerts*2
+   nop                     iadd   vi06, vi06 , vi05 ; 
+   
+   nop                     iaddiu _SNOWGIFTAG,vi06,0    ; store location of giftag
+   nop                     sq     vf01,0(vi06)      ; store gifTag
+   nop                     iaddiu vi06,vi06,1       ; first output goes after giftag
+      
+   
+   ;----------------------------------------------------------   
+   ; VU_SNOW_LOOP
+   ;----------------------------------------------------------   
+   VU_SNOW_LOOP:
+   
+   nop                           lq vf01, 0(vi04)         ; vf01 = hi (source)
+   nop                           lq vf02, 1(vi04)         ; vf02 = lo (dest)   
+   nop                           lq vf03, 1(vi04)         ; vf03w = period
+
+   nop                           div q, vf00w, vf03w      ; q = 1/period
+
+   nop                           lq vf04, 2(vi04)         ; vf04 = 2nd hi vert
+   nop                           lq vf05, 3(vi04)         ; vf05 = 2nd lo vert
+   nop                           lq vf06, 3(vi04)         ; vf06w = period
+   
+   ; setup so vf01 = source , vf02 = dest
+   addy.y vf01y, vf00y, MAXY     lq _SQ0  , 8(vi02)       ; copy the bounding y into the verts
+   addz.y vf02y, vf00y, MINY     lq _SQ1  , 9(vi02)
+   
+   addy.y vf04y, vf00y, MAXY     nop
+   addz.y vf05y, vf00y, MINY     fcset 0                  
+   
+   mulq.x vf03x, TIME , q        nop
+
+   addx.w vf01w, vf00w, vf00x    div q, vf00w, vf06w     ; make w = 1.0, start q = 1/period
+   addx.w vf02w, vf00w, vf00x    nop      
+
+   addx.w vf04w, vf00w, vf00x    nop                     ; make w = 1.0, start q = 1/period
+   addx.w vf05w, vf00w, vf00x    nop  
+   
+   ftoi0.x vf15x,vf03x           nop   
+
+   sub.xyz vf10, vf02, vf01      nop         ; vf10 = diff   
+   add.xyz vf11, _SNOWPOS,vf01   nop         ; vf11 = snowPos + hi
+   
+   mulq.x vf06x, TIME, q         nop         ; vf06x = time / period   
+   itof0.x vf15x,vf15x           nop   
+      
+   sub.xyz vf12, vf05, vf04      nop         ; vf12 = diff
+   add.xyz vf13,_SNOWPOS,vf04    nop         ; vf13 = snowPos + hi
+   
+   ; make period between[0..1] 
+
+   ftoi0.x vf16x,vf06x           nop      
+   subx.x  vf03x,vf03x,vf15x     nop
+   
+   itof0.x vf16x,vf16x           nop
+   subx.x  vf06x,vf06x,vf16x     nop
+
+   mulx.xyz vf10, vf10, vf03x    nop         ; vf10 = diff * t
+   mulx.xyz vf12, vf12, vf06x    nop   
+   
+   add.xyz  vf10, vf10, vf11     nop         ; vf05 = snowPos + hi + diff*t         
+   add.xyz  vf12, vf12, vf13     nop         ; vf05 = snowPos + hi + diff*t         
+
+   mulaw  ACC , _CTM3, vf00      nop      
+   maddaz ACC , _CTM2, vf10      nop
+   madday ACC , _CTM1, vf10      nop
+   maddx  vf03, _CTM0, vf10      nop
+   
+   mulaw  ACC , _CTM3, vf00      nop      
+   maddaz ACC , _CTM2, vf12      nop
+   madday ACC , _CTM1, vf12      nop
+   maddx  vf06, _CTM0, vf12      nop
+
+   clipw.xyz vf03,vf03w          div q , vf00w, vf03w    ; q = 1/w   
+   
+   mul.xyz  vf01,vf03, _VPS      nop
+   mul.xyz  vf02,vf03, _VPS      nop   
+
+   nop                           nop
+   
+   nop                           fcand  vi01, 0x3ffff
+   nop                           iaddiu vi10,vi01,0x7fff ; ADC clip flag is in vi01
+   nop                           fcset 0   
+
+   mulq.xyz  vf01,vf01,q         nop
+   mulq.xyz  vf02,vf02,q         nop
+
+   clipw.xyz vf06,vf06w          div q , vf00w, vf06w
+      
+   ; generate the two points
+   mulq.xy   _SQ0,_SQ0, q        nop
+   mulq.xy   _SQ1,_SQ1, q        nop
+   
+   nop                           nop
+   nop                           nop
+
+   add.xyz  vf01,vf01,_SQ0       fcand vi01,0x3ffff
+   add.xyz  vf02,vf02,_SQ1       iaddiu vi11,vi01,0x7fff
+      
+   mulq.xyz  vf06,vf06,q         nop
+   
+   mul.xyz  vf04,vf06, _VPS      lq _SQ0,8(vi02)
+   mul.xyz  vf05,vf06, _VPS      lq _SQ1,9(vi02)
+   
+   add.xyz  vf01,vf01, _VPO      nop
+   add.xyz  vf02,vf02, _VPO      nop
+   
+   add.xyz  vf04,vf04, _VPO      nop
+   add.xyz  vf05,vf05, _VPO      nop   
+   
+   mulq.xy   _SQ0,_SQ0, q        sq _UV0 , 0(vi06)  ; store the resulting sprite   
+   mulq.xy   _SQ1,_SQ1, q        sq _UV1 , 2(vi06)   
+   
+   add.xyz  vf04,vf04,_SQ0       sq _UV0 , 4(vi06)  ; store the resulting sprite   
+   add.xyz  vf05,vf05,_SQ1       sq _UV1 , 6(vi06)
+      
+   ftoi4.xyz vf01,vf01           iaddiu vi06,vi06,8
+   ftoi4.xyz vf02,vf02           nop   
+   
+   ftoi4.xyz vf04,vf04           iaddi  vi05,vi05,-2  ; decr loop counter
+   ftoi4.xyz vf05,vf05           iaddiu vi04,vi04,4   ; incr src pointer      
+   
+   nop                           mfir.w vf01w, vi10 ; store ADC - FIXME not gonna work
+   nop                           mfir.w vf02w, vi10   
+   nop                           mfir.w vf04w, vi11 ; store ADC - FIXME not gonna work
+   nop                           mfir.w vf05w, vi11   
+
+   nop                           sq vf01 , -7(vi06)
+   nop                           sq vf02 , -5(vi06)   
+   nop                           sq vf04 , -3(vi06)
+   
+   ; loop over points   
+   nop                           ibgtz vi05,VU_SNOW_LOOP
+   nop                           sq vf05 , -1(vi06)   
+   
+   ;----------------------------------------------------------
+   ; xgkick
+   nop[e]                        xgkick _SNOWGIFTAG
+   nop                           nop
+#endif

@@ -1,0 +1,90 @@
+global proc AEp3dEmitterBlendStateNodeTemplate( string $nodeName )
+{
+   editorTemplate -beginScrollLayout;
+
+      //now you can i.e. hide some of every Maya nodes default attributes
+      editorTemplate -suppress "input";
+      editorTemplate -suppress "caching";
+      editorTemplate -suppress "nodeState";
+      editorTemplate -suppress "controlPoints";
+      editorTemplate -suppress "weights";
+      editorTemplate -suppress "tweak";
+      editorTemplate -suppress "relativeTweak";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "compInstObjGroups";
+      editorTemplate -suppress "castsShadows";
+      editorTemplate -suppress "motionBlur";
+      editorTemplate -suppress "primaryVisibility";
+      editorTemplate -suppress "visibleInReflections";
+      editorTemplate -suppress "visibleInRefractions";
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "geometryAntialiasingOverride";
+      editorTemplate -suppress "antialiasingLevel";
+      editorTemplate -suppress "shadingSamplesOverride";
+      editorTemplate -suppress "shadingSamples";
+      editorTemplate -suppress "maxShadingSamples";
+      editorTemplate -suppress "volumeSamplesOverride";
+      editorTemplate -suppress "volumeSamples";
+      editorTemplate -suppress "maxVisibilitySamplesOverride";
+      editorTemplate -suppress "maxVisibilitySamples";
+      editorTemplate -suppress "boundingBoxScale"; 
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "smoothShading";
+      editorTemplate -suppress "drawOverride";
+      editorTemplate -suppress "useObjectColor";
+      editorTemplate -suppress "objectColor";
+      editorTemplate -suppress "intermediateObject";
+      editorTemplate -suppress "visibility";
+      editorTemplate -suppress "lodVisibility";
+      editorTemplate -suppress "template";
+
+      editorTemplate -beginLayout "Generator Attributes";
+         editorTemplate -addControl "generatorType";
+         editorTemplate -addControl "horizEmissionSpread";
+         editorTemplate -addControl "vertEmissionSpread";
+         editorTemplate -addControl "radialVariance";
+         editorTemplate -addControl "length";
+         editorTemplate -addControl "height";
+         editorTemplate -addControl "width";
+      editorTemplate -endLayout;
+
+      editorTemplate -beginLayout "Emitter Attributes";
+         editorTemplate -addControl "emissionRate";
+         editorTemplate -addControl "maxNumberOfParticles";
+         editorTemplate -addControl "numberOfParticles";
+      editorTemplate -endLayout;
+
+      editorTemplate -beginLayout "Particle Attributes";
+         editorTemplate -addControl "particleType";
+         editorTemplate -addControl "infiniteLife";
+         editorTemplate -addControl "life";
+         editorTemplate -addControl "lifeVariance";
+         editorTemplate -addControl "speed";
+         editorTemplate -addControl "speedVariance";
+         editorTemplate -addControl "weight";
+         editorTemplate -addControl "weightVariance";
+         editorTemplate -addControl "gravity";
+         editorTemplate -addControl "drag";
+         editorTemplate -addControl "rotationalCohesion";
+         editorTemplate -addControl "translationalCohesion";
+
+         editorTemplate -beginLayout "Sprite Particle Attributes";
+            editorTemplate -addControl "particleAngleType";
+            editorTemplate -addControl "colour";
+            editorTemplate -addControl "colourVariance";
+            editorTemplate -addControl "alpha";
+            editorTemplate -addControl "alphaVariance";            
+            editorTemplate -addControl "spin";
+            editorTemplate -addControl "spinVariance";
+            editorTemplate -addControl "size";
+            editorTemplate -addControl "sizeVariance";
+         editorTemplate -endLayout;
+
+      editorTemplate -endLayout;
+
+	editorTemplate -addExtraControls;
+
+   editorTemplate -endScrollLayout;
+}

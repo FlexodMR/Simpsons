@@ -1,0 +1,167 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>AutoSplit - split a package for autoloading
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CAVEATS">CAVEATS</A>
+	<LI><A HREF="#DIAGNOSTICS">DIAGNOSTICS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+AutoSplit - split a package for autoloading
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> perl -e 'use AutoSplit; autosplit_lib_modules(@ARGV)' ...
+</PRE>
+
+<P>
+
+<PRE> use AutoSplit; autosplit($file, $dir, $keep, $check, $modtime);
+</PRE>
+
+<P>
+
+for perl versions 5.002 and later:
+
+
+<P>
+
+<PRE> perl -MAutoSplit -e 'autosplit($ARGV[0], $ARGV[1], $k, $chk, $modtime)' ...
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This function will split up your program into files that the AutoLoader
+module can handle. It is used by both the standard perl libraries and by
+the MakeMaker utility, to automatically configure libraries for
+autoloading.
+
+
+<P>
+
+The <CODE>autosplit</CODE> interface splits the specified file into a hierarchy rooted at the
+directory <A HREF="#item__dir">$dir</A>. It creates directories as needed to reflect class hierarchy, and creates
+the file <EM>autosplit.ix</EM>. This file acts as both forward declaration of all package routines, and
+as timestamp for the last update of the hierarchy.
+
+
+<P>
+
+The remaining three arguments to <CODE>autosplit</CODE> govern other options to the autosplitter. If the third argument, <EM>$keep</EM>, is false, then any pre-existing
+<CODE>*.al</CODE> files in the autoload directory are removed if they are no longer part of
+the module (obsoleted functions). The fourth argument, <EM>$check</EM>, instructs <CODE>autosplit</CODE> to check the module currently being split to ensure that it does include a <A HREF="#item_use">use</A> specification for the AutoLoader module, and skips the module if AutoLoader
+is not detected. Lastly, the <EM>$modtime</EM>
+argument specifies that <CODE>autosplit</CODE> is to check the modification time of the module against that of the <CODE>autosplit.ix</CODE> file, and only split the module if it is newer.
+
+
+<P>
+
+Typical use of AutoSplit in the perl MakeMaker utility is via the
+command-line with:
+
+
+<P>
+
+<PRE> perl -e 'use AutoSplit; autosplit($ARGV[0], $ARGV[1], 0, 1, 1)'
+</PRE>
+
+<P>
+
+Defined as a Make macro, it is invoked with file and directory arguments;
+<CODE>autosplit</CODE> will split the specified file into the specified directory and delete
+obsolete <CODE>.al</CODE> files, after checking first that the module does use the AutoLoader, and
+ensuring that the module is not already currently split in its current form
+(the modtime test).
+
+
+<P>
+
+The <CODE>autosplit_lib_modules</CODE> form is used in the building of perl. It takes as input a list of files
+(modules) that are assumed to reside in a directory
+<STRONG>lib</STRONG> relative to the current directory. Each file is sent to the autosplitter
+one at a time, to be split into the directory <STRONG>lib/auto</STRONG>.
+
+
+<P>
+
+In both usages of the autosplitter, only subroutines defined following the
+perl special marker <EM>__END__</EM> are split out into separate files. Some routines may be placed prior to
+this marker to force their immediate loading and parsing.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CAVEATS">CAVEATS
+
+</A></H1>
+Currently, <A HREF="#item_AutoSplit">AutoSplit</A> cannot handle multiple package specifications within one file.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DIAGNOSTICS">DIAGNOSTICS
+
+</A></H1>
+<A HREF="#item_AutoSplit">AutoSplit</A> will inform the user if it is necessary to create the top-level directory
+specified in the invocation. It is preferred that the script or
+installation process that invokes <A HREF="#item_AutoSplit">AutoSplit</A> have created the full directory path ahead of time. This warning may
+indicate that the module is being split into an incorrect path.
+
+
+<P>
+
+<A HREF="#item_AutoSplit">AutoSplit</A> will warn the user of all subroutines whose name causes potential file
+naming conflicts on machines with drastically limited (8 characters or
+less) file name length. Since the subroutine name is used as the file name,
+these warnings can aid in portability to such systems.
+
+
+<P>
+
+Warnings are issued and the file skipped if <A HREF="#item_AutoSplit">AutoSplit</A> cannot locate either the <EM>__END__</EM> marker or a ``package Name;''-style specification.
+
+
+<P>
+
+<A HREF="#item_AutoSplit">AutoSplit</A> will also emit general diagnostics for inability to create directories or
+files.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

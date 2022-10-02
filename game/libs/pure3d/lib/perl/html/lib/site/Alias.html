@@ -1,0 +1,542 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>alias - declare symbolic aliases for perl data
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Functions">Functions</A>
+		<LI><A HREF="#Configuration_Variables">Configuration Variables</A>
+		<LI><A HREF="#Exports">Exports</A>
+	</UL>
+
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#VERSION">VERSION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+alias - declare symbolic aliases for perl data
+
+
+<P>
+
+attr - auto-declare hash attributes for convenient access
+
+
+<P>
+
+const - define compile-time scalar constants
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Alias qw(alias const attr);
+    alias TEN =&gt; $ten, Ten =&gt; \$ten, Ten =&gt; \&amp;ten,
+          Ten =&gt; \@ten, Ten =&gt; \%ten, TeN =&gt; \*ten;
+    {
+       local @Ten;
+       my $ten = [1..10];
+       alias Ten =&gt; $ten;   # local @Ten
+    }
+</PRE>
+
+<P>
+
+<PRE>    const pi =&gt; 3.14, ten =&gt; 10;
+</PRE>
+
+<P>
+
+<PRE>    package Foo;
+    use Alias;
+    sub new { bless {foo =&gt; 1, _bar =&gt; [2, 3]}, $_[0] }
+    sub a_method {
+       my $s = attr shift;
+       # $foo, @_bar are now local aliases for
+       # $_[0]{foo}, @{$_[0]{_bar}} etc.
+    }
+</PRE>
+
+<P>
+
+<PRE>    sub b_method {
+      local $Alias::KeyFilter = &quot;_&quot;;
+      local $Alias::AttrPrefix = &quot;main::&quot;;
+      my $s = attr shift;
+      # local @::_bar is now available, ($foo, $::foo are not)
+    }
+</PRE>
+
+<P>
+
+<PRE>    sub c_method {
+      local $Alias::KeyFilter = sub { $_ = shift; return (/^_/ ? 1 : 0) };
+      local $Alias::AttrPrefix = sub {
+                                       $_ = shift;
+                                       s/^_(.+)$/main::$1/;
+                                       return $_
+                                     };
+      my $s = attr shift;
+      # local @::bar is now available, ($foo, $::foo are not)
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Provides general mechanisms for aliasing perl data for convenient access.
+
+
+<P>
+
+This module works by putting some values on the symbol table with
+user-supplied names. Values that are references will get dereferenced into
+their base types. This means that a value of <CODE>[1,2,3]</CODE> with a name of ``foo'' will be made available as <CODE>@foo</CODE>, not <CODE>$foo</CODE>.
+
+
+<P>
+
+The exception to this rule is the default behavior of the <A HREF="#item_attr">attr</A> function, which will not dereference values which are blessed references
+(aka objects). See <EM>$Alias</EM> for how to change this default behavior.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Functions">Functions
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_alias">alias
+
+</A></STRONG><DD>
+Given a list of name =&gt; value pairs, declares aliases in the <A HREF="#item_caller">caller</A>s namespace. If the value supplied is a reference, the alias is created for
+the underlying value instead of the reference itself (there is no need to
+use this module to alias references--they are automatically ``aliased'' on
+assignment). This allows the user to alias most of the basic types.
+
+
+<P>
+
+If the value supplied is a scalar compile-time constant, the aliases become
+read-only. Any attempt to write to them will fail with a run time error. 
+
+
+<P>
+
+Aliases can be dynamically scoped by pre-declaring the target variable as
+<A HREF="#item_local">local</A>. Using <A HREF="#item_attr">attr</A> for this purpose is more convenient, and recommended.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_attr">attr
+
+</A></STRONG><DD>
+Given a hash reference, aliases the values of the hash to the names that
+correspond to the keys. It always returns the supplied value. The aliases
+are local to the enclosing block. If any of the values are unblessed
+references, they are available as their dereferenced types. Thus the action
+is similar to saying:
+
+
+<P>
+
+<PRE>    alias %{$_[0]}
+</PRE>
+
+<P>
+
+but, in addition, also localizes the aliases, and does not dereference
+objects. Dereferencing of objects can be forced by setting the <CODE>Deref</CODE>
+option. See <EM>$Alias</EM>.
+
+
+<P>
+
+This can be used for convenient access to hash values and hash-based object
+attributes.  
+
+
+<P>
+
+Note that this makes available the semantics of <A HREF="#item_local">local</A> subroutines and methods. That makes for some nifty possibilities. We could
+make truly private methods by putting anonymous subs within an object.
+These subs would be available within methods where we use <A HREF="#item_attr">attr</A>, and will not be visible to the outside world as normal methods. We could
+forbid recursion in methods by always putting an empty sub in the object
+hash with the same key as the method name. This would be useful where a
+method has to run code from other modules, but cannot be certain whether
+that module will call it back again.
+
+
+<P>
+
+The default behavior is to create aliases for all the entries in the hash,
+in the callers namespace. This can be controlled by setting a few options.
+See <A HREF="#Configuration_Variables">Configuration Variables</A> for details.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_const">const
+
+</A></STRONG><DD>
+This is simply a function alias for <A HREF="#item_alias">alias</A>, described above. Provided on demand at <A HREF="#item_use">use</A> time, since it reads better for constant declarations. Note that hashes and
+arrays cannot be so <A HREF="#item_const">const</A>rained.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Configuration_Variables">Configuration Variables
+
+</A></H2>
+The following configuration variables can be used to control the behavior
+of the <A HREF="#item_attr">attr</A> function. They are typically set after the <CODE>use Alias;</CODE>
+statement. Another typical usage is to <A HREF="#item_local">local</A>ize them in a block so that their values are only effective within that
+block.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__Alias_KeyFilter">$Alias::KeyFilter
+
+</A></STRONG><DD>
+Specifies the key prefix used for determining which hash entries will be
+interned by <A HREF="#item_attr">attr</A>. Can be a 
+<FONT SIZE=-1>CODE</FONT> reference, in which case it will be called with
+the key, and the boolean return value will determine if that hash entry is
+a candidate attribute.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__Alias_AttrPrefix">$Alias::AttrPrefix
+
+</A></STRONG><DD>
+Specifies a prefix to prepend to the names of localized attributes created
+by <A HREF="#item_attr">attr</A>. Can be a 
+<FONT SIZE=-1>CODE</FONT> reference, in which case it will be called with
+the key, and the result will determine the full name of the attribute. The
+value can have embedded package delimiters (``::'' or ``'''), which cause
+the attributes to be interned in that namespace instead of the <A HREF="#item_caller">caller</A>s own namespace. For example, setting it to ``main::'' makes <CODE>use strict 'vars';</CODE>
+somewhat more palatable (since we can refer to the attributes as <CODE>$::foo</CODE>, etc., without actually declaring the attributes).
+
+
+<P>
+
+<DT><STRONG><A NAME="item__Alias_Deref">$Alias::Deref
+
+</A></STRONG><DD>
+Controls the implicit dereferencing behavior of <A HREF="#item_attr">attr</A>. If it is set to ``'' or 0, <A HREF="#item_attr">attr</A> will not dereference blessed references. If it is a true value (anything but ``'', 0, or a 
+<FONT SIZE=-1>CODE</FONT> reference), all references will be made available as their dereferenced types, including values that may be objects. The default is ``''.
+
+
+
+<P>
+
+This option can be used as a filter if it is set to a 
+<FONT SIZE=-1>CODE</FONT> reference, in which case it will be called with
+the key and the value (whenever the value happens to be a reference), and
+the boolean return value will determine if that particular reference must
+be dereferenced.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Exports">Exports
+
+</A></H2>
+<DL>
+<DT><STRONG>alias
+
+</A></STRONG><DD>
+<DT><STRONG>attr
+
+</A></STRONG><DD>
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+Run these code snippets and observe the results to become more familiar
+with the features of this module.
+
+
+<P>
+
+<PRE>    use Alias qw(alias const attr);
+    $ten = 10;
+    alias TEN =&gt; $ten, Ten =&gt; \$ten, Ten =&gt; \&amp;ten,
+          Ten =&gt; \@ten, Ten =&gt; \%ten;
+    alias TeN =&gt; \*ten;  # same as *TeN = *ten
+</PRE>
+
+<P>
+
+<PRE>    # aliasing basic types
+    $ten = 20;   
+    print &quot;$TEN|$Ten|$ten\n&quot;;   # should print &quot;20|20|20&quot;
+    sub ten { print &quot;10\n&quot;; }
+    @ten = (1..10);
+    %ten = (a..j);
+    &amp;Ten;                       # should print &quot;10&quot;
+    print @Ten, &quot;|&quot;, %Ten, &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    # this will fail at run time
+    const _TEN_ =&gt; 10;
+    eval { $_TEN_ = 20 };
+    print $@ if $@;
+</PRE>
+
+<P>
+
+<PRE>    # dynamically scoped aliases
+    @DYNAMIC = qw(m n o);
+    {
+       my $tmp = [ qw(a b c d) ];
+       local @DYNAMIC;
+       alias DYNAMIC =&gt; $tmp, PERM =&gt; $tmp;
+</PRE>
+
+<P>
+
+<PRE>       $DYNAMIC[2] = 'zzz';
+       # prints &quot;abzzzd|abzzzd|abzzzd&quot;
+       print @$tmp, &quot;|&quot;, @DYNAMIC, &quot;|&quot;, @PERM, &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>       @DYNAMIC = qw(p q r);
+       # prints &quot;pqr|pqr|pqr&quot;
+       print @$tmp, &quot;|&quot;, @DYNAMIC, &quot;|&quot;, @PERM, &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+<PRE>    # prints &quot;mno|pqr&quot;
+    print @DYNAMIC, &quot;|&quot;, @PERM, &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    # named closures
+    my($lex) = 'abcd';
+    $closure = sub { print $lex, &quot;\n&quot; };
+    alias NAMEDCLOSURE =&gt; \&amp;$closure;
+    NAMEDCLOSURE();            # prints &quot;abcd&quot;
+    $lex = 'pqrs';
+    NAMEDCLOSURE();            # prints &quot;pqrs&quot;
+</PRE>
+
+<P>
+
+<PRE>    # hash/object attributes
+    package Foo;
+    use Alias;
+    sub new { 
+      bless 
+        { foo =&gt; 1, 
+          bar =&gt; [2,3], 
+          buz =&gt; { a =&gt; 4},
+          privmeth =&gt; sub { &quot;private&quot; },
+          easymeth =&gt; sub { die &quot;to recurse or to die, is the question&quot; },
+        }, $_[0]; 
+    }
+</PRE>
+
+<P>
+
+<PRE>    sub easymeth {
+      my $s = attr shift;    # localizes $foo, @bar, %buz etc with values
+      eval { $s-&gt;easymeth }; # should fail
+      print $@ if $@;
+</PRE>
+
+<P>
+
+<PRE>      # prints &quot;1|2|3|a|4|private|&quot;
+      print join '|', $foo, @bar, %buz, $s-&gt;privmeth, &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $foo = 6;
+    @bar = (7,8);
+    %buz = (b =&gt; 9);
+    Foo-&gt;new-&gt;easymeth;       # this will not recurse endlessly
+</PRE>
+
+<P>
+
+<PRE>    # prints &quot;6|7|8|b|9|&quot;
+    print join '|', $foo, @bar, %buz, &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    # this should fail at run-time
+    eval { Foo-&gt;new-&gt;privmeth };
+    print $@ if $@;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTES">NOTES
+
+</A></H1>
+It is worth repeating that the aliases created by <A HREF="#item_alias">alias</A> and <A HREF="#item_const">const</A> will be created in the <A HREF="#item_caller">caller</A>s namespace (we can use the <CODE>AttrPrefix</CODE> option to specify a different namespace for <A HREF="#item_attr">attr</A>). If that namespace happens to be
+<A HREF="#item_local">local</A>ized, the aliases created will be local to that block.  <A HREF="#item_attr">attr</A>
+localizes the aliases for us.
+
+
+<P>
+
+Remember that references will be available as their dereferenced types.
+
+
+<P>
+
+Aliases cannot be lexical, since, by neccessity, they live on the symbol
+table. 
+
+
+<P>
+
+Lexicals can be aliased. Note that this provides a means of reversing the
+action of anonymous type generators <CODE>\</CODE>, <CODE>[]</CODE> and <CODE>{}</CODE>. This allows us to anonymously construct data or code and give it a
+symbol-table presence when we choose.
+
+
+<P>
+
+Any occurrence of <CODE>::</CODE> or <CODE>'</CODE> in names will be treated as package qualifiers, and the value will be
+interned in that namespace.
+
+
+<P>
+
+Remember that aliases are very much like references, only we don't have to
+dereference them as often. Which means we won't have to pound on the
+dollars so much.
+
+
+<P>
+
+We can dynamically make subroutines and named closures with this scheme.
+
+
+<P>
+
+It is possible to alias packages, but that might be construed as abuse.
+
+
+<P>
+
+Using this module will dramatically reduce noise characters in
+object-oriented perl code.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+<CODE>use strict 'vars';</CODE> is not very usable, since we <STRONG>depend</STRONG> so much on the symbol table. You can declare the attributes with <CODE>use vars</CODE> to avoid warnings. Setting <CODE>$Alias::AttrPrefix</CODE> to ``main::'' is one way to avoid <CODE>use vars</CODE> and frustration.
+
+
+<P>
+
+Tied variables cannot be aliased properly, yet.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VERSION">VERSION
+
+</A></H1>
+Version 2.2 1 December 1996
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gurusamy Sarathy <A HREF="MAILTO:gsar@umich.edu">gsar@umich.edu</A>
+
+
+<P>
+
+Copyright (c) 1995-97 Gurusamy Sarathy. All rights reserved. This program
+is free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<CODE>perl(1)</CODE>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

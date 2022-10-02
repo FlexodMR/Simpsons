@@ -1,0 +1,1723 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Math::MatrixBool - Matrix of Booleans
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OVERLOADED_OPERATORS">OVERLOADED OPERATORS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#VERSION">VERSION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#LICENSE_AGREEMENT">LICENSE AGREEMENT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Math::MatrixBool - Matrix of Booleans
+
+
+<P>
+
+Easy manipulation of matrices of booleans (Boolean Algebra)
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<UL>
+<LI><STRONG></STRONG>
+<CODE>use Math::MatrixBool;</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$new_matrix = new Math::MatrixBool($rows,$columns);</CODE>
+
+
+
+
+<P>
+
+the matrix object constructor method
+
+
+<P>
+
+An exception is raised if the necessary memory cannot be allocated.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$new_matrix = Math::MatrixBool-&gt;new($rows,$columns);</CODE>
+
+
+
+
+<P>
+
+alternate way of calling the matrix object constructor method
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$new_matrix = $some_matrix-&gt;</CODE><A HREF="#item_new_">new($rows,$columns);</A>
+
+
+
+
+<P>
+
+still another way of calling the matrix object constructor method
+($some_matrix is not affected by this)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$new_matrix = Math::MatrixBool-&gt;</CODE><CODE>new_from_string($string);</CODE>
+
+
+
+
+<P>
+
+This method allows you to read in a matrix from a string (for instance,
+from the keyboard, from a file or from your code).
+
+
+<P>
+
+The syntax is simple: each row must start with ``<CODE>[ </CODE>'' and end with ``<CODE><PRE> ]\n
+</PRE>
+</CODE>'' (``<A HREF="#item__n">\n</A>'' being the newline character and ``<CODE><PRE> 
+</PRE>
+</CODE>'' a space or tab) and contain one or more numbers, all separated from each
+other by spaces or tabs.
+
+
+<P>
+
+Additional spaces or tabs can be added at will, but no comments.
+
+
+<P>
+
+Numbers are either ``0'' or ``1''.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $string = &quot;[ 1 0 0 ]\n[ 1 1 0 ]\n[ 1 1 1 ]\n&quot;;
+    $matrix = Math::MatrixBool-&gt;new_from_string($string);
+    print &quot;$matrix&quot;;
+</PRE>
+
+<P>
+
+By the way, this prints
+
+
+<P>
+
+<PRE>    [ 1 0 0 ]
+    [ 1 1 0 ]
+    [ 1 1 1 ]
+</PRE>
+
+<P>
+
+But you can also do this in a much more comfortable way using the
+shell-like ``here-document'' syntax:
+
+
+<P>
+
+<PRE>    $matrix = Math::MatrixBool-&gt;new_from_string(&lt;&lt;'MATRIX');
+    [  1  0  0  0  0  0  1  ]
+    [  0  1  0  0  0  0  0  ]
+    [  0  0  1  0  0  0  0  ]
+    [  0  0  0  1  0  0  0  ]
+    [  0  0  0  0  1  0  0  ]
+    [  0  0  0  0  0  1  0  ]
+    [  1  0  0  0  0  0  1  ]
+    MATRIX
+</PRE>
+
+<P>
+
+You can even use variables in the matrix:
+
+
+<P>
+
+<PRE>    $c1  =  $A1 * $x1 - $b1 &gt;= 0  ?&quot;1&quot;:&quot;0&quot;;
+    $c1  =  $A2 * $x2 - $b2 &gt;= 0  ?&quot;1&quot;:&quot;0&quot;;
+    $c1  =  $A3 * $x3 - $b3 &gt;= 0  ?&quot;1&quot;:&quot;0&quot;;
+</PRE>
+
+<P>
+
+<PRE>    $matrix = Math::MatrixBool-&gt;new_from_string(&lt;&lt;&quot;MATRIX&quot;);
+</PRE>
+
+<P>
+
+<PRE>        [   1    0    0   ]
+        [   0    1    0   ]
+        [  $c1  $c2  $c3  ]
+</PRE>
+
+<P>
+
+<PRE>    MATRIX
+</PRE>
+
+<P>
+
+(Remember that you may use spaces and tabs to format the matrix to your
+taste)
+
+
+<P>
+
+Note that this method uses exactly the same representation for a matrix as
+the ``stringify'' operator ``'': this means that you can convert any matrix
+into a string with <CODE>$string = "$matrix";</CODE> and read it back in later (for instance from a file!).
+
+
+<P>
+
+If the string you supply (or someone else supplies) does not obey the
+syntax mentioned above, an exception is raised, which can be caught by
+``eval'' as follows:
+
+
+<P>
+
+<PRE>    print &quot;Please enter your matrix (in one line): &quot;;
+    $string = &lt;STDIN&gt;;
+    $string =~ s/\\n/\n/g;
+    eval { $matrix = Math::MatrixBool-&gt;new_from_string($string); };
+    if ($@)
+    {
+        print &quot;$@&quot;;
+        # ...
+        # (error handling)
+    }
+    else
+    {
+        # continue...
+    }
+</PRE>
+
+<P>
+
+or as follows:
+
+
+<P>
+
+<PRE>    eval { $matrix = Math::MatrixBool-&gt;new_from_string(&lt;&lt;&quot;MATRIX&quot;); };
+    [   1    0    0   ]
+    [   0    1    0   ]
+    [  $c1  $c2  $c3  ]
+    MATRIX
+    if ($@)
+    # ...
+</PRE>
+
+<P>
+
+Actually, the method shown above for reading a matrix from the keyboard is
+a little awkward, since you have to enter a lot of ``\n'''s for the
+newlines.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> better way is shown in this piece of code:
+
+
+<P>
+
+<PRE>  while (1)
+  {
+      print &quot;\nPlease enter your matrix &quot;;
+      print &quot;(multiple lines, &lt;ctrl-D&gt; = done):\n&quot;;
+      eval { $new_matrix =
+          Math::MatrixBool-&gt;new_from_string(join('',&lt;STDIN&gt;)); };
+      if ($@)
+      {
+          $@ =~ s/\s+at\b.*?$//;
+          print &quot;${@}Please try again.\n&quot;;
+      }
+      else { last; }
+  }
+</PRE>
+
+<P>
+
+Possible error messages of the ``new_from_string()'' method are:
+
+
+<P>
+
+<PRE>    Math::MatrixBool::new_from_string(): syntax error in input string
+    Math::MatrixBool::new_from_string(): empty input string
+</PRE>
+
+<P>
+
+If the input string has rows with varying numbers of columns, the following warning will be printed to 
+<FONT SIZE=-1>STDERR:</FONT>
+
+
+
+<P>
+
+<PRE>    Math::MatrixBool::new_from_string(): missing elements will be set to zero!
+</PRE>
+
+<P>
+
+If everything is okay, the method returns an object reference to the (newly
+allocated) matrix containing the elements you specified.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($rows,$columns) = $matrix-&gt;Dim();</CODE>
+
+
+
+
+<P>
+
+returns the dimensions (= number of rows and columns) of the given matrix
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix-&gt;Empty();</CODE>
+
+
+
+
+<P>
+
+sets all elements in the matrix to ``0''
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix-&gt;Fill();</CODE>
+
+
+
+
+<P>
+
+sets all elements in the matrix to ``1''
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix-&gt;Flip();</CODE>
+
+
+
+
+<P>
+
+flips (i.e., complements) all elements in the given matrix
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix-&gt;Zero();</CODE>
+
+
+
+
+<P>
+
+sets all elements in the matrix to ``0''
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix-&gt;One();</CODE>
+
+
+
+
+<P>
+
+fills the matrix with one's in the main diagonal and zero's elsewhere
+
+
+<P>
+
+Note that multiplying this matrix with itself yields the same matrix again
+(provided it is quadratic)!
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix-&gt;Bit_On($row,$column);</CODE>
+
+
+
+
+<P>
+
+sets a given element to ``1''
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix-&gt;Insert($row,$column);</CODE>
+
+
+
+
+<P>
+
+alias for ``Bit_On()'', deprecated
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix-&gt;Bit_Off($row,$column);</CODE>
+
+
+
+
+<P>
+
+sets a given element to ``0''
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix-&gt;Delete($row,$column);</CODE>
+
+
+
+
+<P>
+
+alias for ``Bit_Off()'', deprecated
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$boolean = $matrix-&gt;</CODE><CODE>bit_flip($row,$column);</CODE>
+
+
+
+
+<P>
+
+flips (i.e., complements) a given element and returns its new value
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$boolean = $matrix-&gt;</CODE><CODE>flip($row,$column);</CODE>
+
+
+
+
+<P>
+
+alias for ``bit_flip()'', deprecated
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$boolean = $matrix-&gt;</CODE><CODE>bit_test($row,$column);</CODE>
+
+
+
+
+<P>
+
+tests wether a given element is set
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$boolean = $matrix-&gt;</CODE><CODE>contains($row,$column);</CODE>
+
+
+
+
+<P>
+
+tests wether a given element is set (alias for ``bit_test()'')
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$boolean = $matrix-&gt;</CODE><CODE>in($row,$column);</CODE>
+
+
+
+
+<P>
+
+alias for ``bit_test()'', deprecated
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$elements = $matrix-&gt;Number_of_elements();</CODE>
+
+
+
+
+<P>
+
+calculates the number of elements contained in the given matrix
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$norm_max = $matrix-&gt;Norm_max();</CODE>
+
+
+
+
+<P>
+
+calculates the ``maximum''-norm of the given matrix
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$norm_one = $matrix-&gt;Norm_one();</CODE>
+
+
+
+
+<P>
+
+calculates the ``1''-norm of the given matrix
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix1-&gt;Addition($matrix2,$matrix3);</CODE>
+
+
+
+
+<P>
+
+calculates the sum of matrix2 and matrix3 and stores the result in matrix1
+(in-place is also possible)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$product_matrix = $matrix1-&gt;Multiplication($matrix2);</CODE>
+
+
+
+
+<P>
+
+calculates the product of matrix1 and matrix2 and returns an object
+reference to a new matrix where the result is stored
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$closure = $matrix-&gt;Kleene();</CODE>
+
+
+
+
+<P>
+
+computes the reflexive transitive closure of the given matrix and returns a
+new matrix containing the result. (The original matrix is not changed by
+this in any way!)
+
+
+<P>
+
+Uses a variant of Kleene's algorithm. See <A HREF="/n|/perl/html/./lib/Math/Kleene_3_.html">Kleene(3)</A> for more details about this algorithm!
+
+
+<P>
+
+This algorithm is mainly used in graph theory: Each position in the matrix
+corresponds to a (directed!) possible connection (``edge'') between two
+points (``vortices'') of a graph. Each position in the matrix contains a
+``1'' if the corresponding edge is part of the graph and a ``0'' if not.
+
+
+<P>
+
+Computing the closure of this matrix means to find out if there is a path
+from any vortice of the graph to any other (a path consisting of one or
+more edges).
+
+
+<P>
+
+Note that there are more applications of Kleene's algorithm in other fields
+as well (see also Math::MatrixReal(3), DFA::Kleene(3), Math::Kleene(3)).
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix1-&gt;Union($matrix2,$matrix3);</CODE>
+
+
+
+
+<P>
+
+calculates the union of matrix2 and matrix3 and stores the result in
+matrix1 (in-place is also possible)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix1-&gt;Intersection($matrix2,$matrix3);</CODE>
+
+
+
+
+<P>
+
+calculates the intersection of matrix2 and matrix3 and stores the result in
+matrix1 (in-place is also possible)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix1-&gt;Difference($matrix2,$matrix3);</CODE>
+
+
+
+
+<P>
+
+calculates matrix2 ``minus'' matrix3 ( = matrix2 \ matrix3 ) and stores the
+result in matrix1 (in-place is also possible)
+
+
+<P>
+
+Note that this is set difference, not matrix difference! Matrix difference
+degenerates to (= is the same as) matrix addition in a Boolean Algebra!!
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix1-&gt;ExclusiveOr($matrix2,$matrix3);</CODE>
+
+
+
+
+<P>
+
+calculates the exclusive-or (which in the case of a Boolean Algebra happens
+to be the same as the addition) of matrix2 and matrix3 and stores the
+result in matrix1 (in-place is also possible)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix1-&gt;Complement($matrix2);</CODE>
+
+
+
+
+<P>
+
+calculates the complement of matrix2 and stores the result in matrix1
+(in-place is also possible)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$boolean = $matrix1-&gt;equal($matrix2);</CODE>
+
+
+
+
+<P>
+
+tests if matrix1 is the same as matrix2
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$boolean = $matrix1-&gt;subset($matrix2);</CODE>
+
+
+
+
+<P>
+
+tests if matrix1 is a subset of matrix2
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$boolean = $matrix1-&gt;inclusion($matrix2);</CODE>
+
+
+
+
+<P>
+
+alias for ``subset()'', deprecated
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$boolean = $matrix1-&gt;lexorder($matrix2);</CODE>
+
+
+
+
+<P>
+
+tests if matrix1 comes lexically before matrix2, i.e., if (matrix1 &lt;=
+matrix2) holds, as though the two bit vectors used to represent the two
+matrices were two large numbers in binary representation
+
+
+<P>
+
+(Note that this is an <STRONG>arbitrary</STRONG> order relationship!)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$result = $matrix1-&gt;Compare($matrix2);</CODE>
+
+
+
+
+<P>
+
+lexically compares matrix1 and matrix2 and returns -1, 0 or 1 if (matrix1
+&lt; matrix2), (matrix1 == matrix2) or (matrix1 &gt; matrix2) holds,
+respectively
+
+
+<P>
+
+(Again, the two bit vectors representing the two matrices are compared as
+though they were two large numbers in binary representation)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$matrix1-&gt;Copy($matrix2);</CODE>
+
+
+
+
+<P>
+
+copies the contents of matrix2 to an <STRONG>ALREADY EXISTING</STRONG> matrix1
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$new_matrix = $some_matrix-&gt;Shadow();</CODE>
+
+
+
+
+<P>
+
+returns an object reference to a <STRONG>NEW</STRONG> but <STRONG>EMPTY</STRONG> matrix of the <STRONG>SAME SIZE</STRONG> as some_matrix
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$twin_matrix = $some_matrix-&gt;Clone();</CODE>
+
+
+
+
+<P>
+
+returns an object reference to a <STRONG>NEW</STRONG> matrix of the <STRONG>SAME SIZE</STRONG> as some_matrix; the contents of some_matrix have <STRONG>ALREADY BEEN COPIED</STRONG>
+to the new matrix
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<STRONG>Hint: method names all in lower case indicate a boolean return value!</STRONG>
+
+
+
+
+<P>
+
+(Except for ``<A HREF="#item_new">new()</A>'' and ``<CODE>new_from_string()</CODE>'', of course!)
+
+
+<P>
+
+</UL>
+Please refer to <A HREF="#OVERLOADED_OPERATORS">OVERLOADED OPERATORS</A> below for ways of using overloaded operators instead of explicit method
+calls in order to facilitate calculations with matrices!
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This class lets you dynamically create boolean matrices of arbitrary size
+and perform all the basic operations for matrices on them, like
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__">-
+
+</A></STRONG><DD>
+setting or deleting elements,
+
+
+<P>
+
+<DT><STRONG>-
+
+</A></STRONG><DD>
+testing wether a certain element is set,
+
+
+<P>
+
+<DT><STRONG>-
+
+</A></STRONG><DD>
+computing the sum, difference, product, closure and complement of matrices,
+
+
+<P>
+
+(you can also compute the union, intersection, difference and exclusive-or
+of the underlying bit vector)
+
+
+<P>
+
+<DT><STRONG>-
+
+</A></STRONG><DD>
+copying matrices,
+
+
+<P>
+
+<DT><STRONG>-
+
+</A></STRONG><DD>
+testing two matrices for equality or inclusion (subset relationship), and
+
+
+<P>
+
+<DT><STRONG>-
+
+</A></STRONG><DD>
+computing the number of elements and the norm of a matrix.
+
+
+<P>
+
+</DL>
+Please refer to <A HREF="#OVERLOADED_OPERATORS">OVERLOADED OPERATORS</A> below for ways of using overloaded operators instead of explicit method
+calls in order to facilitate calculations with matrices!
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="OVERLOADED_OPERATORS">OVERLOADED OPERATORS
+
+</A></H1>
+Calculations with matrices can not only be performed with explicit method
+calls using this module, but also through ``magical'' overloaded arithmetic
+and relational operators.
+
+
+<P>
+
+For instance, instead of writing
+
+
+<P>
+
+<PRE>    $matrix1 = Math::MatrixBool-&gt;new($rows,$columns);
+    $matrix2 = Math::MatrixBool-&gt;new($rows,$columns);
+    $matrix3 = Math::MatrixBool-&gt;new($rows,$columns);
+</PRE>
+
+<P>
+
+<PRE>    [...]
+</PRE>
+
+<P>
+
+<PRE>    $matrix3-&gt;Multiplication($matrix1,$matrix2);
+</PRE>
+
+<P>
+
+you can just say
+
+
+<P>
+
+<PRE>    $matrix1 = Math::MatrixBool-&gt;new($rows,$columns);
+    $matrix2 = Math::MatrixBool-&gt;new($rows,$columns);
+</PRE>
+
+<P>
+
+<PRE>    [...]
+</PRE>
+
+<P>
+
+<PRE>    $matrix3 = $matrix1 * $matrix2;
+</PRE>
+
+<P>
+
+That's all!
+
+
+<P>
+
+Here is the list of all ``magical'' overloaded operators and their
+semantics (meaning):
+
+
+<P>
+
+Unary operators: '-', '~', 'abs', testing, '!', '``'''
+
+
+<P>
+
+Binary (arithmetic) operators: '+', '*', '|', '-', '&amp;', '^'
+
+
+<P>
+
+Binary (relational) operators: '==', '!=', '&lt;', '&lt;=', '&gt;', '&gt;='
+
+
+<P>
+
+Binary (relational) operators: 'cmp', 'eq', 'ne', 'lt', 'le', 'gt', 'ge'
+
+
+<P>
+
+Note that both arguments to a binary operator from the list above must be
+matrices; numbers or other types of data are not permitted as arguments and
+will produce an error message.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__">'-'
+
+</A></STRONG><DD>
+Unary Minus ( <CODE>$matrix2 = -$matrix1;</CODE> )
+
+
+<P>
+
+Same as ``Complement''. See ``Complement'' below.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__">'~'
+
+</A></STRONG><DD>
+Complement ( <CODE>$matrix2 = ~$matrix1;</CODE> )
+
+
+<P>
+
+The operator '~' (or unary '-') computes the complement of the given
+matrix.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_abs">abs
+
+</A></STRONG><DD>
+Absolute Value ( <CODE>$no_of_elem = abs($matrix);</CODE> )
+
+
+<P>
+
+Here, the absolute value of a matrix has been defined as the number of
+elements the given matrix contains. This is <STRONG>NOT</STRONG> the same as the ``norm'' of a matrix!
+
+
+<P>
+
+<DT><STRONG><A NAME="item_test">test
+
+</A></STRONG><DD>
+Boolean Test ( <CODE>if ($matrix) { ... }</CODE> )
+
+
+<P>
+
+You can actually test a matrix as though it were a boolean value.
+
+
+<P>
+
+No special operator is needed for this; Perl automatically calls the
+appropriate method in this package if ``$matrix'' is a blessed reference to
+an object of the ``Math::MatrixBool'' class or one of its derived classes.
+
+
+<P>
+
+This operation returns ``true'' (1) if the given matrix is not empty and
+``false'' ('') otherwise.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__">'!'
+
+</A></STRONG><DD>
+Negated Boolean Test ( <CODE>if (! $matrix) { ... }</CODE> )
+
+
+<P>
+
+You can also perform a negated test on a matrix as though it were a boolean
+value. For example:
+
+
+<P>
+
+<PRE>    if (! $matrix) { ... }
+</PRE>
+
+<P>
+
+<PRE>    unless ($matrix) { ... }     #  internally, same as above!
+</PRE>
+
+<P>
+
+This operation returns ``true'' (1) if the given matrix is empty and
+``false'' ('') otherwise.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__">'""""'
+
+</A></STRONG><DD>
+``Stringification'' ( <CODE>print "$matrix";</CODE> )
+
+
+<P>
+
+It is possible to get a string representation of a given matrix by just
+putting the matrix object reference between double quotes.
+
+
+<P>
+
+Note that in general the string representation of a matrix will span over
+multiple lines (i.e., the string which is generated contains ``\n''
+characters, one at the end of each row of the matrix).
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>    $matrix = new Math::MatrixBool(5,6);
+    $matrix-&gt;One();
+    print &quot;$matrix&quot;;
+</PRE>
+
+<P>
+
+This will print:
+
+
+<P>
+
+<PRE>    [ 1 0 0 0 0 0 ]
+    [ 0 1 0 0 0 0 ]
+    [ 0 0 1 0 0 0 ]
+    [ 0 0 0 1 0 0 ]
+    [ 0 0 0 0 1 0 ]
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__">'+'
+
+</A></STRONG><DD>
+Addition ( <CODE>$matrix3 = $matrix1 + $matrix2;</CODE> )
+
+
+<P>
+
+The '+' operator calculates the sum of two matrices.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $all   =  $odd + $even;
+</PRE>
+
+<P>
+
+<PRE>    $all  +=  $odd;
+    $all  +=  $even;
+</PRE>
+
+<P>
+
+Note that the '++' operator will produce an error message if applied to an
+object of this class because adding a number to a matrix makes no sense.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__">'*'
+
+</A></STRONG><DD>
+Multiplication ( <CODE>$matrix3 = $matrix1 * $matrix2;</CODE> )
+
+
+<P>
+
+The '*' operator calculates the matrix product of two matrices.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $test   =  $one * $one;
+</PRE>
+
+<P>
+
+<PRE>    $test  *=  $one;
+    $test  *=  $test;
+</PRE>
+
+<P>
+
+Note that you can use matrices of any size as long as their numbers of rows
+and columns correspond in the following way (example):
+
+
+<P>
+
+<PRE>        $matrix_3 = $matrix_1 * $matrix_2;
+</PRE>
+
+<P>
+
+<PRE>                          [ 2 2 ]
+                          [ 2 2 ]
+                          [ 2 2 ]
+</PRE>
+
+<P>
+
+<PRE>              [ 1 1 1 ]   [ 3 3 ]
+              [ 1 1 1 ]   [ 3 3 ]
+              [ 1 1 1 ]   [ 3 3 ]
+              [ 1 1 1 ]   [ 3 3 ]
+</PRE>
+
+<P>
+
+I.e., the number of columns of matrix #1 is the same as the number of rows
+of matrix #2, and the number of rows and columns of the resulting matrix #3
+is determined by the number of rows of matrix #1 and the number of columns
+of matrix #2, respectively.
+
+
+<P>
+
+This way you can also perform the multiplication of a matrix with a vector,
+since a vector is just a degenerated matrix with several rows but only one
+column, or just one row and several columns.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__">'|'
+
+</A></STRONG><DD>
+Union ( <CODE>$matrix3 = $matrix1 | $matrix2;</CODE> )
+
+
+<P>
+
+The '|' operator is used to calculate the union of two matrices (of
+corresponding elements).
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $all   =  $odd | $even;
+</PRE>
+
+<P>
+
+<PRE>    $all  |=  $odd;
+    $all  |=  $even;
+</PRE>
+
+<P>
+
+<DT><STRONG>'-'
+
+</A></STRONG><DD>
+Difference ( <CODE>$matrix3 = $matrix1 - $matrix2;</CODE> )
+
+
+<P>
+
+The operator '-' calculates the (dotted) difference of two matrices, i.e.,
+
+
+<P>
+
+<PRE>    0 - 0 == 0
+    0 - 1 == 0
+    1 - 0 == 1
+    1 - 1 == 0
+</PRE>
+
+<P>
+
+for each corresponding element.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $odd   =  $all  - $even;
+</PRE>
+
+<P>
+
+<PRE>    $all  -=  $even;
+</PRE>
+
+<P>
+
+Note that the '--' operator will produce an error message if applied to an
+object of this class because subtracting a number from a matrix makes no
+sense.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__amp_">'&amp;'
+
+</A></STRONG><DD>
+Intersection ( <CODE>$matrix3 = $matrix1 & $matrix2;</CODE> )
+
+
+<P>
+
+The '&amp;' operator is used to calculate the intersection of two matrices
+(of the corresponding elements).
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $rest  =  $all &amp; $even;
+</PRE>
+
+<P>
+
+<PRE>    $all  &amp;=  $even;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__">'^'
+
+</A></STRONG><DD>
+ExclusiveOr ( <CODE>$matrix3 = $matrix1 ^ $matrix2;</CODE> )
+
+
+<P>
+
+The '^' operator is used to calculate the exclusive-or of two matrices (of
+their corresponding elements).
+
+
+<P>
+
+In fact this operation is identical with the addition of two matrices in
+this case of a Boolean Algebra.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $odd   =  $all  ^ $even;
+</PRE>
+
+<P>
+
+<PRE>    $all  ^=  $even;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__">'=='
+
+</A></STRONG><DD>
+Test For Equality ( <CODE>if ($matrix1 == $matrix2) { ... }</CODE> )
+
+
+<P>
+
+This operator tests two matrices for equality.
+
+
+<P>
+
+Note that <STRONG>without</STRONG> operator overloading, <CODE>( $matrix1 == $matrix2 )</CODE> would test wether the two references <STRONG>pointed to</STRONG> the <STRONG>same object</STRONG>! (!)
+
+
+<P>
+
+<STRONG>With</STRONG> operator overloading in effect, <CODE>( $matrix1 == $matrix2 )</CODE> tests wether the two matrix objects <STRONG>contain</STRONG> exactly the <STRONG>same elements</STRONG>!
+
+
+<P>
+
+<DT><STRONG><A NAME="item__">'!='
+
+</A></STRONG><DD>
+Test For Non-Equality ( <CODE>if ($matrix1 != $matrix2) { ... }</CODE> )
+
+
+<P>
+
+This operator tests wether two matrices are different.
+
+
+<P>
+
+Note again that this tests wether the <STRONG>contents</STRONG> of the two matrices are not the same, and <STRONG>not</STRONG> wether the two <STRONG>references</STRONG> are different!
+
+
+<P>
+
+<DT><STRONG><A NAME="item__lt_">'lt'
+
+</A></STRONG><DD>
+Test For True Subset ( <CODE>if ($matrix1 &lt; $matrix2) { ... }</CODE> )
+
+
+<P>
+
+This operator tests wether <CODE>$matrix1</CODE> is a true subset of
+$matrix2, i.e. wether the elements contained in <CODE>$matrix1</CODE> are
+also contained in $matrix2, but not all elements contained in
+<CODE>$matrix2</CODE> are contained in $matrix1.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        [ 1 0 0 0 0 ]                       [ 1 0 0 0 1 ]
+        [ 0 1 0 0 0 ]                       [ 0 1 0 0 0 ]
+        [ 0 0 1 0 0 ]  is a true subset of  [ 0 0 1 0 0 ]
+        [ 0 0 0 1 0 ]                       [ 0 0 0 1 0 ]
+        [ 1 0 0 0 1 ]                       [ 1 0 0 0 1 ]
+</PRE>
+
+<P>
+
+<PRE>        [ 1 0 0 0 0 ]                       [ 1 0 0 0 1 ]
+        [ 0 1 0 0 0 ]                       [ 0 1 0 0 0 ]
+   but  [ 0 0 1 0 0 ]   is not a subset of  [ 0 0 1 0 0 ]
+        [ 0 0 0 1 0 ]                       [ 0 0 0 1 0 ]
+        [ 1 0 0 0 1 ]                       [ 0 0 0 0 1 ]
+</PRE>
+
+<P>
+
+(nor vice-versa!)
+
+
+<P>
+
+<PRE>        [ 1 0 0 0 1 ]                       [ 1 0 0 0 1 ]
+        [ 0 1 0 0 0 ]                       [ 0 1 0 0 0 ]
+   and  [ 0 0 1 0 0 ]     is a subset of    [ 0 0 1 0 0 ]
+        [ 0 0 0 1 0 ]                       [ 0 0 0 1 0 ]
+        [ 1 0 0 0 1 ]                       [ 1 0 0 0 1 ]
+</PRE>
+
+<P>
+
+but not a true subset because the two matrices are identical.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__lt_">'lt='
+
+</A></STRONG><DD>
+Test For Subset ( <CODE>if ($matrix1 &lt;= $matrix2) { ... }</CODE> )
+
+
+<P>
+
+This operator tests wether <CODE>$matrix1</CODE> is a subset of $matrix2,
+i.e. wether all elements contained in <CODE>$matrix1</CODE> are also
+contained in $matrix2.
+
+
+<P>
+
+This also evaluates to ``true'' when the two matrices are the same.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__gt_">'gt'
+
+</A></STRONG><DD>
+Test For True Superset ( <CODE>if ($matrix1 &gt; $matrix2) { ... }</CODE> )
+
+
+<P>
+
+This operator tests wether <CODE>$matrix1</CODE> is a true superset of
+$matrix2, i.e. wether all elements contained in <CODE>$matrix2</CODE> are
+also contained in $matrix1, but not all elements contained in
+<CODE>$matrix1</CODE> are contained in $matrix2.
+
+
+<P>
+
+Note that <CODE>($matrix1 &gt; $matrix2)</CODE> is exactly the same as
+<CODE>($matrix2 &lt; $matrix1)</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__gt_">'gt='
+
+</A></STRONG><DD>
+Test For Superset ( <CODE>if ($matrix1 &gt;= $matrix2) { ... }</CODE> )
+
+
+<P>
+
+This operator tests wether <CODE>$matrix1</CODE> is a superset of $matrix2,
+i.e. wether all elements contained in <CODE>$matrix2</CODE> are also
+contained in $matrix1.
+
+
+<P>
+
+This also evaluates to ``true'' when the two matrices are equal.
+
+
+<P>
+
+Note that <CODE>($matrix1 &gt;= $matrix2)</CODE> is exactly the same as
+<CODE>($matrix2 &lt;= $matrix1)</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_cmp">cmp
+
+</A></STRONG><DD>
+Compare ( <CODE>$result = $matrix1 cmp $matrix2;</CODE> )
+
+
+<P>
+
+This operator compares the two matrices lexically, i.e. it regards the two
+bit vectors representing the two matrices as two large (unsigned) numbers
+in binary representation and returns ``-1'' if the number for
+<CODE>$matrix1</CODE> is smaller than that for $matrix2, ``0'' if the two
+numbers are the same (i.e., when the two matrices are equal!) or ``1'' if
+the number representing <CODE>$matrix1</CODE> is larger than the number
+representing $matrix2.
+
+
+<P>
+
+Note that this comparison has nothing to do whatsoever with algebra, it is
+just an <STRONG>arbitrary</STRONG> order relationship!
+
+
+<P>
+
+It is only intended to provide an (arbitrary) order by which (for example)
+an array of matrices can be sorted, for instance to find out quickly (using
+binary search) if a specific matrix has already been produced before in
+some matrix-producing process or not.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_eq">eq
+
+</A></STRONG><DD>
+``equal''
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ne">ne
+
+</A></STRONG><DD>
+``not equal''
+
+
+<P>
+
+<DT><STRONG><A NAME="item_lt">lt
+
+</A></STRONG><DD>
+``less than''
+
+
+<P>
+
+<DT><STRONG><A NAME="item_le">le
+
+</A></STRONG><DD>
+``less than or equal''
+
+
+<P>
+
+<DT><STRONG><A NAME="item_gt">gt
+
+</A></STRONG><DD>
+``greater than''
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ge">ge
+
+</A></STRONG><DD>
+``greater than or equal''
+
+
+<P>
+
+These are all operators derived from the ``cmp'' operator (see above).
+
+
+<P>
+
+They can be used instead of the ``cmp'' operator to make the intended type
+of comparison more obvious in your code.
+
+
+<P>
+
+For instance, <CODE>($matrix1 le $matrix2)</CODE> is much more readable and clearer than <CODE>(($matrix1 cmp $matrix2) &lt;= 0)</CODE>!
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Bit::Vector(3), Math::MatrixReal(3), DFA::Kleene(3), Math::Kleene(3),
+Set::IntegerFast(3), Set::IntegerRange(3).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VERSION">VERSION
+
+</A></H1>
+This man page documents ``Math::MatrixBool'' version 4.1.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Steffen Beyer <A HREF="MAILTO:<sb@sdm.de>."><sb@sdm.de>.</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1996, 1997 by Steffen Beyer. All rights reserved.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="LICENSE_AGREEMENT">LICENSE AGREEMENT
+
+</A></H1>
+This package is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

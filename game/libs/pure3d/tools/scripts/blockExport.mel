@@ -1,0 +1,1164 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     14 June, 2002
+//
+// Component:   blockExport
+//
+// Description: A batch exporting utility that can export individual nodes
+//              from the currently loaded scene.  The nodes selected for
+//              export are defined by one or more wildcard patterns.
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+// Constraints: 
+//
+//===========================================================================
+proc float version()
+{
+    return ( 1.1 );
+}
+
+// //////////////////////////////////////////////////////////////////////
+//  shortName
+//
+// Description: Returns the shortest possible name that is unique to 
+//  the specified node.
+//
+//  $reallyShort - if TRUE, strip leading '|' character as well
+proc string shortName( string $node, int $reallyShort )
+{
+    string $shortName = "";
+    
+    string $bloodyArray[] = `ls -shortNames $node`;
+    $shortName = $bloodyArray[0];
+    
+    if ( $reallyShort )
+        $shortName = `match "[^|]*$" $shortName`;
+        
+    return $shortName;
+}
+
+//===========================================================================
+// sansExtension
+//===========================================================================
+// Description: Strips any extension from the specified file.
+//
+// Constraints: 
+//
+//  Parameters: string $file: The filename. 
+//
+//      Return: (string) The filname sans extension.
+//
+//===========================================================================
+proc string sansExtension( string $file )
+{
+    string $sans = match ( "^[^\.]*", $file );
+    return $sans;
+}
+
+//===========================================================================
+// validateName
+//===========================================================================
+// Description: Replaces any illegal characters with an underscore.
+//              The name pattern entered by the user is expected to be
+//              a valid Maya name. Maya does not accept spaces in object
+//              names, for instance, and spaces will be replaced with 
+//              an underscore.
+//
+// Constraints: The default string is assumed to be valid.
+//
+//  Parameters: string $name: The name to validate.
+//              string $default: A default value to return if the name
+//                               is empty.
+//
+//      Return: (string) The validated string.
+//
+//===========================================================================
+proc string validateName( string $name, string $default )
+{
+    string $illegal = "!@#%&,";
+
+    if ( "" == $name )
+        $name = $default;
+
+    // Can't start with numeral
+    string $numeral;
+    if ( "" != ( $numeral = `match "^[0-9]" $name` ) )
+        $name = `substitute $numeral $name "_"`;
+
+    // Replace all spaces with underscore
+    for ( $i = 1; $i <= size( $illegal); $i++ )
+    {
+        string $char = `substring $illegal $i $i`;
+        while ( $name != ( $name = `substitute $char $name "_"` ) );
+    }
+
+    return $name;
+}
+
+//===========================================================================
+// SelectMenuItem
+//===========================================================================
+// Description: Selects an item within an optionMenu.  If the item
+//              cannot be found it is added as an "orphan".
+//
+// Constraints: 
+//
+// Parameters:  string $menu: The UI control for the optionMenu.
+//              string $item: The name of the item to select.
+//
+// Return:      (none)
+//
+//===========================================================================
+proc SelectMenuItem( string $menu, string $item )
+{
+    string  $menuItems[];
+    int         $numItems;
+    int         $counter;
+    int         $success = 0;
+
+    if ( $item == "" )
+        $item = "-- none --";
+
+    if ( `control -q -exists $menu` )
+    {
+        $menuItems  = `optionMenu -query -ils $menu`;
+        $numItems       = size($menuItems);
+
+        for ($counter = 0; $counter < $numItems; $counter++)
+        {
+            if (`menuItem -query -label $menuItems[$counter]` == $item)
+            {
+                optionMenu -edit -select ($counter + 1) $menu;
+                $success = 1;
+                break;
+            }
+        }
+
+        if ( ( ! $success ) && ( $item != "-- none --" ) && ( "*" != `substring $item 1 1` ) )
+        // Object not found.. 
+        // If this is _not_ an orphan, create orphan and select it.
+        {
+            $success = 0;
+        }
+
+        if ( ! $success )
+        {
+//            warning ( "Could not select \"" + $item + "\" in menu: " + $menu  );
+        }
+
+    }
+
+    // Force menu to update (ie. if it's empty, it won't unless nudged)
+    // .. but only if the menu is currently enabled
+    if ( `optionMenu -q -enable $menu` )
+    {
+        optionMenu -e -enable false $menu;
+        optionMenu -e -enable true $menu;
+    }
+}
+
+//===========================================================================
+// FindPatternsInAssembly
+//===========================================================================
+// Description: Note that "assembly" refers to a top-level node in a 
+//              hierarchy, i.e. Maya's 'ls -assemblies' command.
+//
+//              Finds the first node(s) in a hierarchy that match the 
+//              specified pattern.  
+//
+//              Example, using pattern "B*":
+//
+//                  A
+//                  |- Ba
+//                      |- BaShape
+//                  |- Bgroup
+//                      |- Bb
+//                          |- BbShape
+//                  |- Cgroup
+//                      |- Bc
+//                          |- BcShape
+//
+//              Returns:
+//
+//                  |A|Ba
+//                  |A|Bgroup
+//                  |A|Cgroup|Bc
+//
+// Constraints: Should support the wildcards supported by 'gmatch'. See 
+//              Maya's MEL documentation for details.
+//
+//              This call is recursive.
+//
+//  Parameters: string $pattern: The pattern to match.
+//              string $as: The top-level node at which to start. Also the
+//                          start node for recursive calls.
+//              string $matches[]: The matches for the pattern. Note that
+//                                 MEL passes arrays by reference.
+//
+//      Return: (int): TRUE if at least one match was found; else FALSE.
+//
+//===========================================================================
+proc int FindPatternsInAssembly( string $pattern, string $as, string $matches[] )
+{
+    int $foundMatch = false;
+    
+    string $shortName = shortName( $as, 1 );
+    if ( `gmatch $shortName $pattern` )
+    {
+        $matches[`size $matches`] = $as;
+        $foundMatch = true;
+    }
+    
+    if ( !$foundMatch )
+    {
+        string $children[] = `listRelatives -fullPath -children $as`;
+        for ( $i = 0; $i < `size $children`; $i++ )
+        {
+            // Note: Function call FIRST or else will never be called if $foundMatch is already TRUE!
+            $foundMatch = FindPatternsInAssembly( $pattern, $children[$i], $matches ) || $foundMatch;
+        }
+    }
+    
+    return $foundMatch;
+}
+
+//===========================================================================
+// GetCurrentTargets
+//===========================================================================
+// Description: Returns the list of targets currently displayed in the UI.
+//
+// Constraints: 
+//
+//  Parameters: string $targetsUI: The textScrollList control for the
+//                                  targets display.
+//
+//      Return: (string[]): Array of items from the targets list.
+//
+//===========================================================================
+proc string[] GetCurrentTargets( string $targetsUI )
+{
+    string $targets[] = `textScrollList -q -ai $targetsUI`;
+    return $targets;
+}
+
+//===========================================================================
+// FindTargets
+//===========================================================================
+// Description: Finds nodes in the currently loaded scene that match the
+//              specified pattern.
+//
+// Constraints: 
+//
+//  Parameters: string $pattern: The pattern for which to search.
+//
+//      Return: (string[]): Array of nodes matching pattern (if any).
+//
+//===========================================================================
+proc string[] FindTargets( string $pattern )
+{
+    string $matches[];
+
+    string $as[] = `ls -as`;
+    
+    for ( $a in $as )
+    {
+        // String arrays are passed by reference.
+        if ( FindPatternsInAssembly( $pattern, $a, $matches ) )
+        {
+            // might want something here....
+        }
+    }
+    
+    return $matches;
+}
+
+//===========================================================================
+// blockExport_NumPatterns
+//===========================================================================
+// Description: Returns the number of patterns. Precisely, the number of 
+//              UI control groups representing a pattern.
+//
+// Constraints: 
+//
+//  Parameters: string $parentUI: The columnLayout that is parent to the
+//                                controls.
+//
+//      Return: (int): The number of patterns represented by the UI.
+//
+//===========================================================================
+proc int blockExport_NumPatterns( string $parentUI )
+{
+    // $parentUI is a columnLayout with zero or more rowLayouts
+    string $rows[] = `columnLayout -q -ca $parentUI`;
+    return `size $rows`;
+}
+
+//===========================================================================
+// ClearTargets
+//===========================================================================
+// Description: Clears all items from the targets list UI.
+//
+// Constraints: 
+//
+//  Parameters: string $targetsUI: The textScrollList control used as the
+//                                 targets list.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc ClearTargets( string $targetsUI )
+{
+    textScrollList -e -removeAll $targetsUI;
+}
+
+//===========================================================================
+// ClearPatterns
+//===========================================================================
+// Description: Clears all UI controls that represent the user-specified
+//              patterns.
+//
+// Constraints: 
+//
+//  Parameters: string $patternUI: The columnLayout that is the parent for
+//                                 the controls representing the patterns.
+//              string $targetsUI: Allows this function to clear the 
+//                                 targets list as well. See ClearTargets().
+//
+//      Return: (none)
+//
+//===========================================================================
+proc ClearPatterns( string $patternUI, string $targetsUI )
+{
+    // $parentUI is a columnLayout with zero or more rowLayouts
+    string $rows[] = `columnLayout -q -ca $patternUI`;
+    for ( $row in $rows )
+    {
+        deleteUI $row;
+    }
+
+    ClearTargets( $targetsUI );    
+}
+
+//===========================================================================
+// GetPatterns
+//===========================================================================
+// Description: Gets the patterns currently displayed in the UI.  This is
+//              done by querying and parsing the controls created within
+//              the columnLayout specified as the argument.
+//
+// Constraints: 
+//
+//  Parameters: string $patternsUI: The columnLayout holding the UI controls
+//                                  representing the patterns.
+//
+//      Return: (string[]): Array of patterns currently displayed in the UI.
+//
+//===========================================================================
+proc string[] GetPatterns( string $patternsUI )
+{
+    string $patterns[];
+    
+    // $parentUI is a columnLayout with zero or more rowLayouts
+    string $rows[] = `columnLayout -q -ca $patternsUI`;
+    for ( $row in $rows )
+    {
+       string $cc[] = `rowLayout -q -ca $row`;
+       $patterns[`size $patterns`] = `text -q -label $cc[1]`;
+    }
+    
+    return $patterns;
+}
+
+//===========================================================================
+// GetExporterSettings
+//===========================================================================
+// Description: Returns an array of the Exporter Settings (the selected
+//              menu items) currently displayed in the UI.
+//
+// Constraints: 
+//
+//  Parameters: string $patternsUI: The columnLayout holding the UI controls
+//                                  representing the patterns and their
+//                                  Exporter setting menus.
+//
+//      Return: (string[]): Array of strings; the names displayed in the 
+//                          optionMenus associated with each pattern.
+//
+//===========================================================================
+proc string[] GetExporterSettings( string $patternsUI )
+{
+    string $settings[];
+    
+    // $parentUI is a columnLayout with zero or more rowLayouts
+    string $rows[] = `columnLayout -q -ca $patternsUI`;
+    for ( $row in $rows )
+    {
+       string $cc[] = `rowLayout -q -ca $row`;
+       $settings[`size $settings`] = `optionMenu -q -value $cc[2]`;
+    }
+    
+    return $settings;
+}
+
+//===========================================================================
+// SetExporterSetting
+//===========================================================================
+// Description: Selects the appropriate Exporter setting in the menu 
+//              beside the pattern at the specified index.
+//
+// Constraints: Assumed that $index is valid (no bounds checking) and that
+//              the associated optionMenu will have a menuItem matching
+//              the specified $setting.
+//
+//  Parameters: string $patternsUI: The columnLayout holding the UI controls
+//                                  representing the patterns.
+//              int $index: Zero-based index of the pattern that will be
+//                          adjusted. Obtained from AddPattern().
+//              string $setting: String describing which Exporter setting
+//                               to select.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc SetExporterSetting( string $patternsUI, int $index, string $setting )
+{
+    string $settings[];
+    
+    // $parentUI is a columnLayout with zero or more rowLayouts
+    string $rows[] = `columnLayout -q -ca $patternsUI`;
+
+    string $cc[] = `rowLayout -q -ca $rows[$index]`;
+
+    SelectMenuItem( $cc[2], $setting );
+}
+
+//===========================================================================
+// GetTargetFolder
+//===========================================================================
+// Description: Returns the string currently displayed in the Target Folder
+//              UI field.
+//
+// Constraints: 
+//
+//  Parameters: string $folderUI: The textField UI control.
+//
+//      Return: (string): The current contents of the textField UI control.
+//
+//===========================================================================
+proc string GetTargetFolder( string $folderUI )
+{
+    return `textField -q -text $folderUI`;
+}
+
+//===========================================================================
+// SetTargetFolder
+//===========================================================================
+// Description: Sets the string currently displayed in the Target Folder
+//              UI field.
+//
+// Constraints: 
+//
+//  Parameters: string $folderUI: The textField UI control.
+//              string $target: The contents to display in the field.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc SetTargetFolder( string $folderUI, string $target )
+{
+    textField -e -text $target -enable false $folderUI;
+}
+
+//===========================================================================
+// ClearTargetFolder
+//===========================================================================
+// Description: Clears the text from the Target Folder UI field.
+//
+// Constraints: 
+//
+//  Parameters: string $folderUI: The textField UI control.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc ClearTargetFolder( string $folderUI )
+{
+    SetTargetFolder( $folderUI, "" );
+}
+
+//===========================================================================
+// FillTarget
+//===========================================================================
+// Description: Searches the currently loaded scene for the specified
+//              pattern.  All matches found are appended to the Targets
+//              list in the UI.
+//
+// Constraints: Uses FindTarget() to generate the list.
+//
+//              The pattern supports only Maya's basic wildcards '*' and '?'.
+//
+//  Parameters: string $pattern: The pattern for which to search.
+//              string $targetsUI: The textScrollList UI control for the
+//                                 targets list.
+//
+//      Return: (int): The number of new targets appended to the UI list.
+//
+//===========================================================================
+proc int FillTarget( string $pattern, string $targetsUI )
+{
+    string $targets[] = FindTargets( $pattern );
+
+    int $numTargets = `size $targets`;
+    
+    for ( $t in $targets )
+    {
+        textScrollList -e -append $t $targetsUI;
+    }
+    
+    return $numTargets;
+}
+
+//===========================================================================
+// blockExport_SelectTarget
+//===========================================================================
+// Description: When the user double-clicks an entry in the Targets List
+//              this function handles the selection for the highlighted item.
+//
+// Constraints: Callback for Targets UI control; must be global.
+//
+//  Parameters: string $targetsUI: The textScrollList UI control for the 
+//                                 Targets List.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc blockExport_SelectTarget( string $targetsUI )
+{
+    select `textScrollList -q -si $targetsUI`;
+}
+
+//===========================================================================
+// blockExport_FillTargets
+//===========================================================================
+// Description: Initiated when a new a new pattern is added to the Patterns
+//              UI list.  It regenerates the Targets List from scratch.
+//
+// Constraints: Callback via evalDeferred(); must be global.
+//
+//  Parameters: string $patternsUI: The columnLayout holding the UI controls
+//                                  representing the patterns.
+//              string $targetsUI: The textScrollList UI control for the
+//                                 targets list.
+//
+//      Return: (int): The number of targets added to the Targets List.
+//
+//===========================================================================
+global proc int blockExport_FillTargets( string $patternsUI, string $targetsUI )
+{
+    waitCursor -state on;
+    
+    int $numTargets = 0;
+    
+    textScrollList -e -removeAll $targetsUI;
+
+    string $patterns[] = GetPatterns( $patternsUI);
+    
+    for ( $pattern in $patterns )
+    {
+        $numTargets = $numTargets + FillTarget( $pattern, $targetsUI );
+    }
+    
+    waitCursor -state off;
+    
+    return $numTargets;
+}
+
+//===========================================================================
+// blockExport_AddPatternOptionMenu
+//===========================================================================
+// Description: Adds an optionMenu to an entry in the Patterns List UI which
+//              displays all of the "p3dExportSettingNode" nodes currently
+//              defined in the scene.
+//
+// Constraints: The current UI parent MUST be that which you want to contain
+//              the optionMenu.
+//  
+//              If you create a new p3dExportSettingNode you must rebuild
+//              this UI; it will not automatically update itself.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+proc blockExport_AddPatternOptionMenu( )
+{
+    // Get a list of all export settings nodes
+    string $settings[] = `ls -type "p3dExportSettingNode"`;
+    
+    string $om = `optionMenu`;
+    for ( $setting in $settings )
+    {
+        menuItem -label $setting;
+    }
+}
+
+//===========================================================================
+// AddPattern
+//===========================================================================
+// Description: Creates a new rowLayout to display a pattern in the Patterns
+//              List UI.
+//
+//              FillTarget() is then called to add any additional names to
+//              the Targets List, if necessary.
+//
+// Constraints: The pattern supports only Maya's basic wildcards '*' and '?'.
+//
+//  Parameters: string $pattern: The pattern to add.
+//              string $patternUI: The columnLayout UI control used to 
+//                                 display the Patterns List.
+//              string $targetsUI: The textScrollList UI control used to
+//                                 display the Targets list.
+//
+//      Return: (int): The 0-based index for the new row that has just been
+//                     added to the Patterns List.  Used with 
+//                     SetExporterSetting().
+//
+//===========================================================================
+proc int AddPattern( string $pattern, string $patternUI, string $targetsUI )
+{
+    // $patternUI is a columnLayout with zero or more rowLayouts
+    setParent $patternUI;
+   
+    int $rowIndex = blockExport_NumPatterns( $patternUI );
+    
+    string $row =`rowLayout -nc 3 -columnWidth 1 24`;
+    
+    string $deleteCmd = ( "evalDeferred( \"deleteUI " + $row + "; blockExport_FillTargets( \\\"" + $patternUI + "\\\", \\\"" + $targetsUI + "\\\") \" )" );
+    
+        symbolButton -image "smallTrash.xpm" -width 20 -c $deleteCmd;
+        text -label $pattern;
+        blockExport_AddPatternOptionMenu( );
+        setParent ..;
+            
+    FillTarget( $pattern, $targetsUI );
+    
+    return $rowIndex;    
+}
+
+//===========================================================================
+// blockExport_PatternDialog
+//===========================================================================
+// Description: Provides a pop-up dialog to query the user for a new pattern.
+//
+// Constraints: 
+//
+//  Parameters: string $patternUI: The columnLayout UI control used to 
+//                                 display the Patterns List.
+//              string $targetsUI: The textScrollListUI control used to
+//                                 display the Targets List.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc blockExport_PatternDialog( string $patternUI, string $targetsUI )
+{
+    string $result = `promptDialog
+        -title "Block Pattern"
+        -message "Enter Pattern:"
+        -button "OK" -button "Cancel"
+        -defaultButton "OK" -cancelButton "Cancel"
+        -dismissString "Cancel"`;
+
+    if ($result == "OK") 
+    {
+        string $pattern = `promptDialog -q`;
+        if ( $pattern != "" ) 
+        {
+            $pattern = validateName( $pattern, "*" );
+            AddPattern( $pattern, $patternUI, $targetsUI );
+        }
+    }
+}
+
+//===========================================================================
+// blockExport_BrowseFolderCallback
+//===========================================================================
+// Description: Callback for blockExport_BrowseForFolder().
+//
+//              Echoes the results from the folder dialog into the Target
+//              Folder textField UI control.
+//
+// Constraints: 
+//
+//  Parameters: string $folderUI: The Target Folder textfield UI control.
+//              string $result: The selected folder (callback result).
+//              string $ypte: The type identified by the dialog (callback
+//                            result).
+//
+//      Return: (int): Returns TRUE (non-zero) to signify success.
+//
+//===========================================================================
+global proc int blockExport_BrowseFolderCallback( string $folderUI, string $result, string $type )
+{
+    $result = ( `fromNativePath $result` + "/" );
+    SetTargetFolder( $folderUI, $result );
+
+    return 1;
+}
+
+//===========================================================================
+// blockExport_BrowseForFolder
+//===========================================================================
+// Description: Provides a folder dialog to allow the user to browse for
+//              a target folder.
+//
+// Constraints: 
+//
+//  Parameters: string $folderUI: The Target Folder textfield UI control.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc blockExport_BrowseForFolder( string $folderUI )
+{
+    string $callback = ( "blockExport_BrowseFolderCallback \"" + $folderUI + "\"" );    
+    
+    string $workspaceFolder = `workspace -q -dir`;
+    string $startFolder = `textField -q -text $folderUI`;
+
+    catch ( `workspace -dir $startFolder` );
+    fileBrowserDialog -mode 4 -fileCommand $callback -actionName "Pick Target Folder";
+    catch( `workspace -dir $workspaceFolder` );
+}
+
+//===========================================================================
+// Go
+//===========================================================================
+// Description: Starts the block export using the specified pattern.
+//
+// Constraints: The targets is rebuilt for this process; the results
+//              displayed in the UI are not used.
+//
+//  Parameters: string $pattern: The pattern used to find the nodes targeted
+//                               for export.
+//              string $setting: The Exporter Configuration setting to use
+//                               when performing this export.
+//              string $destination: The destination folder for the exported
+//                                   P3D files.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc Go( string $pattern, string $setting, string $destination )
+{
+// --------  Get a list of targets for this pattern  --------
+
+    string $targets[] = FindTargets( $pattern );
+
+    if ( `size $targets` == 0 ) return;
+    
+// --------  Cache current Exporter Setting  --------
+
+    P3DCreateExporterOptions();
+
+    string $options[] = `ls -type p3dExporterOptionsShape`;
+    string $currentOptions = $options[0];
+
+    string $currentSetting = `getAttr ( $currentOptions + ".currentSetting" )`;
+
+// --------  Activate the specified Exporter Setting  --------
+
+    // If $setting is NULL, pick a default
+    if ( $setting == "" )
+    {
+        string $settings[] = `ls -type "p3dExporterSettingNode"`;
+        $setting = $settings[0];
+    }
+
+    setAttr -type "string" ( $currentOptions + ".currentSetting" ) $setting;
+
+// --------  Cache current filename in Exporter Settings  --------
+
+    string $currentFilename = `getAttr ( $currentSetting + ".exportedFile" )`;    
+
+// --------  Export each target  --------
+
+    for ( $t = 0; $t < `size $targets`; $t++ )
+    {
+        int $viz = `getAttr ( $targets[$t] + ".visibility" )`;
+        setAttr ( $targets[$t] + ".visibility" ) true;
+        
+        string $shortName = shortName( $targets[$t], true );
+        string $filename = ( $destination + $shortName + ".p3d" );
+        
+        // Change the filename in the Exporter Setting node.
+        P3DChangeFileAttribute( $filename, "exportedFile" );
+        
+        // Select the node
+        select -r $targets[$t];
+        
+        P3DExecuteExporterScript();
+        p3dQuickExporterCmd -selection;   
+
+        setAttr ( $targets[$t] + ".visibility" ) $viz;
+    }
+
+// --------  Restore filename in Exporter Setting  -------- 
+
+    P3DChangeFileAttribute( $currentFilename, "exportedFile" );
+
+// --------  Restore Exporter Setting  -------- 
+
+    setAttr -type "string" p3dExporterOptions.currentSetting $currentSetting;
+
+
+}
+
+//===========================================================================
+// blockExport_Go
+//===========================================================================
+// Description: Initiates a batch block export.
+//
+// Constraints: 
+//
+//  Parameters: (none)  All parameters obtained from the UI.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc blockExport_Go( )
+{
+    string $patternScrollUI = "blockExport_patternScrollUI";
+    string $patternUI = "blockExport_patternUI";
+
+    string $addPatternUI = "blockExport_addUI";
+
+    string $folderLabelUI = "blockExport_folderLabelUI";
+    string $folderUI = "blockExport_folderUI";
+    string $folderBrowseUI = "blockExport_folderBrowseUI";
+
+    string $targetsUI = "blockExport_targetUI";
+
+    string $destination = `textField -q -text $folderUI`;
+    
+    if ( !`file -q -exists $destination` ) 
+    {
+        error ( "Block Export: Target folder does not exist." );
+    }
+
+    // Is the Exporter loaded and ready to go?
+    string $exporter = "p3dmayaexp.mll";
+    if ( !`pluginInfo -q -loaded $exporter` )
+    {
+        error ( "Block Export: Pure3D Maya Exporter is not loaded." );
+    }
+
+    string $patterns[] = GetPatterns( $patternUI );
+    string $settings[] = GetExporterSettings( $patternUI );
+    
+    // OK.. think we're ready to work now.
+    for ( $i = 0; $i < `size $patterns`; $i++ )
+    {
+        Go( $patterns[$i], $settings[$i], $destination );
+    }
+    
+}
+
+//===========================================================================
+// blockExport_Clear
+//===========================================================================
+// Description: Clears all of the contents from the UI.
+//
+// Constraints: This does _not_ overwrite or delete the configuration saved
+//              for the scene. If one exists it may be instantly recalled
+//              using the blockExport_Load() procedure.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc  blockExport_Clear()
+{
+    string $patternUI = "blockExport_patternUI";
+    string $targetsUI = "blockExport_targetUI";
+    string $folderUI = "blockExport_folderUI";
+    
+    ClearPatterns( $patternUI, $targetsUI );
+    ClearTargetFolder( $folderUI );
+}
+
+//===========================================================================
+// blockExport_Save
+//===========================================================================
+// Description: Saves the information stored in the UI to a persistant
+//              scene node.  Data is saved using dynamic attributes on
+//              a default node.
+//
+// Constraints: An "unknown" node type is used with the hard-coded name
+//              "blockExportSettings."
+//
+//              The Targets List is not saved.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc blockExport_Save()
+{
+    string $patternUI = "blockExport_patternUI";
+    string $folderUI = "blockExport_folderUI";
+
+    string $patterns[] = GetPatterns( $patternUI );
+    string $settings[] = GetExporterSettings( $patternUI );
+    string $targetFolder = GetTargetFolder( $folderUI );
+    
+    string $patternTokens;
+    string $settingTokens;
+    string $delimiter = " ";
+
+    string $dg = "blockExportSettings";
+    if ( !`objExists $dg` )
+    {
+        string $dg = `createNode "unknown" -name "blockExportSettings"`;
+        addAttr -dt "string" -ln "patternTokens" -sn "pt" $dg;
+        addAttr -dt "string" -ln "settingTokens" -sn "st" $dg;
+        addAttr -dt "string" -ln "targetFolder" -sn "tf" $dg;
+    }
+    
+    for ( $i = 0; $i < `size $patterns`; $i++ )
+    {
+        $patternTokens = $patternTokens + $patterns[$i] + " ";        
+        $settingTokens = $settingTokens + $settings[$i] + " ";        
+    }
+       
+    setAttr -type "string" ( $dg + ".patternTokens" ) $patternTokens;
+    setAttr -type "string" ( $dg + ".settingTokens" ) $settingTokens;
+    setAttr -type "string" ( $dg + ".targetFolder" ) $targetFolder;
+    
+}
+
+//===========================================================================
+// blockExport_Load
+//===========================================================================
+// Description: Clears any items currently displayed in the UI and attempts
+//              to load new data from a stored "blockExportSettings" node.
+//              If no node exists, the UI remains empty.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc blockExport_Load()
+{
+    waitCursor -state on;
+    
+    string $patternUI = "blockExport_patternUI";
+    string $targetsUI = "blockExport_targetUI";
+    string $folderUI = "blockExport_folderUI";
+
+    blockExport_Clear();
+    
+    string $dg = "blockExportSettings";
+    string $delimiter = " ";
+    
+    if ( `objExists $dg`)
+    {
+        string $patternTokens = `getAttr ( $dg + ".patternTokens" )`;
+        string $settingTokens = `getAttr ( $dg + ".settingTokens" )`;
+        string $targetFolder = `getAttr ( $dg + ".targetFolder" )`;
+        
+        string $tokens[];
+        string $patterns[];
+        string $settings[];
+
+        tokenize $patternTokens $delimiter $patterns;
+        tokenize $settingTokens $delimiter $settings;
+
+        for ( $i = 0; $i < `size $patterns`; $i++ )
+        {
+            if ( $patterns[$i] != "" )
+            {
+                int $index = AddPattern( $patterns[$i], $patternUI, $targetsUI );
+                SetExporterSetting( $patternUI, $index, $settings[$i] );
+            }
+        }
+        
+        SetTargetFolder( $folderUI, $targetFolder );
+    }
+    
+    waitCursor -state off;
+}
+
+//===========================================================================
+// blockExport_About
+//===========================================================================
+// Description: Displays a pop-up About dialog identifying the version.
+//
+//===========================================================================
+global proc blockExport_About()
+{
+    float $version = version();
+    
+    confirmDialog 
+        -title "Block Export"
+        -message ( "Block Export v" + $version + "\n\nFor support e-mail\nBryan Ewert <bewert@radical.ca>" )
+        -messageAlign "left"
+        -button "Thanks"
+        ;
+}
+
+//===========================================================================
+// blockExport
+//===========================================================================
+// Description: A batch exporting utility that can export individual nodes
+//              from the currently loaded scene.  The nodes selected for
+//              export are defined by one or more wildcard patterns.
+//
+//              Requested by Sonic.
+//
+//              This main entry function generates the UI for the script.
+//              All functionality is interactive via the UI.
+//
+// Constraints:
+//
+//  Parameters: (none) 
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc blockExport()
+{
+    string $windowUI = "blockExportUI";
+    
+    string $patternScrollUI = "blockExport_patternScrollUI";
+    string $patternUI = "blockExport_patternUI";
+
+    string $addPatternUI = "blockExport_addUI";
+    string $refreshUI = "blockExport_refreshUI";
+
+    string $folderLabelUI = "blockExport_folderLabelUI";
+    string $folderUI = "blockExport_folderUI";
+    string $folderBrowseUI = "blockExport_folderBrowseUI";
+
+    string $targetsUI = "blockExport_targetUI";
+    
+    string $goUI = "blockExport_goUI";
+    
+    if ( `window -exists $windowUI` )
+        deleteUI -window $windowUI;
+
+    string $title = "Block Export v" + version();
+    
+    window -title $title -iconName "Block Export" -menuBar true $windowUI;
+    
+        menu -label "File";
+            menuItem -label "Refresh" -c "blockExport_Load";
+            menuItem -label "Store" -c "blockExport_Save";
+            menuItem -label "Clear" -c "blockExport_Clear";
+            menuItem -divider true;
+            menuItem -label "About" -c "blockExport_About";
+    
+    string $form = `formLayout`;
+    
+        scrollLayout -height 120 $patternScrollUI;
+//            frameLayout -height 120 -collapsable false -label "Patterns";
+                columnLayout -adj true -height 120 $patternUI;
+                    setParent ..;
+//                setParent ..;    
+            setParent ..;
+            
+        button -label "Add Pattern" $addPatternUI;
+        symbolButton -image "redrawPaintEffects.xpm" $refreshUI;
+        
+        text -label "Target Folder:" $folderLabelUI;
+        textField -text "" -editable false $folderUI;
+        symbolButton -image "navButtonBrowse.xpm" $folderBrowseUI;
+        
+        textScrollList $targetsUI;
+        
+        button -label "Go!" $goUI;
+        
+        setParent ..;
+    
+    formLayout -e
+       
+        -af     $goUI               "left"      4
+        -ap     $goUI               "right"     2       50
+        -af     $goUI               "bottom"    4
+       
+        -ac     $folderBrowseUI     "bottom"    8       $goUI
+        -ap     $folderBrowseUI     "right"     2       50
+        
+        -ac     $folderUI           "bottom"    8       $goUI
+        -af     $folderUI           "left"      4
+        -ac     $folderUI           "right"     2       $folderBrowseUI
+        
+        -ac     $folderLabelUI      "bottom"    2       $folderUI
+        -af     $folderLabelUI      "left"      4
+       
+        -ac     $refreshUI          "bottom"    8       $folderLabelUI
+        -ap     $refreshUI          "right"     4       50
+        
+        -ac     $addPatternUI       "bottom"    8       $folderLabelUI
+        -af     $addPatternUI       "left"      4
+        -ac     $addPatternUI       "right"     4       $refreshUI
+       
+        -af     $patternScrollUI    "top"       4
+        -af     $patternScrollUI    "left"      4
+        -ap     $patternScrollUI    "right"     2       50
+        -ac     $patternScrollUI    "bottom"    4       $addPatternUI
+       
+        -af     $targetsUI          "top"       4
+        -ap     $targetsUI          "left"      2       50
+        -af     $targetsUI          "right"     4
+        -af     $targetsUI          "bottom"    4
+       
+        $form;
+
+    button -e
+        -c ( "blockExport_PatternDialog \"" + $patternUI + "\" \"" + $targetsUI + "\"" )
+            $addPatternUI;
+            
+    symbolButton -e
+        -c "blockExport_Load"
+            $refreshUI;
+
+    symbolButton -e
+        -c ( "blockExport_BrowseForFolder \"" + $folderUI + "\"" )
+            $folderBrowseUI;
+
+    textScrollList -e
+        -dcc ( "blockExport_SelectTarget \"" + $targetsUI + "\"" )
+            $targetsUI;
+
+    button -e
+        -c ( "blockExport_Go" )
+            $goUI;
+            
+    showWindow;
+    
+    blockExport_Load();
+}
+
+/*
+source "D:/depot/users/bewert/Development/pure3d/tools/scripts/blockExport.mel"; blockExport;
+source blockExport; blockExport; 
+*/

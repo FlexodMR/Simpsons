@@ -1,0 +1,295 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTTP::Daemon - a simple http server class
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTTP::Daemon - a simple http server class
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use <A HREF="HTTP::Daemon">HTTP::Daemon</A>;
+  use <A HREF="HTTP::Status">HTTP::Status</A>;
+</PRE>
+
+<P>
+
+<PRE>  $d = new <A HREF="HTTP::Daemon">HTTP::Daemon</A>;
+  print &quot;Please contact me at: &lt;URL:&quot;, $d-&gt;url, &quot;&gt;\n&quot;;
+  while ($c = $d-&gt;accept) {
+      $r = $c-&gt;get_request;
+      if ($r) {
+          if ($r-&gt;method eq 'GET' and $r-&gt;url-&gt;path eq &quot;/xyzzy&quot;) {
+              # this is *not* recommened practice
+              $c-&gt;send_file_response(&quot;/etc/passwd&quot;);
+          } else {
+              $c-&gt;send_error(RC_FORBIDDEN)
+          }
+      }
+      $c = undef;  # close connection
+  }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Instances of the <EM>HTTP::Daemon</EM> class are 
+<FONT SIZE=-1>HTTP/1.1</FONT> servers that listens on a socket for incoming
+requests. The <EM>HTTP::Daemon</EM> is a sub-class of <EM>IO::Socket::INET</EM>, so you can do socket operations directly on it.
+
+
+<P>
+
+The <CODE>accept()</CODE> method will return when a connection from a
+client is available. The returned value will be a reference to a object of
+the
+<EM>HTTP::Daemon::ClientConn</EM> class which is another <EM>IO::Socket::INET</EM>
+subclass. Calling the <CODE>get_request()</CODE> method on this object will
+read data from the client and return an <EM>HTTP::Request</EM> object reference.
+
+
+<P>
+
+This 
+<FONT SIZE=-1>HTTP</FONT> daemon does not <CODE>fork(2)</CODE> for you.
+Your application, i.e. the user of the <EM>HTTP::Daemon</EM> is reponsible for forking if that is desirable. Also note that the user is responsible for generating responses that conforms to the 
+<FONT SIZE=-1>HTTP/1.1</FONT> protocol. The
+
+<EM>HTTP::Daemon::ClientConn</EM> provide some methods that make this easier.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+The following is a list of methods that are new (or enhanced) relative to
+the <EM>IO::Socket::INET</EM> base class.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__d">$d = new HTTP::Daemon
+
+</A></STRONG><DD>
+The object constructor takes the same parameters as the
+<EM>IO::Socket::INET</EM> constructor. It can also be called without specifying any parameters. The daemon will then set up a listen queue of 5 connections and allocate some random port number. 
+<FONT SIZE=-1>A</FONT> server that want to bind to some specific address on the standard 
+<FONT SIZE=-1>HTTP</FONT> port will be constructed like this:
+
+
+
+<P>
+
+<PRE>  $d = new <A HREF="HTTP::Daemon">HTTP::Daemon</A>
+        LocalAddr =&gt; 'www.someplace.com',
+        LocalPort =&gt; 80;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__c">$c = $d->accept
+
+</A></STRONG><DD>
+Same as <EM>IO::Socket::accept</EM> but will return an
+<EM>HTTP::Daemon::ClientConn</EM> reference. It will return undef if you have specified a timeout and no
+connection is made within that time.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__d_url">$d->url
+
+</A></STRONG><DD>
+Returns a 
+<FONT SIZE=-1>URL</FONT> string that can be used to access the server root.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__d_product_tokens">$d->product_tokens
+
+</A></STRONG><DD>
+Returns the name that this server will use to identify itself. This is the
+string that is sent with the <EM>Server</EM> response header.
+
+
+<P>
+
+</DL>
+The <EM>HTTP::Daemon::ClientConn</EM> is also a <EM>IO::Socket::INET</EM>
+subclass. Instances of this class are returned by the <CODE>accept()</CODE>
+method of the <EM>HTTP::Daemon</EM>. The following additional methods are provided:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__c_get_request">$c->get_request
+
+</A></STRONG><DD>
+Will read data from the client and turn it into a <EM>HTTP::Request</EM>
+object which is then returned. Will return undef if reading of the request
+failed. If it fails, then the <EM>HTTP::Daemon::ClientConn</EM>
+object ($c) should be discarded.
+
+
+<P>
+
+The $c-&gt;get_request method support 
+<FONT SIZE=-1>HTTP/1.1</FONT> content bodies, including
+<EM>chunked</EM> transfer encoding with footer and <EM>multipart/*</EM> types.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_antique_client">$c->antique_client
+
+</A></STRONG><DD>
+Returns 
+<FONT SIZE=-1>TRUE</FONT> if the client speaks the 
+<FONT SIZE=-1>HTTP/0.9</FONT> protocol, i.e. no status code or headers should be returned.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_send_status_line_">$c->send_status_line( [$code, [$mess, [$proto]]] )
+
+</A></STRONG><DD>
+Sends the status line back to the client.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_send_basic_header_">$c->send_basic_header( [$code, [$mess, [$proto]]] )
+
+</A></STRONG><DD>
+Sends the status line and the ``Date:'' and ``Server:'' headers back to the
+client.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_send_response_">$c->send_response( [$res] )
+
+</A></STRONG><DD>
+Takes a <EM>HTTP::Response</EM> object as parameter and send it back to the client as the response.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_send_redirect_">$c->send_redirect( $loc, [$code, [$entity_body]] )
+
+</A></STRONG><DD>
+Sends a redirect response back to the client. The location ($loc) can be an absolute or a relative 
+<FONT SIZE=-1>URL.</FONT> The <CODE>$code</CODE> must be one the redirect status codes, and it defaults to ``301 Moved Permanently''
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_send_error_">$c->send_error( [$code, [$error_message]] )
+
+</A></STRONG><DD>
+Send an error response back to the client. If the <CODE>$code</CODE> is missing a ``Bad Request'' error is reported. The <CODE>$error_message</CODE> is a string that is incorporated in the body of the 
+<FONT SIZE=-1>HTML</FONT> entity body.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_send_file_response_filename">$c->send_file_response($filename)
+
+</A></STRONG><DD>
+Send back a response with the specified <CODE>$filename</CODE> as content. If the file happen to be a directory we will generate a 
+<FONT SIZE=-1>HTML</FONT> index for it.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_send_file_fd_">$c->send_file($fd);
+
+</A></STRONG><DD>
+Copies the file back to the client. The file can be a string (which will be
+interpreted as a filename) or a reference to a glob.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_daemon">$c->daemon
+
+</A></STRONG><DD>
+Return a reference to the corresponding <EM>HTTP::Daemon</EM> object.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/IO/Socket.html">Socket</A>, <A HREF="/n|/perl/html/./lib/CGI/Apache.html#">the Apache manpage</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1996, Gisle Aas
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

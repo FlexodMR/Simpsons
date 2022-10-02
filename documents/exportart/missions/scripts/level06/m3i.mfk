@@ -1,0 +1,53 @@
+SelectMission("m3");
+
+SetMissionResetPlayerOutCar("bart_krustytalk","m3_carstart");
+SetDynaLoadData("l6z3.p3d;l6r2.p3d;l6z2.p3d;l6r3.p3d;");
+
+//AddStage(0);
+//	RESET_TO_HERE();
+//	SetMaxTraffic(4);
+//	SetStageMessageIndex(185);
+//	SetHUDIcon( "aztec" );
+//	AddObjective( "goto" );
+//		AddStageVehicle("frink_v","m3_frink_carstart","NULL","Missions\level06\M3chase.con","frink");
+//		SetDestination( "m3_frink_path", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//	ShowStageComplete();
+//CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(90);
+	SetMaxTraffic(3);
+	SetHUDIcon( "frink_v" );
+	AddStageVehicle("frink_v","m3_frink_carstart","evade","Missions\level06\M3chase.con","frink");
+	AddStageWaypoint( "m3_frink_path1" );
+	AddStageWaypoint( "m3_frink_path2" );
+	AddStageWaypoint( "m3_frink_path3" );
+	AddStageWaypoint( "m3_frink_path4" );
+//	AddStageWaypoint( "m3_frink_path5" );
+//	AddStageWaypoint( "m3_frink_path6" );
+	AddStageWaypoint( "m3_frink_path7" );
+	AddStageWaypoint( "m3_frink_path8" );
+	AddStageWaypoint( "m3_frink_path9" );
+	AddStageWaypoint( "m3_frink_path3" );
+	AddStageWaypoint( "m3_frink_path5" );
+	AddStageWaypoint( "m3_frink_path2" );
+	AddStageWaypoint( "m3_frink_path10" );
+	AddObjective("follow", "neither");
+		SetObjTargetVehicle("frink_v");
+	CloseObjective();
+	AddCondition("followdistance");
+		SetFollowDistances(0, 150);
+		SetCondTargetVehicle("frink_v");
+	CloseCondition();
+	SetFadeOut( 1.0 );
+CloseStage();
+
+AddStage("final");
+	AddStageCharacter("bart", "m4_bart_start", "", "current", "m4_carstart" );
+	AddObjective("timer");
+		SetDurationTime(1);
+	CloseObjective();
+CloseStage();

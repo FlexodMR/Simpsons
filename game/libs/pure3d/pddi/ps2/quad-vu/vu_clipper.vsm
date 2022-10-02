@@ -1,0 +1,922 @@
+LoadClipperLut:
+
+	; build cliptag = 00000000 00000512 3002c000 00008000
+
+	nop[i]                          loi 0x54494D41
+    nop[i]                          loi 0x3002c000
+	addi.y   vf01y,vf00y,i          nop                      ; PRE + PRIM + FLG + NREGS
+
+	nop                             iaddiu vi01,vi00,0x512   ; REGS
+	nop                             mfir.z vf01z,vi01
+	nop                             mfir.w vf01w,vi00        ; REGS
+
+	; store tag
+	nop                             sq vf01, CLIP_BUFFER_TAG_0(vi00)
+	nop                             sq vf01, CLIP_BUFFER_TAG_1(vi00)
+
+	; store EOP bit - not really needed?!?! PROJECT puts this into the tag anyway - fixme
+#if 0
+	nop                             iaddiu vi01,vi00,0x4000 ; EOP bit = 0x8000
+	nop                             iaddiu vi01,vi01,0x4000 ; can't use MFIR cause it's sign extended
+
+	nop                             isw.x vi01,CLIP_BUFFER_TAG_0(vi00)x
+	nop                             isw.x vi01,CLIP_BUFFER_TAG_1(vi00)x
+#endif
+
+	; create a little 3 entry lookup table for the clipping vertex queue
+	; LUT1 VERTEX_ADDRESS_1
+	; LUT2 VERTEX_ADDRESS_2
+	; LUT0 VERTEX_ADDRESS_0
+	nop                             iaddiu vi02, vi00, VERTEX_QUEUE_LUT
+	nop				iaddiu vi01, vi00, VQ_LUT0
+	nop				isw.x vi01, 0(vi02)x
+
+	nop				iaddiu vi01, vi00, VQ_LUT1
+	nop				isw.x vi01, 1(vi02)x
+	nop				iaddiu vi01, vi00, VQ_LUT2
+	nop				isw.x vi01, 2(vi02)x
+
+	nop				isw.y vi02, 2(vi02)y
+	nop				iaddiu vi01, vi00, VERTEX_QUEUE_LUT+2
+	nop				isw.y vi01, 1(vi02)y
+	nop				iaddiu vi01, vi00, VERTEX_QUEUE_LUT+1
+
+	nop				jr vi03
+	nop				isw.y vi01, 0(vi02)y
+
+.macro CLIPMACRO vertStride, stOff
+
+	nop				bal vi03,LoadClipperLut
+	nop				nop
+
+        load_primgroup
+   
+vclClipLoop_CodeStart\@: ; flowMon::Emit() vcl 1.3test-4 produced this code:
+         NOP                                                        fcset         0x00000000                          
+         NOP                                                        isw.z         VI15,VERTEX_QUEUE_LUT(VI00)         
+         NOP                                                        ilw.x         VI08,VERTEX_QUEUE_LUT+2(VI00)       
+         NOP                                                        ilw.y         VI07,VERTEX_QUEUE_LUT+2(VI00)       
+CLIPTRIANGLE_LOOP\@: ; cycles?=17
+         mulaw         ACC,VF29,VF00w                               lq.xyz        VF01,-1+\vertStride(VI04)           
+         maddaz        ACC,VF28,VF01z                               lq            VF02,1(VI06)                               ;	STALL_LATENCY ?3
+         madday        ACC,VF27,VF01y                               lq            VF03,\stOff(VI04)
+         maddx         VF01,VF26,VF01x                              iaddiu        VI04,VI04,\vertStride                                  
+         NOP                                                        sq            VF02,1(VI08)                               ;	STALL_LATENCY ?1
+         NOP                                                        iaddiu        VI06,VI06,0x00000003                
+         clipw.xyz     VF01xyz,VF01w                                sq            VF03,0(VI08)                        
+         NOP                                                        NOP                                               
+         NOP                                                        sq            VF01,2(VI08)                        
+         NOP                                                        ilw.x         VI08,0(VI07)                        
+         NOP                                                        fcand         VI01,0x0003ffff                     
+         NOP                                                        ibeq          VI01,VI00,CLIPSKIP\@                       
+         NOP                                                        ilw.y         VI07,0(VI07)                        
+         NOP                                                        bal           VI15,CLIPPER                        
+         NOP                                                        NOP                                               
+CLIPSKIP\@:
+         NOP                                                        iaddi         VI05,VI05,-1                
+         NOP                                                        NOP                                               
+         NOP                                                        ibgtz         VI05,CLIPTRIANGLE_LOOP\@              
+         NOP                                                        NOP                                               
+         NOP                                                        ilw.z         VI15,VERTEX_QUEUE_LUT(VI00)         
+         NOP                                                        NOP                                               
+         NOP                                                        jr vi15
+         NOP                                                        NOP                                               
+.endm
+
+CLIPBUFFER:
+
+	CLIPMACRO 3 0  ; standard clipper for st,rgb,xyz
+
+CLIPBUFFER_4_0:
+
+	CLIPMACRO 4 0  ; clipper for pass1 of st0,st1,rgb,xyz
+
+CLIPBUFFER_4_1:
+
+	CLIPMACRO 4 1  ; clipper for pass1 of st0,st1,rgb,xyz
+
+CLIPBUFFER_SHADOW:
+
+         nop				bal vi03,LoadClipperLut
+         nop				nop
+
+         load_primgroup
+         NOP                                                        isw.z         VI15,VERTEX_QUEUE_LUT(VI00)         
+         NOP                                                        ilw.x         VI08,VERTEX_QUEUE_LUT+2(VI00)       
+         NOP                                                        ilw.y         VI07,VERTEX_QUEUE_LUT+2(VI00)       
+         nop                                                        iaddiu        _CLIPPER,vi00,8 ; magic bfc flag
+
+CLIPTRIANGLE_SHADOW_LOOP:
+         mulaw         ACC,VF29,VF00w                               lq            VF01,0(VI04)           
+         maddaz        ACC,VF28,VF01z                               lq            VF02,0(VI06)
+         madday        ACC,VF27,VF01y                               fcset         0
+         maddx         VF01,VF26,VF01x                              iaddiu        VI04,VI04,1
+         NOP                                                        sq            VF02,1(VI08)                               ;	STALL_LATENCY ?1
+         NOP                                                        iaddiu        VI06,VI06,2
+         clipw.xyz     VF01xyz,VF01w                                nop
+         NOP                                                        NOP                                               
+         NOP                                                        sq            VF01,2(VI08)                        
+         NOP                                                        ilw.x         VI08,0(VI07)                        
+         NOP                                                        ilw.y         VI07,0(VI07)             
+
+         ;
+         mulaw         ACC,VF29,VF00w                               lq            VF01,0(VI04)           
+         maddaz        ACC,VF28,VF01z                               lq            VF02,0(VI06)
+         madday        ACC,VF27,VF01y                               nop
+         maddx         VF01,VF26,VF01x                              iaddiu        VI04,VI04,1
+         NOP                                                        sq            VF02,1(VI08)                               ;	STALL_LATENCY ?1
+         NOP                                                        iaddiu        VI06,VI06,2
+         clipw.xyz     VF01xyz,VF01w                                nop
+         NOP                                                        NOP                                               
+         NOP                                                        sq            VF01,2(VI08)                        
+         NOP                                                        ilw.x         VI08,0(VI07)                        
+         NOP                                                        ilw.y         VI07,0(VI07)             
+         ;
+
+         mulaw         ACC,VF29,VF00w                               lq            VF01,0(VI04)           
+         maddaz        ACC,VF28,VF01z                               lq            VF02,0(VI06)
+         madday        ACC,VF27,VF01y                               nop
+         maddx         VF01,VF26,VF01x                              iaddiu        VI04,VI04,1
+         NOP                                                        sq            VF02,1(VI08)                               ;	STALL_LATENCY ?1
+         NOP                                                        iaddiu        VI06,VI06,2
+         clipw.xyz     VF01xyz,VF01w                                nop
+         NOP                                                        NOP                                               
+         NOP                                                        sq            VF01,2(VI08)                        
+         NOP                                                        ilw.x         VI08,0(VI07)                        
+         nop                                                        nop
+         NOP                                                        fcand         VI01,0x0003ffff                     
+         NOP                                                        ilw.y         VI07,0(VI07)             
+
+         NOP                                                        ibeq          VI01,VI00,CLIPSKIP_SHADOW
+         nop                                                        nop
+
+         NOP                                                        bal           VI15,CLIPPER           
+         NOP                                                        NOP
+CLIPSKIP_SHADOW:
+         NOP                                                        iaddi         VI05,VI05,-3
+         NOP                                                        NOP                                               
+         NOP                                                        ibgtz         VI05,CLIPTRIANGLE_SHADOW_LOOP
+         NOP                                                        NOP                                               
+         NOP                                                        ilw.z         VI15,VERTEX_QUEUE_LUT(VI00)         
+         NOP                                                        NOP                                               
+         NOP                                                        jr vi15
+         NOP                                                        NOP                                               
+
+
+;----------------------------------------------------------------------------------------------------
+; clipper
+;----------------------------------------------------------------------------------------------------
+
+; register usage
+;   vf02 scratch (not preserved)
+;   vf12 edge v1 (not preserved)
+;   vf13 edge v2 (not preserved)
+;   vf14 scratch (preserved)
+;   vf15 scratch (preserved)
+;   vf16 scratch (preserved)
+
+;   vi01 scratch (not preserved)
+;   vi02 scratch (not preserved)
+;   vi04 output addr (preserved)
+;   vi05 input vertex count (preserved)
+;   vi06 output vertex count (preserved)
+;   vi07 colour addr (preserved)
+;   vi15 return address
+
+; assumes:
+; clip register is correct
+; vi04 contains address of vertex currently being processed
+; vi05 contains count of vertices remaining
+; vi06 contains vertex queue address
+; vf17w contains near plane
+; vertices and uvs have been cached at the beginning of memory
+; note: this routine scribbles all over memory in the (0-15 range)
+;   ie: the context is trashed by the clipper
+;       this should be ok, since the context is in registers, which we preserve
+
+CLIPPER:
+   
+   nop                              fcor vi01, 0xfefbef              ; are all vertices behind the near plane?
+   nop                              ibne vi01, vi00, CLIPPER_BAIL
+   nop                              fcand vi01, 0x20820              ; are any of the vertices touching the far plane?
+   nop                              ibne vi01, vi00, CLIPPER_BAIL
+   nop                              fcor vi01, 0xffdf7d              ; are all vertices left of -x plane?
+   nop                              ibne vi01, vi00, CLIPPER_BAIL
+   nop                              fcor vi01, 0xffefbe              ; are all vertices right of +x plane?
+   nop                              ibne vi01, vi00, CLIPPER_BAIL
+   nop                              fcor vi01, 0xff7df7              ; are all vertices above -y plane?
+   nop                              ibne vi01, vi00, CLIPPER_BAIL
+   nop                              fcor vi01, 0xffbefb              ; are all vertices below +y plane?
+   nop                              ibne vi01, vi00, CLIPPER_BAIL
+   nop                              nop
+ 
+   nop                              ibgtz _TRISTRIP, CHECK_TRISTRIP  ; handle tristrips
+   nop                              nop
+ 
+   nop                              iaddiu vi01,vi00,VERTEX_QUEUE_LUT   
+   nop                              nop
+   nop                              ibeq vi07, vi01, BEGIN_CLIP
+   nop                              nop
+
+CLIPPER_BAIL:
+   nop                              jr vi15
+   nop                              nop
+
+CHECK_TRISTRIP:
+   nop                              isub vi02, _NVER, vi05           ; dont bother until we have at least three vertices
+   nop                              iaddi vi02, vi02, -2
+
+   nop                              nop
+   nop                              ibgez vi02, BEGIN_CLIP
+   nop                              nop
+
+   nop                              jr vi15
+   nop                              nop
+;---------------------------------------------------------
+
+BEGIN_CLIP:
+
+   ; spill a few registers   
+   nop                              iaddiu vi02, vi00, TOP_OF_SCRATCH
+   
+   SaveIntVector4 0, vi02, vi04, vi05, vi06, vi07
+   
+   nop                              b      CLIP_TO_VIEWPORT    ; go to x/y clipper
+   nop                              iaddiu vi06, vi00, 3       ; fix up vertex count in vi06 
+
+PROJECT_CLIPPED:
+   ; aug27/2001 amb
+   ; do bfc on clipped triangle
+   nop                              ilw.w _CLIPPER,SPILL_ADDRESS+1(vi00)w ; restore clipping flag from vi11
+
+
+   nop                              iaddiu vi01,vi00,8
+   nop                              iand   vi01,vi01,_CLIPPER
+   nop                              nop
+   nop                              ibeq vi01,vi00,CLIPPER_CHECK_FLAGS2
+   nop                              nop
+;---------------------------------------------------------------------------------------------
+CLIPPER_SHADOW_BACKFACE_CULL:
+
+;   nop b PROJECT_DONE
+;   nop nop
+
+
+   nop                              lq vf14,CLIP_BUFFER_0+2(vi00)    ; load the 3 verts from clip queue
+   nop                              lq vf15,CLIP_BUFFER_0+5(vi00)
+   nop                              lq vf16,CLIP_BUFFER_0+8(vi00)   
+
+   ; project all 3 points
+   mul.xyz  vf14,vf14,_VPS          div q, vf00w, vf14w
+   mulq.xyz vf14,vf14,q             waitq
+   
+   mul.xyz  vf15,vf15,_VPS          div q, vf00w, vf15w
+   mulq.xyz vf15,vf15,q             waitq
+
+   mul.xyz  vf16,vf16,_VPS          div q, vf00w, vf16w
+   mulq.xyz vf16,vf16,q             waitq
+
+   sub.xyz vf14,vf14,vf16           nop
+   sub.xyz vf15,vf15,vf16           nop
+   opmula.xyz ACC,vf14,vf15         nop
+   opmsub.xyz vf16,vf15,vf14        nop
+   nop                              iaddiu vi02,vi00,32
+   nop                              nop
+   nop                              nop
+   nop                              nop
+   nop                              fmand vi01,vi02
+   nop                              ibeq vi01,vi00,CLIPPER_SHADOW_FRONT_FACE_TRI
+   nop[i]                           loi 8.0         ; front facing tri - increment
+   nop[i]                           loi 255.0       ; back facing tri - decrement
+
+   CLIPPER_SHADOW_FRONT_FACE_TRI:
+   addi.xyz   vf07, vf00,i          nop
+   ftoi0.xyzw vf07, vf07            nop
+
+   nop                              iaddiu vi01,vi00,CLIP_BUFFER_0
+   nop                              sq vf07,1(vi01)
+   nop                              sq vf07,4(vi01)
+   nop                              sq vf07,7(vi01)
+   nop                              sq vf07,10(vi01)
+   nop                              sq vf07,13(vi01)
+   nop                              sq vf07,16(vi01)
+
+
+   nop                              b CLIPPER_BACKFACE_DONE
+   nop                              nop
+
+
+;----------------------------------------------------------------------------------------------
+CLIPPER_CHECK_FLAGS2:
+   nop                              iaddiu vi01,vi00,2+4
+   nop                              iand   vi01,vi01,_CLIPPER
+   nop[i]                           loi +1.0
+   nop                              nop
+   nop                              ibeq   vi01,vi00,CLIPPER_BACKFACE_DONE ; no need to BFC
+   
+   nop                              iaddi vi01,vi01,-2
+   nop                              nop
+
+   CLIPPER_BACKFACE_CULL_CONT:
+   nop                              ibgtz vi01,CLIPPER_BACKFACE_INVERTED
+   subw.z vf01z,vf00z,vf00w         nop   ; vf01z = -1   
+   addw.z vf01z,vf00z,vf00w         nop   ; vf01z = +1
+
+   CLIPPER_BACKFACE_INVERTED:
+   muli.z vf01z,vf01z,i             lq vf14,CLIP_BUFFER_0+2(vi00)    ; load the 3 verts from clip queue
+   nop                              lq vf15,CLIP_BUFFER_0+5(vi00)
+   nop                              lq vf16,CLIP_BUFFER_0+8(vi00)   
+
+   ; project all 3 points
+   mul.xyz  vf14,vf14,_VPS          div q, vf00w, vf14w
+   mulq.xyz vf14,vf14,q             waitq
+   
+   mul.xyz  vf15,vf15,_VPS          div q, vf00w, vf15w
+   mulq.xyz vf15,vf15,q             waitq
+
+   mul.xyz  vf16,vf16,_VPS          div q, vf00w, vf16w
+   mulq.xyz vf16,vf16,q             waitq
+
+   sub.xyz vf14,vf14,vf16           nop
+   sub.xyz vf15,vf15,vf16           nop
+   opmula.xyz ACC,vf14,vf15         nop
+   opmsub.xyz vf16,vf15,vf14        nop
+   mulz.z vf16z,vf16z,vf01z         iaddiu vi02,vi00,32
+   nop                              nop
+   nop                              nop
+   nop                              nop
+   nop                              fmand vi01,vi02
+
+   nop                              ibeq vi01,vi00,CLIPPER_BACKFACE_DONE
+   nop                              nop           
+
+   ; DONE! this triangle is BFCed
+   nop                              b PROJECT_DONE
+   nop                              nop
+
+CLIPPER_BACKFACE_DONE:
+   
+   ; write new clip gif tag
+   nop                              iaddiu vi02, vi00, 0x7fff  ; prep output giftag
+   nop                              iaddiu vi02, vi02, 1       ; clear tag
+   nop                              iadd   vi02, vi02, vi06    ; set NLOOP (output count)
+   
+   ; vi01 is ClipGifTag
+   nop                              iaddiu vi01, vi00, CLIP_BUFFER_TAG_0
+   nop                              iaddiu vi04, vi00, CLIP_BUFFER_0   ; first output vertex goes here   
+   nop                              iswr.x vi02,(vi01)x              ; store into cliptag
+
+; normalize STs
+   nop                              iaddiu vi05,vi06,0
+   nop                              lq vf02,0(vi04)   ; vf02 = min
+   nop                              lq vf12,0(vi04)   ; vf12 = max        
+; find min/max sts
+   SCAN_ST_LOOP:
+   nop                              lq vf01,0(vi04)
+   mini.xy vf02,vf02,vf01           iaddi vi05,vi05,-1
+   max.xy  vf12,vf12,vf01           iaddiu vi04,vi04,3
+   nop                              ibgtz vi05,SCAN_ST_LOOP
+   nop                              loi 0.5
+
+   add.xy  vf02,vf02,vf12           iaddiu vi04, vi00, CLIP_BUFFER_0
+   muli.xy vf02,vf02,i              nop       
+   ftoi0.xy vf02,vf02               nop
+   itof0.xy vf01,vf02               nop
+
+;  vf01 = average ST
+;  vi06 = vertex count
+;  vi04 = destination verts ( st [0] , color [1] , pos[2] )
+PROJECT_CLIPPED_LOOP:
+   nop                              lq vf02, 2(vi04)           ; load vertex
+   nop                              lq vf12, 0(vi04)           ; load st
+   nop                              div q, vf00w, vf02w        ; 1/w
+   sub.xy vf12,vf12,vf01            iaddiu vi02, vi00, 0xff0   ; normalize st, load fog value
+   nop                              waitq                      ; viewport scale, wait for 1/w
+   mulq.xyz  vf12, vf12, q          mfir.w vf02w, vi02         ; project st, write fog
+   mulq.xyz  vf02, vf02, q          isubiu vi06, vi06, 1       ; project, decr vertex count
+   mul.xyz   vf02, vf02, _VPS       nop                        ; viewport scale, wait for 1/w
+   add.xyz   vf02, vf02, _VPO       nop                        ; viewport offset
+   ftoi4.xyz vf02, vf02             sq vf12, 0(vi04)           ; convert to 12.4, store st
+   nop                              sq vf02, 2(vi04)           ; store vertex
+   nop                              ibgtz  vi06, PROJECT_CLIPPED_LOOP
+   nop                              iaddiu vi04, vi04, 3       ; next vertex
+
+PROJECT_CLIP_XGKICK:
+   nop                              nop                        ; make sure last sq is complete
+
+   nop                              xgkick vi01                ; output clipped triangle
+   nop                              nop
+   
+PROJECT_DONE:
+; restore registers, return from subroutine
+   nop                              iaddiu vi02, vi00, TOP_OF_SCRATCH
+
+   LoadIntVector4 0, vi02, vi04, vi05, vi06, vi07
+
+   nop                              jr vi15
+   nop                              nop
+
+;------------------------------------------------------------------
+;   Sutherland-Hodgman clipping algorithm
+;   begin
+;
+;      get point1 = v[i]
+;
+;      if ( inside( point1 ) )
+;        emit ( point1 )
+;        
+;      get point2 = v[(i+1)%N]
+;
+;      if ( inside( point1 ) != inside( point2 ) )
+;        emit( interpolate( point1 , point2 ) )
+;
+;   end
+
+;   vi04 - source verts ptr
+;   vi05 - dest verts ptr
+;   vi06 - # source verts
+;   vi07 - # dest verts
+;   vi15 - return addy
+;
+;   vf02 - edge vertex 0
+;   vf12 - edge vertex 1
+;   vf13 - scratch
+;   vf14 - scratch
+;   vf15 - scratch
+
+
+;-// CLIP_TO_VIEWPORT  --------------------------------------------
+CLIP_TO_VIEWPORT:
+
+SPILL_REGS_AND_START:
+
+   ; make sure the GIF is finished reading the last clipped polygon
+   ; fixme amb 05/17/2002 - really needed if we write into different
+   ; output buffer?!?!?
+
+   nop                              iaddiu vi01, vi00, CLIP_BUFFER_TAG_0
+   nop				    iaddiu vi02, vi00, 0x7fff        ; set giftag NLOOP = 0
+   nop				    iaddiu vi02, vi02, 1
+   nop				    iswr.x vi02, (vi01)x
+
+   nop                              nop
+   nop                              nop
+   nop                              nop                              ; make sure tag is stored
+
+   nop				    xgkick vi01                      ; send empty tag to flush gif queue
+   nop				    nop
+
+   nop                              iaddiu vi01, vi00, SPILL_ADDRESS
+
+   ; faster, less memory access
+   SaveIntVector4 0, vi01, vi04, vi05, vi06, vi07
+   SaveIntVector4 1, vi01, vi08, vi09, vi10, vi11
+   SaveIntVector4 2, vi01, vi12, vi13, vi14, vi15
+
+   nop                              iaddiu vi11, vi00, CLIP_BUFFER_0 ; vi11 = clip buffer in   
+   nop                              iaddiu vi12, vi00, CLIP_BUFFER_1
+   nop                              iaddiu vi13, vi00, SPILL_ADDRESS 
+   nop                              iaddiu vi01, vi00, VQ_ADDR         
+
+   ; -- copy the verts from the queue to the input buffer, and duplicate
+   ; -- the first vertex to the end of the buffer for easy wrap around  
+   ; load first vertex
+   nop                              lq vf10, 0(vi01)
+   nop                              lq vf11, 1(vi01)
+   nop                              lq vf12, 2(vi01)
+   nop                              nop
+   
+   ; copy to vtx position 1 & 4
+   nop                              sq vf10, 0(vi11)
+   nop                              sq vf11, 1(vi11)
+   nop                              sq vf12, 2(vi11)      
+   nop                              nop   
+   
+   nop                              sq vf10, 9(vi11)
+   nop                              sq vf11,10(vi11)
+   nop                              sq vf12,11(vi11)         
+   nop                              nop   
+   
+   ; load vertex 2
+   nop                              lq vf10, 3(vi01)
+   nop                              lq vf11, 4(vi01)
+   nop                              lq vf12, 5(vi01)
+   nop                              nop   
+   
+   nop                              sq vf10, 3(vi11)
+   nop                              sq vf11, 4(vi11)
+   nop                              sq vf12, 5(vi11)      
+   nop                              nop   
+
+   ; load vertex 3
+   nop                              lq vf10, 6(vi01)
+   nop                              lq vf11, 7(vi01)
+   nop                              lq vf12, 8(vi01)
+   nop                              nop   
+   
+   nop                              sq vf10, 6(vi11)
+   nop                              sq vf11, 7(vi11)
+   nop                              sq vf12, 8(vi11)      
+   nop                              nop   
+
+   nop                              b PLANE_CLIP_START
+   nop                              nop
+   
+   
+;-// RESTORE_REGS_AND_RETURN --------------------------------------------
+RESTORE_REGS_AND_RETURN: 
+   
+   nop                              iaddiu vi01,vi13,0   ; spill area
+
+   LoadIntVector4 0, vi01, vi04, vi05, vi06, vi07
+   LoadIntVector4 1, vi01, vi08, vi09, vi10, vi11
+   LoadIntVector4 2, vi01, vi12, vi13, vi14, vi15
+
+   nop                              b PROJECT_CLIPPED  ; return to the projection routine
+   nop                              nop
+  
+
+;-// SETUP_BUFFERS ------------------------------------------------------
+SETUP_BUFFERS:
+
+
+   setup_pointers:
+   nop                              iaddiu vi04, vi11,0          ; src
+   nop                              iaddiu vi05, vi12,0          ; dest
+   nop                              iaddiu vi09, vi06,0          ; vi09 = new # of verts
+   
+   nop                              jr vi10
+   nop                              iaddiu vi07, vi00,0          ; initial vertex count   
+   
+;---------------------------------------------------------------------------------------------------
+;
+;
+;  vi04 - source pointer st (0), rgb (1) , xyz (2)
+;  vi05 - dest pointer st (0), rgb (1) , xyz (2)
+;  vi06 - # source verts
+;  vi07 - # dest verts
+;  vi15 - return address
+;
+;  vf04-vf15 = scratch
+;
+
+;--// +X CLIPPER ------------------------------------------------------------------------------------
+PLANE_CLIP_START:
+XPLUS_START:
+
+   nop                              bal vi10, SETUP_BUFFERS   
+   nop                              nop
+
+   xplus_loop:
+   nop                              lq vf04,2(vi04)            ; get first vertex vf04
+   nop                              lq vf05,5(vi04)            ; get next vertex  vf05 
+   addw.x vf10x , vf00x, vf00w      iaddiu vi08,vi00,0         ; vf10x = 1.0 (w scale), vi08 = 0 (num rotations)
+   nop                              nop
+
+   x_lessthan_w                     vf04, vf04, vi01           ; vi01 = vf04 inside +x  
+   x_lessthan_w                     vf05, vf05, vi02           ; vi02 = vf05 inside +x
+   
+   nop                              bal vi10, CLIP_EDGE
+   nop                              nop
+   
+   nop                              isubiu vi09,vi09,1
+   nop                              nop
+   
+   nop                              ibgtz  vi09, xplus_loop
+   nop                              nop
+   xplus_loop_end:
+
+   nop                              bal vi10, COPY_VERT_BUFFER
+   nop                              nop   
+      
+
+;--// -X CLIPPER ------------------------------------------------------------------------------------
+XMINUS_START:
+
+   nop                              bal vi10, SETUP_BUFFERS   
+   nop                              nop
+   
+   xminus_loop:
+   nop                              lq vf04,2(vi04)            ; get first vertex vf04
+   nop                              lq vf05,5(vi04)            ; get next vertex  vf05 
+   subw.x vf10x , vf00x, vf00w      iaddiu vi08,vi00,0         ; vf10x = -1.0 (w scale), vi08 = 0 (num rotations)
+   nop                              nop
+   
+   x_lessthan_neg_w                 vf04, vf04, vi01           ; vi01 = vf04 inside -x  
+   x_lessthan_neg_w                 vf05, vf05, vi02           ; vi02 = vf05 inside -x      
+   
+   nop                              bal vi10, CLIP_EDGE
+   nop                              nop
+   
+   nop                              isubiu vi09,vi09,1
+   nop                              nop
+   
+   nop                              ibgtz vi09, xminus_loop
+   nop                              nop
+   xminus_end:
+
+   nop                              bal vi10, COPY_VERT_BUFFER
+   nop                              nop
+   
+;--// -Y CLIPPER ------------------------------------------------------------------------------------
+YMINUS_START:
+
+   nop                              bal vi10, SETUP_BUFFERS   
+   nop                              nop
+   
+   yminus_loop:
+
+   nop                              lq vf04,2(vi04)            ; get first vertex vf04
+   nop                              lq vf05,5(vi04)            ; get next vertex  vf05 
+   addw.x vf10x , vf00x, vf00w      iaddiu vi08,vi00,1         ; vf10x = +1.0 (w scale), vi08 = 1 (num rotations)
+   nop                              nop
+   
+   y_lessthan_w                     vf04, vf04, vi01           ; vi01 = vf04 inside -y
+   y_lessthan_w                     vf05, vf05, vi02           ; vi02 = vf05 inside -y
+   
+   nop                              bal vi10, CLIP_EDGE
+   nop                              nop
+   
+   nop                              isubiu vi09,vi09,1
+   nop                              nop
+   
+   nop                              ibgtz vi09, yminus_loop
+   nop                              nop
+   yminus_end:
+
+   nop                              bal vi10, COPY_VERT_BUFFER
+   nop                              nop
+
+;--// +Y CLIPPER ------------------------------------------------------------------------------------
+YPLUS_START:
+
+   nop                              bal vi10, SETUP_BUFFERS   
+   nop                              nop
+   
+   yplus_loop:
+
+   nop                              lq vf04,2(vi04)            ; get first vertex vf04
+   nop                              lq vf05,5(vi04)            ; get next vertex  vf05 
+   subw.x vf10x , vf00x, vf00w      iaddiu vi08,vi00,1         ; vf10x = -1.0 (w scale), vi08 = 1 (num rotations)
+   nop                              nop
+   
+   y_lessthan_neg_w                 vf04, vf04, vi01           ; vi01 = vf04 inside +y  
+   y_lessthan_neg_w                 vf05, vf05, vi02           ; vi02 = vf05 inside +y
+      
+   nop                              bal vi10, CLIP_EDGE
+   nop                              nop
+   
+   nop                              isubiu vi09,vi09,1
+   nop                              nop
+   
+   nop                              ibgtz vi09, yplus_loop
+   nop                              nop
+   yplus_end:
+
+   nop                              bal vi10, COPY_VERT_BUFFER
+   nop                              nop
+
+;--// -Z CLIPPER ------------------------------------------------------------------------------------
+ZMINUS_START:
+
+   nop                              bal vi10, SETUP_BUFFERS   
+   nop                              nop
+   
+   zminus_loop:
+
+   nop                              lq vf04,2(vi04)            ; get first vertex vf04
+   nop                              lq vf05,5(vi04)            ; get next vertex  vf05 
+   addw.x vf10x , vf00x, vf00w      iaddiu vi08,vi00,2         ; vf10x = +1.0 (w scale), vi08 = 2 (num rotations)
+   nop                              nop
+   
+   z_lessthan_w                     vf04, vf04, vi01           ; vi01 = vf04 inside -z
+   z_lessthan_w                     vf05, vf05, vi02           ; vi02 = vf05 inside -z
+      
+   nop                              bal vi10, CLIP_EDGE
+   nop                              nop
+   
+   nop                              isubiu vi09,vi09,1
+   nop                              nop
+   
+   nop                              ibgtz vi09, zminus_loop
+   nop                              nop
+   zminus_end:
+
+   nop                              bal vi10, COPY_VERT_BUFFER
+   nop                              nop
+   
+   ; skip to end of clipper cause we dont do far plane clipping!
+   nop                              b PLANE_CLIP_END
+   nop                              nop
+
+;--// +Z CLIPPER ------------------------------------------------------------------------------------
+ZPLUS_START:
+
+   nop                              bal vi10, SETUP_BUFFERS   
+   nop                              nop
+   
+   zplus_loop:
+
+   nop                              lq vf04,2(vi04)            ; get first vertex vf04
+   nop                              lq vf05,5(vi04)            ; get next vertex  vf05 
+   subw.x vf10x , vf00x, vf00w      iaddiu vi08,vi00,2         ; vf10x = -1.0 (w scale), vi08 = 2 (num rotations)
+   nop                              nop
+   
+   z_lessthan_neg_w                 vf04, vf04, vi01           ; vi01 = vf04 inside +z  
+   z_lessthan_neg_w                 vf05, vf05, vi02           ; vi02 = vf05 inside +z
+      
+   nop                              bal vi10, CLIP_EDGE
+   nop                              nop
+   
+   nop                              isubiu vi09,vi09,1
+   nop                              nop
+   
+   nop                              ibgtz vi09, zplus_loop
+   nop                              nop
+   zplus_end:
+
+   nop                              bal vi10, COPY_VERT_BUFFER
+   nop                              nop
+   
+;--// PLANE_CLIP_END --------------------------------------------------------------------------------
+PLANE_CLIP_END:
+
+   nop                              b RESTORE_REGS_AND_RETURN ; right now we only do +x clipping
+   nop                              nop 
+
+;-// CLIP_EDGE  --------------------------------------------
+CLIP_EDGE:
+
+   nop                              ibeq vi01,vi00, c_out       ; vertex out? skip it
+   nop                              nop
+
+   ; current vertex is in
+   c_in:
+   nop                              bal vi15, COPY_CURRENT_VERTEX ; vertex is in, add it to list
+   nop                              nop
+
+   nop                              ibeq vi02,vi00, c_in_out   ; next vertex out? interpolate
+   nop                              nop
+   
+   nop                              b c_next                   ; both verts are in, so continue
+   nop                              nop
+
+   ; current vertex is out
+   c_out:
+   nop                              ibeq vi02,vi00, c_next ; next vert is out, skip edge
+   nop                              nop
+
+   ; current vertex status != next vertex status
+   c_in_out:
+   c_out_in:
+   nop                              bal vi15, INTERPOLATE
+   nop                              nop
+
+   ; skip to next vertex
+   c_next:
+   nop                              jr vi10
+   nop                              iaddiu vi04,vi04,3   ; advance vertex pointer
+   
+
+;-// COPY_CURRENT_VERTEX  --------------------------------------------
+COPY_CURRENT_VERTEX:
+
+   nop                              lq vf13,0(vi04)      ; st
+   nop                              lq vf14,1(vi04)      ; color
+   nop                              lq vf15,2(vi04)      ; vertex
+   nop                              iaddiu  vi07,vi07,1  ; incr vertex count
+   
+   nop                              sq vf13,0(vi05)      ; st
+   nop                              sq vf14,1(vi05)      ; color
+   nop                              sq vf15,2(vi05)      ; vertex
+
+   nop                              jr vi15
+   nop                              iaddiu  vi05,vi05,3  ; advance dest pointer
+   
+;-// COPY_VERT_BUFFER  --------------------------------------------
+COPY_VERT_BUFFER:   
+
+   ; fixme : should really just swap pointers
+
+#if 1
+   nop                              iaddiu vi04, vi12,0
+   nop                              iaddiu vi05, vi11,0
+   nop                              iaddiu vi06, vi07,0    ; vi06 = new # of verts     
+   nop                              isw.z  vi06,0(vi13)z   ; write new vtx count      
+
+   copy_loop:
+   nop                              lq vf10,0(vi04)      ; st
+   nop                              lq vf11,1(vi04)      ; color
+   nop                              lq vf12,2(vi04)      ; vertex
+   nop                              nop
+   
+   nop                              sq vf10,0(vi05)      ; st
+   nop                              sq vf11,1(vi05)      ; color
+   nop                              sq vf12,2(vi05)      ; vertex
+
+   nop                              iaddi vi07,vi07,-1   ; decr vertex count
+   nop                              iaddiu vi04,vi04,3
+   
+   nop                              ibgtz vi07,copy_loop ; go to next vert   
+   nop                              iaddiu vi05,vi05,3
+   
+   copy_loop_end:
+   
+   nop                              iaddiu vi04, vi11,0
+   nop                              lq vf10,0(vi04)      ; st
+   nop                              lq vf11,1(vi04)      ; color
+   nop                              lq vf12,2(vi04)      ; vertex
+   nop                              nop
+   
+   nop                              sq vf10,0(vi05)      ; st
+   nop                              sq vf11,1(vi05)      ; color
+   nop                              sq vf12,2(vi05)      ; vertex
+#else 
+   ; swap src/dest buffers - not working
+   nop iaddiu vi01, vi11, 0
+   nop iaddiu vi11, vi12, 0
+   nop iaddiu vi12, vi01, 0
+
+   nop                              iaddiu vi04, vi11,0
+   nop                              lq vf10,0(vi04)      ; st
+   nop                              lq vf11,1(vi04)      ; color
+   nop                              lq vf12,2(vi04)      ; vertex
+   nop                              nop
+   nop                              iadd vi05,vi07,vi07
+   nop                              iadd vi05,vi05,vi07 ; vi05 = 3*vtx
+
+   nop                              sq vf10,0(vi05)      ; st
+   nop                              sq vf11,1(vi05)      ; color
+   nop                              sq vf12,2(vi05)      ; vertex
+
+#endif   
+
+   nop                              jr vi10              ; return to caller
+   nop                              nop
+;-// COPY_VERT_BUFFER  --------------------------------------------
+   
+
+;-// INTERPOLATE ---------------------------------------------------------
+; vf04 = current vertex
+; vf05 = next vertex
+; vf10x = sgn flag 
+;
+; vi08 = num rotations
+; vi15 = return addy
+
+INTERPOLATE: 
+
+   mulx.w   vf11w, vf04w, vf10x	    lq  vf06,0(vi04) ; vf11w = sgn*c[w] , vf06 = st0   
+   mulx.w   vf12w, vf05w, vf10x	    lq  vf07,3(vi04) ; vf12w = sgn*n[w] , vf07 = st1
+   nop				    lq  vf08,1(vi04) ; vf08 = col0
+   nop				    lq  vf09,4(vi04) ; vf09 = col1	   
+   subw.xyzw vf11, vf04, vf11w	    nop              ; vf11 = c[xyz]-sgn*c[w]
+   subw.xyzw vf12, vf05, vf12w	    nop              ; vf12 = n[xyz]-sgn*n[w]
+   nop				    nop	
+
+   ; rotate the fields in xyzw so that it lines up with
+   ; which plane youre clipping to
+   loop_rot:
+	nop	ibeq  vi08, vi00, loop_rot_end
+	nop	nop
+	nop	mr32.xyzw  vf11, vf11
+	nop	mr32.xyzw  vf12, vf12
+	nop	isubiu  vi08, vi08, 1
+	nop	nop
+	nop	b  loop_rot
+	nop	nop
+   loop_rot_end:
+ 
+;------------------
+
+   sub.xyz  vf10, vf12, vf11	    nop
+   itof0    vf08,vf08               div  q, vf11x, vf10x ; convert color to float, and divide
+   itof0    vf09,vf09               nop
+   
+   sub.xyzw vf13, vf05, vf04	    nop ; vertex, n - c
+   sub.xyzw vf14, vf07, vf06	    nop ; ST
+   sub.xyzw vf15, vf09, vf08	    nop ; color
+   
+;   nop                              waitq
+   addq.x   vf10x, vf00x, q	    waitq
+   abs.x    vf10x, vf10x            nop ; t = |(c-cw)/((n-nw)+(c-cw))|
+   
+   mulx.xyzw  vf13, vf13, vf10x	    nop ; vertex t*(n-c)
+   mulx.xyzw  vf14, vf14, vf10x	    nop ; ST
+   mulx.xyzw  vf15, vf15, vf10x	    nop ; color
+   nop                              nop
+
+   add.xyzw   vf13, vf13, vf04	    nop ; c + t*(n-c)
+   add.xyzw   vf14, vf14, vf06	    nop 
+   add.xyzw   vf15, vf15, vf08	    nop
+   
+   ftoi0      vf15,vf15             nop ; convert color back to fixed point - STALL!
+
+   ; store interpolated values
+   nop                              sq vf13,2(vi05) ; vertex
+   nop                              sq vf14,0(vi05) ; ST
+   nop                              sq vf15,1(vi05) ; color
+   nop                              iaddiu vi05,vi05,3   ; advance dest pointer   
+
+   nop                              jr vi15
+   nop                              iaddi  vi07,vi07,1   ; incr vertex count

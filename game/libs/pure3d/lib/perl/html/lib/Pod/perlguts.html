@@ -1,0 +1,6209 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlguts - Perl's Internal Functions
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#Variables">Variables</A>
+	<UL>
+
+		<LI><A HREF="#Datatypes">Datatypes</A>
+		<LI><A HREF="#What_is_an_IV_">What is an "IV"?</A>
+		<LI><A HREF="#Working_with_SVs">Working with SVs</A>
+		<LI><A HREF="#What_s_Really_Stored_in_an_SV_">What's Really Stored in an SV?</A>
+		<LI><A HREF="#Working_with_AVs">Working with AVs</A>
+		<LI><A HREF="#Working_with_HVs">Working with HVs</A>
+		<LI><A HREF="#Hash_API_Extensions">Hash API Extensions</A>
+		<LI><A HREF="#References">References</A>
+		<LI><A HREF="#Blessed_References_and_Class_Obj">Blessed References and Class Objects</A>
+		<LI><A HREF="#Creating_New_Variables">Creating New Variables</A>
+		<LI><A HREF="#Reference_Counts_and_Mortality">Reference Counts and Mortality</A>
+		<LI><A HREF="#Stashes_and_Globs">Stashes and Globs</A>
+		<LI><A HREF="#Double_Typed_SVs">Double-Typed SVs</A>
+		<LI><A HREF="#Magic_Variables">Magic Variables</A>
+		<LI><A HREF="#Assigning_Magic">Assigning Magic</A>
+		<LI><A HREF="#Magic_Virtual_Tables">Magic Virtual Tables</A>
+		<LI><A HREF="#Finding_Magic">Finding Magic</A>
+		<LI><A HREF="#Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays</A>
+		<LI><A HREF="#Localizing_changes">Localizing changes</A>
+	</UL>
+
+	<LI><A HREF="#Subroutines">Subroutines</A>
+	<UL>
+
+		<LI><A HREF="#XSUBs_and_the_Argument_Stack">XSUBs and the Argument Stack</A>
+		<LI><A HREF="#Calling_Perl_Routines_from_withi">Calling Perl Routines from within C Programs</A>
+		<LI><A HREF="#Memory_Allocation">Memory Allocation</A>
+		<LI><A HREF="#PerlIO">PerlIO</A>
+		<LI><A HREF="#Putting_a_C_value_on_Perl_stack">Putting a C value on Perl stack</A>
+		<LI><A HREF="#Scratchpads">Scratchpads</A>
+		<LI><A HREF="#Scratchpads_and_recursion">Scratchpads and recursion</A>
+	</UL>
+
+	<LI><A HREF="#Compiled_code">Compiled code</A>
+	<UL>
+
+		<LI><A HREF="#Code_tree">Code tree</A>
+		<LI><A HREF="#Examining_the_tree">Examining the tree</A>
+		<LI><A HREF="#Compile_pass_1_check_routines">Compile pass 1: check routines</A>
+		<LI><A HREF="#Compile_pass_1a_constant_foldin">Compile pass 1a: constant folding</A>
+		<LI><A HREF="#Compile_pass_2_context_propagat">Compile pass 2: context propagation</A>
+		<LI><A HREF="#Compile_pass_3_peephole_optimiz">Compile pass 3: peephole optimization</A>
+	</UL>
+
+	<LI><A HREF="#API_LISTING">API LISTING</A>
+	<LI><A HREF="#EDITOR">EDITOR</A>
+	<LI><A HREF="#DATE">DATE</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlguts - Perl's Internal Functions
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This document attempts to describe some of the internal functions of the
+Perl executable. It is far from complete and probably contains many errors.
+Please refer any questions or comments to the author below.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Variables">Variables
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Datatypes">Datatypes
+
+</A></H2>
+Perl has three typedefs that handle Perl's three main data types:
+
+
+<P>
+
+<PRE>    SV  Scalar Value
+    AV  Array Value
+    HV  Hash Value
+</PRE>
+
+<P>
+
+Each typedef has specific routines that manipulate the various data types.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="What_is_an_IV_">What is an "IV"?
+
+</A></H2>
+Perl uses a special typedef 
+<FONT SIZE=-1>IV</FONT> which is a simple integer type that is guaranteed
+to be large enough to hold a pointer (as well as an integer).
+
+
+<P>
+
+Perl also uses two special typedefs, 
+<FONT SIZE=-1>I32</FONT> and 
+<FONT SIZE=-1>I16,</FONT> which will always be at least 32-bits and 16-bits long, respectively.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Working_with_SVs">Working with SVs
+
+</A></H2>
+An 
+<FONT SIZE=-1>SV</FONT> can be created and loaded with one command. There are four types of values that can be loaded: an integer value 
+<FONT SIZE=-1>(IV),</FONT> a double 
+<FONT SIZE=-1>(NV),</FONT> a string, 
+<FONT SIZE=-1>(PV),</FONT> and another scalar 
+<FONT SIZE=-1>(SV).</FONT>
+
+
+
+<P>
+
+The five routines are:
+
+
+<P>
+
+<PRE>    SV*  newSViv(IV);
+    SV*  newSVnv(double);
+    SV*  newSVpv(char*, int);
+    SV*  newSVpvf(const char*, ...);
+    SV*  newSVsv(SV*);
+</PRE>
+
+<P>
+
+To change the value of an *already-existing* 
+<FONT SIZE=-1>SV,</FONT> there are six routines:
+
+
+<P>
+
+<PRE>    void  sv_setiv(SV*, IV);
+    void  sv_setnv(SV*, double);
+    void  sv_setpv(SV*, char*);
+    void  sv_setpvn(SV*, char*, int)
+    void  sv_setpvf(SV*, const char*, ...);
+    void  sv_setsv(SV*, SV*);
+</PRE>
+
+<P>
+
+Notice that you can choose to specify the length of the string to be
+assigned by using <A HREF="#item_sv_setpvn">sv_setpvn</A> or <A HREF="#item_newSVpv">newSVpv</A>, or you may allow Perl to calculate the length by using <A HREF="#item_sv_setpv">sv_setpv</A> or by specifying 0 as the second argument to <A HREF="#item_newSVpv">newSVpv</A>. Be warned, though, that Perl will determine the string's length by using <CODE>strlen</CODE>, which depends on the string terminating with a 
+<FONT SIZE=-1>NUL</FONT> character. The arguments of <A HREF="#item_sv_setpvf">sv_setpvf</A> are processed like
+<A HREF="#item_sprintf">sprintf</A>, and the formatted output becomes the value.
+
+
+<P>
+
+All SVs that will contain strings should, but need not, be terminated with a 
+<FONT SIZE=-1>NUL</FONT> character. If it is not NUL-terminated there is a risk of core dumps and corruptions from code which passes the string to 
+<FONT SIZE=-1>C</FONT> functions or system calls which expect a NUL-terminated string. Perl's own functions typically add a trailing 
+<FONT SIZE=-1>NUL</FONT> for this reason. Nevertheless, you should be very careful when you pass a string stored in an 
+<FONT SIZE=-1>SV</FONT> to a 
+<FONT SIZE=-1>C</FONT> function or system call.
+
+
+
+<P>
+
+To access the actual value that an 
+<FONT SIZE=-1>SV</FONT> points to, you can use the macros:
+
+
+<P>
+
+<PRE>    SvIV(SV*)
+    SvNV(SV*)
+    SvPV(SV*, STRLEN len)
+</PRE>
+
+<P>
+
+which will automatically coerce the actual scalar type into an 
+<FONT SIZE=-1>IV,</FONT> double, or string.
+
+
+<P>
+
+In the <A HREF="#item_SvPV">SvPV</A> macro, the length of the string returned is placed into the variable <CODE>len</CODE> (this is a macro, so you do <EM>not</EM> use <CODE>&len</CODE>). If you do not care what the length of the data is, use the global
+variable <A HREF="#item_na">na</A>. Remember, however, that Perl allows arbitrary strings of data that may both contain NULs and might not be terminated by a 
+<FONT SIZE=-1>NUL.</FONT>
+
+
+
+<P>
+
+If you want to know if the scalar value is 
+<FONT SIZE=-1>TRUE,</FONT> you can use:
+
+
+<P>
+
+<PRE>    SvTRUE(SV*)
+</PRE>
+
+<P>
+
+Although Perl will automatically grow strings for you, if you need to force Perl to allocate more memory for your 
+<FONT SIZE=-1>SV,</FONT> you can use the macro
+
+
+
+<P>
+
+<PRE>    SvGROW(SV*, STRLEN newlen)
+</PRE>
+
+<P>
+
+which will determine if more memory needs to be allocated. If so, it will
+call the function <A HREF="#item_sv_grow">sv_grow</A>. Note that <A HREF="#item_SvGROW">SvGROW</A> can only increase, not decrease, the allocated memory of an 
+<FONT SIZE=-1>SV</FONT> and that it does not automatically add a byte for the a trailing 
+<FONT SIZE=-1>NUL</FONT> (perl's own string functions typically do
+
+<A HREF="#item_SvGROW">SvGROW(sv, len + 1)</A>).
+
+
+<P>
+
+If you have an 
+<FONT SIZE=-1>SV</FONT> and want to know what kind of data Perl thinks is stored in it, you can use the following macros to check the type of 
+<FONT SIZE=-1>SV</FONT> you have.
+
+
+
+<P>
+
+<PRE>    SvIOK(SV*)
+    SvNOK(SV*)
+    SvPOK(SV*)
+</PRE>
+
+<P>
+
+You can get and set the current length of the string stored in an 
+<FONT SIZE=-1>SV</FONT> with the following macros:
+
+
+<P>
+
+<PRE>    SvCUR(SV*)
+    SvCUR_set(SV*, I32 val)
+</PRE>
+
+<P>
+
+You can also get a pointer to the end of the string stored in the 
+<FONT SIZE=-1>SV</FONT> with the macro:
+
+
+<P>
+
+<PRE>    SvEND(SV*)
+</PRE>
+
+<P>
+
+But note that these last three macros are valid only if <A HREF="#item_SvPOK">SvPOK()</A> is true.
+
+
+<P>
+
+If you want to append something to the end of string stored in an <A HREF="#item_SV_">SV*</A>, you can use the following functions:
+
+
+<P>
+
+<PRE>    void  sv_catpv(SV*, char*);
+    void  sv_catpvn(SV*, char*, int);
+    void  sv_catpvf(SV*, const char*, ...);
+    void  sv_catsv(SV*, SV*);
+</PRE>
+
+<P>
+
+The first function calculates the length of the string to be appended by
+using <CODE>strlen</CODE>. In the second, you specify the length of the string yourself. The third
+function processes its arguments like <A HREF="#item_sprintf">sprintf</A> and appends the formatted output. The fourth function extends the string stored in the first 
+<FONT SIZE=-1>SV</FONT> with the string stored in the second 
+<FONT SIZE=-1>SV.</FONT> It also forces the second 
+<FONT SIZE=-1>SV</FONT> to be interpreted as a string.
+
+
+
+<P>
+
+If you know the name of a scalar variable, you can get a pointer to its 
+<FONT SIZE=-1>SV</FONT> by using the following:
+
+
+<P>
+
+<PRE>    SV*  perl_get_sv(&quot;package::varname&quot;, FALSE);
+</PRE>
+
+<P>
+
+This returns 
+<FONT SIZE=-1>NULL</FONT> if the variable does not exist.
+
+
+<P>
+
+If you want to know if this variable (or any other 
+<FONT SIZE=-1>SV)</FONT> is actually <A HREF="#item_defined">defined</A>, you can call:
+
+
+<P>
+
+<PRE>    SvOK(SV*)
+</PRE>
+
+<P>
+
+The scalar <A HREF="#item_undef">undef</A> value is stored in an 
+<FONT SIZE=-1>SV</FONT> instance called <A HREF="#item_sv_undef">sv_undef</A>. Its address can be used whenever an <A HREF="#item_SV_">SV*</A> is needed.
+
+
+<P>
+
+There are also the two values <A HREF="#item_sv_yes">sv_yes</A> and <A HREF="#item_sv_no">sv_no</A>, which contain Boolean 
+<FONT SIZE=-1>TRUE</FONT> and 
+<FONT SIZE=-1>FALSE</FONT> values, respectively. Like
+ <A HREF="#item_sv_undef">sv_undef</A>, their addresses can be used whenever an <A HREF="#item_SV_">SV*</A> is needed.
+
+
+<P>
+
+Do not be fooled into thinking that <CODE>(SV *) 0</CODE> is the same as <A HREF="#item__sv_undef">&sv_undef</A>. Take this code:
+
+
+<P>
+
+<PRE>    SV* sv = (SV*) 0;
+    if (I-am-to-return-a-real-value) {
+            sv = sv_2mortal(newSViv(42));
+    }
+    sv_setsv(ST(0), sv);
+</PRE>
+
+<P>
+
+This code tries to return a new 
+<FONT SIZE=-1>SV</FONT> (which contains the value 42) if it should return a real value, or undef otherwise. Instead it has returned a 
+<FONT SIZE=-1>NULL</FONT> pointer which, somewhere down the line, will cause a segmentation violation, bus error, or just weird results. Change the zero to
+ <A HREF="#item__sv_undef">&sv_undef</A> in the first line and all will be well.
+
+
+<P>
+
+To free an 
+<FONT SIZE=-1>SV</FONT> that you've created, call <A HREF="#item_SvREFCNT_dec">SvREFCNT_dec(SV*)</A>. Normally this call is not necessary (see <A HREF="#Reference_Counts_and_Mortality">Reference Counts and Mortality</A>).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="What_s_Really_Stored_in_an_SV_">What's Really Stored in an SV?
+
+</A></H2>
+Recall that the usual method of determining the type of scalar you have is
+to use <A HREF="#item_Sv_OK">Sv*OK</A> macros. Because a scalar can be both a number and a string, usually these macros will always return 
+<FONT SIZE=-1>TRUE</FONT> and calling the
+ <CODE>Sv*V</CODE>
+macros will do the appropriate conversion of string to integer/double or
+integer/double to string.
+
+
+<P>
+
+If you <EM>really</EM> need to know if you have an integer, double, or string pointer in an 
+<FONT SIZE=-1>SV,</FONT> you can use the following three macros instead:
+
+
+<P>
+
+<PRE>    SvIOKp(SV*)
+    SvNOKp(SV*)
+    SvPOKp(SV*)
+</PRE>
+
+<P>
+
+These will tell you if you truly have an integer, double, or string pointer stored in your 
+<FONT SIZE=-1>SV.</FONT> The ``p'' stands for private.
+
+
+
+<P>
+
+In general, though, it's best to use the <CODE>Sv*V</CODE> macros.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Working_with_AVs">Working with AVs
+
+</A></H2>
+There are two ways to create and load an 
+<FONT SIZE=-1>AV.</FONT> The first method creates an empty 
+<FONT SIZE=-1>AV:</FONT>
+
+
+
+<P>
+
+<PRE>    AV*  newAV();
+</PRE>
+
+<P>
+
+The second method both creates the 
+<FONT SIZE=-1>AV</FONT> and initially populates it with SVs:
+
+
+<P>
+
+<PRE>    AV*  av_make(I32 num, SV **ptr);
+</PRE>
+
+<P>
+
+The second argument points to an array containing <CODE>num</CODE>  <A HREF="#item_SV_">SV*</A>'s. Once the 
+<FONT SIZE=-1>AV</FONT> has been created, the SVs can be destroyed, if so
+desired.
+
+
+<P>
+
+Once the 
+<FONT SIZE=-1>AV</FONT> has been created, the following operations are
+possible on AVs:
+
+
+<P>
+
+<PRE>    void  av_push(AV*, SV*);
+    SV*   av_pop(AV*);
+    SV*   av_shift(AV*);
+    void  av_unshift(AV*, I32 num);
+</PRE>
+
+<P>
+
+These should be familiar operations, with the exception of <A HREF="#item_av_unshift">av_unshift</A>. This routine adds <CODE>num</CODE> elements at the front of the array with the <A HREF="#item_undef">undef</A>
+value. You must then use <A HREF="#item_av_store">av_store</A> (described below) to assign values to these new elements.
+
+
+<P>
+
+Here are some other functions:
+
+
+<P>
+
+<PRE>    I32   av_len(AV*);
+    SV**  av_fetch(AV*, I32 key, I32 lval);
+    SV**  av_store(AV*, I32 key, SV* val);
+</PRE>
+
+<P>
+
+The <A HREF="#item_av_len">av_len</A> function returns the highest index value in array (just like $#array in
+Perl). If the array is empty, -1 is returned. The
+<A HREF="#item_av_fetch">av_fetch</A> function returns the value at index <CODE>key</CODE>, but if <CODE>lval</CODE>
+is non-zero, then <A HREF="#item_av_fetch">av_fetch</A> will store an undef value at that index. The <A HREF="#item_av_store">av_store</A> function stores the value <CODE>val</CODE> at index <CODE>key</CODE>, and does not increment the reference count of <CODE>val</CODE>. Thus the caller is responsible for taking care of that, and if <A HREF="#item_av_store">av_store</A> returns 
+<FONT SIZE=-1>NULL,</FONT> the caller will have to decrement the reference
+count to avoid a memory leak. Note that
+<A HREF="#item_av_fetch">av_fetch</A> and <A HREF="#item_av_store">av_store</A> both return <A HREF="#item_SV_">SV**</A>'s, not <A HREF="#item_SV_">SV*</A>'s as their return value.
+
+
+<P>
+
+<PRE>    void  av_clear(AV*);
+    void  av_undef(AV*);
+    void  av_extend(AV*, I32 key);
+</PRE>
+
+<P>
+
+The <A HREF="#item_av_clear">av_clear</A> function deletes all the elements in the 
+<FONT SIZE=-1>AV*</FONT> array, but does not actually delete the array
+itself. The <A HREF="#item_av_undef">av_undef</A> function will delete all the elements in the array plus the array itself.
+The
+<A HREF="#item_av_extend">av_extend</A> function extends the array so that it contains <CODE>key</CODE>
+elements. If <CODE>key</CODE> is less than the current length of the array, then nothing is done.
+
+
+<P>
+
+If you know the name of an array variable, you can get a pointer to its 
+<FONT SIZE=-1>AV</FONT> by using the following:
+
+
+<P>
+
+<PRE>    AV*  perl_get_av(&quot;package::varname&quot;, FALSE);
+</PRE>
+
+<P>
+
+This returns 
+<FONT SIZE=-1>NULL</FONT> if the variable does not exist.
+
+
+<P>
+
+See <A HREF="#Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays</A> for more information on how to use the array access functions on tied
+arrays.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Working_with_HVs">Working with HVs
+
+</A></H2>
+To create an 
+<FONT SIZE=-1>HV,</FONT> you use the following routine:
+
+
+<P>
+
+<PRE>    HV*  newHV();
+</PRE>
+
+<P>
+
+Once the 
+<FONT SIZE=-1>HV</FONT> has been created, the following operations are
+possible on HVs:
+
+
+<P>
+
+<PRE>    SV**  hv_store(HV*, char* key, U32 klen, SV* val, U32 hash);
+    SV**  hv_fetch(HV*, char* key, U32 klen, I32 lval);
+</PRE>
+
+<P>
+
+The <CODE>klen</CODE> parameter is the length of the key being passed in (Note that you cannot
+pass 0 in as a value of <CODE>klen</CODE> to tell Perl to measure the length of the key). The <CODE>val</CODE> argument contains the 
+<FONT SIZE=-1>SV</FONT> pointer to the scalar being stored, and <CODE>hash</CODE> is the precomputed hash value (zero if you want <A HREF="#item_hv_store">hv_store</A> to calculate it for you). The <CODE>lval</CODE> parameter indicates whether this fetch is actually a part of a store operation, in which case a new undefined value will be added to the 
+<FONT SIZE=-1>HV</FONT> with the supplied key and
+ <A HREF="#item_hv_fetch">hv_fetch</A> will return as if the value had already existed.
+
+
+<P>
+
+Remember that <A HREF="#item_hv_store">hv_store</A> and <A HREF="#item_hv_fetch">hv_fetch</A> return <A HREF="#item_SV_">SV**</A>'s and not just
+<A HREF="#item_SV_">SV*</A>. To access the scalar value, you must first dereference the return value. However, you should check to make sure that the return value is not 
+<FONT SIZE=-1>NULL</FONT> before dereferencing it.
+
+
+
+<P>
+
+These two functions check if a hash table entry exists, and deletes it.
+
+
+<P>
+
+<PRE>    bool  hv_exists(HV*, char* key, U32 klen);
+    SV*   hv_delete(HV*, char* key, U32 klen, I32 flags);
+</PRE>
+
+<P>
+
+If <CODE>flags</CODE> does not include the <A HREF="#item_G_DISCARD">G_DISCARD</A> flag then <A HREF="#item_hv_delete">hv_delete</A> will create and return a mortal copy of the deleted value.
+
+
+<P>
+
+And more miscellaneous functions:
+
+
+<P>
+
+<PRE>    void   hv_clear(HV*);
+    void   hv_undef(HV*);
+</PRE>
+
+<P>
+
+Like their 
+<FONT SIZE=-1>AV</FONT> counterparts, <A HREF="#item_hv_clear">hv_clear</A> deletes all the entries in the hash table but does not actually delete the
+hash table. The <A HREF="#item_hv_undef">hv_undef</A> deletes both the entries and the hash table itself.
+
+
+<P>
+
+Perl keeps the actual data in linked list of structures with a typedef of 
+<FONT SIZE=-1>HE.</FONT> These contain the actual key and value pointers
+(plus extra administrative overhead). The key is a string pointer; the
+value is an <A HREF="#item_SV_">SV*</A>. However, once you have an <CODE>HE*</CODE>, to get the actual key and value, use the routines specified below.
+
+
+<P>
+
+<PRE>    I32    hv_iterinit(HV*);
+            /* Prepares starting point to traverse hash table */
+    HE*    hv_iternext(HV*);
+            /* Get the next entry, and return a pointer to a
+               structure that has both the key and value */
+    char*  hv_iterkey(HE* entry, I32* retlen);
+            /* Get the key from an HE structure and also return
+               the length of the key string */
+    SV*    hv_iterval(HV*, HE* entry);
+            /* Return a SV pointer to the value of the HE
+               structure */
+    SV*    hv_iternextsv(HV*, char** key, I32* retlen);
+            /* This convenience routine combines hv_iternext,
+               hv_iterkey, and hv_iterval.  The key and retlen
+               arguments are return values for the key and its
+               length.  The value is returned in the SV* argument */
+</PRE>
+
+<P>
+
+If you know the name of a hash variable, you can get a pointer to its 
+<FONT SIZE=-1>HV</FONT> by using the following:
+
+
+<P>
+
+<PRE>    HV*  perl_get_hv(&quot;package::varname&quot;, FALSE);
+</PRE>
+
+<P>
+
+This returns 
+<FONT SIZE=-1>NULL</FONT> if the variable does not exist.
+
+
+<P>
+
+The hash algorithm is defined in the <CODE>PERL_HASH(hash, key, klen)</CODE> macro:
+
+
+<P>
+
+<PRE>    i = klen;
+    hash = 0;
+    s = key;
+    while (i--)
+        hash = hash * 33 + *s++;
+</PRE>
+
+<P>
+
+See <A HREF="#Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays</A> for more information on how to use the hash access functions on tied
+hashes.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Hash_API_Extensions">Hash API Extensions
+
+</A></H2>
+Beginning with version 5.004, the following functions are also supported:
+
+
+<P>
+
+<PRE>    HE*     hv_fetch_ent  (HV* tb, SV* key, I32 lval, U32 hash);
+    HE*     hv_store_ent  (HV* tb, SV* key, SV* val, U32 hash);
+    
+    bool    hv_exists_ent (HV* tb, SV* key, U32 hash);
+    SV*     hv_delete_ent (HV* tb, SV* key, I32 flags, U32 hash);
+    
+    SV*     hv_iterkeysv  (HE* entry);
+</PRE>
+
+<P>
+
+Note that these functions take <A HREF="#item_SV_">SV*</A> keys, which simplifies writing of extension code that deals with hash
+structures. These functions also allow passing of <A HREF="#item_SV_">SV*</A> keys to <A HREF="#item_tie">tie</A> functions without forcing you to stringify the keys (unlike the previous
+set of functions).
+
+
+<P>
+
+They also return and accept whole hash entries (<CODE>HE*</CODE>), making their use more efficient (since the hash number for a particular
+string doesn't have to be recomputed every time). See <A HREF="#API_LISTING">API LISTING</A> later in this document for detailed descriptions.
+
+
+<P>
+
+The following macros must always be used to access the contents of hash
+entries. Note that the arguments to these macros must be simple variables,
+since they may get evaluated more than once. See
+<A HREF="#API_LISTING">API LISTING</A> later in this document for detailed descriptions of these macros.
+
+
+<P>
+
+<PRE>    HePV(HE* he, STRLEN len)
+    HeVAL(HE* he)
+    HeHASH(HE* he)
+    HeSVKEY(HE* he)
+    HeSVKEY_force(HE* he)
+    HeSVKEY_set(HE* he, SV* sv)
+</PRE>
+
+<P>
+
+These two lower level macros are defined, but must only be used when
+dealing with keys that are not <A HREF="#item_SV_">SV*</A>s:
+
+
+<P>
+
+<PRE>    HeKEY(HE* he)
+    HeKLEN(HE* he)
+</PRE>
+
+<P>
+
+Note that both <A HREF="#item_hv_store">hv_store</A> and <A HREF="#item_hv_store_ent">hv_store_ent</A> do not increment the reference count of the stored <CODE>val</CODE>, which is the caller's responsibility. If these functions return a 
+<FONT SIZE=-1>NULL</FONT> value, the caller will usually have to decrement
+the reference count of <CODE>val</CODE> to avoid a memory leak.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="References">References
+
+</A></H2>
+References are a special type of scalar that point to other data types
+(including references).
+
+
+<P>
+
+To create a reference, use either of the following functions:
+
+
+<P>
+
+<PRE>    SV* newRV_inc((SV*) thing);
+    SV* newRV_noinc((SV*) thing);
+</PRE>
+
+<P>
+
+The <CODE>thing</CODE> argument can be any of an <A HREF="#item_SV_">SV*</A>, <A HREF="#item_AV_">AV*</A>, or <A HREF="#item_HV_">HV*</A>. The functions are identical except that <A HREF="#item_newRV_inc">newRV_inc</A> increments the reference count of the <CODE>thing</CODE>, while <A HREF="#item_newRV_noinc">newRV_noinc</A> does not. For historical reasons, <CODE>newRV</CODE> is a synonym for <A HREF="#item_newRV_inc">newRV_inc</A>.
+
+
+<P>
+
+Once you have a reference, you can use the following macro to dereference
+the reference:
+
+
+<P>
+
+<PRE>    SvRV(SV*)
+</PRE>
+
+<P>
+
+then call the appropriate routines, casting the returned <A HREF="#item_SV_">SV*</A> to either an
+<A HREF="#item_AV_">AV*</A> or <A HREF="#item_HV_">HV*</A>, if required.
+
+
+<P>
+
+To determine if an 
+<FONT SIZE=-1>SV</FONT> is a reference, you can use the following macro:
+
+
+<P>
+
+<PRE>    SvROK(SV*)
+</PRE>
+
+<P>
+
+To discover what type of value the reference refers to, use the following
+macro and then check the return value.
+
+
+<P>
+
+<PRE>    SvTYPE(SvRV(SV*))
+</PRE>
+
+<P>
+
+The most useful types that will be returned are:
+
+
+<P>
+
+<PRE>    SVt_IV    Scalar
+    SVt_NV    Scalar
+    SVt_PV    Scalar
+    SVt_RV    Scalar
+    SVt_PVAV  Array
+    SVt_PVHV  Hash
+    SVt_PVCV  Code
+    SVt_PVGV  Glob (possible a file handle)
+    SVt_PVMG  Blessed or Magical Scalar
+</PRE>
+
+<P>
+
+<PRE>    See the sv.h header file for more details.
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Blessed_References_and_Class_Obj">Blessed References and Class Objects
+
+</A></H2>
+References are also used to support object-oriented programming. In the 
+<FONT SIZE=-1>OO</FONT> lexicon, an object is simply a reference that has
+been blessed into a package (or class). Once blessed, the programmer may
+now use the reference to access the various methods in the class.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> reference can be blessed into a package with the
+following function:
+
+
+<P>
+
+<PRE>    SV* sv_bless(SV* sv, HV* stash);
+</PRE>
+
+<P>
+
+The <CODE>sv</CODE> argument must be a reference. The <CODE>stash</CODE> argument specifies which class the reference will belong to. See
+<A HREF="#Stashes_and_Globs">Stashes and Globs</A> for information on converting class names into stashes.
+
+
+<P>
+
+/* Still under construction */
+
+
+<P>
+
+Upgrades rv to reference if not already one. Creates new 
+<FONT SIZE=-1>SV</FONT> for rv to point to. If <CODE>classname</CODE> is non-null, the 
+<FONT SIZE=-1>SV</FONT> is blessed into the specified class. 
+<FONT SIZE=-1>SV</FONT> is returned.
+
+
+
+<P>
+
+<PRE>        SV* newSVrv(SV* rv, char* classname);
+</PRE>
+
+<P>
+
+Copies integer or double into an 
+<FONT SIZE=-1>SV</FONT> whose reference is <CODE>rv</CODE>. 
+<FONT SIZE=-1>SV</FONT> is blessed if <CODE>classname</CODE> is non-null.
+
+
+<P>
+
+<PRE>        SV* sv_setref_iv(SV* rv, char* classname, IV iv);
+        SV* sv_setref_nv(SV* rv, char* classname, NV iv);
+</PRE>
+
+<P>
+
+Copies the pointer value (<EM>the address, not the string!</EM>) into an 
+<FONT SIZE=-1>SV</FONT> whose reference is rv. 
+<FONT SIZE=-1>SV</FONT> is blessed if
+ <CODE>classname</CODE> is non-null.
+
+
+<P>
+
+<PRE>        SV* sv_setref_pv(SV* rv, char* classname, PV iv);
+</PRE>
+
+<P>
+
+Copies string into an 
+<FONT SIZE=-1>SV</FONT> whose reference is <CODE>rv</CODE>. Set length to 0 to let Perl calculate the string length. 
+<FONT SIZE=-1>SV</FONT> is blessed if <CODE>classname</CODE> is non-null.
+
+
+<P>
+
+<PRE>        SV* sv_setref_pvn(SV* rv, char* classname, PV iv, int length);
+</PRE>
+
+<P>
+
+<PRE>        int sv_isa(SV* sv, char* name);
+        int sv_isobject(SV* sv);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Creating_New_Variables">Creating New Variables
+
+</A></H2>
+To create a new Perl variable with an undef value which can be accessed
+from your Perl script, use the following routines, depending on the
+variable type.
+
+
+<P>
+
+<PRE>    SV*  perl_get_sv(&quot;package::varname&quot;, TRUE);
+    AV*  perl_get_av(&quot;package::varname&quot;, TRUE);
+    HV*  perl_get_hv(&quot;package::varname&quot;, TRUE);
+</PRE>
+
+<P>
+
+Notice the use of 
+<FONT SIZE=-1>TRUE</FONT> as the second parameter. The new variable can now
+be set, using the routines appropriate to the data type.
+
+
+<P>
+
+There are additional macros whose values may be bitwise OR'ed with the
+<CODE>TRUE</CODE> argument to enable certain extra features. Those bits are:
+
+
+<P>
+
+<PRE>    GV_ADDMULTI Marks the variable as multiply defined, thus preventing the
+                &quot;Name &lt;varname&gt; used only once: possible typo&quot; warning.
+    GV_ADDWARN  Issues the warning &quot;Had to create &lt;varname&gt; unexpectedly&quot; if
+                the variable did not exist before the function was called.
+</PRE>
+
+<P>
+
+If you do not specify a package name, the variable is created in the
+current package.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Reference_Counts_and_Mortality">Reference Counts and Mortality
+
+</A></H2>
+Perl uses an reference count-driven garbage collection mechanism. SVs, AVs,
+or HVs (xV for short in the following) start their life with a reference
+count of 1. If the reference count of an xV ever drops to 0, then it will
+be destroyed and its memory made available for reuse.
+
+
+<P>
+
+This normally doesn't happen at the Perl level unless a variable is
+undef'ed or the last variable holding a reference to it is changed or
+overwritten. At the internal level, however, reference counts can be
+manipulated with the following macros:
+
+
+<P>
+
+<PRE>    int SvREFCNT(SV* sv);
+    SV* SvREFCNT_inc(SV* sv);
+    void SvREFCNT_dec(SV* sv);
+</PRE>
+
+<P>
+
+However, there is one other function which manipulates the reference count
+of its argument. The <A HREF="#item_newRV_inc">newRV_inc</A> function, you will recall, creates a reference to the specified argument.
+As a side effect, it increments the argument's reference count. If this is
+not what you want, use <A HREF="#item_newRV_noinc">newRV_noinc</A> instead.
+
+
+<P>
+
+For example, imagine you want to return a reference from an 
+<FONT SIZE=-1>XSUB</FONT> function. Inside the 
+<FONT SIZE=-1>XSUB</FONT> routine, you create an 
+<FONT SIZE=-1>SV</FONT> which initially has a reference count of one. Then you call
+ <A HREF="#item_newRV_inc">newRV_inc</A>, passing it the just-created 
+<FONT SIZE=-1>SV.</FONT> This returns the reference as a new 
+<FONT SIZE=-1>SV,</FONT> but the reference count of the 
+<FONT SIZE=-1>SV</FONT> you passed to
+ <A HREF="#item_newRV_inc">newRV_inc</A> has been incremented to two. Now you return the reference from the 
+<FONT SIZE=-1>XSUB</FONT> routine and forget about the 
+<FONT SIZE=-1>SV.</FONT> But Perl hasn't! Whenever the returned reference is destroyed, the reference count of the original 
+<FONT SIZE=-1>SV</FONT> is decreased to one and nothing happens. The 
+<FONT SIZE=-1>SV</FONT> will hang around without any way to access it until Perl itself terminates. This is a memory leak.
+
+
+
+<P>
+
+The correct procedure, then, is to use <A HREF="#item_newRV_noinc">newRV_noinc</A> instead of
+<A HREF="#item_newRV_inc">newRV_inc</A>. Then, if and when the last reference is destroyed, the reference count of the 
+<FONT SIZE=-1>SV</FONT> will go to zero and it will be destroyed, stopping any memory leak.
+
+
+
+<P>
+
+There are some convenience functions available that can help with the destruction of xVs. These functions introduce the concept of ``mortality''. An xV that is mortal has had its reference count marked to be decremented, but not actually decremented, until ``a short time later''. Generally the term ``short time later'' means a single Perl statement, such as a call to an 
+<FONT SIZE=-1>XSUB</FONT> function. The actual determinant for when mortal xVs have their reference count decremented depends on two macros, 
+<FONT SIZE=-1>SAVETMPS</FONT> and 
+<FONT SIZE=-1>FREETMPS.</FONT> See
+ <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A> and <A HREF="/n|/perl/html/./lib/Pod/perlxs.html#">the perlxs manpage</A> for more details on these macros.
+
+
+<P>
+
+``Mortalization'' then is at its simplest a deferred <A HREF="#item_SvREFCNT_dec">SvREFCNT_dec</A>. However, if you mortalize a variable twice, the reference count will
+later be decremented twice.
+
+
+<P>
+
+You should be careful about creating mortal variables. Strange things can
+happen if you make the same value mortal within multiple contexts, or if
+you make a variable mortal multiple times.
+
+
+<P>
+
+To create a mortal variable, use the functions:
+
+
+<P>
+
+<PRE>    SV*  sv_newmortal()
+    SV*  sv_2mortal(SV*)
+    SV*  sv_mortalcopy(SV*)
+</PRE>
+
+<P>
+
+The first call creates a mortal 
+<FONT SIZE=-1>SV,</FONT> the second converts an existing 
+<FONT SIZE=-1>SV</FONT> to a mortal 
+<FONT SIZE=-1>SV</FONT> (and thus defers a call to
+ <A HREF="#item_SvREFCNT_dec">SvREFCNT_dec</A>), and the third creates a mortal copy of an existing 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+The mortal routines are not just for SVs -- AVs and HVs can be made mortal
+by passing their address (type-casted to <A HREF="#item_SV_">SV*</A>) to the
+<A HREF="#item_sv_2mortal">sv_2mortal</A> or <A HREF="#item_sv_mortalcopy">sv_mortalcopy</A> routines.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Stashes_and_Globs">Stashes and Globs
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> ``stash'' is a hash that contains all of the different objects that are contained within a package. Each key of the stash is a symbol name (shared by all the different types of objects that have the same name), and each value in the hash table is a 
+<FONT SIZE=-1>GV</FONT> (Glob Value). This 
+<FONT SIZE=-1>GV</FONT> in turn contains references to the various objects of that name, including (but not limited to) the following:
+
+
+
+<P>
+
+<PRE>    Scalar Value
+    Array Value
+    Hash Value
+    File Handle
+    Directory Handle
+    Format
+    Subroutine
+</PRE>
+
+<P>
+
+There is a single stash called ``defstash'' that holds the items that exist
+in the ``main'' package. To get at the items in other packages, append the
+string ``::'' to the package name. The items in the ``Foo'' package are in
+the stash ``Foo::'' in defstash. The items in the ``Bar::Baz'' package are
+in the stash ``Baz::'' in ``Bar::'''s stash.
+
+
+<P>
+
+To get the stash pointer for a particular package, use the function:
+
+
+<P>
+
+<PRE>    HV*  gv_stashpv(char* name, I32 create)
+    HV*  gv_stashsv(SV*, I32 create)
+</PRE>
+
+<P>
+
+The first function takes a literal string, the second uses the string stored in the 
+<FONT SIZE=-1>SV.</FONT> Remember that a stash is just a hash table, so you get back an
+
+<A HREF="#item_HV_">HV*</A>. The <CODE>create</CODE> flag will create a new package if it is set.
+
+
+<P>
+
+The name that <CODE>gv_stash*v</CODE> wants is the name of the package whose symbol table you want. The default
+package is called <CODE>main</CODE>. If you have multiply nested packages, pass their names to <CODE>gv_stash*v</CODE>, separated by <CODE>::</CODE> as in the Perl language itself.
+
+
+<P>
+
+Alternately, if you have an 
+<FONT SIZE=-1>SV</FONT> that is a blessed reference, you can find out the
+stash pointer by using:
+
+
+<P>
+
+<PRE>    HV*  SvSTASH(SvRV(SV*));
+</PRE>
+
+<P>
+
+then use the following to get the package name itself:
+
+
+<P>
+
+<PRE>    char*  HvNAME(HV* stash);
+</PRE>
+
+<P>
+
+If you need to bless or re-bless an object you can use the following
+function:
+
+
+<P>
+
+<PRE>    SV*  sv_bless(SV*, HV* stash)
+</PRE>
+
+<P>
+
+where the first argument, an <A HREF="#item_SV_">SV*</A>, must be a reference, and the second argument is a stash. The returned <A HREF="#item_SV_">SV*</A> can now be used in the same way as any other 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+For more information on references and blessings, consult <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Double_Typed_SVs">Double-Typed SVs
+
+</A></H2>
+Scalar variables normally contain only one type of value, an integer,
+double, pointer, or reference. Perl will automatically convert the actual
+scalar data from the stored type into the requested type.
+
+
+<P>
+
+Some scalar variables contain more than one type of scalar data. For
+example, the variable <CODE>$!</CODE> contains either the numeric value of <CODE>errno</CODE>
+or its string equivalent from either <CODE>strerror</CODE> or <CODE>sys_errlist[]</CODE>.
+
+
+<P>
+
+To force multiple data values into an 
+<FONT SIZE=-1>SV,</FONT> you must do two things: use the
+<CODE>sv_set*v</CODE> routines to add the additional scalar type, then set a flag so that Perl
+will believe it contains more than one type of data. The four macros to set
+the flags are:
+
+
+<P>
+
+<PRE>        SvIOK_on
+        SvNOK_on
+        SvPOK_on
+        SvROK_on
+</PRE>
+
+<P>
+
+The particular macro you must use depends on which <CODE>sv_set*v</CODE> routine you called first. This is because every <CODE>sv_set*v</CODE> routine turns on only the bit for the particular type of data being set,
+and turns off all the rest.
+
+
+<P>
+
+For example, to create a new Perl variable called ``dberror'' that contains
+both the numeric and descriptive string error values, you could use the
+following code:
+
+
+<P>
+
+<PRE>    extern int  dberror;
+    extern char *dberror_list;
+</PRE>
+
+<P>
+
+<PRE>    SV* sv = perl_get_sv(&quot;dberror&quot;, TRUE);
+    sv_setiv(sv, (IV) dberror);
+    sv_setpv(sv, dberror_list[dberror]);
+    SvIOK_on(sv);
+</PRE>
+
+<P>
+
+If the order of <A HREF="#item_sv_setiv">sv_setiv</A> and <A HREF="#item_sv_setpv">sv_setpv</A> had been reversed, then the macro <A HREF="#item_SvPOK_on">SvPOK_on</A> would need to be called instead of <A HREF="#item_SvIOK_on">SvIOK_on</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Magic_Variables">Magic Variables
+
+</A></H2>
+[This section still under construction. Ignore everything here. Post no
+bills. Everything not permitted is forbidden.]
+
+
+<P>
+
+Any 
+<FONT SIZE=-1>SV</FONT> may be magical, that is, it has special features that a normal 
+<FONT SIZE=-1>SV</FONT> does not have. These features are stored in the 
+<FONT SIZE=-1>SV</FONT> structure in a linked list of
+ <CODE>struct magic</CODE>'s, typedef'ed to <CODE>MAGIC</CODE>.
+
+
+<P>
+
+<PRE>    struct magic {
+        MAGIC*      mg_moremagic;
+        MGVTBL*     mg_virtual;
+        U16         mg_private;
+        char        mg_type;
+        U8          mg_flags;
+        SV*         mg_obj;
+        char*       mg_ptr;
+        I32         mg_len;
+    };
+</PRE>
+
+<P>
+
+Note this is current as of patchlevel 0, and could change at any time.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Assigning_Magic">Assigning Magic
+
+</A></H2>
+Perl adds magic to an 
+<FONT SIZE=-1>SV</FONT> using the sv_magic function:
+
+
+<P>
+
+<PRE>    void sv_magic(SV* sv, SV* obj, int how, char* name, I32 namlen);
+</PRE>
+
+<P>
+
+The <CODE>sv</CODE> argument is a pointer to the 
+<FONT SIZE=-1>SV</FONT> that is to acquire a new magical feature.
+
+
+<P>
+
+If <CODE>sv</CODE> is not already magical, Perl uses the <A HREF="#item_SvUPGRADE">SvUPGRADE</A> macro to set the <A HREF="#item_SVt_PVMG">SVt_PVMG</A> flag for the <CODE>sv</CODE>. Perl then continues by adding it to the beginning of the linked list of magical features. Any prior entry of the same type of magic is deleted. Note that this can be overridden, and multiple instances of the same type of magic can be associated with an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+
+<P>
+
+The <CODE>name</CODE> and <CODE>namlen</CODE> arguments are used to associate a string with the magic, typically the name
+of a variable. <CODE>namlen</CODE> is stored in the
+<A HREF="#item_mg_len">mg_len</A> field and if <CODE>name</CODE> is non-null and <CODE>namlen</CODE> &gt;= 0 a malloc'd copy of the name is stored in <CODE>mg_ptr</CODE> field.
+
+
+<P>
+
+The sv_magic function uses <CODE>how</CODE> to determine which, if any, predefined ``Magic Virtual Table'' should be
+assigned to the <CODE>mg_virtual</CODE> field. See the ``Magic Virtual Table'' section below. The <CODE>how</CODE> argument is also stored in the <CODE>mg_type</CODE> field.
+
+
+<P>
+
+The <CODE>obj</CODE> argument is stored in the <CODE>mg_obj</CODE> field of the <CODE>MAGIC</CODE>
+structure. If it is not the same as the <CODE>sv</CODE> argument, the reference count of the <CODE>obj</CODE> object is incremented. If it is the same, or if the <CODE>how</CODE> argument is ``#'', or if it is a 
+<FONT SIZE=-1>NULL</FONT> pointer, then <CODE>obj</CODE> is merely stored, without the reference count being incremented.
+
+
+<P>
+
+There is also a function to add magic to an <A HREF="#item_HV">HV</A>:
+
+
+<P>
+
+<PRE>    void hv_magic(HV *hv, GV *gv, int how);
+</PRE>
+
+<P>
+
+This simply calls <A HREF="#item_sv_magic">sv_magic</A> and coerces the <CODE>gv</CODE> argument into an <A HREF="#item_SV">SV</A>.
+
+
+<P>
+
+To remove the magic from an 
+<FONT SIZE=-1>SV,</FONT> call the function sv_unmagic:
+
+
+<P>
+
+<PRE>    void sv_unmagic(SV *sv, int type);
+</PRE>
+
+<P>
+
+The <CODE>type</CODE> argument should be equal to the <CODE>how</CODE> value when the <A HREF="#item_SV">SV</A>
+was initially made magical.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Magic_Virtual_Tables">Magic Virtual Tables
+
+</A></H2>
+The <CODE>mg_virtual</CODE> field in the <CODE>MAGIC</CODE> structure is a pointer to a
+<CODE>MGVTBL</CODE>, which is a structure of function pointers and stands for ``Magic Virtual
+Table'' to handle the various operations that might be applied to that
+variable.
+
+
+<P>
+
+The <CODE>MGVTBL</CODE> has five pointers to the following routine types:
+
+
+<P>
+
+<PRE>    int  (*svt_get)(SV* sv, MAGIC* mg);
+    int  (*svt_set)(SV* sv, MAGIC* mg);
+    U32  (*svt_len)(SV* sv, MAGIC* mg);
+    int  (*svt_clear)(SV* sv, MAGIC* mg);
+    int  (*svt_free)(SV* sv, MAGIC* mg);
+</PRE>
+
+<P>
+
+This 
+<FONT SIZE=-1>MGVTBL</FONT> structure is set at compile-time in <CODE>perl.h</CODE> and there are currently 19 types (or 21 with overloading turned on). These
+different structures contain pointers to various routines that perform
+additional actions depending on which function is being called.
+
+
+<P>
+
+<PRE>    Function pointer    Action taken
+    ----------------    ------------
+    svt_get             Do something after the value of the SV is retrieved.
+    svt_set             Do something after the SV is assigned a value.
+    svt_len             Report on the SV's length.
+    svt_clear           Clear something the SV represents.
+    svt_free            Free any extra storage associated with the SV.
+</PRE>
+
+<P>
+
+For instance, the 
+<FONT SIZE=-1>MGVTBL</FONT> structure called <CODE>vtbl_sv</CODE> (which corresponds to an <CODE>mg_type</CODE> of '\0') contains:
+
+
+<P>
+
+<PRE>    { magic_get, magic_set, magic_len, 0, 0 }
+</PRE>
+
+<P>
+
+Thus, when an 
+<FONT SIZE=-1>SV</FONT> is determined to be magical and of type '\0', if a
+get operation is being performed, the routine <CODE>magic_get</CODE> is called. All the various routines for the various magical types begin
+with <CODE>magic_</CODE>.
+
+
+<P>
+
+The current kinds of Magic Virtual Tables are:
+
+
+<P>
+
+<PRE>    mg_type  MGVTBL              Type of magic
+    -------  ------              ----------------------------
+    \0       vtbl_sv             Special scalar variable
+    A        vtbl_amagic         %OVERLOAD hash
+    a        vtbl_amagicelem     %OVERLOAD hash element
+    c        (none)              Holds overload table (AMT) on stash
+    B        vtbl_bm             Boyer-Moore (fast string search)
+    E        vtbl_env            %ENV hash
+    e        vtbl_envelem        %ENV hash element
+    f        vtbl_fm             Formline ('compiled' format)
+    g        vtbl_mglob          m//g target / study()ed string
+    I        vtbl_isa            @ISA array
+    i        vtbl_isaelem        @ISA array element
+    k        vtbl_nkeys          scalar(keys()) lvalue
+    L        (none)              Debugger %_&lt;filename 
+    l        vtbl_dbline         Debugger %_&lt;filename element
+    o        vtbl_collxfrm       Locale transformation
+    P        vtbl_pack           Tied array or hash
+    p        vtbl_packelem       Tied array or hash element
+    q        vtbl_packelem       Tied scalar or handle
+    S        vtbl_sig            %SIG hash
+    s        vtbl_sigelem        %SIG hash element
+    t        vtbl_taint          Taintedness
+    U        vtbl_uvar           Available for use by extensions
+    v        vtbl_vec            vec() lvalue
+    x        vtbl_substr         substr() lvalue
+    y        vtbl_defelem        Shadow &quot;foreach&quot; iterator variable /
+                                  smart parameter vivification
+    *        vtbl_glob           GV (typeglob)
+    #        vtbl_arylen         Array length ($#ary)
+    .        vtbl_pos            pos() lvalue
+    ~        (none)              Available for use by extensions
+</PRE>
+
+<P>
+
+When an uppercase and lowercase letter both exist in the table, then the
+uppercase letter is used to represent some kind of composite type (a list
+or a hash), and the lowercase letter is used to represent an element of
+that composite type.
+
+
+<P>
+
+The '~' and 
+<FONT SIZE=-1>'U'</FONT> magic types are defined specifically for use by
+extensions and will not be used by perl itself. Extensions can use '~'
+magic to 'attach' private information to variables (typically objects).
+This is especially useful because there is no way for normal perl code to
+corrupt this private information (unlike using extra elements of a hash
+object).
+
+
+<P>
+
+Similarly, 
+<FONT SIZE=-1>'U'</FONT> magic can be used much like <CODE>tie()</CODE> to call a 
+<FONT SIZE=-1>C</FONT> function any time a scalar's value is used or changed. The
+ <CODE>MAGIC</CODE>'s
+<CODE>mg_ptr</CODE> field points to a <CODE>ufuncs</CODE> structure:
+
+
+<P>
+
+<PRE>    struct ufuncs {
+        I32 (*uf_val)(IV, SV*);
+        I32 (*uf_set)(IV, SV*);
+        IV uf_index;
+    };
+</PRE>
+
+<P>
+
+When the 
+<FONT SIZE=-1>SV</FONT> is read from or written to, the <CODE>uf_val</CODE> or <CODE>uf_set</CODE>
+function will be called with <CODE>uf_index</CODE> as the first arg and a pointer to the 
+<FONT SIZE=-1>SV</FONT> as the second.
+
+
+<P>
+
+Note that because multiple extensions may be using '~' or 
+<FONT SIZE=-1>'U'</FONT> magic, it is important for extensions to take extra care to avoid conflict. Typically only using the magic on objects blessed into the same class as the extension is sufficient. For '~' magic, it may also be appropriate to add an 
+<FONT SIZE=-1>I32</FONT> 'signature' at the top of the private data area and check that.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Finding_Magic">Finding Magic
+
+</A></H2>
+<PRE>    MAGIC* mg_find(SV*, int type); /* Finds the magic pointer of that type */
+</PRE>
+
+<P>
+
+This routine returns a pointer to the <CODE>MAGIC</CODE> structure stored in the 
+<FONT SIZE=-1>SV.</FONT> If the 
+<FONT SIZE=-1>SV</FONT> does not have that magical feature,
+ <A HREF="#item_NULL">NULL</A> is returned. Also, if the 
+<FONT SIZE=-1>SV</FONT> is not of type SVt_PVMG, Perl may core dump.
+
+
+<P>
+
+<PRE>    int mg_copy(SV* sv, SV* nsv, char* key, STRLEN klen);
+</PRE>
+
+<P>
+
+This routine checks to see what types of magic <CODE>sv</CODE> has. If the mg_type field is an uppercase letter, then the mg_obj is copied
+to <CODE>nsv</CODE>, but the mg_type field is changed to be the lowercase letter.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays
+
+</A></H2>
+Tied hashes and arrays are magical beasts of the 
+<FONT SIZE=-1>'P'</FONT> magic type.
+
+
+<P>
+
+
+<FONT SIZE=-1>WARNING:</FONT> As of the 5.004 release, proper usage of the array and hash access functions requires understanding a few caveats. Some of these caveats are actually considered bugs in the 
+<FONT SIZE=-1>API,</FONT> to be fixed in later releases, and are bracketed with 
+<FONT SIZE=-1>[MAYCHANGE]</FONT> below. If you find yourself actually applying such information in this section, be aware that the behavior may change in the future, umm, without warning.
+
+
+
+<P>
+
+The <A HREF="#item_av_store">av_store</A> function, when given a tied array argument, merely copies the magic of the
+array onto the value to be ``stored'', using
+<A HREF="#item_mg_copy">mg_copy</A>. It may also return 
+<FONT SIZE=-1>NULL,</FONT> indicating that the value did not actually need to be stored in the array. 
+<FONT SIZE=-1>[MAYCHANGE]</FONT> After a call to
+
+<A HREF="#item_av_store">av_store</A> on a tied array, the caller will usually need to call
+<A HREF="#item_mg_set">mg_set(val)</A> to actually invoke the perl level 
+<FONT SIZE=-1>``STORE''</FONT> method on the 
+<FONT SIZE=-1>TIEARRAY</FONT> object. If
+ <A HREF="#item_av_store">av_store</A> did return 
+<FONT SIZE=-1>NULL,</FONT> a call to
+<A HREF="#item_SvREFCNT_dec">SvREFCNT_dec(val)</A> will also be usually necessary to avoid a memory leak. 
+<FONT SIZE=-1>[/MAYCHANGE]</FONT>
+
+
+<P>
+
+The previous paragraph is applicable verbatim to tied hash access using the
+<A HREF="#item_hv_store">hv_store</A> and <A HREF="#item_hv_store_ent">hv_store_ent</A> functions as well.
+
+
+<P>
+
+<A HREF="#item_av_fetch">av_fetch</A> and the corresponding hash functions <A HREF="#item_hv_fetch">hv_fetch</A> and
+<A HREF="#item_hv_fetch_ent">hv_fetch_ent</A> actually return an undefined mortal value whose magic has been initialized
+using <A HREF="#item_mg_copy">mg_copy</A>. Note the value so returned does not need to be deallocated, as it is already mortal. 
+<FONT SIZE=-1>[MAYCHANGE]</FONT> But you will need to call
+ <A HREF="#item_mg_get">mg_get()</A> on the returned value in order to actually invoke the perl level 
+<FONT SIZE=-1>``FETCH''</FONT> method on the underlying 
+<FONT SIZE=-1>TIE</FONT> object. Similarly, you may also call
+ <A HREF="#item_mg_set">mg_set()</A> on the return value after possibly assigning a suitable value to it using <A HREF="#item_sv_setsv">sv_setsv</A>, which will invoke the 
+<FONT SIZE=-1>``STORE''</FONT> method on the 
+<FONT SIZE=-1>TIE</FONT> object. 
+<FONT SIZE=-1>[/MAYCHANGE]</FONT>
+
+
+
+<P>
+
+
+<FONT SIZE=-1>[MAYCHANGE]</FONT> In other words, the array or hash
+fetch/store functions don't really fetch and store actual values in the
+case of tied arrays and hashes. They merely call <A HREF="#item_mg_copy">mg_copy</A> to attach magic to the values that were meant to be ``stored'' or
+``fetched''. Later calls to <A HREF="#item_mg_get">mg_get</A> and <A HREF="#item_mg_set">mg_set</A> actually do the job of invoking the 
+<FONT SIZE=-1>TIE</FONT> methods on the underlying objects. Thus the magic
+mechanism currently implements a kind of lazy access to arrays and hashes.
+
+
+<P>
+
+Currently (as of perl version 5.004), use of the hash and array access functions requires the user to be aware of whether they are operating on ``normal'' hashes and arrays, or on their tied variants. The 
+<FONT SIZE=-1>API</FONT> may be changed to provide more transparent access to both tied and normal data types in future versions. 
+<FONT SIZE=-1>[/MAYCHANGE]</FONT>
+
+
+
+<P>
+
+You would do well to understand that the 
+<FONT SIZE=-1>TIEARRAY</FONT> and 
+<FONT SIZE=-1>TIEHASH</FONT> interfaces are mere sugar to invoke some perl method calls while using the uniform hash and array syntax. The use of this sugar imposes some overhead (typically about two to four extra opcodes per 
+<FONT SIZE=-1>FETCH/STORE</FONT> operation, in addition to the creation of all the mortal variables required to invoke the methods). This overhead will be comparatively small if the 
+<FONT SIZE=-1>TIE</FONT> methods are themselves substantial, but if they are only a few statements long, the overhead will not be insignificant.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Localizing_changes">Localizing changes
+
+</A></H2>
+Perl has a very handy construction
+
+
+<P>
+
+<PRE>  {
+    local $var = 2;
+    ...
+  }
+</PRE>
+
+<P>
+
+This construction is <EM>approximately</EM> equivalent to
+
+
+<P>
+
+<PRE>  {
+    my $oldvar = $var;
+    $var = 2;
+    ...
+    $var = $oldvar;
+  }
+</PRE>
+
+<P>
+
+The biggest difference is that the first construction would reinstate the
+initial value of $var, irrespective of how control exits the block: <A HREF="#item_goto">goto</A>, <A HREF="#item_return">return</A>, <A HREF="#item_die">die</A>/<A HREF="#item_eval">eval</A> etc. It is a little bit more efficient as well.
+
+
+<P>
+
+There is a way to achieve a similar task from 
+<FONT SIZE=-1>C</FONT> via Perl 
+<FONT SIZE=-1>API:</FONT> create a
+
+<EM>pseudo-block</EM>, and arrange for some changes to be automatically undone at the end of it, either explicit, or via a non-local exit (via <CODE>die()).</CODE> 
+<FONT SIZE=-1>A</FONT>
+ <EM>block</EM>-like construct is created by a pair of
+<A HREF="#item_ENTER">ENTER</A>/<A HREF="#item_LEAVE">LEAVE</A> macros (see <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#EXAMPLE_Returning_a_Scalar">EXAMPLE/"Returning a Scalar</A>). Such a construct may be created specially for some important localized task, or an existing one (like boundaries of enclosing Perl subroutine/block, or an existing pair for freeing TMPs) may be used. (In the second case the overhead of additional localization must be almost negligible.) Note that any 
+<FONT SIZE=-1>XSUB</FONT> is automatically enclosed in an
+ <A HREF="#item_ENTER">ENTER</A>/<A HREF="#item_LEAVE">LEAVE</A> pair.
+
+
+<P>
+
+Inside such a <EM>pseudo-block</EM> the following service is available:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_SAVEINT">SAVEINT(int i)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_SAVEIV">SAVEIV(IV i)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_SAVEI32">SAVEI32(I32 i)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_SAVELONG">SAVELONG(long i)
+
+</A></STRONG><DD>
+These macros arrange things to restore the value of integer variable
+<CODE>i</CODE> at the end of enclosing <EM>pseudo-block</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SAVESPTR">SAVESPTR(s)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_SAVEPPTR">SAVEPPTR(p)
+
+</A></STRONG><DD>
+These macros arrange things to restore the value of pointers <A HREF="#item_s">s</A> and
+<A HREF="#item_p">p</A>. <A HREF="#item_s">s</A> must be a pointer of a type which survives conversion to
+<A HREF="#item_SV_">SV*</A> and back, <A HREF="#item_p">p</A> should be able to survive conversion to <CODE>char*</CODE>
+and back.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SAVEFREESV">SAVEFREESV(SV *sv)
+
+</A></STRONG><DD>
+The refcount of <CODE>sv</CODE> would be decremented at the end of
+<EM>pseudo-block</EM>. This is similar to <A HREF="#item_sv_2mortal">sv_2mortal</A>, which should (?) be used instead.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SAVEFREEOP">SAVEFREEOP(OP *op)
+
+</A></STRONG><DD>
+The <CODE>OP *</CODE> is <CODE>op_free()ed</CODE> at the end of <EM>pseudo-block</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SAVEFREEPV">SAVEFREEPV(p)
+
+</A></STRONG><DD>
+The chunk of memory which is pointed to by <A HREF="#item_p">p</A> is <CODE>Safefree()ed</CODE> at the end of <EM>pseudo-block</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SAVECLEARSV">SAVECLEARSV(SV *sv)
+
+</A></STRONG><DD>
+Clears a slot in the current scratchpad which corresponds to <CODE>sv</CODE> at the end of <EM>pseudo-block</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SAVEDELETE">SAVEDELETE(HV *hv, char *key, I32 length)
+
+</A></STRONG><DD>
+The key <CODE>key</CODE> of <CODE>hv</CODE> is deleted at the end of <EM>pseudo-block</EM>. The string pointed to by <CODE>key</CODE> is <CODE>Safefree()ed.</CODE> If one has a <EM>key</EM> in short-lived storage, the corresponding string may be reallocated like
+this:
+
+
+<P>
+
+<PRE>  SAVEDELETE(defstash, savepv(tmpbuf), strlen(tmpbuf));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SAVEDESTRUCTOR">SAVEDESTRUCTOR(f,p)
+
+</A></STRONG><DD>
+At the end of <EM>pseudo-block</EM> the function <A HREF="#item_f">f</A> is called with the only argument (of type <A HREF="#item_void_">void*</A>) <A HREF="#item_p">p</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SAVESTACK_POS">SAVESTACK_POS()
+
+</A></STRONG><DD>
+The current offset on the Perl internal stack (cf. <A HREF="#item_SP">SP</A>) is restored at the end of <EM>pseudo-block</EM>.
+
+
+<P>
+
+</DL>
+The following 
+<FONT SIZE=-1>API</FONT> list contains functions, thus one needs to provide pointers to the modifiable data explicitly (either 
+<FONT SIZE=-1>C</FONT> pointers, or Perlish
+ <CODE>GV *</CODE>s). Where the above macros take <A HREF="#item_int">int</A>, a similar function takes <A HREF="#item_int_">int *</A>.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_SV">SV* save_scalar(GV *gv)
+
+</A></STRONG><DD>
+Equivalent to Perl code <CODE>local $gv</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_AV">AV* save_ary(GV *gv)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_HV">HV* save_hash(GV *gv)
+
+</A></STRONG><DD>
+Similar to <CODE>save_scalar</CODE>, but localize <CODE>@gv</CODE> and <CODE>%gv</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_void">void save_item(SV *item)
+
+</A></STRONG><DD>
+Duplicates the current value of <A HREF="#item_SV">SV</A>, on the exit from the current
+<A HREF="#item_ENTER">ENTER</A>/<A HREF="#item_LEAVE">LEAVE</A>  <EM>pseudo-block</EM> will restore the value of <A HREF="#item_SV">SV</A>
+using the stored value.
+
+
+<P>
+
+<DT><STRONG>void save_list(SV **sarg, I32 maxsarg)
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> variant of <CODE>save_item</CODE> which takes multiple arguments via an array
+<CODE>sarg</CODE> of <A HREF="#item_SV_">SV*</A> of length <CODE>maxsarg</CODE>.
+
+
+<P>
+
+<DT><STRONG>SV* save_svref(SV **sptr)
+
+</A></STRONG><DD>
+Similar to <CODE>save_scalar</CODE>, but will reinstate a <A HREF="#item_SV_">SV *</A>.
+
+
+<P>
+
+<DT><STRONG>void save_aptr(AV **aptr)
+
+</A></STRONG><DD>
+<DT><STRONG>void save_hptr(HV **hptr)
+
+</A></STRONG><DD>
+Similar to <CODE>save_svref</CODE>, but localize <A HREF="#item_AV_">AV *</A> and <A HREF="#item_HV_">HV *</A>.
+
+
+<P>
+
+</DL>
+The <CODE>Alias</CODE> module implements localization of the basic types within the
+<EM>caller's scope</EM>. People who are interested in how to localize things in the containing
+scope should take a look there too.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Subroutines">Subroutines
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="XSUBs_and_the_Argument_Stack">XSUBs and the Argument Stack
+
+</A></H2>
+The 
+<FONT SIZE=-1>XSUB</FONT> mechanism is a simple way for Perl programs to access 
+<FONT SIZE=-1>C</FONT> subroutines. An 
+<FONT SIZE=-1>XSUB</FONT> routine will have a stack that contains the arguments from the Perl program, and a way to map from the Perl data structures to a 
+<FONT SIZE=-1>C</FONT> equivalent.
+
+
+
+<P>
+
+The stack arguments are accessible through the <A HREF="#item_ST">ST(n)</A> macro, which returns the <A HREF="#item_n">n</A>'th stack argument. Argument 0 is the first argument passed in the Perl
+subroutine call. These arguments are <A HREF="#item_SV_">SV*</A>, and can be used anywhere an <A HREF="#item_SV_">SV*</A> is used.
+
+
+<P>
+
+Most of the time, output from the 
+<FONT SIZE=-1>C</FONT> routine can be handled through use of the 
+<FONT SIZE=-1>RETVAL</FONT> and 
+<FONT SIZE=-1>OUTPUT</FONT> directives. However, there are some cases where the argument stack is not already long enough to handle all the return values. An example is the 
+<FONT SIZE=-1>POSIX</FONT> <CODE>tzname()</CODE> call, which takes no arguments, but returns two, the local time zone's standard and summer time abbreviations.
+
+
+
+<P>
+
+To handle this situation, the 
+<FONT SIZE=-1>PPCODE</FONT> directive is used and the stack is extended
+using the macro:
+
+
+<P>
+
+<PRE>    EXTEND(sp, num);
+</PRE>
+
+<P>
+
+where <CODE>sp</CODE> is the stack pointer, and <CODE>num</CODE> is the number of elements the stack should be extended by.
+
+
+<P>
+
+Now that there is room on the stack, values can be pushed on it using the macros to push IVs, doubles, strings, and 
+<FONT SIZE=-1>SV</FONT> pointers respectively:
+
+
+
+<P>
+
+<PRE>    PUSHi(IV)
+    PUSHn(double)
+    PUSHp(char*, I32)
+    PUSHs(SV*)
+</PRE>
+
+<P>
+
+And now the Perl program calling <CODE>tzname</CODE>, the two values will be assigned as in:
+
+
+<P>
+
+<PRE>    ($standard_abbrev, $summer_abbrev) = POSIX::tzname;
+</PRE>
+
+<P>
+
+An alternate (and possibly simpler) method to pushing values on the stack
+is to use the macros:
+
+
+<P>
+
+<PRE>    XPUSHi(IV)
+    XPUSHn(double)
+    XPUSHp(char*, I32)
+    XPUSHs(SV*)
+</PRE>
+
+<P>
+
+These macros automatically adjust the stack for you, if needed. Thus, you
+do not need to call <A HREF="#item_EXTEND">EXTEND</A> to extend the stack.
+
+
+<P>
+
+For more information, consult <A HREF="/n|/perl/html/./lib/Pod/perlxs.html#">the perlxs manpage</A> and <A HREF="/n|/perl/html/./lib/Pod/perlxstut.html#">the perlxstut manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Calling_Perl_Routines_from_withi">Calling Perl Routines from within C Programs
+
+</A></H2>
+There are four routines that can be used to call a Perl subroutine from within a 
+<FONT SIZE=-1>C</FONT> program. These four are:
+
+
+
+<P>
+
+<PRE>    I32  perl_call_sv(SV*, I32);
+    I32  perl_call_pv(char*, I32);
+    I32  perl_call_method(char*, I32);
+    I32  perl_call_argv(char*, I32, register char**);
+</PRE>
+
+<P>
+
+The routine most often used is <A HREF="#item_perl_call_sv">perl_call_sv</A>. The <A HREF="#item_SV_">SV*</A> argument contains either the name of the Perl subroutine to be called, or a
+reference to the subroutine. The second argument consists of flags that
+control the context in which the subroutine is called, whether or not the
+subroutine is being passed arguments, how errors should be trapped, and how
+to treat return values.
+
+
+<P>
+
+All four routines return the number of arguments that the subroutine
+returned on the Perl stack.
+
+
+<P>
+
+When using any of these routines (except <A HREF="#item_perl_call_argv">perl_call_argv</A>), the programmer must manipulate the Perl stack. These include the
+following macros and functions:
+
+
+<P>
+
+<PRE>    dSP
+    PUSHMARK()
+    PUTBACK
+    SPAGAIN
+    ENTER
+    SAVETMPS
+    FREETMPS
+    LEAVE
+    XPUSH*()
+    POP*()
+</PRE>
+
+<P>
+
+For a detailed description of calling conventions from 
+<FONT SIZE=-1>C</FONT> to Perl, consult <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Memory_Allocation">Memory Allocation
+
+</A></H2>
+It is suggested that you use the version of malloc that is distributed with
+Perl. It keeps pools of various sizes of unallocated memory in order to
+satisfy allocation requests more quickly. However, on some platforms, it
+may cause spurious malloc or free errors.
+
+
+<P>
+
+<PRE>    New(x, pointer, number, type);
+    Newc(x, pointer, number, type, cast);
+    Newz(x, pointer, number, type);
+</PRE>
+
+<P>
+
+These three macros are used to initially allocate memory.
+
+
+<P>
+
+The first argument <A HREF="#item_x">x</A> was a ``magic cookie'' that was used to keep track of who called the macro,
+to help when debugging memory problems. However, the current code makes no
+use of this feature (most Perl developers now use run-time memory
+checkers), so this argument can be any number.
+
+
+<P>
+
+The second argument <CODE>pointer</CODE> should be the name of a variable that will point to the newly allocated
+memory.
+
+
+<P>
+
+The third and fourth arguments <A HREF="#item_number">number</A> and <CODE>type</CODE> specify how many of the specified type of data structure should be
+allocated. The argument
+<CODE>type</CODE> is passed to <CODE>sizeof</CODE>. The final argument to <A HREF="#item_Newc">Newc</A>, <CODE>cast</CODE>, should be used if the <CODE>pointer</CODE> argument is different from the <CODE>type</CODE>
+argument.
+
+
+<P>
+
+Unlike the <A HREF="#item_New">New</A> and <A HREF="#item_Newc">Newc</A> macros, the <A HREF="#item_Newz">Newz</A> macro calls <CODE>memzero</CODE>
+to zero out all the newly allocated memory.
+
+
+<P>
+
+<PRE>    Renew(pointer, number, type);
+    Renewc(pointer, number, type, cast);
+    Safefree(pointer)
+</PRE>
+
+<P>
+
+These three macros are used to change a memory buffer size or to free a
+piece of memory no longer needed. The arguments to <A HREF="#item_Renew">Renew</A> and <A HREF="#item_Renewc">Renewc</A>
+match those of <A HREF="#item_New">New</A> and <A HREF="#item_Newc">Newc</A> with the exception of not needing the ``magic cookie'' argument.
+
+
+<P>
+
+<PRE>    Move(source, dest, number, type);
+    Copy(source, dest, number, type);
+    Zero(dest, number, type);
+</PRE>
+
+<P>
+
+These three macros are used to move, copy, or zero out previously allocated
+memory. The <CODE>source</CODE> and <CODE>dest</CODE> arguments point to the source and destination starting points. Perl will
+move, copy, or zero out <A HREF="#item_number">number</A>
+instances of the size of the <CODE>type</CODE> data structure (using the <CODE>sizeof</CODE>
+function).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="PerlIO">PerlIO
+
+</A></H2>
+The most recent development releases of Perl has been experimenting with removing Perl's dependency on the ``normal'' standard 
+<FONT SIZE=-1>I/O</FONT> suite and allowing other stdio implementations to be used. This involves creating a new abstraction layer that then calls whichever implementation of stdio Perl was compiled with. All XSUBs should now use the functions in the PerlIO abstraction layer and not make any assumptions about what kind of stdio is being used.
+
+
+
+<P>
+
+For a complete description of the PerlIO abstraction, consult <A HREF="/n|/perl/html/./lib/Pod/perlapio.html#">the perlapio manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Putting_a_C_value_on_Perl_stack">Putting a C value on Perl stack
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> lot of opcodes (this is an elementary operation in the internal perl stack machine) put an 
+<FONT SIZE=-1>SV*</FONT> on the stack. However, as an optimization the corresponding 
+<FONT SIZE=-1>SV</FONT> is (usually) not recreated each time. The opcodes reuse specially assigned SVs (
+<EM>target</EM>s) which are (as a corollary) not constantly freed/created.
+
+
+<P>
+
+Each of the targets is created only once (but see
+<A HREF="#Scratchpads_and_recursion">Scratchpads and recursion</A> below), and when an opcode needs to put an integer, a double, or a string
+on stack, it just sets the corresponding parts of its <EM>target</EM> and puts the <EM>target</EM> on stack.
+
+
+<P>
+
+The macro to put this target on stack is <CODE>PUSHTARG</CODE>, and it is directly used in some opcodes, as well as indirectly in
+zillions of others, which use it via <CODE>(X)PUSH[pni]</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Scratchpads">Scratchpads
+
+</A></H2>
+The question remains on when the SVs which are <EM>target</EM>s for opcodes are created. The answer is that they are created when the
+current unit -- a subroutine or a file (for opcodes for statements outside
+of subroutines) -- is compiled. During this time a special anonymous Perl
+array is created, which is called a scratchpad for the current unit.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> scratchpad keeps SVs which are lexicals for the current unit and are targets for opcodes. One can deduce that an 
+<FONT SIZE=-1>SV</FONT> lives on a scratchpad by looking on its flags: lexicals have
+ <CODE>SVs_PADMY</CODE> set, and
+<EM>target</EM>s have <CODE>SVs_PADTMP</CODE> set.
+
+
+<P>
+
+The correspondence between OPs and <EM>target</EM>s is not 1-to-1. Different OPs in the compile tree of the unit can use the
+same target, if this would not conflict with the expected life of the
+temporary.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Scratchpads_and_recursion">Scratchpads and recursion
+
+</A></H2>
+In fact it is not 100% true that a compiled unit contains a pointer to the scratchpad 
+<FONT SIZE=-1>AV.</FONT> In fact it contains a pointer to an 
+<FONT SIZE=-1>AV</FONT> of (initially) one element, and this element is the scratchpad 
+<FONT SIZE=-1>AV.</FONT> Why do we need an extra level of indirection?
+
+
+
+<P>
+
+The answer is <STRONG>recursion</STRONG>, and maybe (sometime soon) <STRONG>threads</STRONG>. Both these can create several execution pointers going into the same
+subroutine. For the subroutine-child not write over the temporaries for the
+subroutine-parent (lifespan of which covers the call to the child), the
+parent and the child should have different scratchpads. (<EM>And</EM> the lexicals should be separate anyway!)
+
+
+<P>
+
+So each subroutine is born with an array of scratchpads (of length 1). On
+each entry to the subroutine it is checked that the current depth of the
+recursion is not more than the length of this array, and if it is, new
+scratchpad is created and pushed into the array.
+
+
+<P>
+
+The <EM>target</EM>s on this scratchpad are <A HREF="#item_undef">undef</A>s, but they are already marked with correct flags.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Compiled_code">Compiled code
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Code_tree">Code tree
+
+</A></H2>
+Here we describe the internal form your code is converted to by Perl. Start
+with a simple example:
+
+
+<P>
+
+<PRE>  $a = $b + $c;
+</PRE>
+
+<P>
+
+This is converted to a tree similar to this one:
+
+
+<P>
+
+<PRE>             assign-to
+           /           \
+          +             $a
+        /   \
+      $b     $c
+</PRE>
+
+<P>
+
+(but slightly more complicated). This tree reflect the way Perl parsed your
+code, but has nothing to do with the execution order. There is an
+additional ``thread'' going through the nodes of the tree which shows the
+order of execution of the nodes. In our simplified example above it looks
+like:
+
+
+<P>
+
+<PRE>     $b ---&gt; $c ---&gt; + ---&gt; $a ---&gt; assign-to
+</PRE>
+
+<P>
+
+But with the actual compile tree for <CODE>$a = $b + $c</CODE> it is different: some nodes <EM>optimized away</EM>. As a corollary, though the actual tree contains more nodes than our
+simplified example, the execution order is the same as in our example.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Examining_the_tree">Examining the tree
+
+</A></H2>
+If you have your perl compiled for debugging (usually done with <CODE>-D
+optimize=-g</CODE> on <CODE>Configure</CODE> command line), you may examine the compiled tree by specifying <CODE>-Dx</CODE> on the Perl command line. The output takes several lines per node, and for <CODE>$b+$c</CODE> it looks like this:
+
+
+<P>
+
+<PRE>    5           TYPE = add  ===&gt; 6
+                TARG = 1
+                FLAGS = (SCALAR,KIDS)
+                {
+                    TYPE = null  ===&gt; (4)
+                      (was rv2sv)
+                    FLAGS = (SCALAR,KIDS)
+                    {
+    3                   TYPE = gvsv  ===&gt; 4
+                        FLAGS = (SCALAR)
+                        GV = main::b
+                    }
+                }
+                {
+                    TYPE = null  ===&gt; (5)
+                      (was rv2sv)
+                    FLAGS = (SCALAR,KIDS)
+                    {
+    4                   TYPE = gvsv  ===&gt; 5
+                        FLAGS = (SCALAR)
+                        GV = main::c
+                    }
+                }
+</PRE>
+
+<P>
+
+This tree has 5 nodes (one per <CODE>TYPE</CODE> specifier), only 3 of them are not optimized away (one per number in the
+left column). The immediate children of the given node correspond to <CODE>{}</CODE> pairs on the same level of indentation, thus this listing corresponds to
+the tree:
+
+
+<P>
+
+<PRE>                   add
+                 /     \
+               null    null
+                |       |
+               gvsv    gvsv
+</PRE>
+
+<P>
+
+The execution order is indicated by <A HREF="#item__gt_">===&gt;</A> marks, thus it is <CODE>3
+4 5 6</CODE> (node <CODE>6</CODE> is not included into above listing), i.e.,
+<CODE>gvsv gvsv add whatever</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Compile_pass_1_check_routines">Compile pass 1: check routines
+
+</A></H2>
+The tree is created by the <EM>pseudo-compiler</EM> while yacc code feeds it the constructions it recognizes. Since yacc works
+bottom-up, so does the first pass of perl compilation.
+
+
+<P>
+
+What makes this pass interesting for perl developers is that some
+optimization may be performed on this pass. This is optimization by
+so-called <EM>check routines</EM>. The correspondence between node names and corresponding check routines is
+described in <EM>opcode.pl</EM> (do not forget to run <CODE>make regen_headers</CODE> if you modify this file).
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> check routine is called when the node is fully
+constructed except for the execution-order thread. Since at this time there
+is no back-links to the currently constructed node, one can do most any
+operation to the top-level node, including freeing it and/or creating new
+nodes above/below it.
+
+
+<P>
+
+The check routine returns the node which should be inserted into the tree
+(if the top-level node was not modified, check routine returns its
+argument).
+
+
+<P>
+
+By convention, check routines have names <CODE>ck_*</CODE>. They are usually called from <CODE>new*OP</CODE> subroutines (or <CODE>convert</CODE>) (which in turn are called from <EM>perly.y</EM>).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Compile_pass_1a_constant_foldin">Compile pass 1a: constant folding
+
+</A></H2>
+Immediately after the check routine is called the returned node is checked
+for being compile-time executable. If it is (the value is judged to be
+constant) it is immediately executed, and a <EM>constant</EM>
+node with the ``return value'' of the corresponding subtree is substituted
+instead. The subtree is deleted.
+
+
+<P>
+
+If constant folding was not performed, the execution-order thread is
+created.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Compile_pass_2_context_propagat">Compile pass 2: context propagation
+
+</A></H2>
+When a context for a part of compile tree is known, it is propagated down
+through the tree. Aat this time the context can have 5 values (instead of 2
+for runtime context): void, boolean, scalar, list, and lvalue. In contrast
+with the pass 1 this pass is processed from top to bottom: a node's context
+determines the context for its children.
+
+
+<P>
+
+Additional context-dependent optimizations are performed at this time. Since at this moment the compile tree contains back-references (via ``thread'' pointers), nodes cannot be <CODE>free()d</CODE> now. To allow optimized-away nodes at this stage, such nodes are <CODE>null()ified</CODE> instead of <CODE>free()ing</CODE> (i.e. their type is changed to 
+<FONT SIZE=-1>OP_NULL).</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Compile_pass_3_peephole_optimiz">Compile pass 3: peephole optimization
+
+</A></H2>
+After the compile tree for a subroutine (or for an <A HREF="#item_eval">eval</A> or a file) is created, an additional pass over the code is performed. This
+pass is neither top-down or bottom-up, but in the execution order (with
+additional compilications for conditionals). These optimizations are done
+in the subroutine <CODE>peep().</CODE> Optimizations performed at this
+stage are subject to the same restrictions as in the pass 2.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="API_LISTING">API LISTING
+
+</A></H1>
+This is a listing of functions, macros, flags, and variables that may be
+useful to extension writers or that may be found while reading other
+extensions.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_AvFILL">AvFILL
+
+</A></STRONG><DD>
+See <A HREF="#item_av_len">av_len</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_av_clear">av_clear
+
+</A></STRONG><DD>
+Clears an array, making it empty. Does not free the memory used by the
+array itself.
+
+
+<P>
+
+<PRE>        void    av_clear _((AV* ar));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_extend">av_extend
+
+</A></STRONG><DD>
+Pre-extend an array. The <CODE>key</CODE> is the index to which the array should be extended.
+
+
+<P>
+
+<PRE>        void    av_extend _((AV* ar, I32 key));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_fetch">av_fetch
+
+</A></STRONG><DD>
+Returns the 
+<FONT SIZE=-1>SV</FONT> at the specified index in the array. The <CODE>key</CODE> is the index. If <CODE>lval</CODE> is set then the fetch will be part of a store. Check that the return value
+is non-null before dereferencing it to a <A HREF="#item_SV_">SV*</A>.
+
+
+<P>
+
+See <A HREF="#Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays</A> for more information on how to use this function on tied arrays.
+
+
+<P>
+
+<PRE>        SV**    av_fetch _((AV* ar, I32 key, I32 lval));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_len">av_len
+
+</A></STRONG><DD>
+Returns the highest index in the array. Returns -1 if the array is empty.
+
+
+<P>
+
+<PRE>        I32     av_len _((AV* ar));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_make">av_make
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>AV</FONT> and populates it with a list of SVs. The SVs are copied into the array, so they may be freed after the call to av_make. The new 
+<FONT SIZE=-1>AV</FONT> will have a reference count of 1.
+
+
+
+<P>
+
+<PRE>        AV*     av_make _((I32 size, SV** svp));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_pop">av_pop
+
+</A></STRONG><DD>
+Pops an 
+<FONT SIZE=-1>SV</FONT> off the end of the array. Returns <A HREF="#item__sv_undef">&sv_undef</A> if the array is empty.
+
+
+<P>
+
+<PRE>        SV*     av_pop _((AV* ar));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_push">av_push
+
+</A></STRONG><DD>
+Pushes an 
+<FONT SIZE=-1>SV</FONT> onto the end of the array. The array will grow
+automatically to accommodate the addition.
+
+
+<P>
+
+<PRE>        void    av_push _((AV* ar, SV* val));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_shift">av_shift
+
+</A></STRONG><DD>
+Shifts an 
+<FONT SIZE=-1>SV</FONT> off the beginning of the array.
+
+
+<P>
+
+<PRE>        SV*     av_shift _((AV* ar));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_store">av_store
+
+</A></STRONG><DD>
+Stores an 
+<FONT SIZE=-1>SV</FONT> in an array. The array index is specified as <CODE>key</CODE>. The return value will be 
+<FONT SIZE=-1>NULL</FONT> if the operation failed or if the value did not
+need to be actually stored within the array (as in the case of tied
+arrays). Otherwise it can be dereferenced to get the original <A HREF="#item_SV_">SV*</A>. Note that the caller is responsible for suitably incrementing the
+reference count of <CODE>val</CODE>
+before the call, and decrementing it if the function returned 
+<FONT SIZE=-1>NULL.</FONT>
+
+
+<P>
+
+See <A HREF="#Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays</A> for more information on how to use this function on tied arrays.
+
+
+<P>
+
+<PRE>        SV**    av_store _((AV* ar, I32 key, SV* val));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_undef">av_undef
+
+</A></STRONG><DD>
+Undefines the array. Frees the memory used by the array itself.
+
+
+<P>
+
+<PRE>        void    av_undef _((AV* ar));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_av_unshift">av_unshift
+
+</A></STRONG><DD>
+Unshift the given number of <A HREF="#item_undef">undef</A> values onto the beginning of the array. The array will grow automatically
+to accommodate the addition. You must then use <A HREF="#item_av_store">av_store</A> to assign values to these new elements.
+
+
+<P>
+
+<PRE>        void    av_unshift _((AV* ar, I32 num));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_CLASS">CLASS
+
+</A></STRONG><DD>
+Variable which is setup by <CODE>xsubpp</CODE> to indicate the class name for a 
+<FONT SIZE=-1>C++</FONT> 
+<FONT SIZE=-1>XS</FONT> constructor. This is always a
+ <CODE>char*</CODE>. See <A HREF="#item_THIS">THIS</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlxs.html#Using_XS_With_C_">Using XS With C++</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Copy">Copy
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>memcpy</CODE> function. The <A HREF="#item_s">s</A> is the source, <A HREF="#item_d">d</A> is the destination, <A HREF="#item_n">n</A> is the number of items, and <A HREF="#item_t">t</A> is the type. May fail on overlapping copies. See also <A HREF="#item_Move">Move</A>.
+
+
+<P>
+
+<PRE>        (void) Copy( s, d, n, t );
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_croak">croak
+
+</A></STRONG><DD>
+This is the XSUB-writer's interface to Perl's <A HREF="#item_die">die</A> function. Use this function the same way you use the 
+<FONT SIZE=-1>C</FONT> <A HREF="#item_printf">printf</A> function. See <A HREF="#item_warn">warn</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_CvSTASH">CvSTASH
+
+</A></STRONG><DD>
+Returns the stash of the 
+<FONT SIZE=-1>CV.</FONT>
+
+
+<P>
+
+<PRE>        HV * CvSTASH( SV* sv )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_DBsingle">DBsingle
+
+</A></STRONG><DD>
+When Perl is run in debugging mode, with the <STRONG>-d</STRONG> switch, this 
+<FONT SIZE=-1>SV</FONT> is a boolean which indicates whether subs are being single-stepped. Single-stepping is automatically turned on after every step. This is the 
+<FONT SIZE=-1>C</FONT> variable which corresponds to Perl's $DB::single variable. See
+ <A HREF="#item_DBsub">DBsub</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DBsub">DBsub
+
+</A></STRONG><DD>
+When Perl is run in debugging mode, with the <STRONG>-d</STRONG> switch, this 
+<FONT SIZE=-1>GV</FONT> contains the 
+<FONT SIZE=-1>SV</FONT> which holds the name of the sub being debugged. This is the 
+<FONT SIZE=-1>C</FONT> variable which corresponds to Perl's $DB::sub variable. See
+ <A HREF="#item_DBsingle">DBsingle</A>. The sub name can be found by
+
+
+<P>
+
+<PRE>        SvPV( GvSV( DBsub ), na )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_DBtrace">DBtrace
+
+</A></STRONG><DD>
+Trace variable used when Perl is run in debugging mode, with the <STRONG>-d</STRONG>
+switch. This is the 
+<FONT SIZE=-1>C</FONT> variable which corresponds to Perl's $DB::trace
+variable. See <A HREF="#item_DBsingle">DBsingle</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dMARK">dMARK
+
+</A></STRONG><DD>
+Declare a stack marker variable, <CODE>mark</CODE>, for the 
+<FONT SIZE=-1>XSUB.</FONT> See <A HREF="#item_MARK">MARK</A> and
+<A HREF="#item_dORIGMARK">dORIGMARK</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dORIGMARK">dORIGMARK
+
+</A></STRONG><DD>
+Saves the original stack mark for the 
+<FONT SIZE=-1>XSUB.</FONT> See <A HREF="#item_ORIGMARK">ORIGMARK</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dowarn">dowarn
+
+</A></STRONG><DD>
+The 
+<FONT SIZE=-1>C</FONT> variable which corresponds to Perl's 
+<FONT SIZE=-1>$^W</FONT> warning variable.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dSP">dSP
+
+</A></STRONG><DD>
+Declares a stack pointer variable, <CODE>sp</CODE>, for the 
+<FONT SIZE=-1>XSUB.</FONT> See <A HREF="#item_SP">SP</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dXSARGS">dXSARGS
+
+</A></STRONG><DD>
+Sets up stack and mark pointers for an 
+<FONT SIZE=-1>XSUB,</FONT> calling dSP and dMARK. This is usually handled
+automatically by <CODE>xsubpp</CODE>. Declares the <A HREF="#item_items">items</A> variable to indicate the number of items on the stack.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dXSI32">dXSI32
+
+</A></STRONG><DD>
+Sets up the <A HREF="#item_ix">ix</A> variable for an 
+<FONT SIZE=-1>XSUB</FONT> which has aliases. This is usually handled
+automatically by <CODE>xsubpp</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ENTER">ENTER
+
+</A></STRONG><DD>
+Opening bracket on a callback. See <A HREF="#item_LEAVE">LEAVE</A> and <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        ENTER;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_EXTEND">EXTEND
+
+</A></STRONG><DD>
+Used to extend the argument stack for an XSUB's return values.
+
+
+<P>
+
+<PRE>        EXTEND( sp, int x );
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_FREETMPS">FREETMPS
+
+</A></STRONG><DD>
+Closing bracket for temporaries on a callback. See <A HREF="#item_SAVETMPS">SAVETMPS</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        FREETMPS;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_G_ARRAY">G_ARRAY
+
+</A></STRONG><DD>
+Used to indicate array context. See <A HREF="#item_GIMME_V">GIMME_V</A>, <A HREF="#item_GIMME">GIMME</A> and <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_G_DISCARD">G_DISCARD
+
+</A></STRONG><DD>
+Indicates that arguments returned from a callback should be discarded. See
+<A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_G_EVAL">G_EVAL
+
+</A></STRONG><DD>
+Used to force a Perl <A HREF="#item_eval">eval</A> wrapper around a callback. See <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_GIMME">GIMME
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> backward-compatible version of <A HREF="#item_GIMME_V">GIMME_V</A> which can only return
+<A HREF="#item_G_SCALAR">G_SCALAR</A> or <A HREF="#item_G_ARRAY">G_ARRAY</A>; in a void context, it returns <A HREF="#item_G_SCALAR">G_SCALAR</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_GIMME_V">GIMME_V
+
+</A></STRONG><DD>
+The XSUB-writer's equivalent to Perl's <A HREF="#item_wantarray">wantarray</A>. Returns
+<A HREF="#item_G_VOID">G_VOID</A>, <A HREF="#item_G_SCALAR">G_SCALAR</A> or <A HREF="#item_G_ARRAY">G_ARRAY</A> for void, scalar or array context, respectively.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_G_NOARGS">G_NOARGS
+
+</A></STRONG><DD>
+Indicates that no arguments are being sent to a callback. See <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_G_SCALAR">G_SCALAR
+
+</A></STRONG><DD>
+Used to indicate scalar context. See <A HREF="#item_GIMME_V">GIMME_V</A>, <A HREF="#item_GIMME">GIMME</A>, and <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_G_VOID">G_VOID
+
+</A></STRONG><DD>
+Used to indicate void context. See <A HREF="#item_GIMME_V">GIMME_V</A> and <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_gv_fetchmeth">gv_fetchmeth
+
+</A></STRONG><DD>
+Returns the glob with the given <CODE>name</CODE> and a defined subroutine or
+<A HREF="#item_NULL">NULL</A>. The glob lives in the given <CODE>stash</CODE>, or in the stashes accessable via <CODE>@ISA</CODE> and 
+<FONT SIZE=-1>@&lt;UNIVERSAL&gt;.</FONT>
+
+
+<P>
+
+The argument <CODE>level</CODE> should be either 0 or -1. If <CODE>level==0</CODE>, as a side-effect creates a glob with the given <CODE>name</CODE> in the given
+<CODE>stash</CODE> which in the case of success contains an alias for the subroutine, and sets
+up caching info for this glob. Similarly for all the searched stashes.
+
+
+<P>
+
+This function grants <CODE>"SUPER"</CODE> token as a postfix of the stash name.
+
+
+<P>
+
+The 
+<FONT SIZE=-1>GV</FONT> returned from <A HREF="#item_gv_fetchmeth">gv_fetchmeth</A> may be a method cache entry, which is not visible to Perl code. So when
+calling <A HREF="#item_perl_call_sv">perl_call_sv</A>, you should not use the 
+<FONT SIZE=-1>GV</FONT> directly; instead, you should use the method's 
+<FONT SIZE=-1>CV,</FONT> which can be obtained from the 
+<FONT SIZE=-1>GV</FONT> with the
+ <CODE>GvCV</CODE> macro.
+
+
+<P>
+
+<PRE>        GV*     gv_fetchmeth _((HV* stash, char* name, STRLEN len, I32 level));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_gv_fetchmethod">gv_fetchmethod
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_gv_fetchmethod_autoload">gv_fetchmethod_autoload
+
+</A></STRONG><DD>
+Returns the glob which contains the subroutine to call to invoke the method
+on the <CODE>stash</CODE>. In fact in the presense of autoloading this may be the glob for 
+<FONT SIZE=-1>``AUTOLOAD''.</FONT> In this case the corresponding variable
+<CODE>$AUTOLOAD</CODE> is already setup.
+
+
+<P>
+
+The third parameter of <A HREF="#item_gv_fetchmethod_autoload">gv_fetchmethod_autoload</A> determines whether 
+<FONT SIZE=-1>AUTOLOAD</FONT> lookup is performed if the given method is not present: non-zero means yes, look for 
+<FONT SIZE=-1>AUTOLOAD;</FONT> zero means no, don't look for 
+<FONT SIZE=-1>AUTOLOAD.</FONT> Calling
+
+<A HREF="#item_gv_fetchmethod">gv_fetchmethod</A> is equivalent to calling <A HREF="#item_gv_fetchmethod_autoload">gv_fetchmethod_autoload</A> with a non-zero <CODE>autoload</CODE> parameter.
+
+
+<P>
+
+These functions grant <CODE>"SUPER"</CODE> token as a prefix of the method name.
+
+
+<P>
+
+Note that if you want to keep the returned glob for a long time, you need to check for it being 
+<FONT SIZE=-1>``AUTOLOAD'',</FONT> since at the later time the call may load a different subroutine due to <CODE>$AUTOLOAD</CODE> changing its value. Use the glob created via a side effect to do this.
+
+
+
+<P>
+
+These functions have the same side-effects and as <A HREF="#item_gv_fetchmeth">gv_fetchmeth</A> with
+<CODE>level==0</CODE>.  <CODE>name</CODE> should be writable if contains <CODE>':'</CODE> or <CODE>'\''</CODE>. The warning against passing the 
+<FONT SIZE=-1>GV</FONT> returned by <A HREF="#item_gv_fetchmeth">gv_fetchmeth</A> to
+<A HREF="#item_perl_call_sv">perl_call_sv</A> apply equally to these functions.
+
+
+<P>
+
+<PRE>        GV*     gv_fetchmethod _((HV* stash, char* name));
+        GV*     gv_fetchmethod_autoload _((HV* stash, char* name,
+                                           I32 autoload));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_gv_stashpv">gv_stashpv
+
+</A></STRONG><DD>
+Returns a pointer to the stash for a specified package. If <CODE>create</CODE> is set then the package will be created if it does not already exist. If <CODE>create</CODE>
+is not set and the package does not exist then 
+<FONT SIZE=-1>NULL</FONT> is returned.
+
+
+<P>
+
+<PRE>        HV*     gv_stashpv _((char* name, I32 create));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_gv_stashsv">gv_stashsv
+
+</A></STRONG><DD>
+Returns a pointer to the stash for a specified package. See <A HREF="#item_gv_stashpv">gv_stashpv</A>.
+
+
+<P>
+
+<PRE>        HV*     gv_stashsv _((SV* sv, I32 create));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_GvSV">GvSV
+
+</A></STRONG><DD>
+Return the 
+<FONT SIZE=-1>SV</FONT> from the 
+<FONT SIZE=-1>GV.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_HEf_SVKEY">HEf_SVKEY
+
+</A></STRONG><DD>
+This flag, used in the length slot of hash entries and magic structures,
+specifies the structure contains a <A HREF="#item_SV_">SV*</A> pointer where a
+<CODE>char*</CODE> pointer is to be expected. (For information only--not to be used).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_HeHASH">HeHASH
+
+</A></STRONG><DD>
+Returns the computed hash (type <CODE>U32</CODE>) stored in the hash entry.
+
+
+<P>
+
+<PRE>        HeHASH(HE* he)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_HeKEY">HeKEY
+
+</A></STRONG><DD>
+Returns the actual pointer stored in the key slot of the hash entry. The
+pointer may be either <CODE>char*</CODE> or <A HREF="#item_SV_">SV*</A>, depending on the value of
+<A HREF="#item_HeKLEN">HeKLEN()</A>. Can be assigned to. The <A HREF="#item_HePV">HePV()</A> or <A HREF="#item_HeSVKEY">HeSVKEY()</A> macros are usually preferable for finding the value of a key.
+
+
+<P>
+
+<PRE>        HeKEY(HE* he)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_HeKLEN">HeKLEN
+
+</A></STRONG><DD>
+If this is negative, and amounts to <A HREF="#item_HEf_SVKEY">HEf_SVKEY</A>, it indicates the entry holds an <A HREF="#item_SV_">SV*</A> key. Otherwise, holds the actual length of the key. Can be assigned to. The <A HREF="#item_HePV">HePV()</A> macro is usually preferable for finding key lengths.
+
+
+<P>
+
+<PRE>        HeKLEN(HE* he)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_HePV">HePV
+
+</A></STRONG><DD>
+Returns the key slot of the hash entry as a <CODE>char*</CODE> value, doing any necessary dereferencing of possibly <A HREF="#item_SV_">SV*</A> keys. The length of the string is placed in <CODE>len</CODE> (this is a macro, so do <EM>not</EM> use
+<CODE>&len</CODE>). If you do not care about what the length of the key is, you may use the
+global variable <A HREF="#item_na">na</A>. Remember though, that hash keys in perl are free to contain embedded
+nulls, so using <CODE>strlen()</CODE>
+or similar is not a good way to find the length of hash keys. This is very
+similar to the <A HREF="#item_SvPV">SvPV()</A> macro described elsewhere in this document.
+
+
+<P>
+
+<PRE>        HePV(HE* he, STRLEN len)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_HeSVKEY">HeSVKEY
+
+</A></STRONG><DD>
+Returns the key as an <A HREF="#item_SV_">SV*</A>, or <A HREF="#item_Nullsv">Nullsv</A> if the hash entry does not contain an <A HREF="#item_SV_">SV*</A> key.
+
+
+<P>
+
+<PRE>        HeSVKEY(HE* he)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_HeSVKEY_force">HeSVKEY_force
+
+</A></STRONG><DD>
+Returns the key as an <A HREF="#item_SV_">SV*</A>. Will create and return a temporary mortal <A HREF="#item_SV_">SV*</A> if the hash entry contains only a <CODE>char*</CODE> key.
+
+
+<P>
+
+<PRE>        HeSVKEY_force(HE* he)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_HeSVKEY_set">HeSVKEY_set
+
+</A></STRONG><DD>
+Sets the key to a given <A HREF="#item_SV_">SV*</A>, taking care to set the appropriate flags to indicate the presence of an <A HREF="#item_SV_">SV*</A> key, and returns the same <A HREF="#item_SV_">SV*</A>.
+
+
+<P>
+
+<PRE>        HeSVKEY_set(HE* he, SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_HeVAL">HeVAL
+
+</A></STRONG><DD>
+Returns the value slot (type <A HREF="#item_SV_">SV*</A>) stored in the hash entry.
+
+
+<P>
+
+<PRE>        HeVAL(HE* he)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_clear">hv_clear
+
+</A></STRONG><DD>
+Clears a hash, making it empty.
+
+
+<P>
+
+<PRE>        void    hv_clear _((HV* tb));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_delayfree_ent">hv_delayfree_ent
+
+</A></STRONG><DD>
+Releases a hash entry, such as while iterating though the hash, but delays
+actual freeing of key and value until the end of the current statement (or
+thereabouts) with <A HREF="#item_sv_2mortal">sv_2mortal</A>. See <A HREF="#item_hv_iternext">hv_iternext</A>
+and <A HREF="#item_hv_free_ent">hv_free_ent</A>.
+
+
+<P>
+
+<PRE>        void    hv_delayfree_ent _((HV* hv, HE* entry));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_delete">hv_delete
+
+</A></STRONG><DD>
+Deletes a key/value pair in the hash. The value 
+<FONT SIZE=-1>SV</FONT> is removed from the hash and returned to the
+caller. The <CODE>klen</CODE> is the length of the key. The
+<CODE>flags</CODE> value will normally be zero; if set to 
+<FONT SIZE=-1>G_DISCARD</FONT> then 
+<FONT SIZE=-1>NULL</FONT> will be returned.
+
+
+
+<P>
+
+<PRE>        SV*     hv_delete _((HV* tb, char* key, U32 klen, I32 flags));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_delete_ent">hv_delete_ent
+
+</A></STRONG><DD>
+Deletes a key/value pair in the hash. The value 
+<FONT SIZE=-1>SV</FONT> is removed from the hash and returned to the
+caller. The <CODE>flags</CODE> value will normally be zero; if set to 
+<FONT SIZE=-1>G_DISCARD</FONT> then 
+<FONT SIZE=-1>NULL</FONT> will be returned.
+  <CODE>hash</CODE> can be a valid precomputed hash value, or 0 to ask for it to be computed.
+
+
+<P>
+
+<PRE>        SV*     hv_delete_ent _((HV* tb, SV* key, I32 flags, U32 hash));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_exists">hv_exists
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the specified hash key exists. The
+<CODE>klen</CODE> is the length of the key.
+
+
+<P>
+
+<PRE>        bool    hv_exists _((HV* tb, char* key, U32 klen));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_exists_ent">hv_exists_ent
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the specified hash key exists. <CODE>hash</CODE>
+can be a valid precomputed hash value, or 0 to ask for it to be computed.
+
+
+<P>
+
+<PRE>        bool    hv_exists_ent _((HV* tb, SV* key, U32 hash));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_fetch">hv_fetch
+
+</A></STRONG><DD>
+Returns the 
+<FONT SIZE=-1>SV</FONT> which corresponds to the specified key in the hash.
+The
+<CODE>klen</CODE> is the length of the key. If <CODE>lval</CODE> is set then the fetch will be part of a store. Check that the return value
+is non-null before dereferencing it to a <A HREF="#item_SV_">SV*</A>.
+
+
+<P>
+
+See <A HREF="#Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays</A> for more information on how to use this function on tied hashes.
+
+
+<P>
+
+<PRE>        SV**    hv_fetch _((HV* tb, char* key, U32 klen, I32 lval));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_fetch_ent">hv_fetch_ent
+
+</A></STRONG><DD>
+Returns the hash entry which corresponds to the specified key in the hash.
+<CODE>hash</CODE> must be a valid precomputed hash number for the given <CODE>key</CODE>, or 0 if you want the function to compute it. 
+<FONT SIZE=-1>IF</FONT> <CODE>lval</CODE> is set then the fetch will be part of a store. Make sure the return value
+is non-null before accessing it. The return value when <CODE>tb</CODE> is a tied hash is a pointer to a static location, so be sure to make a copy
+of the structure if you need to store it somewhere.
+
+
+<P>
+
+See <A HREF="#Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays</A> for more information on how to use this function on tied hashes.
+
+
+<P>
+
+<PRE>        HE*     hv_fetch_ent  _((HV* tb, SV* key, I32 lval, U32 hash));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_free_ent">hv_free_ent
+
+</A></STRONG><DD>
+Releases a hash entry, such as while iterating though the hash. See
+<A HREF="#item_hv_iternext">hv_iternext</A> and <A HREF="#item_hv_delayfree_ent">hv_delayfree_ent</A>.
+
+
+<P>
+
+<PRE>        void    hv_free_ent _((HV* hv, HE* entry));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_iterinit">hv_iterinit
+
+</A></STRONG><DD>
+Prepares a starting point to traverse a hash table.
+
+
+<P>
+
+<PRE>        I32     hv_iterinit _((HV* tb));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_iterkey">hv_iterkey
+
+</A></STRONG><DD>
+Returns the key from the current position of the hash iterator. See
+<A HREF="#item_hv_iterinit">hv_iterinit</A>.
+
+
+<P>
+
+<PRE>        char*   hv_iterkey _((HE* entry, I32* retlen));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_iterkeysv">hv_iterkeysv
+
+</A></STRONG><DD>
+Returns the key as an <A HREF="#item_SV_">SV*</A> from the current position of the hash iterator. The return value will
+always be a mortal copy of the key. Also see <A HREF="#item_hv_iterinit">hv_iterinit</A>.
+
+
+<P>
+
+<PRE>        SV*     hv_iterkeysv  _((HE* entry));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_iternext">hv_iternext
+
+</A></STRONG><DD>
+Returns entries from a hash iterator. See <A HREF="#item_hv_iterinit">hv_iterinit</A>.
+
+
+<P>
+
+<PRE>        HE*     hv_iternext _((HV* tb));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_iternextsv">hv_iternextsv
+
+</A></STRONG><DD>
+Performs an <A HREF="#item_hv_iternext">hv_iternext</A>, <A HREF="#item_hv_iterkey">hv_iterkey</A>, and <A HREF="#item_hv_iterval">hv_iterval</A> in one operation.
+
+
+<P>
+
+<PRE>        SV *    hv_iternextsv _((HV* hv, char** key, I32* retlen));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_iterval">hv_iterval
+
+</A></STRONG><DD>
+Returns the value from the current position of the hash iterator. See
+<A HREF="#item_hv_iterkey">hv_iterkey</A>.
+
+
+<P>
+
+<PRE>        SV*     hv_iterval _((HV* tb, HE* entry));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_magic">hv_magic
+
+</A></STRONG><DD>
+Adds magic to a hash. See <A HREF="#item_sv_magic">sv_magic</A>.
+
+
+<P>
+
+<PRE>        void    hv_magic _((HV* hv, GV* gv, int how));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_HvNAME">HvNAME
+
+</A></STRONG><DD>
+Returns the package name of a stash. See <A HREF="#item_SvSTASH">SvSTASH</A>, <A HREF="#item_CvSTASH">CvSTASH</A>.
+
+
+<P>
+
+<PRE>        char *HvNAME (HV* stash)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_store">hv_store
+
+</A></STRONG><DD>
+Stores an 
+<FONT SIZE=-1>SV</FONT> in a hash. The hash key is specified as <CODE>key</CODE> and <CODE>klen</CODE> is the length of the key. The <CODE>hash</CODE> parameter is the precomputed hash value; if it is zero then Perl will compute it. The return value will be 
+<FONT SIZE=-1>NULL</FONT> if the operation failed or if the value did not need to be actually stored within the hash (as in the case of tied hashes). Otherwise it can be dereferenced to get the original
+ <A HREF="#item_SV_">SV*</A>. Note that the caller is responsible for suitably incrementing the
+reference count of <CODE>val</CODE>
+before the call, and decrementing it if the function returned 
+<FONT SIZE=-1>NULL.</FONT>
+
+
+<P>
+
+See <A HREF="#Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays</A> for more information on how to use this function on tied hashes.
+
+
+<P>
+
+<PRE>        SV**    hv_store _((HV* tb, char* key, U32 klen, SV* val, U32 hash));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_store_ent">hv_store_ent
+
+</A></STRONG><DD>
+Stores <CODE>val</CODE> in a hash. The hash key is specified as <CODE>key</CODE>. The <CODE>hash</CODE>
+parameter is the precomputed hash value; if it is zero then Perl will compute it. The return value is the new hash entry so created. It will be 
+<FONT SIZE=-1>NULL</FONT> if the operation failed or if the value did not need to be actually stored within the hash (as in the case of tied hashes). Otherwise the contents of the return value can be accessed using the
+ <CODE>He???</CODE> macros described here. Note that the caller is responsible for suitably
+incrementing the reference count of <CODE>val</CODE> before the call, and decrementing it if the function returned 
+<FONT SIZE=-1>NULL.</FONT>
+
+
+<P>
+
+See <A HREF="#Understanding_the_Magic_of_Tied_">Understanding the Magic of Tied Hashes and Arrays</A> for more information on how to use this function on tied hashes.
+
+
+<P>
+
+<PRE>        HE*     hv_store_ent  _((HV* tb, SV* key, SV* val, U32 hash));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_hv_undef">hv_undef
+
+</A></STRONG><DD>
+Undefines the hash.
+
+
+<P>
+
+<PRE>        void    hv_undef _((HV* tb));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_isALNUM">isALNUM
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>C</FONT> <CODE>char</CODE> is an ascii alphanumeric character or digit.
+
+
+<P>
+
+<PRE>        int isALNUM (char c)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_isALPHA">isALPHA
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>C</FONT> <CODE>char</CODE> is an ascii alphabetic character.
+
+
+<P>
+
+<PRE>        int isALPHA (char c)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_isDIGIT">isDIGIT
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>C</FONT> <CODE>char</CODE> is an ascii digit.
+
+
+<P>
+
+<PRE>        int isDIGIT (char c)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_isLOWER">isLOWER
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>C</FONT> <CODE>char</CODE> is a lowercase character.
+
+
+<P>
+
+<PRE>        int isLOWER (char c)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_isSPACE">isSPACE
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>C</FONT> <CODE>char</CODE> is whitespace.
+
+
+<P>
+
+<PRE>        int isSPACE (char c)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_isUPPER">isUPPER
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>C</FONT> <CODE>char</CODE> is an uppercase character.
+
+
+<P>
+
+<PRE>        int isUPPER (char c)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_items">items
+
+</A></STRONG><DD>
+Variable which is setup by <CODE>xsubpp</CODE> to indicate the number of items on the stack. See <A HREF="/n|/perl/html/./lib/Pod/perlxs.html#Variable_length_Parameter_Lists">Variable-length Parameter Lists</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ix">ix
+
+</A></STRONG><DD>
+Variable which is setup by <CODE>xsubpp</CODE> to indicate which of an XSUB's aliases was used to invoke it. See <A HREF="/n|/perl/html/./lib/Pod/perlxs.html#The_ALIAS_Keyword">The ALIAS: Keyword</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_LEAVE">LEAVE
+
+</A></STRONG><DD>
+Closing bracket on a callback. See <A HREF="#item_ENTER">ENTER</A> and <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        LEAVE;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_MARK">MARK
+
+</A></STRONG><DD>
+Stack marker variable for the 
+<FONT SIZE=-1>XSUB.</FONT> See <A HREF="#item_dMARK">dMARK</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_mg_clear">mg_clear
+
+</A></STRONG><DD>
+Clear something magical that the 
+<FONT SIZE=-1>SV</FONT> represents. See <A HREF="#item_sv_magic">sv_magic</A>.
+
+
+<P>
+
+<PRE>        int     mg_clear _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_mg_copy">mg_copy
+
+</A></STRONG><DD>
+Copies the magic from one 
+<FONT SIZE=-1>SV</FONT> to another. See <A HREF="#item_sv_magic">sv_magic</A>.
+
+
+<P>
+
+<PRE>        int     mg_copy _((SV *, SV *, char *, STRLEN));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_mg_find">mg_find
+
+</A></STRONG><DD>
+Finds the magic pointer for type matching the 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_sv_magic">sv_magic</A>.
+
+
+<P>
+
+<PRE>        MAGIC*  mg_find _((SV* sv, int type));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_mg_free">mg_free
+
+</A></STRONG><DD>
+Free any magic storage used by the 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_sv_magic">sv_magic</A>.
+
+
+<P>
+
+<PRE>        int     mg_free _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_mg_get">mg_get
+
+</A></STRONG><DD>
+Do magic after a value is retrieved from the 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_sv_magic">sv_magic</A>.
+
+
+<P>
+
+<PRE>        int     mg_get _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_mg_len">mg_len
+
+</A></STRONG><DD>
+Report on the SV's length. See <A HREF="#item_sv_magic">sv_magic</A>.
+
+
+<P>
+
+<PRE>        U32     mg_len _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_mg_magical">mg_magical
+
+</A></STRONG><DD>
+Turns on the magical status of an 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_sv_magic">sv_magic</A>.
+
+
+<P>
+
+<PRE>        void    mg_magical _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_mg_set">mg_set
+
+</A></STRONG><DD>
+Do magic after a value is assigned to the 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_sv_magic">sv_magic</A>.
+
+
+<P>
+
+<PRE>        int     mg_set _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Move">Move
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>memmove</CODE> function. The <A HREF="#item_s">s</A> is the source, <A HREF="#item_d">d</A> is the destination, <A HREF="#item_n">n</A> is the number of items, and <A HREF="#item_t">t</A> is the type. Can do overlapping moves. See also <A HREF="#item_Copy">Copy</A>.
+
+
+<P>
+
+<PRE>        (void) Move( s, d, n, t );
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_na">na
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> variable which may be used with <A HREF="#item_SvPV">SvPV</A> to tell Perl to calculate the string length.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_New">New
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>malloc</CODE> function.
+
+
+<P>
+
+<PRE>        void * New( x, void *ptr, int size, type )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Newc">Newc
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>malloc</CODE> function, with cast.
+
+
+<P>
+
+<PRE>        void * Newc( x, void *ptr, int size, type, cast )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Newz">Newz
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>malloc</CODE> function. The allocated memory is zeroed with <CODE>memzero</CODE>.
+
+
+<P>
+
+<PRE>        void * Newz( x, void *ptr, int size, type )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newAV">newAV
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>AV.</FONT> The reference count is set to 1.
+
+
+<P>
+
+<PRE>        AV*     newAV _((void));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newHV">newHV
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>HV.</FONT> The reference count is set to 1.
+
+
+<P>
+
+<PRE>        HV*     newHV _((void));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newRV_inc">newRV_inc
+
+</A></STRONG><DD>
+Creates an 
+<FONT SIZE=-1>RV</FONT> wrapper for an 
+<FONT SIZE=-1>SV.</FONT> The reference count for the original 
+<FONT SIZE=-1>SV</FONT> is incremented.
+
+
+
+<P>
+
+<PRE>        SV*     newRV_inc _((SV* ref));
+</PRE>
+
+<P>
+
+For historical reasons, ``newRV'' is a synonym for ``newRV_inc''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_newRV_noinc">newRV_noinc
+
+</A></STRONG><DD>
+Creates an 
+<FONT SIZE=-1>RV</FONT> wrapper for an 
+<FONT SIZE=-1>SV.</FONT> The reference count for the original 
+<FONT SIZE=-1>SV</FONT> is
+ <STRONG>not</STRONG> incremented.
+
+
+<P>
+
+<PRE>        SV*     newRV_noinc _((SV* ref));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newSV">newSV
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>SV.</FONT> The <CODE>len</CODE> parameter indicates the number of bytes of preallocated string space the 
+<FONT SIZE=-1>SV</FONT> should have. The reference count for the new 
+<FONT SIZE=-1>SV</FONT> is set to 1.
+
+
+
+<P>
+
+<PRE>        SV*     newSV _((STRLEN len));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newSViv">newSViv
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>SV</FONT> and copies an integer into it. The reference count for the 
+<FONT SIZE=-1>SV</FONT> is set to 1.
+
+
+
+<P>
+
+<PRE>        SV*     newSViv _((IV i));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newSVnv">newSVnv
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>SV</FONT> and copies a double into it. The reference count for the 
+<FONT SIZE=-1>SV</FONT> is set to 1.
+
+
+
+<P>
+
+<PRE>        SV*     newSVnv _((NV i));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newSVpv">newSVpv
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>SV</FONT> and copies a string into it. The reference count for the 
+<FONT SIZE=-1>SV</FONT> is set to 1. If
+ <CODE>len</CODE> is zero then Perl will compute the length.
+
+
+<P>
+
+<PRE>        SV*     newSVpv _((char* s, STRLEN len));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newSVrv">newSVrv
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>SV</FONT> for the 
+<FONT SIZE=-1>RV,</FONT> <CODE>rv</CODE>, to point to. If <CODE>rv</CODE> is not an 
+<FONT SIZE=-1>RV</FONT> then it will be upgraded to one. If <CODE>classname</CODE> is non-null then the new 
+<FONT SIZE=-1>SV</FONT> will be blessed in the specified package. The new 
+<FONT SIZE=-1>SV</FONT> is returned and its reference count is 1.
+
+
+
+<P>
+
+<PRE>        SV*     newSVrv _((SV* rv, char* classname));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newSVsv">newSVsv
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>SV</FONT> which is an exact duplicate of the original 
+<FONT SIZE=-1>SV.</FONT>
+
+
+
+<P>
+
+<PRE>        SV*     newSVsv _((SV* old));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_newXS">newXS
+
+</A></STRONG><DD>
+Used by <CODE>xsubpp</CODE> to hook up XSUBs as Perl subs.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_newXSproto">newXSproto
+
+</A></STRONG><DD>
+Used by <CODE>xsubpp</CODE> to hook up XSUBs as Perl subs. Adds Perl prototypes to the subs.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Nullav">Nullav
+
+</A></STRONG><DD>
+Null 
+<FONT SIZE=-1>AV</FONT> pointer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Nullch">Nullch
+
+</A></STRONG><DD>
+Null character pointer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Nullcv">Nullcv
+
+</A></STRONG><DD>
+Null 
+<FONT SIZE=-1>CV</FONT> pointer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Nullhv">Nullhv
+
+</A></STRONG><DD>
+Null 
+<FONT SIZE=-1>HV</FONT> pointer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Nullsv">Nullsv
+
+</A></STRONG><DD>
+Null 
+<FONT SIZE=-1>SV</FONT> pointer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ORIGMARK">ORIGMARK
+
+</A></STRONG><DD>
+The original stack mark for the 
+<FONT SIZE=-1>XSUB.</FONT> See <A HREF="#item_dORIGMARK">dORIGMARK</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_alloc">perl_alloc
+
+</A></STRONG><DD>
+Allocates a new Perl interpreter. See <A HREF="/n|/perl/html/./lib/Pod/perlembed.html#">the perlembed manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_call_argv">perl_call_argv
+
+</A></STRONG><DD>
+Performs a callback to the specified Perl sub. See <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        I32     perl_call_argv _((char* subname, I32 flags, char** argv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_call_method">perl_call_method
+
+</A></STRONG><DD>
+Performs a callback to the specified Perl method. The blessed object must
+be on the stack. See <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        I32     perl_call_method _((char* methname, I32 flags));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_call_pv">perl_call_pv
+
+</A></STRONG><DD>
+Performs a callback to the specified Perl sub. See <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        I32     perl_call_pv _((char* subname, I32 flags));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_call_sv">perl_call_sv
+
+</A></STRONG><DD>
+Performs a callback to the Perl sub whose name is in the 
+<FONT SIZE=-1>SV.</FONT> See
+<A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        I32     perl_call_sv _((SV* sv, I32 flags));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_construct">perl_construct
+
+</A></STRONG><DD>
+Initializes a new Perl interpreter. See <A HREF="/n|/perl/html/./lib/Pod/perlembed.html#">the perlembed manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_destruct">perl_destruct
+
+</A></STRONG><DD>
+Shuts down a Perl interpreter. See <A HREF="/n|/perl/html/./lib/Pod/perlembed.html#">the perlembed manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_eval_sv">perl_eval_sv
+
+</A></STRONG><DD>
+Tells Perl to <A HREF="#item_eval">eval</A> the string in the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        I32     perl_eval_sv _((SV* sv, I32 flags));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_eval_pv">perl_eval_pv
+
+</A></STRONG><DD>
+Tells Perl to <A HREF="#item_eval">eval</A> the given string and return an 
+<FONT SIZE=-1>SV*</FONT> result.
+
+
+<P>
+
+<PRE>        SV*     perl_eval_pv _((char* p, I32 croak_on_error));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_free">perl_free
+
+</A></STRONG><DD>
+Releases a Perl interpreter. See <A HREF="/n|/perl/html/./lib/Pod/perlembed.html#">the perlembed manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_get_av">perl_get_av
+
+</A></STRONG><DD>
+Returns the 
+<FONT SIZE=-1>AV</FONT> of the specified Perl array. If <CODE>create</CODE> is set and the Perl variable does not exist then it will be created. If <CODE>create</CODE> is not set and the variable does not exist then 
+<FONT SIZE=-1>NULL</FONT> is returned.
+
+
+<P>
+
+<PRE>        AV*     perl_get_av _((char* name, I32 create));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_get_cv">perl_get_cv
+
+</A></STRONG><DD>
+Returns the 
+<FONT SIZE=-1>CV</FONT> of the specified Perl sub. If <CODE>create</CODE> is set and the Perl variable does not exist then it will be created. If <CODE>create</CODE> is not set and the variable does not exist then 
+<FONT SIZE=-1>NULL</FONT> is returned.
+
+
+<P>
+
+<PRE>        CV*     perl_get_cv _((char* name, I32 create));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_get_hv">perl_get_hv
+
+</A></STRONG><DD>
+Returns the 
+<FONT SIZE=-1>HV</FONT> of the specified Perl hash. If <CODE>create</CODE> is set and the Perl variable does not exist then it will be created. If <CODE>create</CODE> is not set and the variable does not exist then 
+<FONT SIZE=-1>NULL</FONT> is returned.
+
+
+<P>
+
+<PRE>        HV*     perl_get_hv _((char* name, I32 create));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_get_sv">perl_get_sv
+
+</A></STRONG><DD>
+Returns the 
+<FONT SIZE=-1>SV</FONT> of the specified Perl scalar. If <CODE>create</CODE> is set and the Perl variable does not exist then it will be created. If <CODE>create</CODE> is not set and the variable does not exist then 
+<FONT SIZE=-1>NULL</FONT> is returned.
+
+
+<P>
+
+<PRE>        SV*     perl_get_sv _((char* name, I32 create));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_parse">perl_parse
+
+</A></STRONG><DD>
+Tells a Perl interpreter to parse a Perl script. See <A HREF="/n|/perl/html/./lib/Pod/perlembed.html#">the perlembed manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_require_pv">perl_require_pv
+
+</A></STRONG><DD>
+Tells Perl to <A HREF="#item_require">require</A> a module.
+
+
+<P>
+
+<PRE>        void    perl_require_pv _((char* pv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_run">perl_run
+
+</A></STRONG><DD>
+Tells a Perl interpreter to run. See <A HREF="/n|/perl/html/./lib/Pod/perlembed.html#">the perlembed manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_POPi">POPi
+
+</A></STRONG><DD>
+Pops an integer off the stack.
+
+
+<P>
+
+<PRE>        int POPi();
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_POPl">POPl
+
+</A></STRONG><DD>
+Pops a long off the stack.
+
+
+<P>
+
+<PRE>        long POPl();
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_POPp">POPp
+
+</A></STRONG><DD>
+Pops a string off the stack.
+
+
+<P>
+
+<PRE>        char * POPp();
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_POPn">POPn
+
+</A></STRONG><DD>
+Pops a double off the stack.
+
+
+<P>
+
+<PRE>        double POPn();
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_POPs">POPs
+
+</A></STRONG><DD>
+Pops an 
+<FONT SIZE=-1>SV</FONT> off the stack.
+
+
+<P>
+
+<PRE>        SV* POPs();
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_PUSHMARK">PUSHMARK
+
+</A></STRONG><DD>
+Opening bracket for arguments on a callback. See <A HREF="#item_PUTBACK">PUTBACK</A> and <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        PUSHMARK(p)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_PUSHi">PUSHi
+
+</A></STRONG><DD>
+Push an integer onto the stack. The stack must have room for this element.
+See <A HREF="#item_XPUSHi">XPUSHi</A>.
+
+
+<P>
+
+<PRE>        PUSHi(int d)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_PUSHn">PUSHn
+
+</A></STRONG><DD>
+Push a double onto the stack. The stack must have room for this element.
+See <A HREF="#item_XPUSHn">XPUSHn</A>.
+
+
+<P>
+
+<PRE>        PUSHn(double d)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_PUSHp">PUSHp
+
+</A></STRONG><DD>
+Push a string onto the stack. The stack must have room for this element.
+The <CODE>len</CODE> indicates the length of the string. See <A HREF="#item_XPUSHp">XPUSHp</A>.
+
+
+<P>
+
+<PRE>        PUSHp(char *c, int len )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_PUSHs">PUSHs
+
+</A></STRONG><DD>
+Push an 
+<FONT SIZE=-1>SV</FONT> onto the stack. The stack must have room for this
+element. See
+<A HREF="#item_XPUSHs">XPUSHs</A>.
+
+
+<P>
+
+<PRE>        PUSHs(sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_PUTBACK">PUTBACK
+
+</A></STRONG><DD>
+Closing bracket for 
+<FONT SIZE=-1>XSUB</FONT> arguments. This is usually handled by <CODE>xsubpp</CODE>. See <A HREF="#item_PUSHMARK">PUSHMARK</A> and <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A> for other uses.
+
+
+<P>
+
+<PRE>        PUTBACK;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Renew">Renew
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>realloc</CODE> function.
+
+
+<P>
+
+<PRE>        void * Renew( void *ptr, int size, type )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Renewc">Renewc
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>realloc</CODE> function, with cast.
+
+
+<P>
+
+<PRE>        void * Renewc( void *ptr, int size, type, cast )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_RETVAL">RETVAL
+
+</A></STRONG><DD>
+Variable which is setup by <CODE>xsubpp</CODE> to hold the return value for an 
+<FONT SIZE=-1>XSUB.</FONT> This is always the proper type for the 
+<FONT SIZE=-1>XSUB.</FONT> See
+ <A HREF="/n|/perl/html/./lib/Pod/perlxs.html#The_RETVAL_Variable">The RETVAL Variable</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_safefree">safefree
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>free</CODE> function.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_safemalloc">safemalloc
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>malloc</CODE> function.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_saferealloc">saferealloc
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>realloc</CODE> function.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_savepv">savepv
+
+</A></STRONG><DD>
+Copy a string to a safe spot. This does not use an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        char*   savepv _((char* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_savepvn">savepvn
+
+</A></STRONG><DD>
+Copy a string to a safe spot. The <CODE>len</CODE> indicates number of bytes to copy. This does not use an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        char*   savepvn _((char* sv, I32 len));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SAVETMPS">SAVETMPS
+
+</A></STRONG><DD>
+Opening bracket for temporaries on a callback. See <A HREF="#item_FREETMPS">FREETMPS</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        SAVETMPS;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SP">SP
+
+</A></STRONG><DD>
+Stack pointer. This is usually handled by <CODE>xsubpp</CODE>. See <A HREF="#item_dSP">dSP</A> and
+<A HREF="#item_SPAGAIN">SPAGAIN</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SPAGAIN">SPAGAIN
+
+</A></STRONG><DD>
+Refetch the stack pointer. Used after a callback. See <A HREF="/n|/perl/html/./lib/Pod/perlcall.html#">the perlcall manpage</A>.
+
+
+<P>
+
+<PRE>        SPAGAIN;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_ST">ST
+
+</A></STRONG><DD>
+Used to access elements on the XSUB's stack.
+
+
+<P>
+
+<PRE>        SV* ST(int x)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_strEQ">strEQ
+
+</A></STRONG><DD>
+Test two strings to see if they are equal. Returns true or false.
+
+
+<P>
+
+<PRE>        int strEQ( char *s1, char *s2 )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_strGE">strGE
+
+</A></STRONG><DD>
+Test two strings to see if the first, <CODE>s1</CODE>, is greater than or equal to the second, <CODE>s2</CODE>. Returns true or false.
+
+
+<P>
+
+<PRE>        int strGE( char *s1, char *s2 )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_strGT">strGT
+
+</A></STRONG><DD>
+Test two strings to see if the first, <CODE>s1</CODE>, is greater than the second,
+<CODE>s2</CODE>. Returns true or false.
+
+
+<P>
+
+<PRE>        int strGT( char *s1, char *s2 )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_strLE">strLE
+
+</A></STRONG><DD>
+Test two strings to see if the first, <CODE>s1</CODE>, is less than or equal to the second, <CODE>s2</CODE>. Returns true or false.
+
+
+<P>
+
+<PRE>        int strLE( char *s1, char *s2 )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_strLT">strLT
+
+</A></STRONG><DD>
+Test two strings to see if the first, <CODE>s1</CODE>, is less than the second,
+<CODE>s2</CODE>. Returns true or false.
+
+
+<P>
+
+<PRE>        int strLT( char *s1, char *s2 )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_strNE">strNE
+
+</A></STRONG><DD>
+Test two strings to see if they are different. Returns true or false.
+
+
+<P>
+
+<PRE>        int strNE( char *s1, char *s2 )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_strnEQ">strnEQ
+
+</A></STRONG><DD>
+Test two strings to see if they are equal. The <CODE>len</CODE> parameter indicates the number of bytes to compare. Returns true or false.
+
+
+<P>
+
+<PRE>        int strnEQ( char *s1, char *s2 )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_strnNE">strnNE
+
+</A></STRONG><DD>
+Test two strings to see if they are different. The <CODE>len</CODE> parameter indicates the number of bytes to compare. Returns true or false.
+
+
+<P>
+
+<PRE>        int strnNE( char *s1, char *s2, int len )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_2mortal">sv_2mortal
+
+</A></STRONG><DD>
+Marks an 
+<FONT SIZE=-1>SV</FONT> as mortal. The 
+<FONT SIZE=-1>SV</FONT> will be destroyed when the current context ends.
+
+
+
+<P>
+
+<PRE>        SV*     sv_2mortal _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_bless">sv_bless
+
+</A></STRONG><DD>
+Blesses an 
+<FONT SIZE=-1>SV</FONT> into a specified package. The 
+<FONT SIZE=-1>SV</FONT> must be an 
+<FONT SIZE=-1>RV.</FONT> The package must be designated by its stash (see
+ <A HREF="#item_gv_stashpv">gv_stashpv()</A>). The reference count of the 
+<FONT SIZE=-1>SV</FONT> is unaffected.
+
+
+<P>
+
+<PRE>        SV*     sv_bless _((SV* sv, HV* stash));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_catpv">sv_catpv
+
+</A></STRONG><DD>
+Concatenates the string onto the end of the string which is in the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        void    sv_catpv _((SV* sv, char* ptr));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_catpvn">sv_catpvn
+
+</A></STRONG><DD>
+Concatenates the string onto the end of the string which is in the 
+<FONT SIZE=-1>SV.</FONT> The
+<CODE>len</CODE> indicates number of bytes to copy.
+
+
+<P>
+
+<PRE>        void    sv_catpvn _((SV* sv, char* ptr, STRLEN len));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_catpvf">sv_catpvf
+
+</A></STRONG><DD>
+Processes its arguments like <A HREF="#item_sprintf">sprintf</A> and appends the formatted output to an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        void    sv_catpvf _((SV* sv, const char* pat, ...));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_catsv">sv_catsv
+
+</A></STRONG><DD>
+Concatenates the string from 
+<FONT SIZE=-1>SV</FONT> <CODE>ssv</CODE> onto the end of the string in 
+<FONT SIZE=-1>SV</FONT>
+<CODE>dsv</CODE>.
+
+
+<P>
+
+<PRE>        void    sv_catsv _((SV* dsv, SV* ssv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_cmp">sv_cmp
+
+</A></STRONG><DD>
+Compares the strings in two SVs. Returns -1, 0, or 1 indicating whether the
+string in <CODE>sv1</CODE> is less than, equal to, or greater than the string in
+<CODE>sv2</CODE>.
+
+
+<P>
+
+<PRE>        I32     sv_cmp _((SV* sv1, SV* sv2));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvCUR">SvCUR
+
+</A></STRONG><DD>
+Returns the length of the string which is in the 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_SvLEN">SvLEN</A>.
+
+
+<P>
+
+<PRE>        int SvCUR (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvCUR_set">SvCUR_set
+
+</A></STRONG><DD>
+Set the length of the string which is in the 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_SvCUR">SvCUR</A>.
+
+
+<P>
+
+<PRE>        SvCUR_set (SV* sv, int val )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_dec">sv_dec
+
+</A></STRONG><DD>
+Auto-decrement of the value in the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        void    sv_dec _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvEND">SvEND
+
+</A></STRONG><DD>
+Returns a pointer to the last character in the string which is in the 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_SvCUR">SvCUR</A>. Access the character as
+
+
+<P>
+
+<PRE>        *SvEND(sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_eq">sv_eq
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the strings in the two SVs are
+identical.
+
+
+<P>
+
+<PRE>        I32     sv_eq _((SV* sv1, SV* sv2));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvGROW">SvGROW
+
+</A></STRONG><DD>
+Expands the character buffer in the 
+<FONT SIZE=-1>SV.</FONT> Calls <A HREF="#item_sv_grow">sv_grow</A> to perform the expansion if necessary. Returns a pointer to the character
+buffer.
+
+
+<P>
+
+<PRE>        char * SvGROW( SV* sv, int len )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_grow">sv_grow
+
+</A></STRONG><DD>
+Expands the character buffer in the 
+<FONT SIZE=-1>SV.</FONT> This will use <A HREF="#item_sv_unref">sv_unref</A> and will upgrade the 
+<FONT SIZE=-1>SV</FONT> to <A HREF="#item_SVt_PV">SVt_PV</A>. Returns a pointer to the character buffer. Use <A HREF="#item_SvGROW">SvGROW</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_inc">sv_inc
+
+</A></STRONG><DD>
+Auto-increment of the value in the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        void    sv_inc _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvIOK">SvIOK
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> contains an integer.
+
+
+<P>
+
+<PRE>        int SvIOK (SV* SV)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvIOK_off">SvIOK_off
+
+</A></STRONG><DD>
+Unsets the 
+<FONT SIZE=-1>IV</FONT> status of an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        SvIOK_off (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvIOK_on">SvIOK_on
+
+</A></STRONG><DD>
+Tells an 
+<FONT SIZE=-1>SV</FONT> that it is an integer.
+
+
+<P>
+
+<PRE>        SvIOK_on (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvIOK_only">SvIOK_only
+
+</A></STRONG><DD>
+Tells an 
+<FONT SIZE=-1>SV</FONT> that it is an integer and disables all other 
+<FONT SIZE=-1>OK</FONT> bits.
+
+
+
+<P>
+
+<PRE>        SvIOK_on (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvIOKp">SvIOKp
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> contains an integer. Checks the
+<STRONG>private</STRONG> setting. Use <A HREF="#item_SvIOK">SvIOK</A>.
+
+
+<P>
+
+<PRE>        int SvIOKp (SV* SV)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_isa">sv_isa
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> is blessed into the specified class. This does not
+know how to check for subtype, so it doesn't work in an inheritance
+relationship.
+
+
+<P>
+
+<PRE>        int     sv_isa _((SV* sv, char* name));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvIV">SvIV
+
+</A></STRONG><DD>
+Returns the integer which is in the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        int SvIV (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_isobject">sv_isobject
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> is an 
+<FONT SIZE=-1>RV</FONT> pointing to a blessed object. If the 
+<FONT SIZE=-1>SV</FONT> is not an 
+<FONT SIZE=-1>RV,</FONT> or if the object is not blessed, then this will return false.
+
+
+
+<P>
+
+<PRE>        int     sv_isobject _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvIVX">SvIVX
+
+</A></STRONG><DD>
+Returns the integer which is stored in the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        int  SvIVX (SV* sv);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvLEN">SvLEN
+
+</A></STRONG><DD>
+Returns the size of the string buffer in the 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_SvCUR">SvCUR</A>.
+
+
+<P>
+
+<PRE>        int SvLEN (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_len">sv_len
+
+</A></STRONG><DD>
+Returns the length of the string in the 
+<FONT SIZE=-1>SV.</FONT> Use <A HREF="#item_SvCUR">SvCUR</A>.
+
+
+<P>
+
+<PRE>        STRLEN  sv_len _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_magic">sv_magic
+
+</A></STRONG><DD>
+Adds magic to an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        void    sv_magic _((SV* sv, SV* obj, int how, char* name, I32 namlen));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_mortalcopy">sv_mortalcopy
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>SV</FONT> which is a copy of the original 
+<FONT SIZE=-1>SV.</FONT> The new 
+<FONT SIZE=-1>SV</FONT> is marked as mortal.
+
+
+
+<P>
+
+<PRE>        SV*     sv_mortalcopy _((SV* oldsv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvOK">SvOK
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the value is an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        int SvOK (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_newmortal">sv_newmortal
+
+</A></STRONG><DD>
+Creates a new 
+<FONT SIZE=-1>SV</FONT> which is mortal. The reference count of the 
+<FONT SIZE=-1>SV</FONT> is set to 1.
+
+
+
+<P>
+
+<PRE>        SV*     sv_newmortal _((void));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_no">sv_no
+
+</A></STRONG><DD>
+This is the <CODE>false</CODE> 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_sv_yes">sv_yes</A>. Always refer to this as <A HREF="#item__sv_no">&sv_no</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNIOK">SvNIOK
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> contains a number, integer or double.
+
+
+<P>
+
+<PRE>        int SvNIOK (SV* SV)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNIOK_off">SvNIOK_off
+
+</A></STRONG><DD>
+Unsets the 
+<FONT SIZE=-1>NV/IV</FONT> status of an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+
+<P>
+
+<PRE>        SvNIOK_off (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNIOKp">SvNIOKp
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> contains a number, integer or double. Checks the <STRONG>private</STRONG> setting. Use <A HREF="#item_SvNIOK">SvNIOK</A>.
+
+
+<P>
+
+<PRE>        int SvNIOKp (SV* SV)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNOK">SvNOK
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> contains a double.
+
+
+<P>
+
+<PRE>        int SvNOK (SV* SV)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNOK_off">SvNOK_off
+
+</A></STRONG><DD>
+Unsets the 
+<FONT SIZE=-1>NV</FONT> status of an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        SvNOK_off (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNOK_on">SvNOK_on
+
+</A></STRONG><DD>
+Tells an 
+<FONT SIZE=-1>SV</FONT> that it is a double.
+
+
+<P>
+
+<PRE>        SvNOK_on (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNOK_only">SvNOK_only
+
+</A></STRONG><DD>
+Tells an 
+<FONT SIZE=-1>SV</FONT> that it is a double and disables all other 
+<FONT SIZE=-1>OK</FONT> bits.
+
+
+
+<P>
+
+<PRE>        SvNOK_on (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNOKp">SvNOKp
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> contains a double. Checks the
+<STRONG>private</STRONG> setting. Use <A HREF="#item_SvNOK">SvNOK</A>.
+
+
+<P>
+
+<PRE>        int SvNOKp (SV* SV)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNV">SvNV
+
+</A></STRONG><DD>
+Returns the double which is stored in the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        double SvNV (SV* sv);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvNVX">SvNVX
+
+</A></STRONG><DD>
+Returns the double which is stored in the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        double SvNVX (SV* sv);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvPOK">SvPOK
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> contains a character string.
+
+
+<P>
+
+<PRE>        int SvPOK (SV* SV)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvPOK_off">SvPOK_off
+
+</A></STRONG><DD>
+Unsets the 
+<FONT SIZE=-1>PV</FONT> status of an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        SvPOK_off (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvPOK_on">SvPOK_on
+
+</A></STRONG><DD>
+Tells an 
+<FONT SIZE=-1>SV</FONT> that it is a string.
+
+
+<P>
+
+<PRE>        SvPOK_on (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvPOK_only">SvPOK_only
+
+</A></STRONG><DD>
+Tells an 
+<FONT SIZE=-1>SV</FONT> that it is a string and disables all other 
+<FONT SIZE=-1>OK</FONT> bits.
+
+
+
+<P>
+
+<PRE>        SvPOK_on (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvPOKp">SvPOKp
+
+</A></STRONG><DD>
+Returns a boolean indicating whether the 
+<FONT SIZE=-1>SV</FONT> contains a character string. Checks the <STRONG>private</STRONG> setting. Use <A HREF="#item_SvPOK">SvPOK</A>.
+
+
+<P>
+
+<PRE>        int SvPOKp (SV* SV)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvPV">SvPV
+
+</A></STRONG><DD>
+Returns a pointer to the string in the 
+<FONT SIZE=-1>SV,</FONT> or a stringified form of the 
+<FONT SIZE=-1>SV</FONT> if the 
+<FONT SIZE=-1>SV</FONT> does not contain a string. If
+ <CODE>len</CODE> is <A HREF="#item_na">na</A> then Perl will handle the length on its own.
+
+
+<P>
+
+<PRE>        char * SvPV (SV* sv, int len )
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvPVX">SvPVX
+
+</A></STRONG><DD>
+Returns a pointer to the string in the 
+<FONT SIZE=-1>SV.</FONT> The 
+<FONT SIZE=-1>SV</FONT> must contain a string.
+
+
+
+<P>
+
+<PRE>        char * SvPVX (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvREFCNT">SvREFCNT
+
+</A></STRONG><DD>
+Returns the value of the object's reference count.
+
+
+<P>
+
+<PRE>        int SvREFCNT (SV* sv);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvREFCNT_dec">SvREFCNT_dec
+
+</A></STRONG><DD>
+Decrements the reference count of the given 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        void SvREFCNT_dec (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvREFCNT_inc">SvREFCNT_inc
+
+</A></STRONG><DD>
+Increments the reference count of the given 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        void SvREFCNT_inc (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvROK">SvROK
+
+</A></STRONG><DD>
+Tests if the 
+<FONT SIZE=-1>SV</FONT> is an 
+<FONT SIZE=-1>RV.</FONT>
+
+
+<P>
+
+<PRE>        int SvROK (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvROK_off">SvROK_off
+
+</A></STRONG><DD>
+Unsets the 
+<FONT SIZE=-1>RV</FONT> status of an 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        SvROK_off (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvROK_on">SvROK_on
+
+</A></STRONG><DD>
+Tells an 
+<FONT SIZE=-1>SV</FONT> that it is an 
+<FONT SIZE=-1>RV.</FONT>
+
+
+<P>
+
+<PRE>        SvROK_on (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvRV">SvRV
+
+</A></STRONG><DD>
+Dereferences an 
+<FONT SIZE=-1>RV</FONT> to return the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+
+<P>
+
+<PRE>        SV*     SvRV (SV* sv);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setiv">sv_setiv
+
+</A></STRONG><DD>
+Copies an integer into the given 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        void    sv_setiv _((SV* sv, IV num));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setnv">sv_setnv
+
+</A></STRONG><DD>
+Copies a double into the given 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        void    sv_setnv _((SV* sv, double num));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setpv">sv_setpv
+
+</A></STRONG><DD>
+Copies a string into an 
+<FONT SIZE=-1>SV.</FONT> The string must be null-terminated.
+
+
+<P>
+
+<PRE>        void    sv_setpv _((SV* sv, char* ptr));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setpvn">sv_setpvn
+
+</A></STRONG><DD>
+Copies a string into an 
+<FONT SIZE=-1>SV.</FONT> The <CODE>len</CODE> parameter indicates the number of bytes to be copied.
+
+
+<P>
+
+<PRE>        void    sv_setpvn _((SV* sv, char* ptr, STRLEN len));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setpvf">sv_setpvf
+
+</A></STRONG><DD>
+Processes its arguments like <A HREF="#item_sprintf">sprintf</A> and sets an 
+<FONT SIZE=-1>SV</FONT> to the formatted output.
+
+
+<P>
+
+<PRE>        void    sv_setpvf _((SV* sv, const char* pat, ...));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setref_iv">sv_setref_iv
+
+</A></STRONG><DD>
+Copies an integer into a new 
+<FONT SIZE=-1>SV,</FONT> optionally blessing the 
+<FONT SIZE=-1>SV.</FONT> The
+ <CODE>rv</CODE>
+argument will be upgraded to an 
+<FONT SIZE=-1>RV.</FONT> That 
+<FONT SIZE=-1>RV</FONT> will be modified to point to the new 
+<FONT SIZE=-1>SV.</FONT> The
+ <CODE>classname</CODE> argument indicates the package for the blessing. Set <CODE>classname</CODE> to <A HREF="#item_Nullch">Nullch</A> to avoid the blessing. The new 
+<FONT SIZE=-1>SV</FONT> will be returned and will have a reference count of
+1.
+
+
+<P>
+
+<PRE>        SV*     sv_setref_iv _((SV *rv, char *classname, IV iv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setref_nv">sv_setref_nv
+
+</A></STRONG><DD>
+Copies a double into a new 
+<FONT SIZE=-1>SV,</FONT> optionally blessing the 
+<FONT SIZE=-1>SV.</FONT> The
+ <CODE>rv</CODE>
+argument will be upgraded to an 
+<FONT SIZE=-1>RV.</FONT> That 
+<FONT SIZE=-1>RV</FONT> will be modified to point to the new 
+<FONT SIZE=-1>SV.</FONT> The
+ <CODE>classname</CODE> argument indicates the package for the blessing. Set <CODE>classname</CODE> to <A HREF="#item_Nullch">Nullch</A> to avoid the blessing. The new 
+<FONT SIZE=-1>SV</FONT> will be returned and will have a reference count of
+1.
+
+
+<P>
+
+<PRE>        SV*     sv_setref_nv _((SV *rv, char *classname, double nv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setref_pv">sv_setref_pv
+
+</A></STRONG><DD>
+Copies a pointer into a new 
+<FONT SIZE=-1>SV,</FONT> optionally blessing the 
+<FONT SIZE=-1>SV.</FONT> The
+ <CODE>rv</CODE>
+argument will be upgraded to an 
+<FONT SIZE=-1>RV.</FONT> That 
+<FONT SIZE=-1>RV</FONT> will be modified to point to the new 
+<FONT SIZE=-1>SV.</FONT> If the
+ <CODE>pv</CODE> argument is 
+<FONT SIZE=-1>NULL</FONT> then <A HREF="#item_sv_undef">sv_undef</A> will be placed into the 
+<FONT SIZE=-1>SV.</FONT> The <CODE>classname</CODE> argument indicates the package for the blessing. Set <CODE>classname</CODE> to <A HREF="#item_Nullch">Nullch</A> to avoid the blessing. The new 
+<FONT SIZE=-1>SV</FONT> will be returned and will have a reference count of
+1.
+
+
+<P>
+
+<PRE>        SV*     sv_setref_pv _((SV *rv, char *classname, void* pv));
+</PRE>
+
+<P>
+
+Do not use with integral Perl types such as 
+<FONT SIZE=-1>HV,</FONT> 
+<FONT SIZE=-1>AV,</FONT> 
+<FONT SIZE=-1>SV,</FONT> 
+<FONT SIZE=-1>CV,</FONT> because those objects will become corrupted by the pointer copy process.
+
+
+
+<P>
+
+Note that <A HREF="#item_sv_setref_pvn">sv_setref_pvn</A> copies the string while this copies the pointer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setref_pvn">sv_setref_pvn
+
+</A></STRONG><DD>
+Copies a string into a new 
+<FONT SIZE=-1>SV,</FONT> optionally blessing the 
+<FONT SIZE=-1>SV.</FONT> The length of the string must be specified with
+ <A HREF="#item_n">n</A>. The <CODE>rv</CODE> argument will be upgraded to an 
+<FONT SIZE=-1>RV.</FONT> That 
+<FONT SIZE=-1>RV</FONT> will be modified to point to the new 
+<FONT SIZE=-1>SV.</FONT> The
+ <CODE>classname</CODE>
+argument indicates the package for the blessing. Set <CODE>classname</CODE> to
+<A HREF="#item_Nullch">Nullch</A> to avoid the blessing. The new 
+<FONT SIZE=-1>SV</FONT> will be returned and will have a reference count of
+1.
+
+
+<P>
+
+<PRE>        SV*     sv_setref_pvn _((SV *rv, char *classname, char* pv, I32 n));
+</PRE>
+
+<P>
+
+Note that <A HREF="#item_sv_setref_pv">sv_setref_pv</A> copies the pointer while this copies the string.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_setsv">sv_setsv
+
+</A></STRONG><DD>
+Copies the contents of the source 
+<FONT SIZE=-1>SV</FONT> <CODE>ssv</CODE> into the destination 
+<FONT SIZE=-1>SV</FONT> <CODE>dsv</CODE>. The source 
+<FONT SIZE=-1>SV</FONT> may be destroyed if it is mortal.
+
+
+<P>
+
+<PRE>        void    sv_setsv _((SV* dsv, SV* ssv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvSTASH">SvSTASH
+
+</A></STRONG><DD>
+Returns the stash of the 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        HV * SvSTASH (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SVt_IV">SVt_IV
+
+</A></STRONG><DD>
+Integer type flag for scalars. See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SVt_PV">SVt_PV
+
+</A></STRONG><DD>
+Pointer type flag for scalars. See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SVt_PVAV">SVt_PVAV
+
+</A></STRONG><DD>
+Type flag for arrays. See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SVt_PVCV">SVt_PVCV
+
+</A></STRONG><DD>
+Type flag for code refs. See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SVt_PVHV">SVt_PVHV
+
+</A></STRONG><DD>
+Type flag for hashes. See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SVt_PVMG">SVt_PVMG
+
+</A></STRONG><DD>
+Type flag for blessed scalars. See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SVt_NV">SVt_NV
+
+</A></STRONG><DD>
+Double type flag for scalars. See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SvTRUE">SvTRUE
+
+</A></STRONG><DD>
+Returns a boolean indicating whether Perl would evaluate the 
+<FONT SIZE=-1>SV</FONT> as true or false, defined or undefined.
+
+
+<P>
+
+<PRE>        int SvTRUE (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_SvTYPE">SvTYPE
+
+</A></STRONG><DD>
+Returns the type of the 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<PRE>        svtype  SvTYPE (SV* sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_svtype">svtype
+
+</A></STRONG><DD>
+An enum of flags for Perl types. These are found in the file <STRONG>sv.h</STRONG> in the
+<A HREF="#item_svtype">svtype</A> enum. Test these flags with the <A HREF="#item_SvTYPE">SvTYPE</A> macro.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SvUPGRADE">SvUPGRADE
+
+</A></STRONG><DD>
+Used to upgrade an 
+<FONT SIZE=-1>SV</FONT> to a more complex form. Uses <A HREF="#item_sv_upgrade">sv_upgrade</A> to perform the upgrade if necessary. See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<PRE>        bool    SvUPGRADE _((SV* sv, svtype mt));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_upgrade">sv_upgrade
+
+</A></STRONG><DD>
+Upgrade an 
+<FONT SIZE=-1>SV</FONT> to a more complex form. Use <A HREF="#item_SvUPGRADE">SvUPGRADE</A>. See <A HREF="#item_svtype">svtype</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_undef">sv_undef
+
+</A></STRONG><DD>
+This is the <A HREF="#item_undef">undef</A> 
+<FONT SIZE=-1>SV.</FONT> Always refer to this as <A HREF="#item__sv_undef">&sv_undef</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_unref">sv_unref
+
+</A></STRONG><DD>
+Unsets the 
+<FONT SIZE=-1>RV</FONT> status of the 
+<FONT SIZE=-1>SV,</FONT> and decrements the reference count of whatever was being referenced by the 
+<FONT SIZE=-1>RV.</FONT> This can almost be thought of as a reversal of
+ <A HREF="#item_newSVrv">newSVrv</A>. See <A HREF="#item_SvROK_off">SvROK_off</A>.
+
+
+<P>
+
+<PRE>        void    sv_unref _((SV* sv));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_usepvn">sv_usepvn
+
+</A></STRONG><DD>
+Tells an 
+<FONT SIZE=-1>SV</FONT> to use <CODE>ptr</CODE> to find its string value. Normally the string is stored inside the 
+<FONT SIZE=-1>SV</FONT> but sv_usepvn allows the 
+<FONT SIZE=-1>SV</FONT> to use an outside string. The
+ <CODE>ptr</CODE> should point to memory that was allocated by <CODE>malloc</CODE>. The string length, <CODE>len</CODE>, must be supplied. This function will realloc the memory pointed to by <CODE>ptr</CODE>, so that pointer should not be freed or used by the programmer after
+giving it to sv_usepvn.
+
+
+<P>
+
+<PRE>        void    sv_usepvn _((SV* sv, char* ptr, STRLEN len));
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sv_yes">sv_yes
+
+</A></STRONG><DD>
+This is the <CODE>true</CODE> 
+<FONT SIZE=-1>SV.</FONT> See <A HREF="#item_sv_no">sv_no</A>. Always refer to this as <A HREF="#item__sv_yes">&sv_yes</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_THIS">THIS
+
+</A></STRONG><DD>
+Variable which is setup by <CODE>xsubpp</CODE> to designate the object in a 
+<FONT SIZE=-1>C++</FONT> 
+<FONT SIZE=-1>XSUB.</FONT> This is always the proper type for the 
+<FONT SIZE=-1>C++</FONT> object. See
+ <A HREF="#item_CLASS">CLASS</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlxs.html#Using_XS_With_C_">Using XS With C++</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_toLOWER">toLOWER
+
+</A></STRONG><DD>
+Converts the specified character to lowercase.
+
+
+<P>
+
+<PRE>        int toLOWER (char c)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_toUPPER">toUPPER
+
+</A></STRONG><DD>
+Converts the specified character to uppercase.
+
+
+<P>
+
+<PRE>        int toUPPER (char c)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_warn">warn
+
+</A></STRONG><DD>
+This is the XSUB-writer's interface to Perl's <A HREF="#item_warn">warn</A> function. Use this function the same way you use the 
+<FONT SIZE=-1>C</FONT> <A HREF="#item_printf">printf</A> function. See <A HREF="#item_croak">croak()</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_XPUSHi">XPUSHi
+
+</A></STRONG><DD>
+Push an integer onto the stack, extending the stack if necessary. See
+<A HREF="#item_PUSHi">PUSHi</A>.
+
+
+<P>
+
+<PRE>        XPUSHi(int d)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XPUSHn">XPUSHn
+
+</A></STRONG><DD>
+Push a double onto the stack, extending the stack if necessary. See
+<A HREF="#item_PUSHn">PUSHn</A>.
+
+
+<P>
+
+<PRE>        XPUSHn(double d)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XPUSHp">XPUSHp
+
+</A></STRONG><DD>
+Push a string onto the stack, extending the stack if necessary. The <CODE>len</CODE>
+indicates the length of the string. See <A HREF="#item_PUSHp">PUSHp</A>.
+
+
+<P>
+
+<PRE>        XPUSHp(char *c, int len)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XPUSHs">XPUSHs
+
+</A></STRONG><DD>
+Push an 
+<FONT SIZE=-1>SV</FONT> onto the stack, extending the stack if necessary.
+See <A HREF="#item_PUSHs">PUSHs</A>.
+
+
+<P>
+
+<PRE>        XPUSHs(sv)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XS">XS
+
+</A></STRONG><DD>
+Macro to declare an 
+<FONT SIZE=-1>XSUB</FONT> and its 
+<FONT SIZE=-1>C</FONT> parameter list. This is handled by
+
+<CODE>xsubpp</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_XSRETURN">XSRETURN
+
+</A></STRONG><DD>
+Return from 
+<FONT SIZE=-1>XSUB,</FONT> indicating number of items on the stack. This is
+usually handled by <CODE>xsubpp</CODE>.
+
+
+<P>
+
+<PRE>        XSRETURN(int x);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XSRETURN_EMPTY">XSRETURN_EMPTY
+
+</A></STRONG><DD>
+Return an empty list from an 
+<FONT SIZE=-1>XSUB</FONT> immediately.
+
+
+<P>
+
+<PRE>        XSRETURN_EMPTY;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XSRETURN_IV">XSRETURN_IV
+
+</A></STRONG><DD>
+Return an integer from an 
+<FONT SIZE=-1>XSUB</FONT> immediately. Uses <A HREF="#item_XST_mIV">XST_mIV</A>.
+
+
+<P>
+
+<PRE>        XSRETURN_IV(IV v);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XSRETURN_NO">XSRETURN_NO
+
+</A></STRONG><DD>
+Return <A HREF="#item__sv_no">&sv_no</A> from an 
+<FONT SIZE=-1>XSUB</FONT> immediately. Uses <A HREF="#item_XST_mNO">XST_mNO</A>.
+
+
+<P>
+
+<PRE>        XSRETURN_NO;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XSRETURN_NV">XSRETURN_NV
+
+</A></STRONG><DD>
+Return an double from an 
+<FONT SIZE=-1>XSUB</FONT> immediately. Uses <A HREF="#item_XST_mNV">XST_mNV</A>.
+
+
+<P>
+
+<PRE>        XSRETURN_NV(NV v);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XSRETURN_PV">XSRETURN_PV
+
+</A></STRONG><DD>
+Return a copy of a string from an 
+<FONT SIZE=-1>XSUB</FONT> immediately. Uses <A HREF="#item_XST_mPV">XST_mPV</A>.
+
+
+<P>
+
+<PRE>        XSRETURN_PV(char *v);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XSRETURN_UNDEF">XSRETURN_UNDEF
+
+</A></STRONG><DD>
+Return <A HREF="#item__sv_undef">&sv_undef</A> from an 
+<FONT SIZE=-1>XSUB</FONT> immediately. Uses <A HREF="#item_XST_mUNDEF">XST_mUNDEF</A>.
+
+
+<P>
+
+<PRE>        XSRETURN_UNDEF;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XSRETURN_YES">XSRETURN_YES
+
+</A></STRONG><DD>
+Return <A HREF="#item__sv_yes">&sv_yes</A> from an 
+<FONT SIZE=-1>XSUB</FONT> immediately. Uses <A HREF="#item_XST_mYES">XST_mYES</A>.
+
+
+<P>
+
+<PRE>        XSRETURN_YES;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XST_mIV">XST_mIV
+
+</A></STRONG><DD>
+Place an integer into the specified position <CODE>i</CODE> on the stack. The value is stored in a new mortal 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        XST_mIV( int i, IV v );
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XST_mNV">XST_mNV
+
+</A></STRONG><DD>
+Place a double into the specified position <CODE>i</CODE> on the stack. The value is stored in a new mortal 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        XST_mNV( int i, NV v );
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XST_mNO">XST_mNO
+
+</A></STRONG><DD>
+Place <A HREF="#item__sv_no">&sv_no</A> into the specified position <CODE>i</CODE> on the stack.
+
+
+<P>
+
+<PRE>        XST_mNO( int i );
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XST_mPV">XST_mPV
+
+</A></STRONG><DD>
+Place a copy of a string into the specified position <CODE>i</CODE> on the stack. The value is stored in a new mortal 
+<FONT SIZE=-1>SV.</FONT>
+
+
+<P>
+
+<PRE>        XST_mPV( int i, char *v );
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XST_mUNDEF">XST_mUNDEF
+
+</A></STRONG><DD>
+Place <A HREF="#item__sv_undef">&sv_undef</A> into the specified position <CODE>i</CODE> on the stack.
+
+
+<P>
+
+<PRE>        XST_mUNDEF( int i );
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XST_mYES">XST_mYES
+
+</A></STRONG><DD>
+Place <A HREF="#item__sv_yes">&sv_yes</A> into the specified position <CODE>i</CODE> on the stack.
+
+
+<P>
+
+<PRE>        XST_mYES( int i );
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_XS_VERSION">XS_VERSION
+
+</A></STRONG><DD>
+The version identifier for an 
+<FONT SIZE=-1>XS</FONT> module. This is usually handled automatically by <CODE>ExtUtils::MakeMaker</CODE>. See <A HREF="#item_XS_VERSION_BOOTCHECK">XS_VERSION_BOOTCHECK</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_XS_VERSION_BOOTCHECK">XS_VERSION_BOOTCHECK
+
+</A></STRONG><DD>
+Macro to verify that a 
+<FONT SIZE=-1>PM</FONT> module's <A HREF="#item__VERSION">$VERSION</A> variable matches the 
+<FONT SIZE=-1>XS</FONT> module's
+
+<A HREF="#item_XS_VERSION">XS_VERSION</A> variable. This is usually handled automatically by
+<CODE>xsubpp</CODE>. See <A HREF="/n|/perl/html/./lib/Pod/perlxs.html#The_VERSIONCHECK_Keyword">The VERSIONCHECK: Keyword</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Zero">Zero
+
+</A></STRONG><DD>
+The XSUB-writer's interface to the 
+<FONT SIZE=-1>C</FONT> <CODE>memzero</CODE> function. The <A HREF="#item_d">d</A> is the destination, <A HREF="#item_n">n</A> is the number of items, and <A HREF="#item_t">t</A> is the type.
+
+
+<P>
+
+<PRE>        (void) Zero( d, n, t );
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EDITOR">EDITOR
+
+</A></H1>
+Jeff Okamoto &lt;<EM>okamoto@corp.hp.com</EM>&gt;
+
+
+<P>
+
+With lots of help and suggestions from Dean Roehrich, Malcolm Beattie,
+Andreas Koenig, Paul Hudson, Ilya Zakharevich, Paul Marquess, Neil Bowers,
+Matthew Green, Tim Bunce, Spider Boardman, Ulrich Pfeifer, and Stephen
+McCamant.
+
+
+<P>
+
+
+<FONT SIZE=-1>API</FONT> Listing by Dean Roehrich &lt;<EM>roehrich@cray.com</EM>&gt;.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DATE">DATE
+
+</A></H1>
+Version 31.8: 1997/5/17
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

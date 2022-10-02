@@ -1,0 +1,89 @@
+SelectMission("m1");
+
+SetMissionResetPlayerInCar("m1_otto_carstart");
+SetDynaLoadData("l6z1.p3d;l6r1.p3d;l6r5.p3d;l6r5_dam.p3d;");
+InitLevelPlayerVehicle("otto_v","m1_otto_carstart","OTHER");
+SetNumValidFailureHints( 5 );
+UsePedGroup(0);
+
+SetForcedCar();
+
+AddStage(3);
+	RESET_TO_HERE();
+	SetMaxTraffic(3);
+	SetStageMessageIndex(69);
+	SetHUDIcon( "kids" );
+
+	StartCountdown(count);
+	AddToCountdownSequence( "3", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "2", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "1", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "GO", 400 ); // duration time in milliseconds
+	
+	AddObjective("delivery", "neither");
+		AddNPC("otto", "m1_otto_hide");
+		AddCollectible( "m1_waypoint_0", "s_girl1");
+		AddCollectible( "m1_waypoint_1", "s_boy1");
+		AddCollectible( "m1_waypoint_2", "s_boy2");
+		AddCollectible( "m1_waypoint_2b", "s_girl2");
+		AddCollectible( "m1_waypoint_2c", "s_boy1");
+		AddCollectible( "m1_waypoint_3", "s_girl1");
+		AddCollectible( "m1_waypoint_4", "s_girl2");
+		AddCollectible( "m1_waypoint_4b", "s_girl2");
+		AddCollectible( "m1_waypoint_5", "s_boy1");
+		AddCollectible( "m1_waypoint_5a", "s_boy1");
+		AddCollectible( "m1_waypoint_6", "s_boy2");
+		AddCollectible( "m1_waypoint_6b", "s_boy2");
+		AddCollectible( "m1_waypoint_6c", "s_boy2");
+		AddCollectible( "m1_waypoint_7", "s_girl2");
+		AddCollectible( "m1_waypoint_7b", "s_girl2");
+	CloseObjective();
+	SetStageTime(105);
+	AddCondition( "timeout" );
+		//SetHitNRun();
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "otto_v" );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(209);
+	SetHUDIcon( "krustylu" );
+	AddObjective( "goto" );
+		AddNPC( "brn_unf", "m2_barney_sd" );
+		SetDestination( "m1_waypoint_8", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddStageTime(0); 
+	AddCondition( "timeout" );
+		//SetHitNRun();
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "otto_v" );
+	CloseCondition();
+	SetFadeOut(1.0);
+	SwapInDefaultCar();
+	SetSwapDefaultCarLocator("level6_carstart");
+	SetSwapForcedCarLocator("m1_otto_carend");
+	SetSwapPlayerLocator("m1_bart_end");
+CloseStage();
+
+AddStage(final);
+ AddObjective("timer");
+  SetDurationTime(3);
+ CloseObjective();
+CloseStage();
+
+CloseMission();
+
+

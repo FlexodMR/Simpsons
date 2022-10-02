@@ -1,0 +1,529 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformAnimationUI.mel
+// Author: Bryan Brandt
+//
+// global proc p3dDeformAnimationUI(string $tabs)
+// global proc p3dDeformMakeAnimParentLayouts(string $tabs)
+// global proc p3dDeformMakeDraggerUILayout(string $form)
+// global proc p3dDeformMakeAnimGroupLayouts(string $arg_column_form)
+// global proc p3dDeformCreateDraggerUI(string $form) 
+
+
+/*************************************************************************
+// Description:	Ensures that the window exists. If so invokes the procedures
+// to draw UI Layouts in the Animation tab. Main entry point for drawing
+// UI controls in the Animation tab.
+//
+// Parameters: $tab = p3dDeformTabLayout
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformAnimationUI(string $tabs)
+{
+   
+    string $winUI = "p3dDeformerUI";
+
+    if (!(`window -exists $winUI`))
+    {
+        return;
+    }
+    p3dDeformMakeAnimParentLayouts($tabs); //draw the parent layouts
+    p3dDeformMakeDraggerUILayout("p3dDraggerContextForm");
+    p3dDeformMakeAnimGroupLayouts("p3dDeformExpressionScrollColumnForm");
+}
+
+
+
+/*************************************************************************
+// Description: Creates the layouts that encloses everything else on the
+// Animation tab. Layout hierarchy is as follows: 
+// - p3dDeformTabLayout is parent of p3dDeformExpressionForm	
+// - p3dDeformExpressionForm is parent of p3dDeformExpressionScrollForm & p3dDraggerContextForm
+// - p3dDeformExpressionScrollForm is parent of p3dDeformExpressionScrollColumnForm
+// - p3dDeformExpressionScrollColumnForm contains all the frameLayouts for each group.
+// 
+// Parameters:
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformMakeAnimParentLayouts(string $tabs)
+{
+   if (!`formLayout -exists p3dDeformExpressionForm`)
+   {
+      formLayout -p $tabs p3dDeformExpressionForm;
+   
+      tabLayout -edit
+                -tabLabel p3dDeformExpressionForm "Animation"
+                $tabs;
+   }
+
+   if(`scrollLayout -exists p3dDeformExpressionScrollForm`)
+   {
+       deleteUI -layout p3dDeformExpressionScrollForm;
+   }
+   scrollLayout -cr true
+                -p p3dDeformExpressionForm
+                p3dDeformExpressionScrollForm;
+	  
+
+   if(!`columnLayout -exists p3dDeformExpressionScrollColumnForm`)
+   {
+       columnLayout -columnAttach "both" 0
+                    -adj true
+                    -p p3dDeformExpressionScrollForm
+                    p3dDeformExpressionScrollColumnForm;
+   }
+
+      setParent ..;
+   setParent ..;
+   
+   //create layout for dragger context UI
+   if(!`formLayout -exists p3dDraggerContextForm`)
+   {
+	  formLayout    -p p3dDeformExpressionForm
+					-h 350
+					 p3dDraggerContextForm;       
+   }
+   
+    formLayout -e
+			  -af p3dDraggerContextForm bottom 5
+			  -af p3dDraggerContextForm left 0	
+			  -af p3dDraggerContextForm right 0  
+
+              -af p3dDeformExpressionScrollForm top 0
+              -ac p3dDeformExpressionScrollForm bottom 5 p3dDraggerContextForm //control, edge, offset, position 
+              -af p3dDeformExpressionScrollForm left 0
+              -af p3dDeformExpressionScrollForm right 0
+
+              p3dDeformExpressionForm;
+}
+
+
+
+
+/*************************************************************************
+// Description: Creates the layouts for each frame of controls for 
+// for each group on the Animation tab. :
+// - Defines the group_scroll_column_layout in which the expression sliders for
+//   this deformer group will be drawn.
+// - Defines the buttons and layout for each deformer group.
+//
+// Parameters: $arg_column_form is the "p3dDeformExpressionScrollColumnForm"
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformMakeAnimGroupLayouts(string $arg_column_form)
+{
+   
+   // names of all the groups
+   string $groups[] = `ls -type p3dDeformExpressionGroup`;
+
+   // number of groups
+   int $group_count = size($groups);
+
+   // flags to indicate existence of groups
+   int $group_flags[];
+   $group_flags[$group_count] = 0;
+
+   // determine the number of layouts in the given column form
+   string $group_panels[] = `columnLayout -q -ca $arg_column_form`;
+   int $group_panel_count = size($group_panels);
+
+   int $i, $j;
+
+   string $P3D_PREFIX = "p3dDeformExpressionGroup_Panel_";
+   int $P3D_PREFIX_LENGTH = size($P3D_PREFIX);
+   int $P3D_PREFIX_LENGTH_PLUS_ONE = $P3D_PREFIX_LENGTH + 1;
+
+   for($i = 0; $i < $group_panel_count; $i++)
+   {
+      // reset j so that the "found group" check fails
+      $j = $group_count;
+
+      // extract (what should be) the prefix
+      string $group_prefix = `substring $group_panels[$i] 1 $P3D_PREFIX_LENGTH`;
+
+      // verify prefix
+      if($group_prefix == $P3D_PREFIX)
+      {
+         // extract the associated group
+         int $group_panels_i_size = size($group_panels[$i]);
+         string $group_name = `substring $group_panels[$i] $P3D_PREFIX_LENGTH_PLUS_ONE $group_panels_i_size`;
+
+         // find the actual group
+         for($j = 0; $j < $group_count; $j++)
+         {
+            if($group_name == $groups[$j])
+            {
+               break;
+            }
+         }
+      }
+
+      // found the group, so update the flags to
+      // reflect that a control for it already exists
+      if( ($j < $group_count) && ($group_flags[$j] == 0) )
+      {
+         $group_flags[$j] = 1;
+      }
+      // a group by that name doesn't exist, so delete the child UI item
+      else
+      {
+         deleteUI -layout $group_panels[$i];
+      }
+   }
+
+   string $P3D_FRAME_PREFIX = "p3dDeformExpressionGroup_Frame_";
+   // setup the UI
+   for($i = 0; $i < $group_count; $i++)
+   {
+      if($group_flags[$i] == 0)
+      {
+         // group UI hasn't been created yet, so create it
+         
+         setParent $arg_column_form;
+
+         // create a form
+         string $form_name = $P3D_PREFIX + $groups[$i];
+         
+         formLayout $form_name;
+		 string $frame_name = $P3D_FRAME_PREFIX + $groups[$i];
+		 //debug
+		 p3dDeformDebugStr("$frame_name",$frame_name);
+		 //debug
+
+         // create a frame to put in the form
+         frameLayout   -collapsable true
+                     -collapse true
+                     -bv true
+                     -bs out
+                     -l $groups[$i]
+					 $frame_name;
+					          
+         // place the frame in the form
+         formLayout -edit
+                    -af $frame_name "left" 0
+                    -af $frame_name "top" 0
+                    -af $frame_name "right" 0
+                    -af $frame_name "bottom" 0
+                    $form_name;
+
+         string $sub_form_name = `formLayout`;
+
+         // get list of the form's children
+         string $group_list[] = `formLayout -q -childArray $sub_form_name`;
+         int $group_list_size = size($group_list);
+
+         // At this point there is a form in a frame in a form which sits in the scrollColumnLayout
+
+         string $group_form_layout = `formLayout`;
+
+            string $group_scroll_column_layout = `columnLayout -columnAttach "both" 0
+                                                               -adj true`;                                                        
+            setParent ..;
+         setParent ..;
+
+         string $group_button_form = `formLayout`;
+
+         
+         // create "Key All" button
+         string $key_all_cmd = "p3dDeformCallbackMgr " + "KeyAll "+ "{\"" +$groups[$i] + "\"}"; 
+         string $key_all_btn = `button -l "Key All"
+                                       -annotation ("Key all expressions in " + $groups[$i])
+                                       -c $key_all_cmd`;
+
+         // create "Zero All" button
+         string $zero_all_cmd = "p3dDeformCallbackMgr " + "ZeroAll "+ "{\"" +$groups[$i] + "\"}";
+         string $zero_all_btn = `button -l "Zero All"
+                                        -annotation ("Zero all expressions in " + $groups[$i])
+                                        -c $zero_all_cmd`;
+
+         string $sel_all_cmd = "p3dDeformCallbackMgr " + "SelectAll "+ "{\"" +$groups[$i] + "\"}";
+         string $sel_all_btn = `button -l "Select All" 
+                                       -ann ("Select all expressions in " + $groups[$i])
+                                       -c $sel_all_cmd`;
+
+         string $sel_none_cmd = "p3dDeformCallbackMgr " + "SelectNone "+ "{\"" +$groups[$i] + "\"}";
+         string $sel_none_btn = `button -l "Select None" 
+                                       -ann ("Deselect all expressions in " + $groups[$i])
+                                       -c $sel_none_cmd`;
+         
+                                       
+       
+         string $copy_all_cmd = "p3dDeformCallbackMgr " + "CopyAll "+ "{\"" +$groups[$i] + "\"}";
+         string $copy_all_btn = `button -l "Copy All"
+                                        -annotation ("Copy keyframes of " + $groups[$i] + " to clipboard")
+                                        -c $copy_all_cmd`;
+       
+         string $paste_all_cmd = "p3dDeformCallbackMgr " + "PasteAll "+ "{\"" +$groups[$i] + "\"}";
+         string $paste_all_btn = `button -l "Paste All"
+                                        -annotation ("Paste keyframes to " + $groups[$i] + " from clipboard")
+                                        -c $paste_all_cmd`;
+       
+         setParent ..;
+
+         if($group_list_size > 0)
+         {
+            string $last_group = $group_list[$group_list_size - 1];
+
+            formLayout -edit
+                       -ac $key_all_btn "top" 3 $last_group
+                       -ac $zero_all_btn "top" 3 $last_group
+                       -ac $sel_all_btn "top" 3 $last_group
+                       -ac $sel_none_btn top 3 $last_group
+                       -ac $copy_all_btn "top" 3 $last_group
+                       -ac $paste_all_btn "top" 3 $last_group
+                       $group_button_form;
+			
+         }
+         else
+         {
+            formLayout -edit
+                       -af $key_all_btn "top" 3
+                       -af $zero_all_btn "top" 3
+                       -af $sel_all_btn top 3
+                       -af $sel_none_btn top 3
+                       -af $copy_all_btn "top" 3
+                       -af $paste_all_btn "top" 3
+                       $group_button_form;
+         }
+
+         formLayout -edit
+                    -af $key_all_btn "left" 3
+                    -ac $key_all_btn "right" 3 $zero_all_btn
+                    
+                    -an $zero_all_btn left
+                    -ac $zero_all_btn right 3 $sel_all_btn
+                    
+                    -an $sel_all_btn left
+                    -ac $sel_all_btn right 3 $sel_none_btn
+
+                    -an $sel_none_btn left
+                    -ac $sel_none_btn right 3 $copy_all_btn
+
+                    -an $copy_all_btn left
+                    -ac $copy_all_btn right 3 $paste_all_btn
+                    
+                    -an $paste_all_btn left
+                    -ap $paste_all_btn right 3 95
+
+
+                    
+                    $group_button_form;
+   
+         setParent ..;
+
+         formLayout -edit
+
+              -af $group_button_form left 0
+              -af $group_button_form right 0
+              -af $group_button_form bottom 5
+
+              -af $group_form_layout top 0
+              -ac $group_form_layout bottom 5 $group_button_form
+              
+              -af $group_form_layout left 0
+              -af $group_form_layout right 0
+
+              $sub_form_name;
+		
+		// Create the expression sliders for the group if some already exist
+		// For example, after you close and open the deformer window
+        p3dDeformMakeExpressionAnimControls($group_scroll_column_layout);
+      }
+
+   }
+}
+
+
+/*************************************************************************
+// Description:	Create the UI controls for Dragger settings.
+//
+// Parameters: $form is the 'p3dDraggerContextForm' layout
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformMakeDraggerUILayout(string $form)
+{
+   //create a Layout for Dragger settings
+   setParent $form;
+   if (`frameLayout -exists p3dDeformDraggerFrame`) deleteUI p3dDeformDraggerFrame;
+   string $draggerFormLayout = `frameLayout -l "Dragger Options"
+											-lv true
+											p3dDeformDraggerFrame`;
+
+  //create layout for dragger context UI
+   if(!`formLayout -exists p3dDraggerContextForm`)
+   {
+	  formLayout    -p p3dDeformExpressionForm 
+					 p3dDraggerContextForm;       
+   }
+   
+   formLayout -e
+              -af p3dDeformDraggerFrame top 0
+              -af p3dDeformDraggerFrame bottom 0 //control, edge, offset, position 
+              -af p3dDeformDraggerFrame left 0
+              -af p3dDeformDraggerFrame right 0
+              p3dDraggerContextForm;
+
+   p3dDeformCreateDraggerUI("p3dDeformDraggerFrame");
+
+}
+
+
+global proc p3dPlaceHolderProc()
+{
+	print "This feature has not been integrated (yet).";
+}
+
+/*************************************************************************
+// Description:	Creates the Dragger Options UI controls.
+//
+// Parameters: $form is the 'p3dDraggerContextFrame' layout
+//
+// Returns:
+//
+***************************************************************************/
+global proc p3dDeformCreateDraggerUI(string $form) 
+{
+	setParent $form;		// set parent layout to p3dDeformDraggerFrame;
+	string $p3dDeformDraggerForm			= `formLayout -numberOfDivisions 100`;
+
+
+	//If it doesn't already exist, Set up a node to hold the dragger tolerance value.
+	//This node will also be created by the floating dragger tool panel if the user
+	//starts the deformer dragger context with the floating toolbar...
+
+	if (!`objExists deformerSettings`) {
+		createNode "unknown" -name deformerSettings;
+		addAttr
+			-at "short"
+			-dv 50
+			-sn "tol"
+			-ln "tolerance"
+		  deformerSettings;
+	}
+
+
+	//create dragger tool options
+
+	string $p3dDeformDraggerVerticalDivider	= `separator	-visible false
+													-horizontal false`;
+																																// Enable MM Static Keying Slider
+	string $p3dDeformDraggerMMStaticKeying	= `checkBox
+											-label "Enable Static Middle Mouse Button Keying" 
+											-align "left"
+											-onCommand  "if (`window -exists p3dDeformDraggerWindow`) checkBox -edit -value true dragWindowMMStaticKeyChkBox;"
+											-offCommand "checkBox -edit -value false p3dDeformSetupWindowMMDragKeyChkBox; if (`window -exists p3dDeformDraggerWindow`) checkBox -edit -value false dragWindowMMDragKeyChkBox; if (`window -exists p3dDeformDraggerWindow`) checkBox -edit -value false dragWindowMMStaticKeyChkBox" 
+										  p3dDeformSetupWindowMMStaticKeyChkBox`;
+																																// Enable MM Drag Keying Slider
+	string $p3dDeformDraggerMMDragKeying		= `checkBox
+											-label "Enable Middle Mouse Drag Keying" 
+											-align "left"
+											-onCommand  "if (`window -exists p3dDeformDraggerWindow`) checkBox -edit -value true dragWindowMMDragKeyChkBox; checkBox -edit -value true p3dDeformSetupWindowMMStaticKeyChkBox; if (`window -exists p3dDeformDraggerWindow`) checkBox -edit -value true dragWindowMMStaticKeyChkBox;"
+											-offCommand "if (`window -exists p3dDeformDraggerWindow`) checkBox -edit -value false dragWindowMMDragKeyChkBox;"
+
+										  p3dDeformSetupWindowMMDragKeyChkBox`;
+																																// Dragger Tolerance Slider
+	string $p3dDeformDraggerToleranceSlider	= `intSliderGrp
+											-label "Drag Factor"
+											-width 220
+											-columnAlign 1 "left"
+											-columnWidth 1 66
+											-columnWidth 2 30
+									//		-columnWidth 3 100
+											-field true
+											-value 50
+											-minValue 1  -maxValue 100
+											-fieldMinValue 1 -fieldMaxValue 100
+										  dragToleranceIntSliderGrp `;
+																																// Enable/Disable Hotkeys CheckBox
+	string $p3dDeformDraggerOnOffChkBox		= `checkBox
+											-label "Dragger On/Off"
+											-align "left"
+											-value false
+											-onCommand  "enableDeformerDraggerCtx;  if (`window -exists p3dDeformDraggerWindow`) checkBox -edit -value true newDraggerCtxEnableChkBox;"
+											-offCommand "disableDeformerDraggerCtx; if (`window -exists p3dDeformDraggerWindow`) checkBox -edit -value false newDraggerCtxEnableChkBox;"
+										  draggerCtxEnableChkBox `;
+																																// Update Hotkeys Button
+	string $p3dDeformDraggerUpdateHotkeys	= `button	-l "Update Hotkeys"
+												-c "p3dDeformUpdateHotKeys"
+										  draggerUpdateHotkeys`;
+
+/*
+	string $p3dDeformOpenDraggerWindow		= `button	-l "Reset Hotkeys"
+												-c "p3dDeformResetHotkeys"
+										  draggerShowDragWindow `;
+*/
+
+	string $p3dDeformFailSafeSaveButton	= `button
+										-label "Save Hotkeys"
+										-command "p3dDeformWriteHotKeyFile(\"DeformerFailSafe\")"
+									 draggerWindowFailSafeSaveButton`;
+
+	string $p3dDeformFailSafeLoadButton	= `button
+											-label "Load Hotkeys"
+										 draggerWindowFailSafeLoadButton`;
+setParent ..;		
+
+
+	formLayout -edit
+
+		-attachForm		$p3dDeformDraggerMMStaticKeying		"left"		5
+		-attachForm 	$p3dDeformDraggerMMStaticKeying		"top"		5	
+
+		-attachForm		$p3dDeformDraggerMMDragKeying		"left"		5
+		-attachControl	$p3dDeformDraggerMMDragKeying		"top"		5	$p3dDeformDraggerMMStaticKeying
+
+		-attachForm		$p3dDeformDraggerToleranceSlider	"left"		5
+		-attachControl	$p3dDeformDraggerToleranceSlider	"top"		5	$p3dDeformDraggerMMDragKeying
+
+		-attachForm 	$p3dDeformDraggerVerticalDivider	"top"		0
+		-attachForm		$p3dDeformDraggerVerticalDivider	"bottom"	0
+		-attachControl	$p3dDeformDraggerVerticalDivider	"left"		15	$p3dDeformDraggerToleranceSlider
+
+		-attachForm		$p3dDeformDraggerOnOffChkBox		"top"		5	
+		-attachControl	$p3dDeformDraggerOnOffChkBox		"left"		35	$p3dDeformDraggerVerticalDivider
+
+		-attachControl	$p3dDeformDraggerUpdateHotkeys		"top"		5	$p3dDeformDraggerOnOffChkBox
+		-attachControl	$p3dDeformDraggerUpdateHotkeys		"left"		35	$p3dDeformDraggerVerticalDivider
+
+		-attachControl	$p3dDeformFailSafeSaveButton		"top"		5	$p3dDeformDraggerUpdateHotkeys
+		-attachControl	$p3dDeformFailSafeSaveButton		"left"		35	$p3dDeformDraggerVerticalDivider
+
+//		-attachControl	$p3dDeformFailSafeLoadButton		"top"		5	$p3dDeformFailSafeSaveButton
+//		-attachControl	$p3dDeformFailSafeLoadButton		"left"		35	$p3dDeformDraggerVerticalDivider
+
+		-attachControl	$p3dDeformFailSafeLoadButton		"top"		5	$p3dDeformDraggerUpdateHotkeys
+		-attachControl	$p3dDeformFailSafeLoadButton		"left"		5	$p3dDeformFailSafeSaveButton
+
+
+	$p3dDeformDraggerForm;
+
+	//Connects the tolerance slider value to the deformerSettings node to share the tolerance 
+	//value between the Deformer Setup dragger tool panel, and the floating dragger tool panel
+
+	connectControl dragToleranceIntSliderGrp deformerSettings.tolerance;
+
+
+	//PAM TODO: integration of dragger stuff into p3dDeformInstall
+	// start the draggerContext
+	// checkBox -edit -value true draggerCtxEnableChkBox;
+	//enableDeformerDraggerCtx;
+	
+	// set up a callback "p3dDeformHotkeyCleanup" that runs when the dragger window is closed
+	//scriptJob -runOnce true -uiDeleted p3dDeformDraggerWindow p3dDeformHotkeyCleanup;
+
+}
+
+
+// End of file.

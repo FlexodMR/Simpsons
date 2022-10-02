@@ -1,0 +1,78 @@
+proc string p3dAnimatedObject_FixName(string $name)
+{
+   string $newName;
+   string $buffer[];
+   tokenize($name, $buffer);
+   int $i;
+   $newName = $buffer[0];
+   for ($i=1; $i < size($buffer); $i++)
+   {
+      $newName = $newName + "_" + $buffer[$i];
+   }
+   return $newName;
+}
+
+proc string p3dAnimatedObject_GetNewName(string $title, string $message)
+{
+   do {
+      string $result = `promptDialog -title $title 
+                                  -message ($message + "Enter new name:")
+                                  -messageAlign center
+                                  -button "OK" 
+                                  -button "Cancel"
+                                  -defaultButton "OK" 
+                                  -cancelButton "Cancel"
+                                  -dismissString "Cancel"`;
+      if (`strcmp $result "OK"`==0)
+      {
+         $newName = `promptDialog -query -text`;
+         if ($newName=="")
+         {
+            $title = "ERROR!";
+            $message = "No name was entered.\n";
+         }
+         else if (size(`ls $newName`)!=0)
+         {
+            $title = "ERROR!";
+            $message = "This name is already used.\n";
+         }
+         else 
+            return $newName;
+      }
+      else
+         return "";
+   } while (1);
+}
+
+global proc p3dAnimatedObject_CreateAnimatedObject()
+{
+   string $listOfTrans[] =`ls -sl -tr`; 
+
+   $newName = p3dAnimatedObject_GetNewName("Create New Animated Object","");         
+   $objectName = p3dAnimatedObject_FixName($newName);
+   if ($objectName!="")
+   {
+      string $shape = `createNode p3dAnimatedObjectShape`;
+      string $transform[] = `p3dAnimatedObject_GetTransformNodeCmd -o $shape`;
+      if ($transform[0]!="")
+      {
+         setAttr -lock true ($transform[0]+".sz");
+
+         if (size($listOfTrans) > 0) 
+         { 
+            string $selectedShape[] = `p3dAnimatedObject_GetShapeNodeCmd -o $listOfTrans[0]`;
+            if ($selectedShape[0]!="")
+            {
+               if (`attributeQuery -exists -node $selectedShape[0] ftn`) 
+               {
+                  setAttr -type "string" ($shape+".ftn") `getAttr ($selectedShape[0]+".ftn")`;
+               }
+            }
+         }
+         rename $transform $objectName;
+         select $objectName;
+      }
+   }
+   clear $listOfTrans;
+}
+

@@ -1,0 +1,6556 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlfunc - Perl builtin functions
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Perl_Functions_by_Category">Perl Functions by Category</A>
+		<LI><A HREF="#Alphabetical_Listing_of_Perl_Fun">Alphabetical Listing of Perl Functions</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlfunc - Perl builtin functions
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The functions in this section can serve as terms in an expression. They
+fall into two major categories: list operators and named unary operators.
+These differ in their precedence relationship with a following comma. (See
+the precedence table in <A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A>.) List operators take more than one argument, while unary operators can never take more than one argument. Thus, a comma terminates the argument of a unary operator, but merely separates the arguments of a list operator. 
+<FONT SIZE=-1>A</FONT> unary operator generally provides a scalar context to its argument, while a list operator may provide either scalar and list contexts for its arguments. If it does both, the scalar arguments will be first, and the list argument will follow. (Note that there can ever be only one list argument.) For instance, <CODE>splice()</CODE> has three scalar arguments followed by a list.
+
+
+
+<P>
+
+In the syntax descriptions that follow, list operators that expect a list (and provide list context for the elements of the list) are shown with 
+<FONT SIZE=-1>LIST</FONT> as an argument. Such a list may consist of any combination of scalar arguments or list values; the list values will be included in the list as if each individual element were interpolated at that point in the list, forming a longer single-dimensional list value. Elements of the 
+<FONT SIZE=-1>LIST</FONT> should be separated by commas.
+
+
+
+<P>
+
+Any function in the list below may be used either with or without
+parentheses around its arguments. (The syntax descriptions omit the
+parentheses.) If you use the parentheses, the simple (but occasionally
+surprising) rule is this: It <EM>LOOKS</EM> like a function, therefore it <EM>IS</EM> a function, and precedence doesn't matter. Otherwise it's a list operator
+or unary operator, and precedence does matter. And whitespace between the
+function and left parenthesis doesn't count--so you need to be careful
+sometimes:
+
+
+<P>
+
+<PRE>    print 1+2+4;        # Prints 7.
+    print(1+2) + 4;     # Prints 3.
+    print (1+2)+4;      # Also prints 3!
+    print +(1+2)+4;     # Prints 7.
+    print ((1+2)+4);    # Prints 7.
+</PRE>
+
+<P>
+
+If you run Perl with the <STRONG>-w</STRONG> switch it can warn you about this. For example, the third line above
+produces:
+
+
+<P>
+
+<PRE>    print (...) interpreted as function at - line 1.
+    Useless use of integer addition in void context at - line 1.
+</PRE>
+
+<P>
+
+For functions that can be used in either a scalar or list context,
+nonabortive failure is generally indicated in a scalar context by returning
+the undefined value, and in a list context by returning the null list.
+
+
+<P>
+
+Remember the following rule:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_THERE">THERE IS NO GENERAL RULE FOR CONVERTING A LIST INTO A SCALAR!
+
+</A></STRONG><DD>
+</DL>
+Each operator and function decides which sort of value it would be most
+appropriate to return in a scalar context. Some operators return the length
+of the list that would have been returned in a list context. Some operators
+return the first value in the list. Some operators return the last value in
+the list. Some operators return a count of successful operations. In
+general, they do what you want, unless you want consistency.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Perl_Functions_by_Category">Perl Functions by Category
+
+</A></H2>
+Here are Perl's functions (including things that look like functions, like
+some of the keywords and named operators) arranged by category. Some
+functions appear in more than one place.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Functions">Functions for SCALARs or strings
+
+</A></STRONG><DD>
+chomp, chop, chr, crypt, hex, index, lc, lcfirst, length, oct, ord, pack,
+q/STRING/, qq/STRING/, reverse, rindex, sprintf, substr, tr///, uc,
+ucfirst, y///
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Regular">Regular expressions and pattern matching
+
+</A></STRONG><DD>
+m//, pos, quotemeta, s///, split, study
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Numeric">Numeric functions
+
+</A></STRONG><DD>
+abs, atan2, cos, exp, hex, int, log, oct, rand, sin, sqrt, srand
+
+
+<P>
+
+<DT><STRONG>Functions for real @ARRAYs
+
+</A></STRONG><DD>
+pop, push, shift, splice, unshift
+
+
+<P>
+
+<DT><STRONG>Functions for list data
+
+</A></STRONG><DD>
+grep, join, map, qw/STRING/, reverse, sort, unpack
+
+
+<P>
+
+<DT><STRONG>Functions for real %HASHes
+
+</A></STRONG><DD>
+delete, each, exists, keys, values
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Input">Input and output functions
+
+</A></STRONG><DD>
+binmode, close, closedir, dbmclose, dbmopen, die, eof, fileno, flock,
+format, getc, print, printf, read, readdir, rewinddir, seek, seekdir,
+select, syscall, sysread, sysseek, syswrite, tell, telldir, truncate, warn,
+write
+
+
+<P>
+
+<DT><STRONG>Functions for fixed length data or records
+
+</A></STRONG><DD>
+pack, read, syscall, sysread, syswrite, unpack, vec
+
+
+<P>
+
+<DT><STRONG>Functions for filehandles, files, or directories
+
+</A></STRONG><DD>
+<EM>-X</EM>, chdir, chmod, chown, chroot, fcntl, glob, ioctl, link, lstat, mkdir,
+open, opendir, readlink, rename, rmdir, stat, symlink, umask, unlink, utime
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Keywords">Keywords related to the control flow of your perl program
+
+</A></STRONG><DD>
+caller, continue, die, do, dump, eval, exit, goto, last, next, redo,
+return, sub, wantarray
+
+
+<P>
+
+<DT><STRONG>Keywords related to scoping
+
+</A></STRONG><DD>
+caller, import, local, my, package, use
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Miscellaneous">Miscellaneous functions
+
+</A></STRONG><DD>
+defined, dump, eval, formline, local, my, reset, scalar, undef, wantarray
+
+
+<P>
+
+<DT><STRONG>Functions for processes and process groups
+
+</A></STRONG><DD>
+alarm, exec, fork, getpgrp, getppid, getpriority, kill, pipe, qx/STRING/,
+setpgrp, setpriority, sleep, system, times, wait, waitpid
+
+
+<P>
+
+<DT><STRONG>Keywords related to perl modules
+
+</A></STRONG><DD>
+do, import, no, package, require, use
+
+
+<P>
+
+<DT><STRONG>Keywords related to classes and object-orientedness
+
+</A></STRONG><DD>
+bless, dbmclose, dbmopen, package, ref, tie, tied, untie, use
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Low">Low-level socket functions
+
+</A></STRONG><DD>
+accept, bind, connect, getpeername, getsockname, getsockopt, listen, recv,
+send, setsockopt, shutdown, socket, socketpair
+
+
+<P>
+
+<DT><STRONG><A NAME="item_System">System V interprocess communication functions
+
+</A></STRONG><DD>
+msgctl, msgget, msgrcv, msgsnd, semctl, semget, semop, shmctl, shmget,
+shmread, shmwrite
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Fetching">Fetching user and group info
+
+</A></STRONG><DD>
+endgrent, endhostent, endnetent, endpwent, getgrent, getgrgid, getgrnam,
+getlogin, getpwent, getpwnam, getpwuid, setgrent, setpwent
+
+
+<P>
+
+<DT><STRONG>Fetching network info
+
+</A></STRONG><DD>
+endprotoent, endservent, gethostbyaddr, gethostbyname, gethostent,
+getnetbyaddr, getnetbyname, getnetent, getprotobyname, getprotobynumber,
+getprotoent, getservbyname, getservbyport, getservent, sethostent,
+setnetent, setprotoent, setservent
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Time">Time-related functions
+
+</A></STRONG><DD>
+gmtime, localtime, time, times
+
+
+<P>
+
+<DT><STRONG>Functions new in perl5
+
+</A></STRONG><DD>
+abs, bless, chomp, chr, exists, formline, glob, import, lc, lcfirst, map,
+my, no, prototype, qx, qw, readline, readpipe, ref, sub*, sysopen, tie,
+tied, uc, ucfirst, untie, use
+
+
+<P>
+
+* - <A HREF="#item_sub">sub</A> was a keyword in perl4, but in perl5 it is an operator which can be used in
+expressions.
+
+
+<P>
+
+<DT><STRONG>Functions obsoleted in perl5
+
+</A></STRONG><DD>
+dbmclose, dbmopen
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Alphabetical_Listing_of_Perl_Fun">Alphabetical Listing of Perl Functions
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item__X">-X FILEHANDLE
+
+</A></STRONG><DD>
+<DT><STRONG>-X EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>-X
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> file test, where 
+<FONT SIZE=-1>X</FONT> is one of the letters listed below. This unary operator takes one argument, either a filename or a filehandle, and tests the associated file to see if something is true about it. If the argument is omitted, tests $_, except for
+ <A HREF="#item__t">-t</A>, which tests 
+<FONT SIZE=-1>STDIN.</FONT> Unless otherwise documented, it returns <CODE>1</CODE> for 
+<FONT SIZE=-1>TRUE</FONT> and <CODE>''</CODE> for 
+<FONT SIZE=-1>FALSE,</FONT> or the undefined value if the file doesn't
+exist. Despite the funny names, precedence is the same as any other named
+unary operator, and the argument may be parenthesized like any other unary
+operator. The operator may be any of:
+
+
+<P>
+
+<PRE>    -r  File is readable by effective uid/gid.
+    -w  File is writable by effective uid/gid.
+    -x  File is executable by effective uid/gid.
+    -o  File is owned by effective uid.
+</PRE>
+
+<P>
+
+<PRE>    -R  File is readable by real uid/gid.
+    -W  File is writable by real uid/gid.
+    -X  File is executable by real uid/gid.
+    -O  File is owned by real uid.
+</PRE>
+
+<P>
+
+<PRE>    -e  File exists.
+    -z  File has zero size.
+    -s  File has nonzero size (returns size).
+</PRE>
+
+<P>
+
+<PRE>    -f  File is a plain file.
+    -d  File is a directory.
+    -l  File is a symbolic link.
+    -p  File is a named pipe (FIFO).
+    -S  File is a socket.
+    -b  File is a block special file.
+    -c  File is a character special file.
+    -t  Filehandle is opened to a tty.
+</PRE>
+
+<P>
+
+<PRE>    -u  File has setuid bit set.
+    -g  File has setgid bit set.
+    -k  File has sticky bit set.
+</PRE>
+
+<P>
+
+<PRE>    -T  File is a text file.
+    -B  File is a binary file (opposite of -T).
+</PRE>
+
+<P>
+
+<PRE>    -M  Age of file in days when script started.
+    -A  Same for access time.
+    -C  Same for inode change time.
+</PRE>
+
+<P>
+
+The interpretation of the file permission operators <CODE>-r</CODE>, <A HREF="#item__R">-R</A>, <A HREF="#item__w">-w</A>,
+<CODE>-W</CODE>, <A HREF="#item__x">-x</A>, and <A HREF="#item__X">-X</A> is based solely on the mode of the file and the uids and gids of the user.
+There may be other reasons you can't actually read, write or execute the
+file. Also note that, for the superuser,
+<CODE>-r</CODE>, <A HREF="#item__R">-R</A>, <A HREF="#item__w">-w</A>, and <CODE>-W</CODE> always return 1, and <A HREF="#item__x">-x</A> and <A HREF="#item__X">-X</A> return 1 if any execute bit is set in the mode. Scripts run by the
+superuser may thus need to do a <CODE>stat()</CODE> to determine the actual
+mode of the file, or temporarily set the uid to something else.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        chop;
+        next unless -f $_;      # ignore specials
+        ...
+    }
+</PRE>
+
+<P>
+
+Note that <CODE>-s/a/b/</CODE> does not do a negated substitution. Saying
+<A HREF="#item__exp">-exp($foo)</A> still works as expected, however--only single letters following a minus are
+interpreted as file tests.
+
+
+<P>
+
+The <A HREF="#item__T">-T</A> and <CODE>-B</CODE> switches work as follows. The first block or so of the file is examined for
+odd characters such as strange control codes or characters with the high
+bit set. If too many odd characters (&gt;30%) are found, it's a <CODE>-B</CODE> file, otherwise it's a <A HREF="#item__T">-T</A> file. Also, any file containing null in the first block is considered a
+binary file. If <A HREF="#item__T">-T</A>
+or <CODE>-B</CODE> is used on a filehandle, the current stdio buffer is examined rather than
+the first block. Both <A HREF="#item__T">-T</A> and <CODE>-B</CODE> return 
+<FONT SIZE=-1>TRUE</FONT> on a null file, or a file at 
+<FONT SIZE=-1>EOF</FONT> when testing a filehandle. Because you have to read a file to do the
+ <A HREF="#item__T">-T</A> test, on most occasions you want to use a <A HREF="#item__f">-f</A>
+against the file first, as in <CODE>next unless -f $file && -T $file</CODE>.
+
+
+<P>
+
+If any of the file tests (or either the <CODE>stat()</CODE> or
+<CODE>lstat()</CODE> operators) are given the special filehandle consisting
+of a solitary underline, then the stat structure of the previous file test
+(or stat operator) is used, saving a system call. (This doesn't work with <A HREF="#item__t">-t</A>, and you need to remember that <CODE>lstat()</CODE> and <A HREF="#item__l">-l</A> will leave values in the stat structure for the symbolic link, not the real
+file.) Example:
+
+
+<P>
+
+<PRE>    print &quot;Can do.\n&quot; if -r $a || -w _ || -x _;
+</PRE>
+
+<P>
+
+<PRE>    stat($filename);
+    print &quot;Readable\n&quot; if -r _;
+    print &quot;Writable\n&quot; if -w _;
+    print &quot;Executable\n&quot; if -x _;
+    print &quot;Setuid\n&quot; if -u _;
+    print &quot;Setgid\n&quot; if -g _;
+    print &quot;Sticky\n&quot; if -k _;
+    print &quot;Text\n&quot; if -T _;
+    print &quot;Binary\n&quot; if -B _;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_abs">abs VALUE
+
+</A></STRONG><DD>
+<DT><STRONG>abs
+
+</A></STRONG><DD>
+Returns the absolute value of its argument. If 
+<FONT SIZE=-1>VALUE</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_accept">accept NEWSOCKET,GENERICSOCKET
+
+</A></STRONG><DD>
+Accepts an incoming socket connect, just as the <CODE>accept(2)</CODE> system call does. Returns the packed address if it succeeded, 
+<FONT SIZE=-1>FALSE</FONT> otherwise. See example in
+ <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Sockets_Client_Server_Communica">Sockets: Client/Server Communication</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_alarm">alarm SECONDS
+
+</A></STRONG><DD>
+<DT><STRONG>alarm
+
+</A></STRONG><DD>
+Arranges to have a 
+<FONT SIZE=-1>SIGALRM</FONT> delivered to this process after the specified number of seconds have elapsed. If 
+<FONT SIZE=-1>SECONDS</FONT> is not specified, the value stored in <CODE>$_</CODE> is used. (On some machines, unfortunately, the elapsed time may be up to one second less than you specified because of how seconds are counted.) Only one timer may be counting at once. Each call disables the previous timer, and an argument of 0 may be supplied to cancel the previous timer without starting a new one. The returned value is the amount of time remaining on the previous timer.
+
+
+
+<P>
+
+For delays of finer granularity than one second, you may use Perl's
+<CODE>syscall()</CODE> interface to access <CODE>setitimer(2)</CODE> if
+your system supports it, or else see <A HREF="#select_">select()</A>. It is usually a mistake to intermix <CODE>alarm()</CODE> and
+<CODE>sleep()</CODE> calls.
+
+
+<P>
+
+If you want to use <CODE>alarm()</CODE> to time out a system call you need to use an eval/die pair. You can't rely on the alarm causing the system call to fail with $! set to 
+<FONT SIZE=-1>EINTR</FONT> because Perl sets up signal handlers to restart system calls on some systems. Using eval/die always works.
+
+
+
+<P>
+
+<PRE>    eval {
+        local $SIG{ALRM} = sub { die &quot;alarm\n&quot; };       # NB \n required
+        alarm $timeout;
+        $nread = sysread SOCKET, $buffer, $size;
+        alarm 0;
+    };
+    die if $@ &amp;&amp; $@ ne &quot;alarm\n&quot;;       # propagate errors
+    if ($@) {
+        # timed out
+    }
+    else {
+        # didn't
+    }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_atan2">atan2 Y,X
+
+</A></STRONG><DD>
+Returns the arctangent of 
+<FONT SIZE=-1>Y/X</FONT> in the range 
+<FONT SIZE=-1>-PI</FONT> to 
+<FONT SIZE=-1>PI.</FONT>
+
+
+
+<P>
+
+For the tangent operation, you may use the POSIX::tan() function, or use
+the familiar relation:
+
+
+<P>
+
+<PRE>    sub tan { sin($_[0]) / cos($_[0])  }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_bind">bind SOCKET,NAME
+
+</A></STRONG><DD>
+Binds a network address to a socket, just as the bind system call does. Returns 
+<FONT SIZE=-1>TRUE</FONT> if it succeeded, 
+<FONT SIZE=-1>FALSE</FONT> otherwise. 
+<FONT SIZE=-1>NAME</FONT> should be a packed address of the appropriate type for the socket. See the examples in
+
+<A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Sockets_Client_Server_Communica">Sockets: Client/Server Communication</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_binmode">binmode FILEHANDLE
+
+</A></STRONG><DD>
+Arranges for the file to be read or written in ``binary'' mode in operating systems that distinguish between binary and text files. Files that are not in binary mode have 
+<FONT SIZE=-1>CR</FONT> 
+<FONT SIZE=-1>LF</FONT> sequences translated to 
+<FONT SIZE=-1>LF</FONT> on input and 
+<FONT SIZE=-1>LF</FONT> translated to 
+<FONT SIZE=-1>CR</FONT> 
+<FONT SIZE=-1>LF</FONT> on output. Binmode has no effect under Unix; in 
+<FONT SIZE=-1>MS-DOS</FONT> and similarly archaic systems, it may be imperative--otherwise your MS-DOS-damaged 
+<FONT SIZE=-1>C</FONT> library may mangle your file. The key distinction between systems that need binmode and those that don't is their text file formats. Systems like Unix and Plan9 that delimit lines with a single character, and that encode that character in 
+<FONT SIZE=-1>C</FONT> as '\n', do not need
+
+<A HREF="#item_binmode">binmode</A>. The rest need it. If 
+<FONT SIZE=-1>FILEHANDLE</FONT> is an expression, the value is taken as the
+name of the filehandle.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_bless">bless REF,CLASSNAME
+
+</A></STRONG><DD>
+<DT><STRONG>bless REF
+
+</A></STRONG><DD>
+This function tells the thingy referenced by 
+<FONT SIZE=-1>REF</FONT> that it is now an object in the 
+<FONT SIZE=-1>CLASSNAME</FONT> package--or the current package if no 
+<FONT SIZE=-1>CLASSNAME</FONT> is specified, which is often the case. It returns the reference for convenience, because a <CODE>bless()</CODE> is often the last thing in a constructor. Always use the two-argument version if the function doing the blessing might be inherited by a derived class. See
+ <A HREF="/n|/perl/html/./lib/Pod/perlobj.html#">the perlobj manpage</A> for more about the blessing (and blessings) of objects.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_caller">caller EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>caller
+
+</A></STRONG><DD>
+Returns the context of the current subroutine call. In a scalar context,
+returns the caller's package name if there is a caller, that is, if we're
+in a subroutine or <CODE>eval()</CODE> or <CODE>require(),</CODE> and the
+undefined value otherwise. In a list context, returns
+
+
+<P>
+
+<PRE>    ($package, $filename, $line) = caller;
+</PRE>
+
+<P>
+
+With 
+<FONT SIZE=-1>EXPR,</FONT> it returns some extra information that the debugger uses to print a stack trace. The value of 
+<FONT SIZE=-1>EXPR</FONT> indicates how many call frames to go back before the current one.
+
+
+
+<P>
+
+<PRE>    ($package, $filename, $line, $subroutine,
+     $hasargs, $wantarray, $evaltext, $is_require) = caller($i);
+</PRE>
+
+<P>
+
+Here <CODE>$subroutine</CODE> may be <CODE>"(eval)"</CODE> if the frame is not a subroutine call, but an <A HREF="#item_eval">eval</A>. In such a case additional elements <CODE>$evaltext</CODE> and
+<CODE>$is_require</CODE> are set: <CODE>$is_require</CODE> is true if the
+frame is created by a
+<A HREF="#item_require">require</A> or <A HREF="#item_use">use</A> statement, <CODE>$evaltext</CODE> contains the text of the
+<CODE>eval EXPR</CODE> statement. In particular, for a <CODE>eval BLOCK</CODE> statement, <CODE>$filename</CODE> is <CODE>"(eval)"</CODE>, but <CODE>$evaltext</CODE> is undefined. (Note also that each <A HREF="#item_use">use</A> statement creates a <A HREF="#item_require">require</A> frame inside an <CODE>eval EXPR</CODE>) frame.
+
+
+<P>
+
+Furthermore, when called from within the 
+<FONT SIZE=-1>DB</FONT> package, caller returns more detailed information:
+it sets the list variable @DB::args to be the arguments with which the
+subroutine was invoked.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_chdir">chdir EXPR
+
+</A></STRONG><DD>
+Changes the working directory to 
+<FONT SIZE=-1>EXPR,</FONT> if possible. If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, changes to home directory. Returns 
+<FONT SIZE=-1>TRUE</FONT> upon success, 
+<FONT SIZE=-1>FALSE</FONT> otherwise. See example under <CODE>die().</CODE>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_chmod">chmod LIST
+
+</A></STRONG><DD>
+Changes the permissions of a list of files. The first element of the list
+must be the numerical mode, which should probably be an octal number, and
+which definitely should <EM>not</EM> a string of octal digits:
+<CODE>0644</CODE> is okay, <CODE>'0644'</CODE> is not. Returns the number of files successfully changed. See also <A HREF="#oct">oct</A>, if all you have is a string.
+
+
+<P>
+
+<PRE>    $cnt = chmod 0755, 'foo', 'bar';
+    chmod 0755, @executables;
+    $mode = '0644'; chmod $mode, 'foo';      # !!! sets mode to --w----r-T
+    $mode = '0644'; chmod oct($mode), 'foo'; # this is better
+    $mode = 0644;   chmod $mode, 'foo';      # this is best
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_chomp">chomp VARIABLE
+
+</A></STRONG><DD>
+<DT><STRONG>chomp LIST
+
+</A></STRONG><DD>
+<DT><STRONG>chomp
+
+</A></STRONG><DD>
+This is a slightly safer version of <A HREF="#chop">chop</A>. It removes any line ending that corresponds to the current value of <CODE>$/</CODE> (also known as <CODE>$INPUT_RECORD_SEPARATOR</CODE> in the <CODE>English</CODE> module). It returns the total number of characters removed from all its
+arguments. It's often used to remove the newline from the end of an input
+record when you're worried that the final record may be missing its
+newline. When in paragraph mode (<CODE>$/ = ""</CODE>), it removes all trailing newlines from the string. If 
+<FONT SIZE=-1>VARIABLE</FONT> is omitted, it chomps $_. Example:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        chomp;  # avoid \n on last field
+        @array = split(/:/);
+        ...
+    }
+</PRE>
+
+<P>
+
+You can actually chomp anything that's an lvalue, including an assignment:
+
+
+<P>
+
+<PRE>    chomp($cwd = `pwd`);
+    chomp($answer = &lt;STDIN&gt;);
+</PRE>
+
+<P>
+
+If you chomp a list, each element is chomped, and the total number of
+characters removed is returned.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_chop">chop VARIABLE
+
+</A></STRONG><DD>
+<DT><STRONG>chop LIST
+
+</A></STRONG><DD>
+<DT><STRONG>chop
+
+</A></STRONG><DD>
+Chops off the last character of a string and returns the character chopped.
+It's used primarily to remove the newline from the end of an input record,
+but is much more efficient than <CODE>s/\n//</CODE> because it neither scans nor copies the string. If 
+<FONT SIZE=-1>VARIABLE</FONT> is omitted, chops $_. Example:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        chop;   # avoid \n on last field
+        @array = split(/:/);
+        ...
+    }
+</PRE>
+
+<P>
+
+You can actually chop anything that's an lvalue, including an assignment:
+
+
+<P>
+
+<PRE>    chop($cwd = `pwd`);
+    chop($answer = &lt;STDIN&gt;);
+</PRE>
+
+<P>
+
+If you chop a list, each element is chopped. Only the value of the last
+chop is returned.
+
+
+<P>
+
+Note that chop returns the last character. To return all but the last
+character, use <A HREF="#item_substr">substr($string, 0, -1)</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_chown">chown LIST
+
+</A></STRONG><DD>
+Changes the owner (and group) of a list of files. The first two elements of
+the list must be the <EM>NUMERICAL</EM> uid and gid, in that order. Returns the number of files successfully
+changed.
+
+
+<P>
+
+<PRE>    $cnt = chown $uid, $gid, 'foo', 'bar';
+    chown $uid, $gid, @filenames;
+</PRE>
+
+<P>
+
+Here's an example that looks up nonnumeric uids in the passwd file:
+
+
+<P>
+
+<PRE>    print &quot;User: &quot;;
+    chop($user = &lt;STDIN&gt;);
+    print &quot;Files: &quot;
+    chop($pattern = &lt;STDIN&gt;);
+</PRE>
+
+<P>
+
+<PRE>    ($login,$pass,$uid,$gid) = getpwnam($user)
+        or die &quot;$user not in passwd file&quot;;
+</PRE>
+
+<P>
+
+<PRE>    @ary = &lt;${pattern}&gt;;        # expand filenames
+    chown $uid, $gid, @ary;
+</PRE>
+
+<P>
+
+On most systems, you are not allowed to change the ownership of the file
+unless you're the superuser, although you should be able to change the
+group to any of your secondary groups. On insecure systems, these
+restrictions may be relaxed, but this is not a portable assumption.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_chr">chr NUMBER
+
+</A></STRONG><DD>
+<DT><STRONG>chr
+
+</A></STRONG><DD>
+Returns the character represented by that 
+<FONT SIZE=-1>NUMBER</FONT> in the character set. For example, <A HREF="#item_chr">chr(65)</A> is 
+<FONT SIZE=-1>``A''</FONT> in 
+<FONT SIZE=-1>ASCII.</FONT> For the reverse, use
+ <A HREF="#ord">ord</A>.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>NUMBER</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_chroot">chroot FILENAME
+
+</A></STRONG><DD>
+<DT><STRONG>chroot
+
+</A></STRONG><DD>
+This function works as the system call by the same name: it makes the named directory the new root directory for all further pathnames that begin with a ``/'' by your process and all of its children. (It doesn't change your current working directory, which is unaffected.) For security reasons, this call is restricted to the superuser. If 
+<FONT SIZE=-1>FILENAME</FONT> is omitted, does chroot to $_.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_close">close FILEHANDLE
+
+</A></STRONG><DD>
+Closes the file or pipe associated with the file handle, returning 
+<FONT SIZE=-1>TRUE</FONT> only if stdio successfully flushes buffers and
+closes the system file descriptor. If the file handle came from a piped
+open <A HREF="#item_close">close</A> will additionally return 
+<FONT SIZE=-1>FALSE</FONT> if one of the other system calls involved fails or if the program exits with non-zero status. (If the problem was that the program exited non-zero $! will be set to 0.) You don't have to close 
+<FONT SIZE=-1>FILEHANDLE</FONT> if you are immediately going to do another <CODE>open()</CODE> on it, because <CODE>open()</CODE> will close it for you. (See <CODE>open().)</CODE> However, an explicit close on an input file resets the line counter ($.), while the implicit close done by <CODE>open()</CODE> does not. Also, closing a pipe will wait for the process executing on the pipe to complete, in case you want to look at the output of the pipe afterwards. Closing a pipe explicitly also puts the status value of the command into
+ <CODE>$?</CODE>. Example:
+
+
+<P>
+
+<PRE>    open(OUTPUT, '|sort &gt;foo'); # pipe to sort
+    ...                         # print stuff to output
+    close OUTPUT;               # wait for sort to finish
+    open(INPUT, 'foo');         # get sort's results
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>FILEHANDLE</FONT> may be an expression whose value gives the
+real filehandle name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_closedir">closedir DIRHANDLE
+
+</A></STRONG><DD>
+Closes a directory opened by <CODE>opendir().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_connect">connect SOCKET,NAME
+
+</A></STRONG><DD>
+Attempts to connect to a remote socket, just as the connect system call does. Returns 
+<FONT SIZE=-1>TRUE</FONT> if it succeeded, 
+<FONT SIZE=-1>FALSE</FONT> otherwise. 
+<FONT SIZE=-1>NAME</FONT> should be a packed address of the appropriate type for the socket. See the examples in
+
+<A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Sockets_Client_Server_Communica">Sockets: Client/Server Communication</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_continue">continue BLOCK
+
+</A></STRONG><DD>
+Actually a flow control statement rather than a function. If there is a
+<A HREF="#item_continue">continue</A> 
+<FONT SIZE=-1>BLOCK</FONT> attached to a 
+<FONT SIZE=-1>BLOCK</FONT> (typically in a
+ <CODE>while</CODE> or
+<CODE>foreach</CODE>), it is always executed just before the conditional is about to be
+evaluated again, just like the third part of a <CODE>for</CODE> loop in 
+<FONT SIZE=-1>C.</FONT> Thus it can be used to increment a loop variable,
+even when the loop has been continued via the <A HREF="#item_next">next</A> statement (which is similar to the 
+<FONT SIZE=-1>C</FONT> <A HREF="#item_continue">continue</A>
+statement).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_cos">cos EXPR
+
+</A></STRONG><DD>
+Returns the cosine of 
+<FONT SIZE=-1>EXPR</FONT> (expressed in radians). If 
+<FONT SIZE=-1>EXPR</FONT> is omitted takes cosine of $_.
+
+
+
+<P>
+
+For the inverse cosine operation, you may use the POSIX::acos() function,
+or use this relation:
+
+
+<P>
+
+<PRE>    sub acos { atan2( sqrt(1 - $_[0] * $_[0]), $_[0] ) }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_crypt">crypt PLAINTEXT,SALT
+
+</A></STRONG><DD>
+Encrypts a string exactly like the <CODE>crypt(3)</CODE> function in the 
+<FONT SIZE=-1>C</FONT> library (assuming that you actually have a version
+there that has not been extirpated as a potential munition). This can prove
+useful for checking the password file for lousy passwords, amongst other
+things. Only the guys wearing white hats should do this.
+
+
+<P>
+
+Note that crypt is intended to be a one-way function, much like breaking eggs to make an omelette. There is no (known) corresponding decrypt function. As a result, this function isn't all that useful for cryptography. (For that, see your nearby 
+<FONT SIZE=-1>CPAN</FONT> mirror.)
+
+
+
+<P>
+
+Here's an example that makes sure that whoever runs this program knows
+their own password:
+
+
+<P>
+
+<PRE>    $pwd = (getpwuid($&lt;))[1];
+    $salt = substr($pwd, 0, 2);
+</PRE>
+
+<P>
+
+<PRE>    system &quot;stty -echo&quot;;
+    print &quot;Password: &quot;;
+    chop($word = &lt;STDIN&gt;);
+    print &quot;\n&quot;;
+    system &quot;stty echo&quot;;
+</PRE>
+
+<P>
+
+<PRE>    if (crypt($word, $salt) ne $pwd) {
+        die &quot;Sorry...\n&quot;;
+    } else {
+        print &quot;ok\n&quot;;
+    }
+</PRE>
+
+<P>
+
+Of course, typing in your own password to whomever asks you for it is
+unwise.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dbmclose">dbmclose HASH
+
+</A></STRONG><DD>
+[This function has been superseded by the <CODE>untie()</CODE> function.]
+
+
+<P>
+
+Breaks the binding between a 
+<FONT SIZE=-1>DBM</FONT> file and a hash.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dbmopen">dbmopen HASH,DBNAME,MODE
+
+</A></STRONG><DD>
+[This function has been superseded by the <CODE>tie()</CODE> function.]
+
+
+<P>
+
+This binds a <CODE>dbm(3),</CODE> <CODE>ndbm(3),</CODE> <CODE>sdbm(3),</CODE> <CODE>gdbm(),</CODE> or Berkeley 
+<FONT SIZE=-1>DB</FONT> file to a hash. 
+<FONT SIZE=-1>HASH</FONT> is the name of the hash. (Unlike normal open, the first argument is
+ <EM>NOT</EM> a filehandle, even though it looks like one). 
+<FONT SIZE=-1>DBNAME</FONT> is the name of the database (without the <EM>.dir</EM> or <EM>.pag</EM> extension if any). If the database does not exist, it is created with protection specified by 
+<FONT SIZE=-1>MODE</FONT> (as modified by the <CODE>umask()).</CODE> If your system supports only the older 
+<FONT SIZE=-1>DBM</FONT> functions, you may perform only one <CODE>dbmopen()</CODE> in your program. In older versions of Perl, if your system had neither 
+<FONT SIZE=-1>DBM</FONT> nor ndbm, calling <CODE>dbmopen()</CODE> produced a fatal error; it now falls back to <CODE>sdbm(3).</CODE>
+
+
+
+<P>
+
+If you don't have write access to the 
+<FONT SIZE=-1>DBM</FONT> file, you can only read hash variables, not set
+them. If you want to test whether you can write, either use file tests or
+try setting a dummy hash entry inside an <CODE>eval(),</CODE> which will
+trap the error.
+
+
+<P>
+
+Note that functions such as <CODE>keys()</CODE> and <CODE>values()</CODE> may return huge array values when used on large 
+<FONT SIZE=-1>DBM</FONT> files. You may prefer to use the <CODE>each()</CODE> function to iterate over large 
+<FONT SIZE=-1>DBM</FONT> files. Example:
+
+
+
+<P>
+
+<PRE>    # print out history file offsets
+    dbmopen(%HIST,'/usr/lib/news/history',0666);
+    while (($key,$val) = each %HIST) {
+        print $key, ' = ', unpack('L',$val), &quot;\n&quot;;
+    }
+    dbmclose(%HIST);
+</PRE>
+
+<P>
+
+See also <A HREF="/n|/perl/html/./lib/AnyDBM_File.html#">the AnyDBM_File manpage</A> for a more general description of the pros and cons of the various dbm
+approaches, as well as <EM>DB_File</EM> for a particularly rich implementation.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_defined">defined EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>defined
+
+</A></STRONG><DD>
+Returns a Boolean value telling whether 
+<FONT SIZE=-1>EXPR</FONT> has a value other than the undefined value <A HREF="#item_undef">undef</A>. If 
+<FONT SIZE=-1>EXPR</FONT> is not present, <CODE>$_</CODE> will be checked.
+
+
+<P>
+
+Many operations return <A HREF="#item_undef">undef</A> to indicate failure, end of file, system error, uninitialized variable, and
+other exceptional conditions. This function allows you to distinguish <A HREF="#item_undef">undef</A> from other values. 
+<FONT SIZE=-1>(A</FONT> simple Boolean test will not distinguish among
+<A HREF="#item_undef">undef</A>, zero, the empty string, and ``0'', which are all equally false.) Note
+that since <A HREF="#item_undef">undef</A> is a valid scalar, its presence doesn't <EM>necessarily</EM> indicate an exceptional condition: <CODE>pop()</CODE> returns <A HREF="#item_undef">undef</A> when its argument is an empty array, <EM>or</EM> when the element to return happens to be <A HREF="#item_undef">undef</A>.
+
+
+<P>
+
+You may also use <CODE>defined()</CODE> to check whether a subroutine
+exists. On the other hand, use of <CODE>defined()</CODE> upon aggregates
+(hashes and arrays) is not guaranteed to produce intuitive results, and
+should probably be avoided.
+
+
+<P>
+
+When used on a hash element, it tells you whether the value is defined, not
+whether the key exists in the hash. Use <A HREF="#exists">exists</A> for the latter purpose.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    print if defined $switch{'D'};
+    print &quot;$val\n&quot; while defined($val = pop(@ary));
+    die &quot;Can't readlink $sym: $!&quot;
+        unless defined($value = readlink $sym);
+    sub foo { defined &amp;$bar ? &amp;$bar(@_) : die &quot;No bar&quot;; }
+    $debugging = 0 unless defined $debugging;
+</PRE>
+
+<P>
+
+Note: Many folks tend to overuse <CODE>defined(),</CODE> and then are
+surprised to discover that the number 0 and ``'' (the zero-length string)
+are, in fact, defined values. For example, if you say
+
+
+<P>
+
+<PRE>    &quot;ab&quot; =~ /a(.*)b/;
+</PRE>
+
+<P>
+
+the pattern match succeeds, and <CODE>$1</CODE> is defined, despite the
+fact that it matched ``nothing''. But it didn't really match
+nothing--rather, it matched something that happened to be 0 characters
+long. This is all very above-board and honest. When a function returns an
+undefined value, it's an admission that it couldn't give you an honest
+answer. So you should use <CODE>defined()</CODE> only when you're
+questioning the integrity of what you're trying to do. At other times, a
+simple comparison to 0 or ``'' is what you want.
+
+
+<P>
+
+Currently, using <CODE>defined()</CODE> on an entire array or hash reports
+whether memory for that aggregate has ever been allocated. So an array you
+set to the empty list appears undefined initially, and one that once was
+full and that you then set to the empty list still appears defined. You
+should instead use a simple test for size:
+
+
+<P>
+
+<PRE>    if (@an_array) { print &quot;has array elements\n&quot; }
+    if (%a_hash)   { print &quot;has hash members\n&quot;   }
+</PRE>
+
+<P>
+
+Using <CODE>undef()</CODE> on these, however, does clear their memory and
+then report them as not defined anymore, but you shoudln't do that unless
+you don't plan to use them again, because it saves time when you load them
+up again to have memory already ready to be filled.
+
+
+<P>
+
+This counterintuitive behaviour of <CODE>defined()</CODE> on aggregates may
+be changed, fixed, or broken in a future release of Perl.
+
+
+<P>
+
+See also <A HREF="#undef">undef</A>, <A HREF="#exists">exists</A>, <A HREF="#ref">ref</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_delete">delete EXPR
+
+</A></STRONG><DD>
+Deletes the specified <CODE>key(s)</CODE> and their associated values from
+a hash. For each key, returns the deleted value associated with that key,
+or the undefined value if there was no such key. Deleting from <CODE>$ENV{}</CODE>
+modifies the environment. Deleting from a hash tied to a 
+<FONT SIZE=-1>DBM</FONT> file deletes the entry from the 
+<FONT SIZE=-1>DBM</FONT> file. (But deleting from a <CODE>tie()d</CODE> hash doesn't necessarily return anything.)
+
+
+
+<P>
+
+The following deletes all the values of a hash:
+
+
+<P>
+
+<PRE>    foreach $key (keys %HASH) {
+        delete $HASH{$key};
+    }
+</PRE>
+
+<P>
+
+And so does this:
+
+
+<P>
+
+<PRE>    delete @HASH{keys %HASH}
+</PRE>
+
+<P>
+
+(But both of these are slower than the <CODE>undef()</CODE> command.) Note that the 
+<FONT SIZE=-1>EXPR</FONT> can be arbitrarily complicated as long as the final operation is a hash element lookup or hash slice:
+
+
+
+<P>
+
+<PRE>    delete $ref-&gt;[$x][$y]{$key};
+    delete @{$ref-&gt;[$x][$y]}{$key1, $key2, @morekeys};
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_die">die LIST
+
+</A></STRONG><DD>
+Outside of an <CODE>eval(),</CODE> prints the value of 
+<FONT SIZE=-1>LIST</FONT> to <CODE>STDERR</CODE> and exits with the current value of <CODE>$!</CODE> (errno). If <CODE>$!</CODE> is 0, exits with the value of
+<CODE>($? &gt;&gt; 8)</CODE> (backtick `command` status). If <CODE>($? &gt;&gt; 8)</CODE>
+is 0, exits with 255. Inside an <CODE>eval(),</CODE> the error message is
+stuffed into
+<CODE>$@</CODE>, and the <CODE>eval()</CODE> is terminated with the undefined value; this
+makes <CODE>die()</CODE> the way to raise an exception.
+
+
+<P>
+
+Equivalent examples:
+
+
+<P>
+
+<PRE>    die &quot;Can't cd to spool: $!\n&quot; unless chdir '/usr/spool/news';
+    chdir '/usr/spool/news' or die &quot;Can't cd to spool: $!\n&quot;
+</PRE>
+
+<P>
+
+If the value of 
+<FONT SIZE=-1>EXPR</FONT> does not end in a newline, the current script
+line number and input line number (if any) are also printed, and a newline
+is supplied. Hint: sometimes appending ``, stopped'' to your message will
+cause it to make better sense when the string ``at foo line 123'' is
+appended. Suppose you are running script ``canasta''.
+
+
+<P>
+
+<PRE>    die &quot;/etc/games is no good&quot;;
+    die &quot;/etc/games is no good, stopped&quot;;
+</PRE>
+
+<P>
+
+produce, respectively
+
+
+<P>
+
+<PRE>    /etc/games is no good at canasta line 123.
+    /etc/games is no good, stopped at canasta line 123.
+</PRE>
+
+<P>
+
+See also <CODE>exit()</CODE> and <CODE>warn().</CODE>
+
+
+<P>
+
+You can arrange for a callback to be called just before the
+<CODE>die()</CODE> does its deed, by setting the <CODE>$SIG{__DIE__}</CODE> hook. The associated handler will be called with the error text and can
+change the error message, if it sees fit, by calling <CODE>die()</CODE>
+again. See <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#">the perlvar manpage</A> for details on setting <A HREF="#item__SIG">%SIG</A> entries, and <CODE>eval()</CODE> for some examples.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_do">do BLOCK
+
+</A></STRONG><DD>
+Not really a function. Returns the value of the last command in the sequence of commands indicated by 
+<FONT SIZE=-1>BLOCK.</FONT> When modified by a loop modifier, executes the 
+<FONT SIZE=-1>BLOCK</FONT> once before testing the loop condition. (On other statements the loop modifiers test the conditional first.)
+
+
+
+<P>
+
+<DT><STRONG>do SUBROUTINE(LIST)
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> deprecated form of subroutine call. See <A HREF="/n|/perl/html/./lib/Pod/perlsub.html#">the perlsub manpage</A>.
+
+
+<P>
+
+<DT><STRONG>do EXPR
+
+</A></STRONG><DD>
+Uses the value of 
+<FONT SIZE=-1>EXPR</FONT> as a filename and executes the contents of the
+file as a Perl script. Its primary use is to include subroutines from a
+Perl subroutine library.
+
+
+<P>
+
+<PRE>    do 'stat.pl';
+</PRE>
+
+<P>
+
+is just like
+
+
+<P>
+
+<PRE>    eval `cat stat.pl`;
+</PRE>
+
+<P>
+
+except that it's more efficient, more concise, keeps track of the current
+filename for error messages, and searches all the <STRONG>-I</STRONG>
+libraries if the file isn't in the current directory (see also the <A
+HREF="#item__INC">@INC</A> array in <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#Predefined_Names">Predefined Names</A>). It's the same, however, in that it does reparse the file every time you
+call it, so you probably don't want to do this inside a loop.
+
+
+<P>
+
+Note that inclusion of library modules is better done with the
+<CODE>use()</CODE> and <CODE>require()</CODE> operators, which also do
+error checking and raise an exception if there's a problem.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dump">dump LABEL
+
+</A></STRONG><DD>
+This causes an immediate core dump. Primarily this is so that you can use
+the <STRONG>undump</STRONG> program to turn your core dump into an executable binary after having
+initialized all your variables at the beginning of the program. When the
+new binary is executed it will begin by executing a
+<CODE>goto LABEL</CODE> (with all the restrictions that <A HREF="#item_goto">goto</A> suffers). Think of it as a goto with an intervening core dump and reincarnation. If 
+<FONT SIZE=-1>LABEL</FONT> is omitted, restarts the program from the top. 
+<FONT SIZE=-1>WARNING:</FONT> any files opened at the time of the dump will 
+<FONT SIZE=-1>NOT</FONT> be open any more when the program is reincarnated, with possible resulting confusion on the part of Perl. See also
+ <STRONG>-u</STRONG> option in <A HREF="/n|/perl/html/./lib/Pod/perlrun.html#">the perlrun manpage</A>.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl
+    require 'getopt.pl';
+    require 'stat.pl';
+    %days = (
+        'Sun' =&gt; 1,
+        'Mon' =&gt; 2,
+        'Tue' =&gt; 3,
+        'Wed' =&gt; 4,
+        'Thu' =&gt; 5,
+        'Fri' =&gt; 6,
+        'Sat' =&gt; 7,
+    );
+</PRE>
+
+<P>
+
+<PRE>    dump QUICKSTART if $ARGV[0] eq '-d';
+</PRE>
+
+<P>
+
+<PRE>    QUICKSTART:
+    Getopt('f');
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_each">each HASH
+
+</A></STRONG><DD>
+When called in a list context, returns a 2-element array consisting of the
+key and value for the next element of a hash, so that you can iterate over
+it. When called in a scalar context, returns the key for only the next
+element in the hash. (Note: Keys may be ``0'' or ``'', which are logically
+false; you may wish to avoid constructs like <CODE>while ($k = each %foo) {}</CODE>
+for this reason.)
+
+
+<P>
+
+Entries are returned in an apparently random order. When the hash is entirely read, a null array is returned in list context (which when assigned produces a 
+<FONT SIZE=-1>FALSE</FONT> (0) value), and
+ <A HREF="#item_undef">undef</A> is returned in a scalar context. The next call to <CODE>each()</CODE> after
+that will start iterating again. There is a single iterator for each hash,
+shared by all <CODE>each(),</CODE> <CODE>keys(),</CODE> and
+<CODE>values()</CODE> function calls in the program; it can be reset by
+reading all the elements from the hash, or by evaluating <CODE>keys HASH</CODE> or
+<CODE>values HASH</CODE>. If you add or delete elements of a hash while you're iterating over it,
+you may get entries skipped or duplicated, so don't.
+
+
+<P>
+
+The following prints out your environment like the <CODE>printenv(1)</CODE>
+program, only in a different order:
+
+
+<P>
+
+<PRE>    while (($key,$value) = each %ENV) {
+        print &quot;$key=$value\n&quot;;
+    }
+</PRE>
+
+<P>
+
+See also <CODE>keys()</CODE> and <CODE>values().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_eof">eof FILEHANDLE
+
+</A></STRONG><DD>
+<DT><STRONG>eof ()
+
+</A></STRONG><DD>
+<DT><STRONG>eof
+
+</A></STRONG><DD>
+Returns 1 if the next read on 
+<FONT SIZE=-1>FILEHANDLE</FONT> will return end of file, or if 
+<FONT SIZE=-1>FILEHANDLE</FONT> is not open. 
+<FONT SIZE=-1>FILEHANDLE</FONT> may be an expression whose value gives the real filehandle name. (Note that this function actually reads a character and then <CODE>ungetc()s</CODE> it, so it is not very useful in an interactive context.) Do not read from a terminal file (or call
+
+<A HREF="#item_eof">eof(FILEHANDLE)</A> on it) after end-of-file is reached. Filetypes such as terminals may lose
+the end-of-file condition if you do.
+
+
+<P>
+
+An <A HREF="#item_eof">eof</A> without an argument uses the last file read as argument. Empty parentheses
+() may be used to indicate the pseudo file formed of the files listed on
+the command line, i.e., <A HREF="#item_eof">eof()</A> is reasonable to use inside a <CODE>while (&lt;&gt;)</CODE> loop to detect the end of only the last file. Use <A HREF="#item_eof">eof(ARGV)</A> or eof without the parentheses to test
+<EM>EACH</EM> file in a while (&lt;&gt;) loop. Examples:
+
+
+<P>
+
+<PRE>    # reset line numbering on each input file
+    while (&lt;&gt;) {
+        print &quot;$.\t$_&quot;;
+        close(ARGV) if (eof);   # Not eof().
+    }
+</PRE>
+
+<P>
+
+<PRE>    # insert dashes just before last line of last file
+    while (&lt;&gt;) {
+        if (eof()) {
+            print &quot;--------------\n&quot;;
+            close(ARGV);        # close or break; is needed if we
+                                # are reading from the terminal
+        }
+        print;
+    }
+</PRE>
+
+<P>
+
+Practical hint: you almost never need to use <A HREF="#item_eof">eof</A> in Perl, because the input operators return undef when they run out of
+data.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_eval">eval EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>eval BLOCK
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>EXPR</FONT> is parsed and executed as if it were a little
+Perl program. It is executed in the context of the current Perl program, so
+that any variable settings or subroutine and format definitions remain
+afterwards. The value returned is the value of the last expression
+evaluated, or a return statement may be used, just as with subroutines. The
+last expression is evaluated in scalar or array context, depending on the
+context of the eval.
+
+
+<P>
+
+If there is a syntax error or runtime error, or a <CODE>die()</CODE>
+statement is executed, an undefined value is returned by
+<CODE>eval(),</CODE> and <CODE>$@</CODE> is set to the error message. If there was no error, <CODE>$@</CODE> is guaranteed to be a null string. If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, evaluates <CODE>$_</CODE>. The final semicolon, if any, may be omitted from the expression. Beware that using <CODE>eval()</CODE> neither silences perl from printing warnings to 
+<FONT SIZE=-1>STDERR,</FONT> nor does it stuff the text of warning messages into
+ <CODE>$@</CODE>. To do either of those, you have to use the <CODE>$SIG{__WARN__}</CODE> facility. See <CODE>warn()</CODE> and <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#">the perlvar manpage</A>.
+
+
+<P>
+
+Note that, because <CODE>eval()</CODE> traps otherwise-fatal errors, it is
+useful for determining whether a particular feature (such as
+<CODE>socket()</CODE> or <CODE>symlink())</CODE> is implemented. It is also
+Perl's exception trapping mechanism, where the die operator is used to
+raise exceptions.
+
+
+<P>
+
+If the code to be executed doesn't vary, you may use the eval-BLOCK form to
+trap run-time errors without incurring the penalty of recompiling each
+time. The error, if any, is still returned in <CODE>$@</CODE>. Examples:
+
+
+<P>
+
+<PRE>    # make divide-by-zero nonfatal
+    eval { $answer = $a / $b; }; warn $@ if $@;
+</PRE>
+
+<P>
+
+<PRE>    # same thing, but less efficient
+    eval '$answer = $a / $b'; warn $@ if $@;
+</PRE>
+
+<P>
+
+<PRE>    # a compile-time error
+    eval { $answer = };
+</PRE>
+
+<P>
+
+<PRE>    # a run-time error
+    eval '$answer =';   # sets $@
+</PRE>
+
+<P>
+
+When using the eval{} form as an exception trap in libraries, you may wish
+not to trigger any <CODE>__DIE__</CODE> hooks that user code may have installed. You can use the <CODE>local $SIG{__DIE__}</CODE> construct for this purpose, as shown in this example:
+
+
+<P>
+
+<PRE>    # a very private exception trap for divide-by-zero
+    eval { local $SIG{'__DIE__'}; $answer = $a / $b; }; warn $@ if $@;
+</PRE>
+
+<P>
+
+This is especially significant, given that <CODE>__DIE__</CODE> hooks can call <CODE>die()</CODE> again, which has the effect of changing
+their error messages:
+
+
+<P>
+
+<PRE>    # __DIE__ hooks may modify error messages
+    {
+       local $SIG{'__DIE__'} = sub { (my $x = $_[0]) =~ s/foo/bar/g; die $x };
+       eval { die &quot;foo foofs here&quot; };
+       print $@ if $@;                # prints &quot;bar barfs here&quot;
+    }
+</PRE>
+
+<P>
+
+With an <CODE>eval(),</CODE> you should be especially careful to remember
+what's being looked at when:
+
+
+<P>
+
+<PRE>    eval $x;            # CASE 1
+    eval &quot;$x&quot;;          # CASE 2
+</PRE>
+
+<P>
+
+<PRE>    eval '$x';          # CASE 3
+    eval { $x };        # CASE 4
+</PRE>
+
+<P>
+
+<PRE>    eval &quot;\$$x++&quot;       # CASE 5
+    $$x++;              # CASE 6
+</PRE>
+
+<P>
+
+Cases 1 and 2 above behave identically: they run the code contained in the
+variable $x. (Although case 2 has misleading double quotes making the
+reader wonder what else might be happening (nothing is).) Cases 3 and 4
+likewise behave in the same way: they run the code '$x', which does nothing
+but return the value of <A HREF="#item__x">$x</A>. (Case 4 is preferred for purely visual reasons, but it also has the
+advantage of compiling at compile-time instead of at run-time.) Case 5 is a
+place where normally you <EM>WOULD</EM> like to use double quotes, except that in this particular situation, you
+can just use symbolic references instead, as in case 6.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_exec">exec LIST
+
+</A></STRONG><DD>
+The <CODE>exec()</CODE> function executes a system command <EM>AND NEVER RETURNS</EM>, unless the command does not exist and is executed directly instead of via
+your system's command shell (see below). Use <CODE>system()</CODE> instead
+of <CODE>exec()</CODE> if you want it to return.
+
+
+<P>
+
+If there is more than one argument in 
+<FONT SIZE=-1>LIST,</FONT> or if 
+<FONT SIZE=-1>LIST</FONT> is an array with more than one value, calls <CODE>execvp(3)</CODE> with the arguments in 
+<FONT SIZE=-1>LIST.</FONT> If there is only one scalar argument, the argument is checked for shell metacharacters, and if there are any, the entire argument is passed to the system's command shell for parsing (this is
+ <CODE>/bin/sh -c</CODE> on Unix platforms, but varies on other platforms). If there are no shell
+metacharacters in the argument, it is split into words and passed directly
+to <CODE>execvp(),</CODE> which is more efficient. Note:
+<CODE>exec()</CODE> and <CODE>system()</CODE> do not flush your output
+buffer, so you may need to set <CODE>$|</CODE>
+to avoid lost output. Examples:
+
+
+<P>
+
+<PRE>    exec '/bin/echo', 'Your arguments are: ', @ARGV;
+    exec &quot;sort $outfile | uniq&quot;;
+</PRE>
+
+<P>
+
+If you don't really want to execute the first argument, but want to lie to the program you are executing about its own name, you can specify the program you actually want to run as an ``indirect object'' (without a comma) in front of the 
+<FONT SIZE=-1>LIST.</FONT> (This always forces interpretation of the 
+<FONT SIZE=-1>LIST</FONT> as a multivalued list, even if there is only a single scalar in the list.) Example:
+
+
+
+<P>
+
+<PRE>    $shell = '/bin/csh';
+    exec $shell '-sh';          # pretend it's a login shell
+</PRE>
+
+<P>
+
+or, more directly,
+
+
+<P>
+
+<PRE>    exec {'/bin/csh'} '-sh';    # pretend it's a login shell
+</PRE>
+
+<P>
+
+When the arguments get executed via the system shell, results will be
+subject to its quirks and capabilities. See <A HREF="/n|/perl/html/./lib/Pod/perlop.html#_STRING_">`STRING`</A>
+for details.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_exists">exists EXPR
+
+</A></STRONG><DD>
+Returns 
+<FONT SIZE=-1>TRUE</FONT> if the specified hash key exists in its hash
+array, even if the corresponding value is undefined.
+
+
+<P>
+
+<PRE>    print &quot;Exists\n&quot; if exists $array{$key};
+    print &quot;Defined\n&quot; if defined $array{$key};
+    print &quot;True\n&quot; if $array{$key};
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> hash element can be 
+<FONT SIZE=-1>TRUE</FONT> only if it's defined, and defined if it exists, but the reverse doesn't necessarily hold true.
+
+
+
+<P>
+
+Note that the 
+<FONT SIZE=-1>EXPR</FONT> can be arbitrarily complicated as long as the
+final operation is a hash key lookup:
+
+
+<P>
+
+<PRE>    if (exists $ref-&gt;[$x][$y]{$key}) { ... }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_exit">exit EXPR
+
+</A></STRONG><DD>
+Evaluates 
+<FONT SIZE=-1>EXPR</FONT> and exits immediately with that value. (Actually,
+it calls any defined <A HREF="#item_END">END</A> routines first, but the <A HREF="#item_END">END</A> routines may not abort the exit. Likewise any object destructors that need
+to be called are called before exit.) Example:
+
+
+<P>
+
+<PRE>    $ans = &lt;STDIN&gt;;
+    exit 0 if $ans =~ /^[Xx]/;
+</PRE>
+
+<P>
+
+See also <CODE>die().</CODE> If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, exits with 0 status. The only universally portable values for 
+<FONT SIZE=-1>EXPR</FONT> are 0 for success and 1 for error; all other values are subject to unpredictable interpretation depending on the environment in which the Perl program is running.
+
+
+
+<P>
+
+You shouldn't use <CODE>exit()</CODE> to abort a subroutine if there's any
+chance that someone might want to trap whatever error happened. Use
+<CODE>die()</CODE> instead, which can be trapped by an <CODE>eval().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_exp">exp EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>exp
+
+</A></STRONG><DD>
+Returns <EM>e</EM> (the natural logarithm base) to the power of 
+<FONT SIZE=-1>EXPR.</FONT> If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, gives
+ <A HREF="#item_exp">exp($_)</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_fcntl">fcntl FILEHANDLE,FUNCTION,SCALAR
+
+</A></STRONG><DD>
+Implements the <CODE>fcntl(2)</CODE> function. You'll probably have to say
+
+
+<P>
+
+<PRE>    use Fcntl;
+</PRE>
+
+<P>
+
+first to get the correct function definitions. Argument processing and
+value return works just like <CODE>ioctl()</CODE> below. Note that
+<CODE>fcntl()</CODE> will produce a fatal error if used on a machine that
+doesn't implement <CODE>fcntl(2).</CODE> For example:
+
+
+<P>
+
+<PRE>    use Fcntl;
+    fcntl($filehandle, F_GETLK, $packed_return_buffer);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_fileno">fileno FILEHANDLE
+
+</A></STRONG><DD>
+Returns the file descriptor for a filehandle. This is useful for constructing bitmaps for <CODE>select().</CODE> If 
+<FONT SIZE=-1>FILEHANDLE</FONT> is an expression, the value is taken as the name of the filehandle.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_flock">flock FILEHANDLE,OPERATION
+
+</A></STRONG><DD>
+Calls <CODE>flock(2),</CODE> or an emulation of it, on 
+<FONT SIZE=-1>FILEHANDLE.</FONT> Returns 
+<FONT SIZE=-1>TRUE</FONT> for success, 
+<FONT SIZE=-1>FALSE</FONT> on failure. Produces a fatal error if used on a machine that doesn't implement <CODE>flock(2),</CODE> <CODE>fcntl(2)</CODE> locking, or <CODE>lockf(3).</CODE> <CODE>flock()</CODE> is Perl's portable file locking interface, although it locks only entire files, not records.
+
+
+
+<P>
+
+
+<FONT SIZE=-1>OPERATION</FONT> is one of 
+<FONT SIZE=-1>LOCK_SH,</FONT> 
+<FONT SIZE=-1>LOCK_EX,</FONT> or 
+<FONT SIZE=-1>LOCK_UN,</FONT> possibly combined with 
+<FONT SIZE=-1>LOCK_NB.</FONT> These constants are traditionally valued 1, 2, 8 and 4, but you can use the symbolic names if import them from the Fcntl module, either individually, or as a group using the ':flock' tag. 
+<FONT SIZE=-1>LOCK_SH</FONT> requests a shared lock, 
+<FONT SIZE=-1>LOCK_EX</FONT> requests an exclusive lock, and 
+<FONT SIZE=-1>LOCK_UN</FONT> releases a previously requested lock. If 
+<FONT SIZE=-1>LOCK_NB</FONT> is added to 
+<FONT SIZE=-1>LOCK_SH</FONT> or 
+<FONT SIZE=-1>LOCK_EX</FONT> then <CODE>flock()</CODE> will return immediately rather than blocking waiting for the lock (check the return status to see if you got it).
+
+
+
+<P>
+
+To avoid the possibility of mis-coordination, Perl flushes 
+<FONT SIZE=-1>FILEHANDLE</FONT> before (un)locking it.
+
+
+<P>
+
+Note that the emulation built with <CODE>lockf(3)</CODE> doesn't provide shared locks, and it requires that 
+<FONT SIZE=-1>FILEHANDLE</FONT> be open with write intent. These are the semantics that <CODE>lockf(3)</CODE> implements. Most (all?) systems implement <CODE>lockf(3)</CODE> in terms of <CODE>fcntl(2)</CODE> locking, though, so the differing semantics shouldn't bite too many people.
+
+
+
+<P>
+
+Note also that some versions of <CODE>flock()</CODE> cannot lock things
+over the network; you would need to use the more system-specific
+<CODE>fcntl()</CODE> for that. If you like you can force Perl to ignore
+your system's <CODE>flock(2)</CODE> function, and so provide its own
+<CODE>fcntl(2)-based</CODE> emulation, by passing the switch <CODE>-Ud_flock</CODE> to the <EM>Configure</EM> program when you configure perl.
+
+
+<P>
+
+Here's a mailbox appender for 
+<FONT SIZE=-1>BSD</FONT> systems.
+
+
+<P>
+
+<PRE>    use Fcntl ':flock'; # import LOCK_* constants
+</PRE>
+
+<P>
+
+<PRE>    sub lock {
+        flock(MBOX,LOCK_EX);
+        # and, in case someone appended
+        # while we were waiting...
+        seek(MBOX, 0, 2);
+    }
+</PRE>
+
+<P>
+
+<PRE>    sub unlock {
+        flock(MBOX,LOCK_UN);
+    }
+</PRE>
+
+<P>
+
+<PRE>    open(MBOX, &quot;&gt;&gt;/usr/spool/mail/$ENV{'USER'}&quot;)
+            or die &quot;Can't open mailbox: $!&quot;;
+</PRE>
+
+<P>
+
+<PRE>    lock();
+    print MBOX $msg,&quot;\n\n&quot;;
+    unlock();
+</PRE>
+
+<P>
+
+See also <EM>DB_File</EM> for other <CODE>flock()</CODE> examples.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_fork">fork
+
+</A></STRONG><DD>
+Does a <CODE>fork(2)</CODE> system call. Returns the child pid to the
+parent process and 0 to the child process, or <A HREF="#item_undef">undef</A> if the fork is unsuccessful. Note: unflushed buffers remain unflushed in
+both processes, which means you may need to set <CODE>$|</CODE> 
+<FONT SIZE=-1>($AUTOFLUSH</FONT> in English) or call the
+<CODE>autoflush()</CODE> method of IO::Handle to avoid duplicate output.
+
+
+<P>
+
+If you <CODE>fork()</CODE> without ever waiting on your children, you will
+accumulate zombies:
+
+
+<P>
+
+<PRE>    $SIG{CHLD} = sub { wait };
+</PRE>
+
+<P>
+
+There's also the double-fork trick (error checking on <CODE>fork()</CODE>
+returns omitted);
+
+
+<P>
+
+<PRE>    unless ($pid = fork) {
+        unless (fork) {
+            exec &quot;what you really wanna do&quot;;
+            die &quot;no exec&quot;;
+            # ... or ...
+            ## (some_perl_code_here)
+            exit 0;
+        }
+        exit 0;
+    }
+    waitpid($pid,0);
+</PRE>
+
+<P>
+
+See also <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#">the perlipc manpage</A> for more examples of forking and reaping moribund children.
+
+
+<P>
+
+Note that if your forked child inherits system file descriptors like 
+<FONT SIZE=-1>STDIN</FONT> and 
+<FONT SIZE=-1>STDOUT</FONT> that are actually connected by a pipe or socket, even if you exit, the remote server (such as, say, httpd or rsh) won't think you're done. You should reopen those to /dev/null if it's any issue.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_format">format
+
+</A></STRONG><DD>
+Declare a picture format with use by the <CODE>write()</CODE> function. For
+example:
+
+
+<P>
+
+<PRE>    format Something =
+        Test: @&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; @||||| @&gt;&gt;&gt;&gt;&gt;
+              $str,     $%,    '$' . int($num)
+    .
+</PRE>
+
+<P>
+
+<PRE>    $str = &quot;widget&quot;;
+    $num = $cost/$quantity;
+    $~ = 'Something';
+    write;
+</PRE>
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlform.html#">the perlform manpage</A> for many details and examples.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_formline">formline PICTURE,LIST
+
+</A></STRONG><DD>
+This is an internal function used by <A HREF="#item_format">format</A>s, though you may call it too. It formats (see <A HREF="/n|/perl/html/./lib/Pod/perlform.html#">the perlform manpage</A>) a list of values according to the contents of 
+<FONT SIZE=-1>PICTURE,</FONT> placing the output into the format output
+accumulator, <A HREF="#item__A">$^A</A> (or <CODE>$ACCUMULATOR</CODE> in English). Eventually, when a
+<CODE>write()</CODE> is done, the contents of
+<A HREF="#item__A">$^A</A> are written to some filehandle, but you could also read <A HREF="#item__A">$^A</A>
+yourself and then set <A HREF="#item__A">$^A</A> back to ``''. Note that a format typically does one <CODE>formline()</CODE> per line of form, but the <CODE>formline()</CODE> function itself doesn't care how many newlines are embedded in the 
+<FONT SIZE=-1>PICTURE.</FONT> This means that the
+ <CODE>~</CODE> and <CODE>~~</CODE> tokens will treat the entire 
+<FONT SIZE=-1>PICTURE</FONT> as a single line. You may therefore need to
+use multiple formlines to implement a single record format, just like the
+format compiler.
+
+
+<P>
+
+Be careful if you put double quotes around the picture, because an ``<CODE>@</CODE>'' character may be taken to mean the beginning of an array name. <CODE>formline()</CODE> always returns 
+<FONT SIZE=-1>TRUE.</FONT> See
+ <A HREF="/n|/perl/html/./lib/Pod/perlform.html#">the perlform manpage</A> for other examples.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getc">getc FILEHANDLE
+
+</A></STRONG><DD>
+<DT><STRONG>getc
+
+</A></STRONG><DD>
+Returns the next character from the input file attached to 
+<FONT SIZE=-1>FILEHANDLE,</FONT> or a null string at end of file. If 
+<FONT SIZE=-1>FILEHANDLE</FONT> is omitted, reads from 
+<FONT SIZE=-1>STDIN.</FONT> This is not particularly efficient. It cannot be used to get unbuffered single-characters, however. For that, try something more like:
+
+
+
+<P>
+
+<PRE>    if ($BSD_STYLE) {
+        system &quot;stty cbreak &lt;/dev/tty &gt;/dev/tty 2&gt;&amp;1&quot;;
+    }
+    else {
+        system &quot;stty&quot;, '-icanon', 'eol', &quot;\001&quot;;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $key = getc(STDIN);
+</PRE>
+
+<P>
+
+<PRE>    if ($BSD_STYLE) {
+        system &quot;stty -cbreak &lt;/dev/tty &gt;/dev/tty 2&gt;&amp;1&quot;;
+    }
+    else {
+        system &quot;stty&quot;, 'icanon', 'eol', '^@'; # ASCII null
+    }
+    print &quot;\n&quot;;
+</PRE>
+
+<P>
+
+Determination of whether <CODE>$BSD_STYLE</CODE> should be set is left as
+an exercise to the reader.
+
+
+<P>
+
+The POSIX::getattr() function can do this more portably on systems alleging 
+<FONT SIZE=-1>POSIX</FONT> compliance. See also the
+ <CODE>Term::ReadKey</CODE> module from your nearest 
+<FONT SIZE=-1>CPAN</FONT> site; details on 
+<FONT SIZE=-1>CPAN</FONT> can be found on
+ <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#CPAN">CPAN</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getlogin">getlogin
+
+</A></STRONG><DD>
+Returns the current login from <EM>/etc/utmp</EM>, if any. If null, use <CODE>getpwuid().</CODE>
+
+
+<P>
+
+<PRE>    $login = getlogin || getpwuid($&lt;) || &quot;Kilroy&quot;;
+</PRE>
+
+<P>
+
+Do not consider <CODE>getlogin()</CODE> for authentication: it is not as
+secure as <CODE>getpwuid().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getpeername">getpeername SOCKET
+
+</A></STRONG><DD>
+Returns the packed sockaddr address of other end of the 
+<FONT SIZE=-1>SOCKET</FONT> connection.
+
+
+<P>
+
+<PRE>    use Socket;
+    $hersockaddr    = getpeername(SOCK);
+    ($port, $iaddr) = unpack_sockaddr_in($hersockaddr);
+    $herhostname    = gethostbyaddr($iaddr, AF_INET);
+    $herstraddr     = inet_ntoa($iaddr);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_getpgrp">getpgrp PID
+
+</A></STRONG><DD>
+Returns the current process group for the specified 
+<FONT SIZE=-1>PID.</FONT> Use a 
+<FONT SIZE=-1>PID</FONT> of 0 to get the current process group for the current process. Will raise an exception if used on a machine that doesn't implement <CODE>getpgrp(2).</CODE> If 
+<FONT SIZE=-1>PID</FONT> is omitted, returns process group of current process. Note that the 
+<FONT SIZE=-1>POSIX</FONT> version of <CODE>getpgrp()</CODE> does not accept a 
+<FONT SIZE=-1>PID</FONT> argument, so only 
+<FONT SIZE=-1>PID==0</FONT> is truly portable.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getppid">getppid
+
+</A></STRONG><DD>
+Returns the process id of the parent process.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getpriority">getpriority WHICH,WHO
+
+</A></STRONG><DD>
+Returns the current priority for a process, a process group, or a user.
+(See <EM>getpriority(2)</EM>.) Will raise a fatal exception if used on a machine that doesn't implement
+<CODE>getpriority(2).</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getpwnam">getpwnam NAME
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getgrnam">getgrnam NAME
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_gethostbyname">gethostbyname NAME
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getnetbyname">getnetbyname NAME
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getprotobyname">getprotobyname NAME
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getpwuid">getpwuid UID
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getgrgid">getgrgid GID
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getservbyname">getservbyname NAME,PROTO
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_gethostbyaddr">gethostbyaddr ADDR,ADDRTYPE
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getnetbyaddr">getnetbyaddr ADDR,ADDRTYPE
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getprotobynumber">getprotobynumber NUMBER
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getservbyport">getservbyport PORT,PROTO
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getpwent">getpwent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getgrent">getgrent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_gethostent">gethostent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getnetent">getnetent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getprotoent">getprotoent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_getservent">getservent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_setpwent">setpwent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_setgrent">setgrent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_sethostent">sethostent STAYOPEN
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_setnetent">setnetent STAYOPEN
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_setprotoent">setprotoent STAYOPEN
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_setservent">setservent STAYOPEN
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_endpwent">endpwent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_endgrent">endgrent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_endhostent">endhostent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_endnetent">endnetent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_endprotoent">endprotoent
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_endservent">endservent
+
+</A></STRONG><DD>
+These routines perform the same functions as their counterparts in the
+system library. Within a list context, the return values from the various
+get routines are as follows:
+
+
+<P>
+
+<PRE>    ($name,$passwd,$uid,$gid,
+       $quota,$comment,$gcos,$dir,$shell) = getpw*
+    ($name,$passwd,$gid,$members) = getgr*
+    ($name,$aliases,$addrtype,$length,@addrs) = gethost*
+    ($name,$aliases,$addrtype,$net) = getnet*
+    ($name,$aliases,$proto) = getproto*
+    ($name,$aliases,$port,$proto) = getserv*
+</PRE>
+
+<P>
+
+(If the entry doesn't exist you get a null list.)
+
+
+<P>
+
+Within a scalar context, you get the name, unless the function was a lookup
+by name, in which case you get the other thing, whatever it is. (If the
+entry doesn't exist you get the undefined value.) For example:
+
+
+<P>
+
+<PRE>    $uid = getpwnam
+    $name = getpwuid
+    $name = getpwent
+    $gid = getgrnam
+    $name = getgrgid
+    $name = getgrent
+    etc.
+</PRE>
+
+<P>
+
+The <CODE>$members</CODE> value returned by <EM>getgr*()</EM> is a space separated list of the login names of the members of the group.
+
+
+<P>
+
+For the <EM>gethost*()</EM> functions, if the <CODE>h_errno</CODE> variable is supported in 
+<FONT SIZE=-1>C,</FONT> it will be returned to you via <CODE>$?</CODE> if the function call fails. The <CODE>@addrs</CODE> value returned by a
+successful call is a list of the raw addresses returned by the
+corresponding system library call. In the Internet domain, each address is
+four bytes long and you can unpack it by saying something like:
+
+
+<P>
+
+<PRE>    ($a,$b,$c,$d) = unpack('C4',$addr[0]);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_getsockname">getsockname SOCKET
+
+</A></STRONG><DD>
+Returns the packed sockaddr address of this end of the 
+<FONT SIZE=-1>SOCKET</FONT> connection.
+
+
+<P>
+
+<PRE>    use Socket;
+    $mysockaddr = getsockname(SOCK);
+    ($port, $myaddr) = unpack_sockaddr_in($mysockaddr);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_getsockopt">getsockopt SOCKET,LEVEL,OPTNAME
+
+</A></STRONG><DD>
+Returns the socket option requested, or undefined if there is an error.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_glob">glob EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>glob
+
+</A></STRONG><DD>
+Returns the value of 
+<FONT SIZE=-1>EXPR</FONT> with filename expansions such as a shell would
+do. This is the internal function implementing the <CODE>&lt;*.c&gt;</CODE>
+operator, but you can use it directly. If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, <CODE>$_</CODE> is used. The <CODE>&lt;*.c&gt;</CODE> operator is discussed in more detail in
+<A HREF="/n|/perl/html/./lib/Pod/perlop.html#I_O_Operators">I/O Operators</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_gmtime">gmtime EXPR
+
+</A></STRONG><DD>
+Converts a time as returned by the time function to a 9-element array with
+the time localized for the standard Greenwich time zone. Typically used as
+follows:
+
+
+<P>
+
+<PRE>    #  0    1    2     3     4    5     6     7     8
+    ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+                                            gmtime(time);
+</PRE>
+
+<P>
+
+All array elements are numeric, and come straight out of a struct tm. In
+particular this means that <CODE>$mon</CODE> has the range 0..11 and
+<CODE>$wday</CODE> has the range 0..6 with sunday as day 0. Also,
+<CODE>$year</CODE> is the number of years since 1900, <EM>not</EM> simply the last two digits of the year.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, does <CODE>gmtime(time())</CODE>.
+
+
+<P>
+
+In a scalar context, returns the <CODE>ctime(3)</CODE> value:
+
+
+<P>
+
+<PRE>    $now_string = gmtime;  # e.g., &quot;Thu Oct 13 04:54:34 1994&quot;
+</PRE>
+
+<P>
+
+Also see the <CODE>timegm()</CODE> function provided by the Time::Local module, and the <CODE>strftime(3)</CODE> function available via the 
+<FONT SIZE=-1>POSIX</FONT> module.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_goto">goto LABEL
+
+</A></STRONG><DD>
+<DT><STRONG>goto EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>goto &amp;NAME
+
+</A></STRONG><DD>
+The goto-LABEL form finds the statement labeled with 
+<FONT SIZE=-1>LABEL</FONT> and resumes execution there. It may not be used
+to go into any construct that requires initialization, such as a subroutine
+or a foreach loop. It also can't be used to go into a construct that is
+optimized away, or to get out of a block or subroutine given to
+<CODE>sort().</CODE> It can be used to go almost anywhere else within the
+dynamic scope, including out of subroutines, but it's usually better to use
+some other construct such as last or die. The author of Perl has never felt
+the need to use this form of goto (in Perl, that is--C is another matter).
+
+
+<P>
+
+The goto-EXPR form expects a label name, whose scope will be resolved dynamically. This allows for computed gotos per 
+<FONT SIZE=-1>FORTRAN,</FONT> but isn't necessarily recommended if you're optimizing for maintainability:
+
+
+
+<P>
+
+<PRE>    goto (&quot;FOO&quot;, &quot;BAR&quot;, &quot;GLARCH&quot;)[$i];
+</PRE>
+
+<P>
+
+The goto-&amp;NAME form is highly magical, and substitutes a call to the named subroutine for the currently running subroutine. This is used by 
+<FONT SIZE=-1>AUTOLOAD</FONT> subroutines that wish to load another subroutine and then pretend that the other subroutine had been called in the first place (except that any modifications to <CODE>@_</CODE> in the current subroutine are propagated to the other subroutine.) After the goto, not even <CODE>caller()</CODE> will be able to tell that this routine was called first.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_grep">grep BLOCK LIST
+
+</A></STRONG><DD>
+<DT><STRONG>grep EXPR,LIST
+
+</A></STRONG><DD>
+This is similar in spirit to, but not the same as, <CODE>grep(1)</CODE> and
+its relatives. In particular, it is not limited to using regular
+expressions.
+
+
+<P>
+
+Evaluates the 
+<FONT SIZE=-1>BLOCK</FONT> or 
+<FONT SIZE=-1>EXPR</FONT> for each element of 
+<FONT SIZE=-1>LIST</FONT> (locally setting <CODE>$_</CODE> to each element) and returns the list value consisting of those elements for which the expression evaluated to 
+<FONT SIZE=-1>TRUE.</FONT> In a scalar context, returns the number of times the expression was 
+<FONT SIZE=-1>TRUE.</FONT>
+
+
+
+<P>
+
+<PRE>    @foo = grep(!/^#/, @bar);    # weed out comments
+</PRE>
+
+<P>
+
+or equivalently,
+
+
+<P>
+
+<PRE>    @foo = grep {!/^#/} @bar;    # weed out comments
+</PRE>
+
+<P>
+
+Note that, because <CODE>$_</CODE> is a reference into the list value, it can be used to modify the elements of the array. While this is useful and supported, it can cause bizarre results if the 
+<FONT SIZE=-1>LIST</FONT> is not a named array. Similarly, grep returns aliases into the original list, much like the way that
+ <A HREF="#Foreach_Loops">Foreach Loops</A>'s index variable aliases the list elements. That is, modifying an element
+of a list returned by grep actually modifies the element in the original
+list.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_hex">hex EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>hex
+
+</A></STRONG><DD>
+Interprets 
+<FONT SIZE=-1>EXPR</FONT> as a hex string and returns the corresponding
+value. (To convert strings that might start with either 0 or 0x see <A HREF="#oct">oct</A>.) If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_.
+
+
+<P>
+
+<PRE>    print hex '0xAf'; # prints '175'
+    print hex 'aF';   # same
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_import">import
+
+</A></STRONG><DD>
+There is no builtin <CODE>import()</CODE> function. It is merely an
+ordinary method (subroutine) defined (or inherited) by modules that wish to
+export names to another module. The <CODE>use()</CODE> function calls the
+<CODE>import()</CODE> method for the package used. See also <A HREF="#use_">use()</A>, <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#">the perlmod manpage</A>, and <A HREF="/n|/perl/html/./lib/Exporter.html#">the Exporter manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_index">index STR,SUBSTR,POSITION
+
+</A></STRONG><DD>
+<DT><STRONG>index STR,SUBSTR
+
+</A></STRONG><DD>
+Returns the position of the first occurrence of 
+<FONT SIZE=-1>SUBSTR</FONT> in 
+<FONT SIZE=-1>STR</FONT> at or after 
+<FONT SIZE=-1>POSITION.</FONT> If 
+<FONT SIZE=-1>POSITION</FONT> is omitted, starts searching from the beginning of the string. The return value is based at 0 (or whatever you've set the
+ <CODE>$[</CODE>
+variable to--but don't do that). If the substring is not found, returns one
+less than the base, ordinarily -1.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_int">int EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>int
+
+</A></STRONG><DD>
+Returns the integer portion of 
+<FONT SIZE=-1>EXPR.</FONT> If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ioctl">ioctl FILEHANDLE,FUNCTION,SCALAR
+
+</A></STRONG><DD>
+Implements the <CODE>ioctl(2)</CODE> function. You'll probably have to say
+
+
+<P>
+
+<PRE>    require &quot;ioctl.ph&quot;; # probably in /usr/local/lib/perl/ioctl.ph
+</PRE>
+
+<P>
+
+first to get the correct function definitions. If <EM>ioctl.ph</EM> doesn't exist or doesn't have the correct definitions you'll have to roll your own, based on your 
+<FONT SIZE=-1>C</FONT> header files such as
+ <EM>&lt;sys/ioctl.h&gt;</EM>. (There is a Perl script called <STRONG>h2ph</STRONG> that comes with the Perl kit which may help you in this, but it's nontrivial.) 
+<FONT SIZE=-1>SCALAR</FONT> will be read and/or written depending on the FUNCTION--a pointer to the string value of 
+<FONT SIZE=-1>SCALAR</FONT> will be passed as the third argument of the actual ioctl call. (If 
+<FONT SIZE=-1>SCALAR</FONT> has no string value but does have a numeric value, that value will be passed rather than a pointer to the string value. To guarantee this to be 
+<FONT SIZE=-1>TRUE,</FONT> add a 0 to the scalar before using it.) The <CODE>pack()</CODE> and <CODE>unpack()</CODE> functions are useful for manipulating the values of structures used by <CODE>ioctl().</CODE> The following example sets the erase character to 
+<FONT SIZE=-1>DEL.</FONT>
+
+
+
+<P>
+
+<PRE>    require 'ioctl.ph';
+    $getp = &amp;TIOCGETP;
+    die &quot;NO TIOCGETP&quot; if $@ || !$getp;
+    $sgttyb_t = &quot;ccccs&quot;;                # 4 chars and a short
+    if (ioctl(STDIN,$getp,$sgttyb)) {
+        @ary = unpack($sgttyb_t,$sgttyb);
+        $ary[2] = 127;
+        $sgttyb = pack($sgttyb_t,@ary);
+        ioctl(STDIN,&amp;TIOCSETP,$sgttyb)
+            || die &quot;Can't ioctl: $!&quot;;
+    }
+</PRE>
+
+<P>
+
+The return value of ioctl (and fcntl) is as follows:
+
+
+<P>
+
+<PRE>        if OS returns:          then Perl returns:
+            -1                    undefined value
+             0                  string &quot;0 but true&quot;
+        anything else               that number
+</PRE>
+
+<P>
+
+Thus Perl returns 
+<FONT SIZE=-1>TRUE</FONT> on success and 
+<FONT SIZE=-1>FALSE</FONT> on failure, yet you can still easily determine the actual value returned by the operating system:
+
+
+
+<P>
+
+<PRE>    ($retval = ioctl(...)) || ($retval = -1);
+    printf &quot;System returned %d\n&quot;, $retval;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_join">join EXPR,LIST
+
+</A></STRONG><DD>
+Joins the separate strings of 
+<FONT SIZE=-1>LIST</FONT> into a single string with fields separated by the value of 
+<FONT SIZE=-1>EXPR,</FONT> and returns the string. Example:
+
+
+
+<P>
+
+<PRE>    $_ = join(':', $login,$passwd,$uid,$gid,$gcos,$home,$shell);
+</PRE>
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#split">split</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_keys">keys HASH
+
+</A></STRONG><DD>
+Returns a normal array consisting of all the keys of the named hash. (In a
+scalar context, returns the number of keys.) The keys are returned in an
+apparently random order, but it is the same order as either the
+<CODE>values()</CODE> or <CODE>each()</CODE> function produces (given that
+the hash has not been modified). As a side effect, it resets HASH's
+iterator.
+
+
+<P>
+
+Here is yet another way to print your environment:
+
+
+<P>
+
+<PRE>    @keys = keys %ENV;
+    @values = values %ENV;
+    while ($#keys &gt;= 0) {
+        print pop(@keys), '=', pop(@values), &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+or how about sorted by key:
+
+
+<P>
+
+<PRE>    foreach $key (sort(keys %ENV)) {
+        print $key, '=', $ENV{$key}, &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+To sort an array by value, you'll need to use a <A HREF="#item_sort">sort</A> function. Here's a descending numeric sort of a hash by its values:
+
+
+<P>
+
+<PRE>    foreach $key (sort { $hash{$b} &lt;=&gt; $hash{$a} } keys %hash)) {
+        printf &quot;%4d %s\n&quot;, $hash{$key}, $key;
+    }
+</PRE>
+
+<P>
+
+As an lvalue <A HREF="#item_keys">keys</A> allows you to increase the number of hash buckets allocated for the given
+hash. This can gain you a measure of efficiency if you know the hash is
+going to get big. (This is similar to pre-extending an array by assigning a
+larger number to $#array.) If you say
+
+
+<P>
+
+<PRE>    keys %hash = 200;
+</PRE>
+
+<P>
+
+then <CODE>%hash</CODE> will have at least 200 buckets allocated for it. These buckets will be
+retained even if you do <CODE>%hash = ()</CODE>, use <CODE>undef
+%hash</CODE> if you want to free the storage while <CODE>%hash</CODE> is still in scope. You can't shrink the number of buckets allocated for the
+hash using
+<A HREF="#item_keys">keys</A> in this way (but you needn't worry about doing this by accident, as trying
+has no effect).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_kill">kill LIST
+
+</A></STRONG><DD>
+Sends a signal to a list of processes. The first element of the list must
+be the signal to send. Returns the number of processes successfully
+signaled.
+
+
+<P>
+
+<PRE>    $cnt = kill 1, $child1, $child2;
+    kill 9, @goners;
+</PRE>
+
+<P>
+
+Unlike in the shell, in Perl if the <EM>SIGNAL</EM> is negative, it kills process groups instead of processes. (On System 
+<FONT SIZE=-1>V,</FONT> a negative <EM>PROCESS</EM>
+number will also kill process groups, but that's not portable.) That means
+you usually want to use positive not negative signals. You may also use a
+signal name in quotes. See <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Signals">Signals</A> for details.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_last">last LABEL
+
+</A></STRONG><DD>
+<DT><STRONG>last
+
+</A></STRONG><DD>
+The <A HREF="#item_last">last</A> command is like the <CODE>break</CODE> statement in 
+<FONT SIZE=-1>C</FONT> (as used in loops); it immediately exits the loop in question. If the 
+<FONT SIZE=-1>LABEL</FONT> is omitted, the command refers to the innermost enclosing loop. The
+
+<A HREF="#item_continue">continue</A> block, if any, is not executed:
+
+
+<P>
+
+<PRE>    LINE: while (&lt;STDIN&gt;) {
+        last LINE if /^$/;      # exit when done with header
+        ...
+    }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_lc">lc EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>lc
+
+</A></STRONG><DD>
+Returns an lowercased version of 
+<FONT SIZE=-1>EXPR.</FONT> This is the internal function implementing the 
+<FONT SIZE=-1>\L</FONT> escape in double-quoted strings. Respects current 
+<FONT SIZE=-1>LC_CTYPE</FONT> locale if
+ <CODE>use locale</CODE> in force. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_lcfirst">lcfirst EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>lcfirst
+
+</A></STRONG><DD>
+Returns the value of 
+<FONT SIZE=-1>EXPR</FONT> with the first character lowercased. This is the internal function implementing the \l escape in double-quoted strings. Respects current 
+<FONT SIZE=-1>LC_CTYPE</FONT> locale if
+ <CODE>use locale</CODE> in force. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_length">length EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>length
+
+</A></STRONG><DD>
+Returns the length in characters of the value of 
+<FONT SIZE=-1>EXPR.</FONT> If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, returns length of $_.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_link">link OLDFILE,NEWFILE
+
+</A></STRONG><DD>
+Creates a new filename linked to the old filename. Returns 1 for success, 0
+otherwise.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_listen">listen SOCKET,QUEUESIZE
+
+</A></STRONG><DD>
+Does the same thing that the listen system call does. Returns 
+<FONT SIZE=-1>TRUE</FONT> if it succeeded, 
+<FONT SIZE=-1>FALSE</FONT> otherwise. See example in
+ <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Sockets_Client_Server_Communica">Sockets: Client/Server Communication</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_local">local EXPR
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> local modifies the listed variables to be local to
+the enclosing block, subroutine, <A HREF="#item_eval_">eval{}</A>, or <A HREF="#item_do">do</A>. If more than one value is listed, the list must be placed in parentheses.
+See <A HREF="/n|/perl/html/./lib/Pod/perlsub.html#Temporary_Values_via_local_">Temporary Values via local()</A> for details, including issues with tied arrays and hashes.
+
+
+<P>
+
+But you really probably want to be using <CODE>my()</CODE> instead, because
+<CODE>local()</CODE> isn't what most people think of as ``local''). See <A HREF="/n|/perl/html/./lib/Pod/perlsub.html#Private_Variables_via_my_">Private Variables via my()</A> for details.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_localtime">localtime EXPR
+
+</A></STRONG><DD>
+Converts a time as returned by the time function to a 9-element array with
+the time analyzed for the local time zone. Typically used as follows:
+
+
+<P>
+
+<PRE>    #  0    1    2     3     4    5     6     7     8
+    ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+                                                localtime(time);
+</PRE>
+
+<P>
+
+All array elements are numeric, and come straight out of a struct tm. In
+particular this means that <CODE>$mon</CODE> has the range 0..11 and
+<CODE>$wday</CODE> has the range 0..6 with sunday as day 0. Also,
+<CODE>$year</CODE> is the number of years since 1900, that is,
+<CODE>$year</CODE> is 123 in year 2023.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses the current time (<A HREF="#item_localtime">localtime(time)</A>).
+
+
+<P>
+
+In a scalar context, returns the <CODE>ctime(3)</CODE> value:
+
+
+<P>
+
+<PRE>    $now_string = localtime;  # e.g., &quot;Thu Oct 13 04:54:34 1994&quot;
+</PRE>
+
+<P>
+
+Also see the Time::Local module, and the <CODE>strftime(3)</CODE> and <CODE>mktime(3)</CODE> function available via the 
+<FONT SIZE=-1>POSIX</FONT> module.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_log">log EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>log
+
+</A></STRONG><DD>
+Returns logarithm (base <EM>e</EM>) of 
+<FONT SIZE=-1>EXPR.</FONT> If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, returns log of $_.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_lstat">lstat FILEHANDLE
+
+</A></STRONG><DD>
+<DT><STRONG>lstat EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>lstat
+
+</A></STRONG><DD>
+Does the same thing as the <CODE>stat()</CODE> function, but stats a
+symbolic link instead of the file the symbolic link points to. If symbolic
+links are unimplemented on your system, a normal <CODE>stat()</CODE> is
+done.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, stats $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_m">m//
+
+</A></STRONG><DD>
+The match operator. See <A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_map">map BLOCK LIST
+
+</A></STRONG><DD>
+<DT><STRONG>map EXPR,LIST
+
+</A></STRONG><DD>
+Evaluates the 
+<FONT SIZE=-1>BLOCK</FONT> or 
+<FONT SIZE=-1>EXPR</FONT> for each element of 
+<FONT SIZE=-1>LIST</FONT> (locally setting <CODE>$_</CODE> to each element) and returns the list value composed of the results of each such evaluation. Evaluates 
+<FONT SIZE=-1>BLOCK</FONT> or 
+<FONT SIZE=-1>EXPR</FONT> in a list context, so each element of 
+<FONT SIZE=-1>LIST</FONT> may produce zero, one, or more elements in the returned value.
+
+
+
+<P>
+
+<PRE>    @chars = map(chr, @nums);
+</PRE>
+
+<P>
+
+translates a list of numbers to the corresponding characters. And
+
+
+<P>
+
+<PRE>    %hash = map { getkey($_) =&gt; $_ } @array;
+</PRE>
+
+<P>
+
+is just a funny way to write
+
+
+<P>
+
+<PRE>    %hash = ();
+    foreach $_ (@array) {
+        $hash{getkey($_)} = $_;
+    }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_mkdir">mkdir FILENAME,MODE
+
+</A></STRONG><DD>
+Creates the directory specified by 
+<FONT SIZE=-1>FILENAME,</FONT> with permissions specified by 
+<FONT SIZE=-1>MODE</FONT> (as modified by umask). If it succeeds it returns 1, otherwise it returns 0 and sets
+ <CODE>$!</CODE> (errno).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_msgctl">msgctl ID,CMD,ARG
+
+</A></STRONG><DD>
+Calls the System 
+<FONT SIZE=-1>V</FONT> 
+<FONT SIZE=-1>IPC</FONT> function <CODE>msgctl(2).</CODE> If 
+<FONT SIZE=-1>CMD</FONT> is 
+<FONT SIZE=-1>&amp;IPC_STAT,</FONT> then 
+<FONT SIZE=-1>ARG</FONT> must be a variable which will hold the returned msqid_ds structure. Returns like ioctl: the undefined value for error, ``0 but true'' for zero, or the actual return value otherwise.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_msgget">msgget KEY,FLAGS
+
+</A></STRONG><DD>
+Calls the System 
+<FONT SIZE=-1>V</FONT> 
+<FONT SIZE=-1>IPC</FONT> function <CODE>msgget(2).</CODE> Returns the message queue id, or the undefined value if there is an error.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_msgsnd">msgsnd ID,MSG,FLAGS
+
+</A></STRONG><DD>
+Calls the System 
+<FONT SIZE=-1>V</FONT> 
+<FONT SIZE=-1>IPC</FONT> function msgsnd to send the message 
+<FONT SIZE=-1>MSG</FONT> to the message queue 
+<FONT SIZE=-1>ID.</FONT> 
+<FONT SIZE=-1>MSG</FONT> must begin with the long integer message type, which may be created with
+ <A HREF="#item_pack">pack("l", $type)</A>. Returns 
+<FONT SIZE=-1>TRUE</FONT> if successful, or 
+<FONT SIZE=-1>FALSE</FONT> if there is an error.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_msgrcv">msgrcv ID,VAR,SIZE,TYPE,FLAGS
+
+</A></STRONG><DD>
+Calls the System 
+<FONT SIZE=-1>V</FONT> 
+<FONT SIZE=-1>IPC</FONT> function msgrcv to receive a message from message queue 
+<FONT SIZE=-1>ID</FONT> into variable 
+<FONT SIZE=-1>VAR</FONT> with a maximum message size of 
+<FONT SIZE=-1>SIZE.</FONT> Note that if a message is received, the message type will be the first thing in 
+<FONT SIZE=-1>VAR,</FONT> and the maximum length of 
+<FONT SIZE=-1>VAR</FONT> is 
+<FONT SIZE=-1>SIZE</FONT> plus the size of the message type. Returns 
+<FONT SIZE=-1>TRUE</FONT> if successful, or 
+<FONT SIZE=-1>FALSE</FONT> if there is an error.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_my">my EXPR
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> ``my'' declares the listed variables to be local
+(lexically) to the enclosing block, subroutine, <A HREF="#item_eval">eval</A>, or <CODE>do/require/use</CODE>'d file. If more than one value is listed, the list must be placed in
+parentheses. See
+<A HREF="/n|/perl/html/./lib/Pod/perlsub.html#Private_Variables_via_my_">Private Variables via my()</A> for details.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_next">next LABEL
+
+</A></STRONG><DD>
+<DT><STRONG>next
+
+</A></STRONG><DD>
+The <A HREF="#item_next">next</A> command is like the <A HREF="#item_continue">continue</A> statement in 
+<FONT SIZE=-1>C;</FONT> it starts the next iteration of the loop:
+
+
+<P>
+
+<PRE>    LINE: while (&lt;STDIN&gt;) {
+        next LINE if /^#/;      # discard comments
+        ...
+    }
+</PRE>
+
+<P>
+
+Note that if there were a <A HREF="#item_continue">continue</A> block on the above, it would get executed even on discarded lines. If the 
+<FONT SIZE=-1>LABEL</FONT> is omitted, the command refers to the innermost
+enclosing loop.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_no">no Module LIST
+
+</A></STRONG><DD>
+See the ``use'' function, which ``no'' is the opposite of.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_oct">oct EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>oct
+
+</A></STRONG><DD>
+Interprets 
+<FONT SIZE=-1>EXPR</FONT> as an octal string and returns the corresponding value. (If 
+<FONT SIZE=-1>EXPR</FONT> happens to start off with 0x, interprets it as a hex string instead.) The following will handle decimal, octal, and hex in the standard Perl or 
+<FONT SIZE=-1>C</FONT> notation:
+
+
+
+<P>
+
+<PRE>    $val = oct($val) if $val =~ /^0/;
+</PRE>
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_. This function is commonly
+used when a string such as ``644'' needs to be converted into a file mode,
+for example. (Although perl will automatically convert strings into numbers
+as needed, this automatic conversion assumes base 10.)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_open">open FILEHANDLE,EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>open FILEHANDLE
+
+</A></STRONG><DD>
+Opens the file whose filename is given by 
+<FONT SIZE=-1>EXPR,</FONT> and associates it with 
+<FONT SIZE=-1>FILEHANDLE.</FONT> If 
+<FONT SIZE=-1>FILEHANDLE</FONT> is an expression, its value is used as the name of the real filehandle wanted. If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, the scalar variable of the same name as the 
+<FONT SIZE=-1>FILEHANDLE</FONT> contains the filename. (Note that lexical variables--those declared with
+ <A HREF="#item_my">my</A>--will not work for this purpose; so if you're using <A HREF="#item_my">my</A>, specify 
+<FONT SIZE=-1>EXPR</FONT> in your call to open.)
+
+
+<P>
+
+If the filename begins with '&lt;' or nothing, the file is opened for
+input. If the filename begins with '&gt;', the file is truncated and opened
+for output. If the filename begins with '&gt;&gt;', the file is opened for
+appending. You can put a '+' in front of the '&gt;' or '&lt;' to indicate
+that you want both read and write access to the file; thus '+&lt;' is
+almost always preferred for read/write updates--the '+&gt;' mode would
+clobber the file first. The prefix and the filename may be separated with
+spaces. These various prefixes correspond to the <CODE>fopen(3)</CODE>
+modes of 'r', 'r+', 'w', 'w+', 'a', and 'a+'.
+
+
+<P>
+
+If the filename begins with ``|'', the filename is interpreted as a command
+to which output is to be piped, and if the filename ends with a ``|'', the
+filename is interpreted See <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Using_open_for_IPC">Using open() for IPC</A> for more examples of this. as command which pipes input to us. (You may not
+have a raw <CODE>open()</CODE> to a command that pipes both in <EM>and</EM> out, but see
+<A HREF="/n|/perl/html/./lib/IPC/Open2.html">Open2</A>, <A HREF="/n|/perl/html/./lib/IPC/Open3.html">Open3</A>, and <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Bidirectional_Communication">Bidirectional Communication</A>
+for alternatives.)
+
+
+<P>
+
+Opening '-' opens 
+<FONT SIZE=-1>STDIN</FONT> and opening '&gt;-' opens 
+<FONT SIZE=-1>STDOUT.</FONT> Open returns nonzero upon success, the
+undefined value otherwise. If the open involved a pipe, the return value
+happens to be the pid of the subprocess.
+
+
+<P>
+
+If you're unfortunate enough to be running Perl on a system that
+distinguishes between text files and binary files (modern operating systems
+don't care), then you should check out <A HREF="#binmode">binmode</A> for tips for dealing with this. The key distinction between systems that need binmode and those that don't is their text file formats. Systems like Unix and Plan9 that delimit lines with a single character, and that encode that character in 
+<FONT SIZE=-1>C</FONT> as '\n', do not need
+ <A HREF="#item_binmode">binmode</A>. The rest need it.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $ARTICLE = 100;
+    open ARTICLE or die &quot;Can't find article $ARTICLE: $!\n&quot;;
+    while (&lt;ARTICLE&gt;) {...
+</PRE>
+
+<P>
+
+<PRE>    open(LOG, '&gt;&gt;/usr/spool/news/twitlog'); # (log is reserved)
+</PRE>
+
+<P>
+
+<PRE>    open(DBASE, '+&lt;dbase.mine');            # open for update
+</PRE>
+
+<P>
+
+<PRE>    open(ARTICLE, &quot;caesar &lt;$article |&quot;);    # decrypt article
+</PRE>
+
+<P>
+
+<PRE>    open(EXTRACT, &quot;|sort &gt;/tmp/Tmp$$&quot;);     # $$ is our process id
+</PRE>
+
+<P>
+
+<PRE>    # process argument list of files along with any includes
+</PRE>
+
+<P>
+
+<PRE>    foreach $file (@ARGV) {
+        process($file, 'fh00');
+    }
+</PRE>
+
+<P>
+
+<PRE>    sub process {
+        local($filename, $input) = @_;
+        $input++;               # this is a string increment
+        unless (open($input, $filename)) {
+            print STDERR &quot;Can't open $filename: $!\n&quot;;
+            return;
+        }
+</PRE>
+
+<P>
+
+<PRE>        while (&lt;$input&gt;) {              # note use of indirection
+            if (/^#include &quot;(.*)&quot;/) {
+                process($1, $input);
+                next;
+            }
+            ...         # whatever
+        }
+    }
+</PRE>
+
+<P>
+
+You may also, in the Bourne shell tradition, specify an 
+<FONT SIZE=-1>EXPR</FONT> beginning with ``&gt;&amp;'', in which case the rest of the string is interpreted as the name of
+a filehandle (or file descriptor, if numeric) which is to be duped and
+opened. You may use &amp; after &gt;, &gt;&gt;, &lt;, +&gt;, +&gt;&gt;, and +&lt;. The mode you specify should match the mode of the original filehandle. (Duping a filehandle does not take into account any existing contents of stdio buffers.) Here is a script that saves, redirects, and restores 
+<FONT SIZE=-1>STDOUT</FONT> and 
+<FONT SIZE=-1>STDERR:</FONT>
+
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl
+    open(SAVEOUT, &quot;&gt;&amp;STDOUT&quot;);
+    open(SAVEERR, &quot;&gt;&amp;STDERR&quot;);
+</PRE>
+
+<P>
+
+<PRE>    open(STDOUT, &quot;&gt;foo.out&quot;) || die &quot;Can't redirect stdout&quot;;
+    open(STDERR, &quot;&gt;&amp;STDOUT&quot;) || die &quot;Can't dup stdout&quot;;
+</PRE>
+
+<P>
+
+<PRE>    select(STDERR); $| = 1;     # make unbuffered
+    select(STDOUT); $| = 1;     # make unbuffered
+</PRE>
+
+<P>
+
+<PRE>    print STDOUT &quot;stdout 1\n&quot;;  # this works for
+    print STDERR &quot;stderr 1\n&quot;;  # subprocesses too
+</PRE>
+
+<P>
+
+<PRE>    close(STDOUT);
+    close(STDERR);
+</PRE>
+
+<P>
+
+<PRE>    open(STDOUT, &quot;&gt;&amp;SAVEOUT&quot;);
+    open(STDERR, &quot;&gt;&amp;SAVEERR&quot;);
+</PRE>
+
+<P>
+
+<PRE>    print STDOUT &quot;stdout 2\n&quot;;
+    print STDERR &quot;stderr 2\n&quot;;
+</PRE>
+
+<P>
+
+If you specify ``&lt;
+<FONT SIZE=-1>&amp;=N'',</FONT> where 
+<FONT SIZE=-1>N</FONT> is a number, then Perl will do an equivalent of C's <CODE>fdopen()</CODE> of that file descriptor; this is more parsimonious of file descriptors. For example:
+
+
+
+<P>
+
+<PRE>    open(FILEHANDLE, &quot;&lt;&amp;=$fd&quot;)
+</PRE>
+
+<P>
+
+If you open a pipe on the command ``-'', i.e., either ``|-'' or ``-|'',
+then there is an implicit fork done, and the return value of open is the
+pid of the child within the parent process, and 0 within the child process.
+(Use <A HREF="#item_defined">defined($pid)</A> to determine whether the open was successful.) The filehandle behaves normally for the parent, but i/o to that filehandle is piped from/to the 
+<FONT SIZE=-1>STDOUT/STDIN</FONT> of the child process. In the child process the filehandle isn't opened--i/o happens from/to the new 
+<FONT SIZE=-1>STDOUT</FONT> or 
+<FONT SIZE=-1>STDIN.</FONT> Typically this is used like the normal piped open when you want to exercise more control over just how the pipe command gets executed, such as when you are running setuid, and don't want to have to scan shell commands for metacharacters. The following pairs are more or less equivalent:
+
+
+
+<P>
+
+<PRE>    open(FOO, &quot;|tr '[a-z]' '[A-Z]'&quot;);
+    open(FOO, &quot;|-&quot;) || exec 'tr', '[a-z]', '[A-Z]';
+</PRE>
+
+<P>
+
+<PRE>    open(FOO, &quot;cat -n '$file'|&quot;);
+    open(FOO, &quot;-|&quot;) || exec 'cat', '-n', $file;
+</PRE>
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Safe_Pipe_Opens">Safe Pipe Opens</A> for more examples of this.
+
+
+<P>
+
+
+<FONT SIZE=-1>NOTE:</FONT> On any operation which may do a fork, unflushed
+buffers remain unflushed in both processes, which means you may need to set <CODE>$|</CODE> to avoid duplicate output.
+
+
+<P>
+
+Closing any piped filehandle causes the parent process to wait for the
+child to finish, and returns the status value in <CODE>$?</CODE>.
+
+
+<P>
+
+Using the constructor from the IO::Handle package (or one of its
+subclasses, such as IO::File or IO::Socket), you can generate anonymous
+filehandles which have the scope of whatever variables hold references to
+them, and automatically close whenever and however you leave that scope:
+
+
+<P>
+
+<PRE>    use IO::File;
+    ...
+    sub read_myfile_munged {
+        my $ALL = shift;
+        my $handle = new IO::File;
+        open($handle, &quot;myfile&quot;) or die &quot;myfile: $!&quot;;
+        $first = &lt;$handle&gt;
+            or return ();     # Automatically closed here.
+        mung $first or die &quot;mung failed&quot;;       # Or here.
+        return $first, &lt;$handle&gt; if $ALL;       # Or here.
+        $first;                                 # Or here.
+    }
+</PRE>
+
+<P>
+
+The filename that is passed to open will have leading and trailing
+whitespace deleted. To open a file with arbitrary weird characters in it,
+it's necessary to protect any leading and trailing whitespace thusly:
+
+
+<P>
+
+<PRE>    $file =~ s#^(\s)#./$1#;
+    open(FOO, &quot;&lt; $file\0&quot;);
+</PRE>
+
+<P>
+
+If you want a ``real'' 
+<FONT SIZE=-1>C</FONT> <CODE>open()</CODE> (see <EM>open(2)</EM> on your system), then you should use the <CODE>sysopen()</CODE> function.
+This is another way to protect your filenames from interpretation. For
+example:
+
+
+<P>
+
+<PRE>    use IO::Handle;
+    sysopen(HANDLE, $path, O_RDWR|O_CREAT|O_EXCL, 0700)
+        or die &quot;sysopen $path: $!&quot;;
+    HANDLE-&gt;autoflush(1);
+    HANDLE-&gt;print(&quot;stuff $$\n&quot;);
+    seek(HANDLE, 0, 0);
+    print &quot;File contains: &quot;, &lt;HANDLE&gt;;
+</PRE>
+
+<P>
+
+See <A HREF="#seek_">seek()</A> for some details about mixing reading and writing.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_opendir">opendir DIRHANDLE,EXPR
+
+</A></STRONG><DD>
+Opens a directory named 
+<FONT SIZE=-1>EXPR</FONT> for processing by <CODE>readdir(),</CODE> <CODE>telldir(),</CODE> <CODE>seekdir(),</CODE> <CODE>rewinddir(),</CODE> and <CODE>closedir().</CODE> Returns 
+<FONT SIZE=-1>TRUE</FONT> if successful. DIRHANDLEs have their own namespace separate from FILEHANDLEs.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ord">ord EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>ord
+
+</A></STRONG><DD>
+Returns the numeric ascii value of the first character of 
+<FONT SIZE=-1>EXPR.</FONT> If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_. For the reverse, see
+ <A HREF="#chr">chr</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_pack">pack TEMPLATE,LIST
+
+</A></STRONG><DD>
+Takes an array or list of values and packs it into a binary structure, returning the string containing the structure. The 
+<FONT SIZE=-1>TEMPLATE</FONT> is a sequence of characters that give the order and type of values, as follows:
+
+
+
+<P>
+
+<PRE>    A   An ascii string, will be space padded.
+    a   An ascii string, will be null padded.
+    b   A bit string (ascending bit order, like vec()).
+    B   A bit string (descending bit order).
+    h   A hex string (low nybble first).
+    H   A hex string (high nybble first).
+</PRE>
+
+<P>
+
+<PRE>    c   A signed char value.
+    C   An unsigned char value.
+</PRE>
+
+<P>
+
+<PRE>    s   A signed short value.
+    S   An unsigned short value.
+          (This 'short' is _exactly_ 16 bits, which may differ from
+           what a local C compiler calls 'short'.)
+</PRE>
+
+<P>
+
+<PRE>    i   A signed integer value.
+    I   An unsigned integer value.
+          (This 'integer' is _at_least_ 32 bits wide.  Its exact size
+           depends on what a local C compiler calls 'int', and may
+           even be larger than the 'long' described in the next item.)
+</PRE>
+
+<P>
+
+<PRE>    l   A signed long value.
+    L   An unsigned long value.
+          (This 'long' is _exactly_ 32 bits, which may differ from
+           what a local C compiler calls 'long'.)
+</PRE>
+
+<P>
+
+<PRE>    n   A short in &quot;network&quot; (big-endian) order.
+    N   A long in &quot;network&quot; (big-endian) order.
+    v   A short in &quot;VAX&quot; (little-endian) order.
+    V   A long in &quot;VAX&quot; (little-endian) order.
+          (These 'shorts' and 'longs' are _exactly_ 16 bits and
+           _exactly_ 32 bits, respectively.)
+</PRE>
+
+<P>
+
+<PRE>    f   A single-precision float in the native format.
+    d   A double-precision float in the native format.
+</PRE>
+
+<P>
+
+<PRE>    p   A pointer to a null-terminated string.
+    P   A pointer to a structure (fixed-length string).
+</PRE>
+
+<P>
+
+<PRE>    u   A uuencoded string.
+</PRE>
+
+<P>
+
+<PRE>    w   A BER compressed integer.  Its bytes represent an unsigned
+        integer in base 128, most significant digit first, with as few
+        digits as possible.  Bit eight (the high bit) is set on each
+        byte except the last.
+</PRE>
+
+<P>
+
+<PRE>    x   A null byte.
+    X   Back up a byte.
+    @   Null fill to absolute position.
+</PRE>
+
+<P>
+
+Each letter may optionally be followed by a number which gives a repeat count. With all types except ``a'', 
+<FONT SIZE=-1>``A'',</FONT> ``b'', 
+<FONT SIZE=-1>``B'',</FONT> ``h'', 
+<FONT SIZE=-1>``H'',</FONT> and 
+<FONT SIZE=-1>``P''</FONT> the pack function will gobble up that many values from the 
+<FONT SIZE=-1>LIST.</FONT> 
+<FONT SIZE=-1>A</FONT> * for the repeat count means to use however many items are left. The ``a'' and 
+<FONT SIZE=-1>``A''</FONT> types gobble just one value, but pack it as a string of length count, padding with nulls or spaces as necessary. (When unpacking, 
+<FONT SIZE=-1>``A''</FONT> strips trailing spaces and nulls, but ``a'' does not.) Likewise, the ``b'' and 
+<FONT SIZE=-1>``B''</FONT> fields pack a string that many bits long. The ``h'' and 
+<FONT SIZE=-1>``H''</FONT> fields pack a string that many nybbles long. The ``p'' type packs a pointer to a null- terminated string. You are responsible for ensuring the string is not a temporary value (which can potentially get deallocated before you get around to using the packed result). The 
+<FONT SIZE=-1>``P''</FONT> packs a pointer to a structure of the size indicated by the length. Real numbers (floats and doubles) are in the native machine format only; due to the multiplicity of floating formats around, and the lack of a standard ``network'' representation, no facility for interchange has been made. This means that packed floating point data written on one machine may not be readable on another - even if both use 
+<FONT SIZE=-1>IEEE</FONT> floating point arithmetic (as the endian-ness of the memory representation is not part of the 
+<FONT SIZE=-1>IEEE</FONT> spec). Note that Perl uses doubles internally for all numeric calculation, and converting from double into float and thence back to double again will lose precision (i.e.,
+
+<CODE>unpack("f", pack("f", $foo)</CODE>) will not in general equal $foo).
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $foo = pack(&quot;cccc&quot;,65,66,67,68);
+    # foo eq &quot;ABCD&quot;
+    $foo = pack(&quot;c4&quot;,65,66,67,68);
+    # same thing
+</PRE>
+
+<P>
+
+<PRE>    $foo = pack(&quot;ccxxcc&quot;,65,66,67,68);
+    # foo eq &quot;AB\0\0CD&quot;
+</PRE>
+
+<P>
+
+<PRE>    $foo = pack(&quot;s2&quot;,1,2);
+    # &quot;\1\0\2\0&quot; on little-endian
+    # &quot;\0\1\0\2&quot; on big-endian
+</PRE>
+
+<P>
+
+<PRE>    $foo = pack(&quot;a4&quot;,&quot;abcd&quot;,&quot;x&quot;,&quot;y&quot;,&quot;z&quot;);
+    # &quot;abcd&quot;
+</PRE>
+
+<P>
+
+<PRE>    $foo = pack(&quot;aaaa&quot;,&quot;abcd&quot;,&quot;x&quot;,&quot;y&quot;,&quot;z&quot;);
+    # &quot;axyz&quot;
+</PRE>
+
+<P>
+
+<PRE>    $foo = pack(&quot;a14&quot;,&quot;abcdefg&quot;);
+    # &quot;abcdefg\0\0\0\0\0\0\0&quot;
+</PRE>
+
+<P>
+
+<PRE>    $foo = pack(&quot;i9pl&quot;, gmtime);
+    # a real struct tm (on my system anyway)
+</PRE>
+
+<P>
+
+<PRE>    sub bintodec {
+        unpack(&quot;N&quot;, pack(&quot;B32&quot;, substr(&quot;0&quot; x 32 . shift, -32)));
+    }
+</PRE>
+
+<P>
+
+The same template may generally also be used in the unpack function.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_package">package NAMESPACE
+
+</A></STRONG><DD>
+Declares the compilation unit as being in the given namespace. The scope of the package declaration is from the declaration itself through the end of the enclosing block (the same scope as the <CODE>local()</CODE> operator). All further unqualified dynamic identifiers will be in this namespace. 
+<FONT SIZE=-1>A</FONT> package statement affects only dynamic variables--including those you've used <CODE>local()</CODE> on--but
+ <EM>not</EM> lexical variables created with <CODE>my().</CODE> Typically it would be the
+first declaration in a file to be included by the <A HREF="#item_require">require</A>
+or <A HREF="#item_use">use</A> operator. You can switch into a package in more than one place; it
+influences merely which symbol table is used by the compiler for the rest
+of that block. You can refer to variables and filehandles in other packages
+by prefixing the identifier with the package name and a double colon:  <CODE>$Package::Variable</CODE>. If the package name is null, the <CODE>main</CODE>
+package as assumed. That is, <CODE>$::sail</CODE> is equivalent to <CODE>$main::sail</CODE>.
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#Packages">Packages</A> for more information about packages, modules, and classes. See <A HREF="/n|/perl/html/./lib/Pod/perlsub.html#">the perlsub manpage</A> for other scoping issues.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_pipe">pipe READHANDLE,WRITEHANDLE
+
+</A></STRONG><DD>
+Opens a pair of connected pipes like the corresponding system call. Note
+that if you set up a loop of piped processes, deadlock can occur unless you
+are very careful. In addition, note that Perl's pipes use stdio buffering,
+so you may need to set <CODE>$|</CODE> to flush your 
+<FONT SIZE=-1>WRITEHANDLE</FONT> after each command, depending on the
+application.
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/IPC/Open2.html">Open2</A>, <A HREF="/n|/perl/html/./lib/IPC/Open3.html">Open3</A>, and <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Bidirectional_Communication">Bidirectional Communication</A>
+for examples of such things.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_pop">pop ARRAY
+
+</A></STRONG><DD>
+<DT><STRONG>pop
+
+</A></STRONG><DD>
+Pops and returns the last value of the array, shortening the array by 1.
+Has a similar effect to
+
+
+<P>
+
+<PRE>    $tmp = $ARRAY[$#ARRAY--];
+</PRE>
+
+<P>
+
+If there are no elements in the array, returns the undefined value. If 
+<FONT SIZE=-1>ARRAY</FONT> is omitted, pops the <CODE>@ARGV</CODE> array in
+the main program, and the <CODE>@_</CODE> array in subroutines, just like
+<CODE>shift().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_pos">pos SCALAR
+
+</A></STRONG><DD>
+<DT><STRONG>pos
+
+</A></STRONG><DD>
+Returns the offset of where the last <CODE>m//g</CODE> search left off for the variable is in question ($_ is used when the
+variable is not specified). May be modified to change that offset. Such
+modification will also influence the <CODE>\G</CODE> zero-width assertion in regular expressions. See <A HREF="/n|/perl/html/./lib/Pod/perlre.html#">the perlre manpage</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_print">print FILEHANDLE LIST
+
+</A></STRONG><DD>
+<DT><STRONG>print LIST
+
+</A></STRONG><DD>
+<DT><STRONG>print
+
+</A></STRONG><DD>
+Prints a string or a comma-separated list of strings. Returns 
+<FONT SIZE=-1>TRUE</FONT> if successful. 
+<FONT SIZE=-1>FILEHANDLE</FONT> may be a scalar variable name, in which case the variable contains the name of or a reference to the filehandle, thus introducing one level of indirection. 
+<FONT SIZE=-1>(NOTE:</FONT> If 
+<FONT SIZE=-1>FILEHANDLE</FONT> is a variable and the next token is a term, it may be misinterpreted as an operator unless you interpose a + or put parentheses around the arguments.) If 
+<FONT SIZE=-1>FILEHANDLE</FONT> is omitted, prints by default to standard output (or to the last selected output channel--see
+ <A HREF="#select">select</A>). If 
+<FONT SIZE=-1>LIST</FONT> is also omitted, prints <CODE>$_</CODE> to 
+<FONT SIZE=-1>STDOUT.</FONT> To set the default output channel to something other than 
+<FONT SIZE=-1>STDOUT</FONT> use the select operation. Note that, because print takes a 
+<FONT SIZE=-1>LIST,</FONT> anything in the 
+<FONT SIZE=-1>LIST</FONT> is evaluated in a list context, and any subroutine that you call will have one or more of its expressions evaluated in a list context. Also be careful not to follow the print keyword with a left parenthesis unless you want the corresponding right parenthesis to terminate the arguments to the print--interpose a + or put parentheses around all the arguments.
+
+
+
+<P>
+
+Note that if you're storing 
+<FONT SIZE=-1>FILEHANDLES</FONT> in an array or other expression, you will
+have to use a block returning its value instead:
+
+
+<P>
+
+<PRE>    print { $files[$i] } &quot;stuff\n&quot;;
+    print { $OK ? STDOUT : STDERR } &quot;stuff\n&quot;;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_printf">printf FILEHANDLE FORMAT, LIST
+
+</A></STRONG><DD>
+<DT><STRONG>printf FORMAT, LIST
+
+</A></STRONG><DD>
+Equivalent to <CODE>print FILEHANDLE sprintf(FORMAT, LIST)</CODE>. The first argument of the list will be interpreted as the printf format.
+If <CODE>use locale</CODE> is in effect, the character used for the decimal point in formatted real numbers is affected by the 
+<FONT SIZE=-1>LC_NUMERIC</FONT> locale. See
+ <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+Don't fall into the trap of using a <CODE>printf()</CODE> when a simple
+<CODE>print()</CODE> would do. The <CODE>print()</CODE> is more efficient,
+and less error prone.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_prototype">prototype FUNCTION
+
+</A></STRONG><DD>
+Returns the prototype of a function as a string (or <A HREF="#item_undef">undef</A> if the function has no prototype). 
+<FONT SIZE=-1>FUNCTION</FONT> is a reference to, or the name of, the
+function whose prototype you want to retrieve.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_push">push ARRAY,LIST
+
+</A></STRONG><DD>
+Treats 
+<FONT SIZE=-1>ARRAY</FONT> as a stack, and pushes the values of 
+<FONT SIZE=-1>LIST</FONT> onto the end of 
+<FONT SIZE=-1>ARRAY.</FONT> The length of 
+<FONT SIZE=-1>ARRAY</FONT> increases by the length of 
+<FONT SIZE=-1>LIST.</FONT> Has the same effect as
+
+
+
+<P>
+
+<PRE>    for $value (LIST) {
+        $ARRAY[++$#ARRAY] = $value;
+    }
+</PRE>
+
+<P>
+
+but is more efficient. Returns the new number of elements in the array.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_q">q/STRING/
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_qq">qq/STRING/
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_qx">qx/STRING/
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_qw">qw/STRING/
+
+</A></STRONG><DD>
+Generalized quotes. See <A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_quotemeta">quotemeta EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>quotemeta
+
+</A></STRONG><DD>
+Returns the value of 
+<FONT SIZE=-1>EXPR</FONT> with all non-alphanumeric characters backslashed.
+(That is, all characters not matching
+<CODE>/[A-Za-z_0-9]/</CODE> will be preceded by a backslash in the returned string, regardless of any locale settings.) This is the internal function implementing the 
+<FONT SIZE=-1>\Q</FONT> escape in double-quoted strings.
+
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rand">rand EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>rand
+
+</A></STRONG><DD>
+Returns a random fractional number greater than or equal to 0 and less than the value of 
+<FONT SIZE=-1>EXPR.</FONT> 
+<FONT SIZE=-1>(EXPR</FONT> should be positive.) If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, the value 1 is used. Automatically calls <CODE>srand()</CODE> unless <CODE>srand()</CODE> has already been called. See also <CODE>srand().</CODE>
+
+
+
+<P>
+
+(Note: If your rand function consistently returns numbers that are too large or too small, then your version of Perl was probably compiled with the wrong number of 
+<FONT SIZE=-1>RANDBITS.)</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_read">read FILEHANDLE,SCALAR,LENGTH,OFFSET
+
+</A></STRONG><DD>
+<DT><STRONG>read FILEHANDLE,SCALAR,LENGTH
+
+</A></STRONG><DD>
+Attempts to read 
+<FONT SIZE=-1>LENGTH</FONT> bytes of data into variable 
+<FONT SIZE=-1>SCALAR</FONT> from the specified 
+<FONT SIZE=-1>FILEHANDLE.</FONT> Returns the number of bytes actually read, or undef if there was an error. 
+<FONT SIZE=-1>SCALAR</FONT> will be grown or shrunk to the length actually read. An 
+<FONT SIZE=-1>OFFSET</FONT> may be specified to place the read data at some other place than the beginning of the string. This call is actually implemented in terms of stdio's fread call. To get a true read system call, see <CODE>sysread().</CODE>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_readdir">readdir DIRHANDLE
+
+</A></STRONG><DD>
+Returns the next directory entry for a directory opened by
+<CODE>opendir().</CODE> If used in a list context, returns all the rest of
+the entries in the directory. If there are no more entries, returns an
+undefined value in a scalar context or a null list in a list context.
+
+
+<P>
+
+If you're planning to filetest the return values out of a
+<CODE>readdir(),</CODE> you'd better prepend the directory in question.
+Otherwise, because we didn't <CODE>chdir()</CODE> there, it would have been
+testing the wrong file.
+
+
+<P>
+
+<PRE>    opendir(DIR, $some_dir) || die &quot;can't opendir $some_dir: $!&quot;;
+    @dots = grep { /^\./ &amp;&amp; -f &quot;$some_dir/$_&quot; } readdir(DIR);
+    closedir DIR;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_readline">readline EXPR
+
+</A></STRONG><DD>
+Reads from the file handle 
+<FONT SIZE=-1>EXPR.</FONT> In scalar context, a single line is read and returned. In list context, reads until end-of-file is reached and returns a list of lines (however you've defined lines with $/ or 
+<FONT SIZE=-1>$INPUT_RECORD_SEPARATOR).</FONT> This is the internal function implementing the
+ <CODE>&lt;EXPR&gt;</CODE>
+operator, but you can use it directly. The <CODE>&lt;EXPR&gt;</CODE>
+operator is discussed in more detail in <A HREF="/n|/perl/html/./lib/Pod/perlop.html#I_O_Operators">I/O Operators</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_readlink">readlink EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>readlink
+
+</A></STRONG><DD>
+Returns the value of a symbolic link, if symbolic links are implemented. If
+not, gives a fatal error. If there is some system error, returns the
+undefined value and sets <CODE>$!</CODE> (errno). If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_readpipe">readpipe EXPR
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>EXPR</FONT> is interpolated and then executed as a system command. The collected standard output of the command is returned. In scalar context, it comes back as a single (potentially multi-line) string. In list context, returns a list of lines (however you've defined lines with $/ or 
+<FONT SIZE=-1>$INPUT_RECORD_SEPARATOR).</FONT> This is the internal function implementing the
+ <CODE>qx/EXPR/</CODE>
+operator, but you can use it directly. The <CODE>qx/EXPR/</CODE>
+operator is discussed in more detail in <A HREF="/n|/perl/html/./lib/Pod/perlop.html#I_O_Operators">I/O Operators</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_recv">recv SOCKET,SCALAR,LEN,FLAGS
+
+</A></STRONG><DD>
+Receives a message on a socket. Attempts to receive 
+<FONT SIZE=-1>LENGTH</FONT> bytes of data into variable 
+<FONT SIZE=-1>SCALAR</FONT> from the specified 
+<FONT SIZE=-1>SOCKET</FONT> filehandle. Actually does a 
+<FONT SIZE=-1>C</FONT> <CODE>recvfrom(),</CODE> so that it can returns the address of the sender. Returns the undefined value if there's an error. 
+<FONT SIZE=-1>SCALAR</FONT> will be grown or shrunk to the length actually read. Takes the same flags as the system call of the same name. See
+ <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#UDP_Message_Passing">UDP: Message Passing</A> for examples.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_redo">redo LABEL
+
+</A></STRONG><DD>
+<DT><STRONG>redo
+
+</A></STRONG><DD>
+The <A HREF="#item_redo">redo</A> command restarts the loop block without evaluating the conditional again.
+The <A HREF="#item_continue">continue</A> block, if any, is not executed. If the 
+<FONT SIZE=-1>LABEL</FONT> is omitted, the command refers to the innermost
+enclosing loop. This command is normally used by programs that want to lie
+to themselves about what was just input:
+
+
+<P>
+
+<PRE>    # a simpleminded Pascal comment stripper
+    # (warning: assumes no { or } in strings)
+    LINE: while (&lt;STDIN&gt;) {
+        while (s|({.*}.*){.*}|$1 |) {}
+        s|{.*}| |;
+        if (s|{.*| |) {
+            $front = $_;
+            while (&lt;STDIN&gt;) {
+                if (/}/) {      # end of comment?
+                    s|^|$front{|;
+                    redo LINE;
+                }
+            }
+        }
+        print;
+    }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_ref">ref EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>ref
+
+</A></STRONG><DD>
+Returns a 
+<FONT SIZE=-1>TRUE</FONT> value if 
+<FONT SIZE=-1>EXPR</FONT> is a reference, 
+<FONT SIZE=-1>FALSE</FONT> otherwise. If 
+<FONT SIZE=-1>EXPR</FONT> is not specified, <CODE>$_</CODE> will be used. The value returned depends on the type of thing the reference is a reference to. Builtin types include:
+
+
+
+<P>
+
+<PRE>    REF
+    SCALAR
+    ARRAY
+    HASH
+    CODE
+    GLOB
+</PRE>
+
+<P>
+
+If the referenced object has been blessed into a package, then that package
+name is returned instead. You can think of <CODE>ref()</CODE> as a
+<CODE>typeof()</CODE> operator.
+
+
+<P>
+
+<PRE>    if (ref($r) eq &quot;HASH&quot;) {
+        print &quot;r is a reference to a hash.\n&quot;;
+    }
+    if (!ref ($r) {
+        print &quot;r is not a reference at all.\n&quot;;
+    }
+</PRE>
+
+<P>
+
+See also <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rename">rename OLDNAME,NEWNAME
+
+</A></STRONG><DD>
+Changes the name of a file. Returns 1 for success, 0 otherwise. Will not
+work across file system boundaries.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_require">require EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>require
+
+</A></STRONG><DD>
+Demands some semantics specified by 
+<FONT SIZE=-1>EXPR,</FONT> or by <CODE>$_</CODE> if 
+<FONT SIZE=-1>EXPR</FONT> is not supplied. If 
+<FONT SIZE=-1>EXPR</FONT> is numeric, demands that the current version of Perl (
+<CODE>$]</CODE> or 
+<FONT SIZE=-1>$PERL_VERSION)</FONT> be equal or greater than 
+<FONT SIZE=-1>EXPR.</FONT>
+
+
+
+<P>
+
+Otherwise, demands that a library file be included if it hasn't already
+been included. The file is included via the do-FILE mechanism, which is
+essentially just a variety of <CODE>eval().</CODE> Has semantics similar to
+the following subroutine:
+
+
+<P>
+
+<PRE>    sub require {
+        local($filename) = @_;
+        return 1 if $INC{$filename};
+        local($realfilename,$result);
+        ITER: {
+            foreach $prefix (@INC) {
+                $realfilename = &quot;$prefix/$filename&quot;;
+                if (-f $realfilename) {
+                    $result = do $realfilename;
+                    last ITER;
+                }
+            }
+            die &quot;Can't find $filename in \@INC&quot;;
+        }
+        die $@ if $@;
+        die &quot;$filename did not return true value&quot; unless $result;
+        $INC{$filename} = $realfilename;
+        $result;
+    }
+</PRE>
+
+<P>
+
+Note that the file will not be included twice under the same specified name. The file must return 
+<FONT SIZE=-1>TRUE</FONT> as the last statement to indicate successful execution of any initialization code, so it's customary to end such a file with ``1;'' unless you're sure it'll return 
+<FONT SIZE=-1>TRUE</FONT> otherwise. But it's better just to put the ``
+<CODE>1;</CODE>'', in case you add more statements.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is a bareword, the require assumes a ``<EM>.pm</EM>'' extension and replaces ``<EM>::</EM>'' with ``<EM>/</EM>'' in the filename for you, to make it easy to load standard modules. This
+form of loading of modules does not risk altering your namespace.
+
+
+<P>
+
+For a yet-more-powerful import facility, see <A HREF="#use">use</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlmod.html#">the perlmod manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_reset">reset EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>reset
+
+</A></STRONG><DD>
+Generally used in a <A HREF="#item_continue">continue</A> block at the end of a loop to clear variables and reset ?? searches so that
+they work again. The expression is interpreted as a list of single
+characters (hyphens allowed for ranges). All variables and arrays beginning
+with one of those letters are reset to their pristine state. If the
+expression is omitted, one-match searches (?pattern?) are reset to match
+again. Resets only variables or searches in the current package. Always
+returns 1. Examples:
+
+
+<P>
+
+<PRE>    reset 'X';          # reset all X variables
+    reset 'a-z';        # reset lower case variables
+    reset;              # just reset ?? searches
+</PRE>
+
+<P>
+
+Resetting 
+<FONT SIZE=-1>``A-Z''</FONT> is not recommended because you'll wipe out your 
+<FONT SIZE=-1>ARGV</FONT> and 
+<FONT SIZE=-1>ENV</FONT> arrays. Resets only package variables--lexical variables are unaffected, but they clean themselves up on scope exit anyway, so you'll probably want to use them instead. See
+ <A HREF="#my">my</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_return">return EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>return
+
+</A></STRONG><DD>
+Returns from a subroutine, <CODE>eval(),</CODE> or do 
+<FONT SIZE=-1>FILE</FONT> with the value of the given 
+<FONT SIZE=-1>EXPR.</FONT> Evaluation of 
+<FONT SIZE=-1>EXPR</FONT> may be in a list, scalar, or void context, depending on how the return value will be used, and the context may vary from one execution to the next (see <CODE>wantarray()).</CODE> If no 
+<FONT SIZE=-1>EXPR</FONT> is given, returns an empty list in a list context, an undefined value in a scalar context, or nothing in a void context.
+
+
+
+<P>
+
+(Note that in the absence of a return, a subroutine, eval, or do 
+<FONT SIZE=-1>FILE</FONT> will automatically return the value of the last
+expression evaluated.)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_reverse">reverse LIST
+
+</A></STRONG><DD>
+In a list context, returns a list value consisting of the elements of 
+<FONT SIZE=-1>LIST</FONT> in the opposite order. In a scalar context, concatenates the elements of 
+<FONT SIZE=-1>LIST,</FONT> and returns a string value consisting of those bytes, but in the opposite order.
+
+
+
+<P>
+
+<PRE>    print reverse &lt;&gt;;           # line tac, last line first
+</PRE>
+
+<P>
+
+<PRE>    undef $/;                   # for efficiency of &lt;&gt;
+    print scalar reverse &lt;&gt;;    # byte tac, last line tsrif
+</PRE>
+
+<P>
+
+This operator is also handy for inverting a hash, although there are some
+caveats. If a value is duplicated in the original hash, only one of those
+can be represented as a key in the inverted hash. Also, this has to unwind
+one hash and build a whole new one, which may take some time on a large
+hash.
+
+
+<P>
+
+<PRE>    %by_name = reverse %by_address;     # Invert the hash
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_rewinddir">rewinddir DIRHANDLE
+
+</A></STRONG><DD>
+Sets the current position to the beginning of the directory for the <CODE>readdir()</CODE> routine on 
+<FONT SIZE=-1>DIRHANDLE.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rindex">rindex STR,SUBSTR,POSITION
+
+</A></STRONG><DD>
+<DT><STRONG>rindex STR,SUBSTR
+
+</A></STRONG><DD>
+Works just like index except that it returns the position of the 
+<FONT SIZE=-1>LAST</FONT> occurrence of 
+<FONT SIZE=-1>SUBSTR</FONT> in 
+<FONT SIZE=-1>STR.</FONT> If 
+<FONT SIZE=-1>POSITION</FONT> is specified, returns the last occurrence at or before that position.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rmdir">rmdir FILENAME
+
+</A></STRONG><DD>
+<DT><STRONG>rmdir
+
+</A></STRONG><DD>
+Deletes the directory specified by 
+<FONT SIZE=-1>FILENAME</FONT> if it is empty. If it succeeds it returns 1,
+otherwise it returns 0 and sets <CODE>$!</CODE> (errno). If 
+<FONT SIZE=-1>FILENAME</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_s">s///
+
+</A></STRONG><DD>
+The substitution operator. See <A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_scalar">scalar EXPR
+
+</A></STRONG><DD>
+Forces 
+<FONT SIZE=-1>EXPR</FONT> to be interpreted in a scalar context and returns the value of 
+<FONT SIZE=-1>EXPR.</FONT>
+
+
+
+<P>
+
+<PRE>    @counts = ( scalar @a, scalar @b, scalar @c );
+</PRE>
+
+<P>
+
+There is no equivalent operator to force an expression to be interpolated
+in a list context because it's in practice never needed. If you really
+wanted to do so, however, you could use the construction <CODE>@{[ (some expression) ]}</CODE>, but usually a simple
+<CODE>(some expression)</CODE> suffices.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_seek">seek FILEHANDLE,POSITION,WHENCE
+
+</A></STRONG><DD>
+Sets FILEHANDLE's position, just like the <CODE>fseek()</CODE> call of stdio. 
+<FONT SIZE=-1>FILEHANDLE</FONT> may be an expression whose value gives the name of the filehandle. The values for 
+<FONT SIZE=-1>WHENCE</FONT> are 0 to set the new position to 
+<FONT SIZE=-1>POSITION,</FONT> 1 to set it to the current position plus 
+<FONT SIZE=-1>POSITION,</FONT> and 2 to set it to 
+<FONT SIZE=-1>EOF</FONT> plus 
+<FONT SIZE=-1>POSITION</FONT> (typically negative). For 
+<FONT SIZE=-1>WHENCE</FONT> you may use the constants 
+<FONT SIZE=-1>SEEK_SET,</FONT> 
+<FONT SIZE=-1>SEEK_CUR,</FONT> and 
+<FONT SIZE=-1>SEEK_END</FONT> from either the IO::Seekable or the 
+<FONT SIZE=-1>POSIX</FONT> module. Returns 1 upon success, 0 otherwise.
+
+
+
+<P>
+
+If you want to position file for <CODE>sysread()</CODE> or
+<CODE>syswrite(),</CODE> don't use <CODE>seek()</CODE> -- buffering makes
+its effect on the file's system position unpredictable and non-portable.
+Use <CODE>sysseek()</CODE> instead.
+
+
+<P>
+
+On some systems you have to do a seek whenever you switch between reading and writing. Amongst other things, this may have the effect of calling stdio's <CODE>clearerr(3).</CODE> 
+<FONT SIZE=-1>A</FONT> 
+<FONT SIZE=-1>WHENCE</FONT> of 1 
+<FONT SIZE=-1>(SEEK_CUR)</FONT> is useful for not moving the file position:
+
+
+
+<P>
+
+<PRE>    seek(TEST,0,1);
+</PRE>
+
+<P>
+
+This is also useful for applications emulating <CODE>tail -f</CODE>. Once you hit 
+<FONT SIZE=-1>EOF</FONT> on your read, and then sleep for a while, you
+might have to stick in a <CODE>seek()</CODE> to reset things. The
+<CODE>seek()</CODE> doesn't change the current position, but it <EM>does</EM> clear the end-of-file condition on the handle, so that the next <CODE>&lt;FILE&gt;</CODE> makes Perl try again to read something. We hope.
+
+
+<P>
+
+If that doesn't work (some stdios are particularly cantankerous), then you
+may need something more like this:
+
+
+<P>
+
+<PRE>    for (;;) {
+        for ($curpos = tell(FILE); $_ = &lt;FILE&gt;; $curpos = tell(FILE)) {
+            # search for some stuff and put it into files
+        }
+        sleep($for_a_while);
+        seek(FILE, $curpos, 0);
+    }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_seekdir">seekdir DIRHANDLE,POS
+
+</A></STRONG><DD>
+Sets the current position for the <CODE>readdir()</CODE> routine on 
+<FONT SIZE=-1>DIRHANDLE.</FONT> 
+<FONT SIZE=-1>POS</FONT> must be a value returned by <CODE>telldir().</CODE> Has the same caveats about possible directory compaction as the corresponding system library routine.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_select">select FILEHANDLE
+
+</A></STRONG><DD>
+<DT><STRONG>select
+
+</A></STRONG><DD>
+Returns the currently selected filehandle. Sets the current default filehandle for output, if 
+<FONT SIZE=-1>FILEHANDLE</FONT> is supplied. This has two effects: first, a
+ <A HREF="#item_write">write</A> or a <A HREF="#item_print">print</A> without a filehandle will default to this 
+<FONT SIZE=-1>FILEHANDLE.</FONT> Second, references to variables related to
+output will refer to this output channel. For example, if you have to set
+the top of form format for more than one output channel, you might do the
+following:
+
+
+<P>
+
+<PRE>    select(REPORT1);
+    $^ = 'report1_top';
+    select(REPORT2);
+    $^ = 'report2_top';
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>FILEHANDLE</FONT> may be an expression whose value gives the
+name of the actual filehandle. Thus:
+
+
+<P>
+
+<PRE>    $oldfh = select(STDERR); $| = 1; select($oldfh);
+</PRE>
+
+<P>
+
+Some programmers may prefer to think of filehandles as objects with
+methods, preferring to write the last example as:
+
+
+<P>
+
+<PRE>    use IO::Handle;
+    STDERR-&gt;autoflush(1);
+</PRE>
+
+<P>
+
+<DT><STRONG>select RBITS,WBITS,EBITS,TIMEOUT
+
+</A></STRONG><DD>
+This calls the <CODE>select(2)</CODE> system call with the bit masks
+specified, which can be constructed using <CODE>fileno()</CODE> and
+<CODE>vec(),</CODE> along these lines:
+
+
+<P>
+
+<PRE>    $rin = $win = $ein = '';
+    vec($rin,fileno(STDIN),1) = 1;
+    vec($win,fileno(STDOUT),1) = 1;
+    $ein = $rin | $win;
+</PRE>
+
+<P>
+
+If you want to select on many filehandles you might wish to write a
+subroutine:
+
+
+<P>
+
+<PRE>    sub fhbits {
+        local(@fhlist) = split(' ',$_[0]);
+        local($bits);
+        for (@fhlist) {
+            vec($bits,fileno($_),1) = 1;
+        }
+        $bits;
+    }
+    $rin = fhbits('STDIN TTY SOCK');
+</PRE>
+
+<P>
+
+The usual idiom is:
+
+
+<P>
+
+<PRE>    ($nfound,$timeleft) =
+      select($rout=$rin, $wout=$win, $eout=$ein, $timeout);
+</PRE>
+
+<P>
+
+or to block until something becomes ready just do this
+
+
+<P>
+
+<PRE>    $nfound = select($rout=$rin, $wout=$win, $eout=$ein, undef);
+</PRE>
+
+<P>
+
+Most systems do not bother to return anything useful in $timeleft, so
+calling <CODE>select()</CODE> in a scalar context just returns $nfound.
+
+
+<P>
+
+Any of the bit masks can also be undef. The timeout, if specified, is in
+seconds, which may be fractional. Note: not all implementations are capable
+of returning the $timeleft. If not, they always return
+<CODE>$timeleft</CODE> equal to the supplied $timeout.
+
+
+<P>
+
+You can effect a sleep of 250 milliseconds this way:
+
+
+<P>
+
+<PRE>    select(undef, undef, undef, 0.25);
+</PRE>
+
+<P>
+
+<STRONG>WARNING</STRONG>: Do not attempt to mix buffered 
+<FONT SIZE=-1>I/O</FONT> (like <CODE>read()</CODE> or &lt;
+<FONT SIZE=-1>FH</FONT>&gt;) with <CODE>select().</CODE> You have to use <CODE>sysread()</CODE>
+instead.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_semctl">semctl ID,SEMNUM,CMD,ARG
+
+</A></STRONG><DD>
+Calls the System 
+<FONT SIZE=-1>V</FONT> 
+<FONT SIZE=-1>IPC</FONT> function semctl. If 
+<FONT SIZE=-1>CMD</FONT> is <CODE>&IPC_STAT</CODE> or 
+<FONT SIZE=-1>&amp;GETALL,</FONT> then 
+<FONT SIZE=-1>ARG</FONT> must be a variable which will hold the returned semid_ds structure or semaphore value array. Returns like ioctl: the undefined value for error, ``0 but true'' for zero, or the actual return value otherwise.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_semget">semget KEY,NSEMS,FLAGS
+
+</A></STRONG><DD>
+Calls the System 
+<FONT SIZE=-1>V</FONT> 
+<FONT SIZE=-1>IPC</FONT> function semget. Returns the semaphore id, or the undefined value if there is an error.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_semop">semop KEY,OPSTRING
+
+</A></STRONG><DD>
+Calls the System 
+<FONT SIZE=-1>V</FONT> 
+<FONT SIZE=-1>IPC</FONT> function semop to perform semaphore operations such as signaling and waiting. 
+<FONT SIZE=-1>OPSTRING</FONT> must be a packed array of semop structures. Each semop structure can be generated with
+
+<A HREF="#item_pack">pack("sss", $semnum, $semop, $semflag)</A>. The number of semaphore operations is implied by the length of 
+<FONT SIZE=-1>OPSTRING.</FONT> Returns 
+<FONT SIZE=-1>TRUE</FONT> if successful, or 
+<FONT SIZE=-1>FALSE</FONT> if there is an error. As an example, the following code waits on semaphore <CODE>$semnum</CODE> of semaphore id $semid:
+
+
+
+<P>
+
+<PRE>    $semop = pack(&quot;sss&quot;, $semnum, -1, 0);
+    die &quot;Semaphore trouble: $!\n&quot; unless semop($semid, $semop);
+</PRE>
+
+<P>
+
+To signal the semaphore, replace ``-1'' with ``1''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_send">send SOCKET,MSG,FLAGS,TO
+
+</A></STRONG><DD>
+<DT><STRONG>send SOCKET,MSG,FLAGS
+
+</A></STRONG><DD>
+Sends a message on a socket. Takes the same flags as the system call of the same name. On unconnected sockets you must specify a destination to send 
+<FONT SIZE=-1>TO,</FONT> in which case it does a 
+<FONT SIZE=-1>C</FONT> <CODE>sendto().</CODE> Returns the number of characters sent, or the undefined value if there is an error. See
+ <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#UDP_Message_Passing">UDP: Message Passing</A> for examples.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_setpgrp">setpgrp PID,PGRP
+
+</A></STRONG><DD>
+Sets the current process group for the specified 
+<FONT SIZE=-1>PID,</FONT> 0 for the current process. Will produce a fatal error if used on a machine that doesn't implement <CODE>setpgrp(2).</CODE> If the arguments are omitted, it defaults to 0,0. Note that the 
+<FONT SIZE=-1>POSIX</FONT> version of <CODE>setpgrp()</CODE> does not accept any arguments, so only setpgrp 0,0 is portable.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_setpriority">setpriority WHICH,WHO,PRIORITY
+
+</A></STRONG><DD>
+Sets the current priority for a process, a process group, or a user. (See
+<CODE>setpriority(2).)</CODE> Will produce a fatal error if used on a
+machine that doesn't implement <CODE>setpriority(2).</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_setsockopt">setsockopt SOCKET,LEVEL,OPTNAME,OPTVAL
+
+</A></STRONG><DD>
+Sets the socket option requested. Returns undefined if there is an error. 
+<FONT SIZE=-1>OPTVAL</FONT> may be specified as undef if you don't want to
+pass an argument.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_shift">shift ARRAY
+
+</A></STRONG><DD>
+<DT><STRONG>shift
+
+</A></STRONG><DD>
+Shifts the first value of the array off and returns it, shortening the array by 1 and moving everything down. If there are no elements in the array, returns the undefined value. If 
+<FONT SIZE=-1>ARRAY</FONT> is omitted, shifts the <CODE>@ARGV</CODE> array in the main program, and the <CODE>@_</CODE> array in subroutines. (This is determined lexically.) See also <CODE>unshift(),</CODE> <CODE>push(),</CODE> and <CODE>pop().</CODE> <CODE>Shift()</CODE> and <CODE>unshift()</CODE> do the same thing to the left end of an array that <CODE>pop()</CODE> and <CODE>push()</CODE> do to the right end.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_shmctl">shmctl ID,CMD,ARG
+
+</A></STRONG><DD>
+Calls the System 
+<FONT SIZE=-1>V</FONT> 
+<FONT SIZE=-1>IPC</FONT> function shmctl. If 
+<FONT SIZE=-1>CMD</FONT> is 
+<FONT SIZE=-1>&amp;IPC_STAT,</FONT> then 
+<FONT SIZE=-1>ARG</FONT> must be a variable which will hold the returned shmid_ds structure. Returns like ioctl: the undefined value for error, ``0 but true'' for zero, or the actual return value otherwise.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_shmget">shmget KEY,SIZE,FLAGS
+
+</A></STRONG><DD>
+Calls the System 
+<FONT SIZE=-1>V</FONT> 
+<FONT SIZE=-1>IPC</FONT> function shmget. Returns the shared memory segment id, or the undefined value if there is an error.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_shmread">shmread ID,VAR,POS,SIZE
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_shmwrite">shmwrite ID,STRING,POS,SIZE
+
+</A></STRONG><DD>
+Reads or writes the System 
+<FONT SIZE=-1>V</FONT> shared memory segment 
+<FONT SIZE=-1>ID</FONT> starting at position 
+<FONT SIZE=-1>POS</FONT> for size 
+<FONT SIZE=-1>SIZE</FONT> by attaching to it, copying in/out, and detaching from it. When reading, 
+<FONT SIZE=-1>VAR</FONT> must be a variable which will hold the data read. When writing, if 
+<FONT SIZE=-1>STRING</FONT> is too long, only 
+<FONT SIZE=-1>SIZE</FONT> bytes are used; if 
+<FONT SIZE=-1>STRING</FONT> is too short, nulls are written to fill out 
+<FONT SIZE=-1>SIZE</FONT> bytes. Return 
+<FONT SIZE=-1>TRUE</FONT> if successful, or 
+<FONT SIZE=-1>FALSE</FONT> if there is an error.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_shutdown">shutdown SOCKET,HOW
+
+</A></STRONG><DD>
+Shuts down a socket connection in the manner indicated by 
+<FONT SIZE=-1>HOW,</FONT> which has the same interpretation as in the
+system call of the same name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sin">sin EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>sin
+
+</A></STRONG><DD>
+Returns the sine of 
+<FONT SIZE=-1>EXPR</FONT> (expressed in radians). If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, returns sine of $_.
+
+
+
+<P>
+
+For the inverse sine operation, you may use the POSIX::asin() function, or
+use this relation:
+
+
+<P>
+
+<PRE>    sub asin { atan2($_[0], sqrt(1 - $_[0] * $_[0])) }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sleep">sleep EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>sleep
+
+</A></STRONG><DD>
+Causes the script to sleep for 
+<FONT SIZE=-1>EXPR</FONT> seconds, or forever if no 
+<FONT SIZE=-1>EXPR.</FONT> May be interrupted by sending the process a 
+<FONT SIZE=-1>SIGALRM.</FONT> Returns the number of seconds actually slept. You probably cannot mix <CODE>alarm()</CODE> and <CODE>sleep()</CODE> calls, because <CODE>sleep()</CODE> is often implemented using <CODE>alarm().</CODE>
+
+
+
+<P>
+
+On some older systems, it may sleep up to a full second less than what you
+requested, depending on how it counts seconds. Most modern systems always
+sleep the full amount.
+
+
+<P>
+
+For delays of finer granularity than one second, you may use Perl's
+<CODE>syscall()</CODE> interface to access <CODE>setitimer(2)</CODE> if
+your system supports it, or else see <A HREF="#select_">select()</A> below.
+
+
+<P>
+
+See also the 
+<FONT SIZE=-1>POSIX</FONT> module's <CODE>sigpause()</CODE> function.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_socket">socket SOCKET,DOMAIN,TYPE,PROTOCOL
+
+</A></STRONG><DD>
+Opens a socket of the specified kind and attaches it to filehandle 
+<FONT SIZE=-1>SOCKET.</FONT> 
+<FONT SIZE=-1>DOMAIN,</FONT> 
+<FONT SIZE=-1>TYPE,</FONT> and 
+<FONT SIZE=-1>PROTOCOL</FONT> are specified the same as for the system call of the same name. You should ``use Socket;'' first to get the proper definitions imported. See the example in
+ <A HREF="/n|/perl/html/./lib/Pod/perlipc.html#Sockets_Client_Server_Communica">Sockets: Client/Server Communication</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_socketpair">socketpair SOCKET1,SOCKET2,DOMAIN,TYPE,PROTOCOL
+
+</A></STRONG><DD>
+Creates an unnamed pair of sockets in the specified domain, of the specified type. 
+<FONT SIZE=-1>DOMAIN,</FONT> 
+<FONT SIZE=-1>TYPE,</FONT> and 
+<FONT SIZE=-1>PROTOCOL</FONT> are specified the same as for the system call of the same name. If unimplemented, yields a fatal error. Returns 
+<FONT SIZE=-1>TRUE</FONT> if successful.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sort">sort SUBNAME LIST
+
+</A></STRONG><DD>
+<DT><STRONG>sort BLOCK LIST
+
+</A></STRONG><DD>
+<DT><STRONG>sort LIST
+
+</A></STRONG><DD>
+Sorts the 
+<FONT SIZE=-1>LIST</FONT> and returns the sorted list value. If 
+<FONT SIZE=-1>SUBNAME</FONT> or 
+<FONT SIZE=-1>BLOCK</FONT> is omitted, sorts in standard string comparison order. If 
+<FONT SIZE=-1>SUBNAME</FONT> is specified, it gives the name of a subroutine that returns an integer less than, equal to, or greater than 0, depending on how the elements of the array are to be ordered. (The
+ <CODE>&lt;=&gt;</CODE> and <CODE>cmp</CODE>
+operators are extremely useful in such routines.) 
+<FONT SIZE=-1>SUBNAME</FONT> may be a scalar variable name, in which case the value provides the name of the subroutine to use. In place of a 
+<FONT SIZE=-1>SUBNAME,</FONT> you can provide a 
+<FONT SIZE=-1>BLOCK</FONT> as an anonymous, in-line sort subroutine.
+
+
+
+<P>
+
+In the interests of efficiency the normal calling code for subroutines is
+bypassed, with the following effects: the subroutine may not be a recursive
+subroutine, and the two elements to be compared are passed into the
+subroutine not via <CODE>@_</CODE> but as the package global variables <A
+HREF="#item__a">$a</A> and <A HREF="#item__b">$b</A> (see example below).
+They are passed by reference, so don't modify <A HREF="#item__a">$a</A> and
+$b. And don't try to declare them as lexicals either.
+
+
+<P>
+
+You also cannot exit out of the sort block or subroutine using any of the
+loop control operators described in <A HREF="/n|/perl/html/./lib/Pod/perlsyn.html#">the perlsyn manpage</A> or with <CODE>goto().</CODE>
+
+
+<P>
+
+When <CODE>use locale</CODE> is in effect, <CODE>sort LIST</CODE> sorts 
+<FONT SIZE=-1>LIST</FONT> according to the current collation locale. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    # sort lexically
+    @articles = sort @files;
+</PRE>
+
+<P>
+
+<PRE>    # same thing, but with explicit sort routine
+    @articles = sort {$a cmp $b} @files;
+</PRE>
+
+<P>
+
+<PRE>    # now case-insensitively
+    @articles = sort {uc($a) cmp uc($b)} @files;
+</PRE>
+
+<P>
+
+<PRE>    # same thing in reversed order
+    @articles = sort {$b cmp $a} @files;
+</PRE>
+
+<P>
+
+<PRE>    # sort numerically ascending
+    @articles = sort {$a &lt;=&gt; $b} @files;
+</PRE>
+
+<P>
+
+<PRE>    # sort numerically descending
+    @articles = sort {$b &lt;=&gt; $a} @files;
+</PRE>
+
+<P>
+
+<PRE>    # sort using explicit subroutine name
+    sub byage {
+        $age{$a} &lt;=&gt; $age{$b};  # presuming numeric
+    }
+    @sortedclass = sort byage @class;
+</PRE>
+
+<P>
+
+<PRE>    # this sorts the %age hash by value instead of key
+    # using an in-line function
+    @eldest = sort { $age{$b} &lt;=&gt; $age{$a} } keys %age;
+</PRE>
+
+<P>
+
+<PRE>    sub backwards { $b cmp $a; }
+    @harry = ('dog','cat','x','Cain','Abel');
+    @george = ('gone','chased','yz','Punished','Axed');
+    print sort @harry;
+            # prints AbelCaincatdogx
+    print sort backwards @harry;
+            # prints xdogcatCainAbel
+    print sort @george, 'to', @harry;
+            # prints AbelAxedCainPunishedcatchaseddoggonetoxyz
+</PRE>
+
+<P>
+
+<PRE>    # inefficiently sort by descending numeric compare using
+    # the first integer after the first = sign, or the
+    # whole record case-insensitively otherwise
+</PRE>
+
+<P>
+
+<PRE>    @new = sort {
+        ($b =~ /=(\d+)/)[0] &lt;=&gt; ($a =~ /=(\d+)/)[0]
+                            ||
+                    uc($a)  cmp  uc($b)
+    } @old;
+</PRE>
+
+<P>
+
+<PRE>    # same thing, but much more efficiently;
+    # we'll build auxiliary indices instead
+    # for speed
+    @nums = @caps = ();
+    for (@old) {
+        push @nums, /=(\d+)/;
+        push @caps, uc($_);
+    }
+</PRE>
+
+<P>
+
+<PRE>    @new = @old[ sort {
+                        $nums[$b] &lt;=&gt; $nums[$a]
+                                 ||
+                        $caps[$a] cmp $caps[$b]
+                       } 0..$#old
+               ];
+</PRE>
+
+<P>
+
+<PRE>    # same thing using a Schwartzian Transform (no temps)
+    @new = map { $_-&gt;[0] }
+        sort { $b-&gt;[1] &lt;=&gt; $a-&gt;[1]
+                        ||
+               $a-&gt;[2] cmp $b-&gt;[2]
+        } map { [$_, /=(\d+)/, uc($_)] } @old;
+</PRE>
+
+<P>
+
+If you're using strict, you <EM>MUST NOT</EM> declare <A HREF="#item__a">$a</A> and <A HREF="#item__b">$b</A> as
+lexicals. They are package globals. That means if you're in the <CODE>main</CODE> package, it's
+
+
+<P>
+
+<PRE>    @articles = sort {$main::b &lt;=&gt; $main::a} @files;
+</PRE>
+
+<P>
+
+or just
+
+
+<P>
+
+<PRE>    @articles = sort {$::b &lt;=&gt; $::a} @files;
+</PRE>
+
+<P>
+
+but if you're in the <CODE>FooPack</CODE> package, it's
+
+
+<P>
+
+<PRE>    @articles = sort {$FooPack::b &lt;=&gt; $FooPack::a} @files;
+</PRE>
+
+<P>
+
+The comparison function is required to behave. If it returns inconsistent
+results (sometimes saying $x[1] is less than $x[2] and sometimes saying the
+opposite, for example) the Perl interpreter will probably crash and dump
+core. This is entirely due to and dependent upon your system's
+<CODE>qsort(3)</CODE> library routine; this routine often avoids sanity
+checks in the interest of speed.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_splice">splice ARRAY,OFFSET,LENGTH,LIST
+
+</A></STRONG><DD>
+<DT><STRONG>splice ARRAY,OFFSET,LENGTH
+
+</A></STRONG><DD>
+<DT><STRONG>splice ARRAY,OFFSET
+
+</A></STRONG><DD>
+Removes the elements designated by 
+<FONT SIZE=-1>OFFSET</FONT> and 
+<FONT SIZE=-1>LENGTH</FONT> from an array, and replaces them with the elements of 
+<FONT SIZE=-1>LIST,</FONT> if any. Returns the elements removed from the array. The array grows or shrinks as necessary. If 
+<FONT SIZE=-1>LENGTH</FONT> is omitted, removes everything from 
+<FONT SIZE=-1>OFFSET</FONT> onward. The following equivalences hold (assuming
+ <CODE>$[ == 0</CODE>):
+
+
+<P>
+
+<PRE>    push(@a,$x,$y)      splice(@a,$#a+1,0,$x,$y)
+    pop(@a)             splice(@a,-1)
+    shift(@a)           splice(@a,0,1)
+    unshift(@a,$x,$y)   splice(@a,0,0,$x,$y)
+    $a[$x] = $y         splice(@a,$x,1,$y);
+</PRE>
+
+<P>
+
+Example, assuming array lengths are passed before arrays:
+
+
+<P>
+
+<PRE>    sub aeq {   # compare two list values
+        local(@a) = splice(@_,0,shift);
+        local(@b) = splice(@_,0,shift);
+        return 0 unless @a == @b;       # same len?
+        while (@a) {
+            return 0 if pop(@a) ne pop(@b);
+        }
+        return 1;
+    }
+    if (&amp;aeq($len,@foo[1..$len],0+@bar,@bar)) { ... }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_split">split /PATTERN/,EXPR,LIMIT
+
+</A></STRONG><DD>
+<DT><STRONG>split /PATTERN/,EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>split /PATTERN/
+
+</A></STRONG><DD>
+<DT><STRONG>split
+
+</A></STRONG><DD>
+Splits a string into an array of strings, and returns it.
+
+
+<P>
+
+If not in a list context, returns the number of fields found and splits
+into the <CODE>@_</CODE> array. (In a list context, you can force the split
+into <CODE>@_</CODE> by using <CODE>??</CODE> as the pattern delimiters, but it still returns the array value.) The use
+of implicit split to <CODE>@_</CODE> is deprecated, however.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, splits the <CODE>$_</CODE> string. If 
+<FONT SIZE=-1>PATTERN</FONT> is also omitted, splits on whitespace (after skipping any leading whitespace). Anything matching 
+<FONT SIZE=-1>PATTERN</FONT> is taken to be a delimiter separating the fields. (Note that the delimiter may be longer than one character.) If 
+<FONT SIZE=-1>LIMIT</FONT> is specified and is not negative, splits into no more than that many fields (though it may split into fewer). If 
+<FONT SIZE=-1>LIMIT</FONT> is unspecified, trailing null fields are stripped (which potential users of <CODE>pop()</CODE> would do well to remember). If 
+<FONT SIZE=-1>LIMIT</FONT> is negative, it is treated as if an arbitrarily large 
+<FONT SIZE=-1>LIMIT</FONT> had been specified.
+
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> pattern matching the null string (not to be confused
+with a null pattern <CODE>//</CODE>, which is just one member of the set of patterns matching a null string) will split the value of 
+<FONT SIZE=-1>EXPR</FONT> into separate characters at each point it matches that way. For example:
+
+
+
+<P>
+
+<PRE>    print join(':', split(/ */, 'hi there'));
+</PRE>
+
+<P>
+
+produces the output 'h:i:t:h:e:r:e'.
+
+
+<P>
+
+The 
+<FONT SIZE=-1>LIMIT</FONT> parameter can be used to split a line partially
+
+
+<P>
+
+<PRE>    ($login, $passwd, $remainder) = split(/:/, $_, 3);
+</PRE>
+
+<P>
+
+When assigning to a list, if 
+<FONT SIZE=-1>LIMIT</FONT> is omitted, Perl supplies a 
+<FONT SIZE=-1>LIMIT</FONT> one larger than the number of variables in the list, to avoid unnecessary work. For the list above 
+<FONT SIZE=-1>LIMIT</FONT> would have been 4 by default. In time critical applications it behooves you not to split into more fields than you really need.
+
+
+
+<P>
+
+If the 
+<FONT SIZE=-1>PATTERN</FONT> contains parentheses, additional array
+elements are created from each matching substring in the delimiter.
+
+
+<P>
+
+<PRE>    split(/([,-])/, &quot;1-10,20&quot;, 3);
+</PRE>
+
+<P>
+
+produces the list value
+
+
+<P>
+
+<PRE>    (1, '-', 10, ',', 20)
+</PRE>
+
+<P>
+
+If you had the entire header of a normal Unix email message in $header, you
+could split it up into fields and their values this way:
+
+
+<P>
+
+<PRE>    $header =~ s/\n\s+/ /g;  # fix continuation lines
+    %hdrs   =  (UNIX_FROM =&gt; split /^(.*?):\s*/m, $header);
+</PRE>
+
+<P>
+
+The pattern <CODE>/PATTERN/</CODE> may be replaced with an expression to specify patterns that vary at
+runtime. (To do runtime compilation only once, use <CODE>/$variable/o</CODE>.)
+
+
+<P>
+
+As a special case, specifying a 
+<FONT SIZE=-1>PATTERN</FONT> of space (<CODE>' '</CODE>) will split on white space just as split with no arguments does. Thus,
+<CODE>split('</CODE> ') can be used to emulate <STRONG>awk</STRONG>'s default behavior, whereas <A HREF="#item_split">split(/ /)</A>
+will give you as many null initial fields as there are leading spaces. 
+<FONT SIZE=-1>A</FONT> split on /\s+/ is like a <CODE>split('</CODE> ') except that any leading whitespace produces a null first field. 
+<FONT SIZE=-1>A</FONT> split with no arguments really does a
+ <A HREF="#item_split">split(' ', $_)</A> internally.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>    open(passwd, '/etc/passwd');
+    while (&lt;passwd&gt;) {
+        ($login, $passwd, $uid, $gid, $gcos,
+            $home, $shell) = split(/:/);
+        ...
+    }
+</PRE>
+
+<P>
+
+(Note that <CODE>$shell</CODE> above will still have a newline on it. See <A HREF="#chop">chop</A>,
+<A HREF="#chomp">chomp</A>, and <A HREF="#join">join</A>.)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sprintf">sprintf FORMAT, LIST
+
+</A></STRONG><DD>
+Returns a string formatted by the usual printf conventions of the 
+<FONT SIZE=-1>C</FONT> library function <CODE>sprintf().</CODE> See <EM>sprintf(3)</EM> or <EM>printf(3)</EM>
+on your system for an explanation of the general principles.
+
+
+<P>
+
+Perl does all of its own <CODE>sprintf()</CODE> formatting -- it emulates the 
+<FONT SIZE=-1>C</FONT> function <CODE>sprintf(),</CODE> but it doesn't use it (except for floating-point numbers, and even then only the standard modifiers are allowed). As a result, any non-standard extensions in your local <CODE>sprintf()</CODE> are not available from Perl.
+
+
+
+<P>
+
+Perl's <CODE>sprintf()</CODE> permits the following universally-known
+conversions:
+
+
+<P>
+
+<PRE>   %%   a percent sign
+   %c   a character with the given number
+   %s   a string
+   %d   a signed integer, in decimal
+   %u   an unsigned integer, in decimal
+   %o   an unsigned integer, in octal
+   %x   an unsigned integer, in hexadecimal
+   %e   a floating-point number, in scientific notation
+   %f   a floating-point number, in fixed decimal notation
+   %g   a floating-point number, in %e or %f notation
+</PRE>
+
+<P>
+
+In addition, Perl permits the following widely-supported conversions:
+
+
+<P>
+
+<PRE>   %X   like %x, but using upper-case letters
+   %E   like %e, but using an upper-case &quot;E&quot;
+   %G   like %g, but with an upper-case &quot;E&quot; (if applicable)
+   %p   a pointer (outputs the Perl value's address in hexadecimal)
+   %n   special: *stores* the number of characters output so far
+        into the next variable in the parameter list 
+</PRE>
+
+<P>
+
+Finally, for backward (and we do mean ``backward'') compatibility, Perl
+permits these unnecessary but widely-supported conversions:
+
+
+<P>
+
+<PRE>   %i   a synonym for %d
+   %D   a synonym for %ld
+   %U   a synonym for %lu
+   %O   a synonym for %lo
+   %F   a synonym for %f
+</PRE>
+
+<P>
+
+Perl permits the following universally-known flags between the <CODE>%</CODE>
+and the conversion letter:
+
+
+<P>
+
+<PRE>   space   prefix positive number with a space
+   +       prefix positive number with a plus sign
+   -       left-justify within the field
+   0       use zeros, not spaces, to right-justify
+   #       prefix octal with &quot;0&quot;, hex with &quot;0x&quot;
+   number  minimum field width
+   .number &quot;precision&quot;: digits after decimal point for floating-point,
+           max length for string, minimum length for integer
+   l       interpret integer as C type &quot;long&quot; or &quot;unsigned long&quot;
+   h       interpret integer as C type &quot;short&quot; or &quot;unsigned short&quot;
+</PRE>
+
+<P>
+
+There is also one Perl-specific flag:
+
+
+<P>
+
+<PRE>   V       interpret integer as Perl's standard integer type
+</PRE>
+
+<P>
+
+Where a number would appear in the flags, an asterisk (``*'') may be used
+instead, in which case Perl uses the next item in the parameter list as the
+given number (that is, as the field width or precision). If a field width
+obtained through ``*'' is negative, it has the same effect as the '-' flag:
+left-justification.
+
+
+<P>
+
+If <CODE>use locale</CODE> is in effect, the character used for the decimal point in formatted real numbers is affected by the 
+<FONT SIZE=-1>LC_NUMERIC</FONT> locale. See
+ <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sqrt">sqrt EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>sqrt
+
+</A></STRONG><DD>
+Return the square root of 
+<FONT SIZE=-1>EXPR.</FONT> If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, returns square root of $_.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_srand">srand EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>srand
+
+</A></STRONG><DD>
+Sets the random number seed for the <A HREF="#item_rand">rand</A> operator. If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses a semi-random value based on the current time and process 
+<FONT SIZE=-1>ID,</FONT> among other things. In versions of Perl prior to 5.004 the default seed was just the current <CODE>time().</CODE> This isn't a particularly good seed, so many old programs supply their own seed value (often
+ <A HREF="#item_time_">time ^ $$</A> or
+<A HREF="#item_time_">time ^ ($$ + ($$ << 15))</A>), but that isn't necessary any more.
+
+
+<P>
+
+In fact, it's usually not necessary to call <CODE>srand()</CODE> at all,
+because if it is not called explicitly, it is called implicitly at the
+first use of the <A HREF="#item_rand">rand</A> operator. However, this was not the case in version of Perl before 5.004,
+so if your script will run under older Perl versions, it should call
+<CODE>srand().</CODE>
+
+
+<P>
+
+Note that you need something much more random than the default seed for
+cryptographic purposes. Checksumming the compressed output of one or more
+rapidly changing operating system status programs is the usual method. For
+example:
+
+
+<P>
+
+<PRE>    srand (time ^ $$ ^ unpack &quot;%L*&quot;, `ps axww | gzip`);
+</PRE>
+
+<P>
+
+If you're particularly concerned with this, see the Math::TrulyRandom module in 
+<FONT SIZE=-1>CPAN.</FONT>
+
+
+
+<P>
+
+Do <EM>not</EM> call <CODE>srand()</CODE> multiple times in your program unless you know
+exactly what you're doing and why you're doing it. The point of the
+function is to ``seed'' the <CODE>rand()</CODE> function so that
+<CODE>rand()</CODE> can produce a different sequence each time you run your
+program. Just do it once at the top of your program, or you <EM>won't</EM> get random numbers out of <CODE>rand()!</CODE>
+
+
+<P>
+
+Frequently called programs (like 
+<FONT SIZE=-1>CGI</FONT> scripts) that simply use
+
+
+<P>
+
+<PRE>    time ^ $$
+</PRE>
+
+<P>
+
+for a seed can fall prey to the mathematical property that
+
+
+<P>
+
+<PRE>    a^b == (a+1)^(b+1)
+</PRE>
+
+<P>
+
+one-third of the time. So don't do that.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_stat">stat FILEHANDLE
+
+</A></STRONG><DD>
+<DT><STRONG>stat EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>stat
+
+</A></STRONG><DD>
+Returns a 13-element array giving the status info for a file, either the file opened via 
+<FONT SIZE=-1>FILEHANDLE,</FONT> or named by 
+<FONT SIZE=-1>EXPR.</FONT> If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, it stats $_. Returns a null list if the stat fails. Typically used as follows:
+
+
+
+<P>
+
+<PRE>    ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+       $atime,$mtime,$ctime,$blksize,$blocks)
+           = stat($filename);
+</PRE>
+
+<P>
+
+Not all fields are supported on all filesystem types. Here are the meaning
+of the fields:
+
+
+<P>
+
+<PRE>  0 dev      device number of filesystem
+  1 ino      inode number
+  2 mode     file mode  (type and permissions)
+  3 nlink    number of (hard) links to the file
+  4 uid      numeric user ID of file's owner
+  5 gid      numeric group ID of file's owner
+  6 rdev     the device identifier (special files only)
+  7 size     total size of file, in bytes
+  8 atime    last access time since the epoch
+  9 mtime    last modify time since the epoch
+ 10 ctime    inode change time (NOT creation time!) since the epoch
+ 11 blksize  preferred block size for file system I/O
+ 12 blocks   actual number of blocks allocated
+</PRE>
+
+<P>
+
+(The epoch was at 00:00 January 1, 1970 
+<FONT SIZE=-1>GMT.)</FONT>
+
+
+<P>
+
+If stat is passed the special filehandle consisting of an underline, no
+stat is done, but the current contents of the stat structure from the last
+stat or filetest are returned. Example:
+
+
+<P>
+
+<PRE>    if (-x $file &amp;&amp; (($d) = stat(_)) &amp;&amp; $d &lt; 0) {
+        print &quot;$file is executable NFS file\n&quot;;
+    }
+</PRE>
+
+<P>
+
+(This works on machines only for which the device number is negative under 
+<FONT SIZE=-1>NFS.)</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_study">study SCALAR
+
+</A></STRONG><DD>
+<DT><STRONG>study
+
+</A></STRONG><DD>
+Takes extra time to study 
+<FONT SIZE=-1>SCALAR</FONT> (<CODE>$_</CODE> if unspecified) in anticipation of doing many pattern matches on the string before it is next modified. This may or may not save time, depending on the nature and number of patterns you are searching on, and on the distribution of character frequencies in the string to be searched -- you probably want to compare run times with and without it to see which runs faster. Those loops which scan for many short constant strings (including the constant parts of more complex patterns) will benefit most. You may have only one study active at a time -- if you study a different scalar the first is ``unstudied''. (The way study works is this: a linked list of every character in the string to be searched is made, so we know, for example, where all the 'k' characters are. From each search string, the rarest character is selected, based on some static frequency tables constructed from some 
+<FONT SIZE=-1>C</FONT> programs and English text. Only those places that contain this ``rarest'' character are examined.)
+
+
+
+<P>
+
+For example, here is a loop which inserts index producing entries before
+any line containing a certain pattern:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        study;
+        print &quot;.IX foo\n&quot; if /\bfoo\b/;
+        print &quot;.IX bar\n&quot; if /\bbar\b/;
+        print &quot;.IX blurfl\n&quot; if /\bblurfl\b/;
+        ...
+        print;
+    }
+</PRE>
+
+<P>
+
+In searching for /\bfoo\b/, only those locations in <CODE>$_</CODE> that
+contain ``f'' will be looked at, because ``f'' is rarer than ``o''. In
+general, this is a big win except in pathological cases. The only question
+is whether it saves you more time than it took to build the linked list in
+the first place.
+
+
+<P>
+
+Note that if you have to look for strings that you don't know till runtime,
+you can build an entire loop as a string and eval that to avoid recompiling
+all your patterns all the time. Together with undefining $/ to input entire
+files as one record, this can be very fast, often faster than specialized
+programs like <CODE>fgrep(1).</CODE> The following scans a list of files (<CODE>@files</CODE>) for a list of words (<CODE>@words</CODE>), and prints out the names of those files that contain a match:
+
+
+<P>
+
+<PRE>    $search = 'while (&lt;&gt;) { study;';
+    foreach $word (@words) {
+        $search .= &quot;++\$seen{\$ARGV} if /\\b$word\\b/;\n&quot;;
+    }
+    $search .= &quot;}&quot;;
+    @ARGV = @files;
+    undef $/;
+    eval $search;               # this screams
+    $/ = &quot;\n&quot;;          # put back to normal input delimiter
+    foreach $file (sort keys(%seen)) {
+        print $file, &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_sub">sub BLOCK
+
+</A></STRONG><DD>
+<DT><STRONG>sub NAME
+
+</A></STRONG><DD>
+<DT><STRONG>sub NAME BLOCK
+
+</A></STRONG><DD>
+This is subroutine definition, not a real function <EM>per se</EM>. With just a 
+<FONT SIZE=-1>NAME</FONT> (and possibly prototypes), it's just a forward declaration. Without a 
+<FONT SIZE=-1>NAME,</FONT> it's an anonymous function declaration, and does actually return a value: the 
+<FONT SIZE=-1>CODE</FONT> ref of the closure you just created. See
+ <A HREF="/n|/perl/html/./lib/Pod/perlsub.html#">the perlsub manpage</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A> for details.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_substr">substr EXPR,OFFSET,LEN
+
+</A></STRONG><DD>
+<DT><STRONG>substr EXPR,OFFSET
+
+</A></STRONG><DD>
+Extracts a substring out of 
+<FONT SIZE=-1>EXPR</FONT> and returns it. First character is at offset 0,
+or whatever you've set <CODE>$[</CODE> to (but don't do that). If 
+<FONT SIZE=-1>OFFSET</FONT> is negative (or more precisely, less than <CODE>$[</CODE>), starts that far from the end of the string. If 
+<FONT SIZE=-1>LEN</FONT> is omitted, returns everything to the end of the string. If 
+<FONT SIZE=-1>LEN</FONT> is negative, leaves that many characters off the end of the string.
+
+
+
+<P>
+
+If you specify a substring which is partly outside the string, the part
+within the string is returned. If the substring is totally outside the
+string a warning is produced.
+
+
+<P>
+
+You can use the <CODE>substr()</CODE> function as an lvalue, in which case 
+<FONT SIZE=-1>EXPR</FONT> must be an lvalue. If you assign something shorter than 
+<FONT SIZE=-1>LEN,</FONT> the string will shrink, and if you assign something longer than 
+<FONT SIZE=-1>LEN,</FONT> the string will grow to accommodate it. To keep the string the same length you may need to pad or chop your value using <CODE>sprintf().</CODE>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_symlink">symlink OLDFILE,NEWFILE
+
+</A></STRONG><DD>
+Creates a new filename symbolically linked to the old filename. Returns 1
+for success, 0 otherwise. On systems that don't support symbolic links,
+produces a fatal error at run time. To check for that, use eval:
+
+
+<P>
+
+<PRE>    $symlink_exists = (eval {symlink(&quot;&quot;,&quot;&quot;)};, $@ eq '');
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_syscall">syscall LIST
+
+</A></STRONG><DD>
+Calls the system call specified as the first element of the list, passing
+the remaining elements as arguments to the system call. If unimplemented,
+produces a fatal error. The arguments are interpreted as follows: if a
+given argument is numeric, the argument is passed as an int. If not, the
+pointer to the string value is passed. You are responsible to make sure a
+string is pre-extended long enough to receive any result that might be
+written into a string. If your integer arguments are not literals and have
+never been interpreted in a numeric context, you may need to add 0 to them
+to force them to look like numbers.
+
+
+<P>
+
+<PRE>    require 'syscall.ph';               # may need to run h2ph
+    syscall(&amp;SYS_write, fileno(STDOUT), &quot;hi there\n&quot;, 9);
+</PRE>
+
+<P>
+
+Note that Perl supports passing of up to only 14 arguments to your system
+call, which in practice should usually suffice.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sysopen">sysopen FILEHANDLE,FILENAME,MODE
+
+</A></STRONG><DD>
+<DT><STRONG>sysopen FILEHANDLE,FILENAME,MODE,PERMS
+
+</A></STRONG><DD>
+Opens the file whose filename is given by 
+<FONT SIZE=-1>FILENAME,</FONT> and associates it with 
+<FONT SIZE=-1>FILEHANDLE.</FONT> If 
+<FONT SIZE=-1>FILEHANDLE</FONT> is an expression, its value is used as the name of the real filehandle wanted. This function calls the underlying operating system's
+ <A HREF="#item_open">open</A> function with the parameters 
+<FONT SIZE=-1>FILENAME,</FONT> 
+<FONT SIZE=-1>MODE,</FONT> 
+<FONT SIZE=-1>PERMS.</FONT>
+
+
+
+<P>
+
+The possible values and flag bits of the 
+<FONT SIZE=-1>MODE</FONT> parameter are system-dependent; they are
+available via the standard module <CODE>Fcntl</CODE>. However, for historical reasons, some values are universal: zero means
+read-only, one means write-only, and two means read/write.
+
+
+<P>
+
+If the file named by 
+<FONT SIZE=-1>FILENAME</FONT> does not exist and the <A HREF="#item_open">open</A> call creates it (typically because 
+<FONT SIZE=-1>MODE</FONT> includes the 
+<FONT SIZE=-1>O_CREAT</FONT> flag), then the value of 
+<FONT SIZE=-1>PERMS</FONT> specifies the permissions of the newly created file. If 
+<FONT SIZE=-1>PERMS</FONT> is omitted, the default value is 0666, which allows read and write for all. This default is reasonable: see
+ <A HREF="#item_umask">umask</A>.
+
+
+<P>
+
+The IO::File module provides a more object-oriented approach, if you're
+into that kind of thing.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sysread">sysread FILEHANDLE,SCALAR,LENGTH,OFFSET
+
+</A></STRONG><DD>
+<DT><STRONG>sysread FILEHANDLE,SCALAR,LENGTH
+
+</A></STRONG><DD>
+Attempts to read 
+<FONT SIZE=-1>LENGTH</FONT> bytes of data into variable 
+<FONT SIZE=-1>SCALAR</FONT> from the specified 
+<FONT SIZE=-1>FILEHANDLE,</FONT> using the system call <CODE>read(2).</CODE> It bypasses stdio, so mixing this with other kinds of reads, <CODE>print(),</CODE> <CODE>write(),</CODE> <CODE>seek(),</CODE> or <CODE>tell()</CODE> can cause confusion. Returns the number of bytes actually read, or undef if there was an error. 
+<FONT SIZE=-1>SCALAR</FONT> will be grown or shrunk so that the last byte actually read is the last byte of the scalar after the read.
+
+
+
+<P>
+
+An 
+<FONT SIZE=-1>OFFSET</FONT> may be specified to place the read data at some place in the string other than the beginning. 
+<FONT SIZE=-1>A</FONT> negative 
+<FONT SIZE=-1>OFFSET</FONT> specifies placement at that many bytes counting backwards from the end of the string. 
+<FONT SIZE=-1>A</FONT> positive 
+<FONT SIZE=-1>OFFSET</FONT> greater than the length of 
+<FONT SIZE=-1>SCALAR</FONT> results in the string being padded to the required size with ``\0'' bytes before the result of the read is appended.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sysseek">sysseek FILEHANDLE,POSITION,WHENCE
+
+</A></STRONG><DD>
+Sets FILEHANDLE's system position using the system call <CODE>lseek(2).</CODE> It bypasses stdio, so mixing this with reads (other than <CODE>sysread()),</CODE> <CODE>print(),</CODE> <CODE>write(),</CODE> <CODE>seek(),</CODE> or <CODE>tell()</CODE> may cause confusion. 
+<FONT SIZE=-1>FILEHANDLE</FONT> may be an expression whose value gives the name of the filehandle. The values for 
+<FONT SIZE=-1>WHENCE</FONT> are 0 to set the new position to 
+<FONT SIZE=-1>POSITION,</FONT> 1 to set the it to the current position plus 
+<FONT SIZE=-1>POSITION,</FONT> and 2 to set it to 
+<FONT SIZE=-1>EOF</FONT> plus 
+<FONT SIZE=-1>POSITION</FONT> (typically negative). For 
+<FONT SIZE=-1>WHENCE,</FONT> you may use the constants 
+<FONT SIZE=-1>SEEK_SET,</FONT> 
+<FONT SIZE=-1>SEEK_CUR,</FONT> and 
+<FONT SIZE=-1>SEEK_END</FONT> from either the IO::Seekable or the 
+<FONT SIZE=-1>POSIX</FONT> module.
+
+
+
+<P>
+
+Returns the new position, or the undefined value on failure. 
+<FONT SIZE=-1>A</FONT> position of zero is returned as the string ``0 but true''; thus <CODE>sysseek()</CODE> returns 
+<FONT SIZE=-1>TRUE</FONT> on success and 
+<FONT SIZE=-1>FALSE</FONT> on failure, yet you can still easily determine the new position.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_system">system LIST
+
+</A></STRONG><DD>
+Does exactly the same thing as ``exec 
+<FONT SIZE=-1>LIST''</FONT> except that a fork is done first, and the
+parent process waits for the child process to complete. Note that argument
+processing varies depending on the number of arguments. The return value is
+the exit status of the program as returned by the <CODE>wait()</CODE> call.
+To get the actual exit value divide by 256. See also <A HREF="#exec">exec</A>. This is <EM>NOT</EM> what you want to use to capture the output from a command, for that you
+should use merely backticks or qx//, as described in <A HREF="/n|/perl/html/./lib/Pod/perlop.html#_STRING_">`STRING`</A>.
+
+
+<P>
+
+Because <CODE>system()</CODE> and backticks block 
+<FONT SIZE=-1>SIGINT</FONT> and 
+<FONT SIZE=-1>SIGQUIT,</FONT> killing the program they're running doesn't actually interrupt your program.
+
+
+
+<P>
+
+<PRE>    @args = (&quot;command&quot;, &quot;arg1&quot;, &quot;arg2&quot;);
+    system(@args) == 0
+         or die &quot;system @args failed: $?&quot;
+</PRE>
+
+<P>
+
+Here's a more elaborate example of analysing the return value from
+<CODE>system()</CODE> on a Unix system to check for all possibilities,
+including for signals and core dumps.
+
+
+<P>
+
+<PRE>    $rc = 0xffff &amp; system @args;
+    printf &quot;system(%s) returned %#04x: &quot;, &quot;@args&quot;, $rc;
+    if ($rc == 0) {
+        print &quot;ran with normal exit\n&quot;;
+    }
+    elsif ($rc == 0xff00) {
+        print &quot;command failed: $!\n&quot;;
+    }
+    elsif ($rc &gt; 0x80) {
+        $rc &gt;&gt;= 8;
+        print &quot;ran with non-zero exit status $rc\n&quot;;
+    }
+    else {
+        print &quot;ran with &quot;;
+        if ($rc &amp;   0x80) {
+            $rc &amp;= ~0x80;
+            print &quot;core dump from &quot;;
+        }
+        print &quot;signal $rc\n&quot;
+    }
+    $ok = ($rc != 0);
+</PRE>
+
+<P>
+
+When the arguments get executed via the system shell, results will be
+subject to its quirks and capabilities. See <A HREF="/n|/perl/html/./lib/Pod/perlop.html#_STRING_">`STRING`</A>
+for details.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_syswrite">syswrite FILEHANDLE,SCALAR,LENGTH,OFFSET
+
+</A></STRONG><DD>
+<DT><STRONG>syswrite FILEHANDLE,SCALAR,LENGTH
+
+</A></STRONG><DD>
+Attempts to write 
+<FONT SIZE=-1>LENGTH</FONT> bytes of data from variable 
+<FONT SIZE=-1>SCALAR</FONT> to the specified 
+<FONT SIZE=-1>FILEHANDLE,</FONT> using the system call <CODE>write(2).</CODE> It bypasses stdio, so mixing this with reads (other than <CODE>sysread()),</CODE> <CODE>print(),</CODE> <CODE>write(),</CODE> <CODE>seek(),</CODE> or <CODE>tell()</CODE> may cause confusion. Returns the number of bytes actually written, or undef if there was an error. If the length is greater than the available data, only as much data as is available will be written.
+
+
+
+<P>
+
+An 
+<FONT SIZE=-1>OFFSET</FONT> may be specified to write the data from some part of the string other than the beginning. 
+<FONT SIZE=-1>A</FONT> negative 
+<FONT SIZE=-1>OFFSET</FONT> specifies writing that many bytes counting backwards from the end of the string.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_tell">tell FILEHANDLE
+
+</A></STRONG><DD>
+<DT><STRONG>tell
+
+</A></STRONG><DD>
+Returns the current position for 
+<FONT SIZE=-1>FILEHANDLE.</FONT> 
+<FONT SIZE=-1>FILEHANDLE</FONT> may be an expression whose value gives the name of the actual filehandle. If 
+<FONT SIZE=-1>FILEHANDLE</FONT> is omitted, assumes the file last read.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_telldir">telldir DIRHANDLE
+
+</A></STRONG><DD>
+Returns the current position of the <CODE>readdir()</CODE> routines on 
+<FONT SIZE=-1>DIRHANDLE.</FONT> Value may be given to
+<CODE>seekdir()</CODE> to access a particular location in a directory. Has
+the same caveats about possible directory compaction as the corresponding
+system library routine.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_tie">tie VARIABLE,CLASSNAME,LIST
+
+</A></STRONG><DD>
+This function binds a variable to a package class that will provide the implementation for the variable. 
+<FONT SIZE=-1>VARIABLE</FONT> is the name of the variable to be enchanted. 
+<FONT SIZE=-1>CLASSNAME</FONT> is the name of a class implementing objects of correct type. Any additional arguments are passed to the ``new'' method of the class (meaning 
+<FONT SIZE=-1>TIESCALAR,</FONT> 
+<FONT SIZE=-1>TIEARRAY,</FONT> or 
+<FONT SIZE=-1>TIEHASH).</FONT> Typically these are arguments such as might be passed to the <CODE>dbm_open()</CODE> function of 
+<FONT SIZE=-1>C.</FONT> The object returned by the ``new'' method is also returned by the <CODE>tie()</CODE> function, which would be useful if you want to access other methods in 
+<FONT SIZE=-1>CLASSNAME.</FONT>
+
+
+
+<P>
+
+Note that functions such as <CODE>keys()</CODE> and <CODE>values()</CODE> may return huge array values when used on large objects, like 
+<FONT SIZE=-1>DBM</FONT> files. You may prefer to use the <CODE>each()</CODE> function to iterate over such. Example:
+
+
+
+<P>
+
+<PRE>    # print out history file offsets
+    use NDBM_File;
+    tie(%HIST, 'NDBM_File', '/usr/lib/news/history', 1, 0);
+    while (($key,$val) = each %HIST) {
+        print $key, ' = ', unpack('L',$val), &quot;\n&quot;;
+    }
+    untie(%HIST);
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> class implementing a hash should have the following
+methods:
+
+
+<P>
+
+<PRE>    TIEHASH classname, LIST
+    DESTROY this
+    FETCH this, key
+    STORE this, key, value
+    DELETE this, key
+    EXISTS this, key
+    FIRSTKEY this
+    NEXTKEY this, lastkey
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> class implementing an ordinary array should have the
+following methods:
+
+
+<P>
+
+<PRE>    TIEARRAY classname, LIST
+    DESTROY this
+    FETCH this, key
+    STORE this, key, value
+    [others TBD]
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> class implementing a scalar should have the
+following methods:
+
+
+<P>
+
+<PRE>    TIESCALAR classname, LIST
+    DESTROY this
+    FETCH this,
+    STORE this, value
+</PRE>
+
+<P>
+
+Unlike <CODE>dbmopen(),</CODE> the <CODE>tie()</CODE> function will not use
+or require a module for you--you need to do that explicitly yourself. See <EM>DB_File</EM>
+or the <EM>Config</EM> module for interesting <CODE>tie()</CODE> implementations.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_tied">tied VARIABLE
+
+</A></STRONG><DD>
+Returns a reference to the object underlying 
+<FONT SIZE=-1>VARIABLE</FONT> (the same value that was originally returned by the <CODE>tie()</CODE> call which bound the variable to a package.) Returns the undefined value if 
+<FONT SIZE=-1>VARIABLE</FONT> isn't tied to a package.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_time">time
+
+</A></STRONG><DD>
+Returns the number of non-leap seconds since whatever time the system considers to be the epoch (that's 00:00:00, January 1, 1904 for MacOS, and 00:00:00 
+<FONT SIZE=-1>UTC,</FONT> January 1, 1970 for most other systems). Suitable for feeding to <CODE>gmtime()</CODE> and <CODE>localtime().</CODE>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_times">times
+
+</A></STRONG><DD>
+Returns a four-element array giving the user and system times, in seconds,
+for this process and the children of this process.
+
+
+<P>
+
+<PRE>    ($user,$system,$cuser,$csystem) = times;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_tr">tr///
+
+</A></STRONG><DD>
+The translation operator. Same as y///. See <A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_truncate">truncate FILEHANDLE,LENGTH
+
+</A></STRONG><DD>
+<DT><STRONG>truncate EXPR,LENGTH
+
+</A></STRONG><DD>
+Truncates the file opened on 
+<FONT SIZE=-1>FILEHANDLE,</FONT> or named by 
+<FONT SIZE=-1>EXPR,</FONT> to the specified length. Produces a fatal error if truncate isn't implemented on your system.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_uc">uc EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>uc
+
+</A></STRONG><DD>
+Returns an uppercased version of 
+<FONT SIZE=-1>EXPR.</FONT> This is the internal function implementing the 
+<FONT SIZE=-1>\U</FONT> escape in double-quoted strings. Respects current 
+<FONT SIZE=-1>LC_CTYPE</FONT> locale if
+ <CODE>use locale</CODE> in force. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ucfirst">ucfirst EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>ucfirst
+
+</A></STRONG><DD>
+Returns the value of 
+<FONT SIZE=-1>EXPR</FONT> with the first character uppercased. This is the internal function implementing the \u escape in double-quoted strings. Respects current 
+<FONT SIZE=-1>LC_CTYPE</FONT> locale if
+ <CODE>use locale</CODE> in force. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_umask">umask EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>umask
+
+</A></STRONG><DD>
+Sets the umask for the process to 
+<FONT SIZE=-1>EXPR</FONT> and returns the previous value. If 
+<FONT SIZE=-1>EXPR</FONT> is omitted, merely returns the current umask. Remember that a umask is a number, usually given in octal; it is
+ <EM>not</EM> a string of octal digits. See also <A HREF="#oct">oct</A>, if all you have is a string.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_undef">undef EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>undef
+
+</A></STRONG><DD>
+Undefines the value of 
+<FONT SIZE=-1>EXPR,</FONT> which must be an lvalue. Use only on a scalar value, an entire array, an entire hash, or a subroutine name (using ``&amp;''). (Using <CODE>undef()</CODE> will probably not do what you expect on most predefined variables or 
+<FONT SIZE=-1>DBM</FONT> list values, so don't do that.) Always returns the undefined value. You can omit the 
+<FONT SIZE=-1>EXPR,</FONT> in which case nothing is undefined, but you still get an undefined value that you could, for instance, return from a subroutine, assign to a variable or pass as a parameter. Examples:
+
+
+
+<P>
+
+<PRE>    undef $foo;
+    undef $bar{'blurfl'};             # Compare to: delete $bar{'blurfl'};
+    undef @ary;
+    undef %hash;
+    undef &amp;mysub;
+    return (wantarray ? (undef, $errmsg) : undef) if $they_blew_it;
+    select undef, undef, undef, 0.25;
+    ($a, $b, undef, $c) = &amp;foo;       # Ignore third value returned
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_unlink">unlink LIST
+
+</A></STRONG><DD>
+<DT><STRONG>unlink
+
+</A></STRONG><DD>
+Deletes a list of files. Returns the number of files successfully deleted.
+
+
+<P>
+
+<PRE>    $cnt = unlink 'a', 'b', 'c';
+    unlink @goners;
+    unlink &lt;*.bak&gt;;
+</PRE>
+
+<P>
+
+Note: unlink will not delete directories unless you are superuser and the <STRONG>-U</STRONG> flag is supplied to Perl. Even if these conditions are met, be warned that
+unlinking a directory can inflict damage on your filesystem. Use rmdir
+instead.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>LIST</FONT> is omitted, uses $_.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_unpack">unpack TEMPLATE,EXPR
+
+</A></STRONG><DD>
+Unpack does the reverse of pack: it takes a string representing a structure and expands it out into a list value, returning the array value. (In a scalar context, it returns merely the first value produced.) The 
+<FONT SIZE=-1>TEMPLATE</FONT> has the same format as in the pack function. Here's a subroutine that does substring:
+
+
+
+<P>
+
+<PRE>    sub substr {
+        local($what,$where,$howmuch) = @_;
+        unpack(&quot;x$where a$howmuch&quot;, $what);
+    }
+</PRE>
+
+<P>
+
+and then there's
+
+
+<P>
+
+<PRE>    sub ordinal { unpack(&quot;c&quot;,$_[0]); } # same as ord()
+</PRE>
+
+<P>
+
+In addition, you may prefix a field with a %&lt;number&gt; to indicate that you want a &lt;number&gt;-bit checksum of the items instead of the items themselves. Default is a 16-bit checksum. For example, the following computes the same number as the System 
+<FONT SIZE=-1>V</FONT> sum program:
+
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        $checksum += unpack(&quot;%16C*&quot;, $_);
+    }
+    $checksum %= 65536;
+</PRE>
+
+<P>
+
+The following efficiently counts the number of set bits in a bit vector:
+
+
+<P>
+
+<PRE>    $setbits = unpack(&quot;%32b*&quot;, $selectmask);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_untie">untie VARIABLE
+
+</A></STRONG><DD>
+Breaks the binding between a variable and a package. (See
+<CODE>tie().)</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_unshift">unshift ARRAY,LIST
+
+</A></STRONG><DD>
+Does the opposite of a <A HREF="#item_shift">shift</A>. Or the opposite of a <A HREF="#item_push">push</A>, depending on how you look at it. Prepends list to the front of the array,
+and returns the new number of elements in the array.
+
+
+<P>
+
+<PRE>    unshift(ARGV, '-e') unless $ARGV[0] =~ /^-/;
+</PRE>
+
+<P>
+
+Note the 
+<FONT SIZE=-1>LIST</FONT> is prepended whole, not one element at a time, so
+the prepended elements stay in the same order. Use reverse to do the
+reverse.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_use">use Module LIST
+
+</A></STRONG><DD>
+<DT><STRONG>use Module
+
+</A></STRONG><DD>
+<DT><STRONG>use Module VERSION LIST
+
+</A></STRONG><DD>
+<DT><STRONG>use VERSION
+
+</A></STRONG><DD>
+Imports some semantics into the current package from the named module,
+generally by aliasing certain subroutine or variable names into your
+package. It is exactly equivalent to
+
+
+<P>
+
+<PRE>    BEGIN { require Module; import Module LIST; }
+</PRE>
+
+<P>
+
+except that Module <EM>must</EM> be a bareword.
+
+
+<P>
+
+If the first argument to <A HREF="#item_use">use</A> is a number, it is treated as a version number instead of a module name. If the version of the Perl interpreter is less than 
+<FONT SIZE=-1>VERSION,</FONT> then an error message is printed and Perl exits immediately. This is often useful if you need to check the current Perl version before
+ <A HREF="#item_use">use</A>ing library modules which have changed in incompatible ways from older
+versions of Perl. (We try not to do this more than we have to.)
+
+
+<P>
+
+The 
+<FONT SIZE=-1>BEGIN</FONT> forces the require and import to happen at
+compile time. The require makes sure the module is loaded into memory if it
+hasn't been yet. The import is not a builtin--it's just an ordinary static
+method call into the ``Module'' package to tell the module to import the
+list of features back into the current package. The module can implement
+its import method any way it likes, though most modules just choose to
+derive their import method via inheritance from the Exporter class that is
+defined in the Exporter module. See <A HREF="/n|/perl/html/./lib/Exporter.html#">the Exporter manpage</A>. If no import method can be found then the error is currently silently
+ignored. This may change to a fatal error in a future version.
+
+
+<P>
+
+If you don't want your namespace altered, explicitly supply an empty list:
+
+
+<P>
+
+<PRE>    use Module ();
+</PRE>
+
+<P>
+
+That is exactly equivalent to
+
+
+<P>
+
+<PRE>    BEGIN { require Module; }
+</PRE>
+
+<P>
+
+If the 
+<FONT SIZE=-1>VERSION</FONT> argument is present between Module and 
+<FONT SIZE=-1>LIST,</FONT> then the
+
+<A HREF="#item_use">use</A> will call the 
+<FONT SIZE=-1>VERSION</FONT> method in class Module with the given version as an argument. The default 
+<FONT SIZE=-1>VERSION</FONT> method, inherited from the Universal class, croaks if the given version is larger than the value of the variable $Module::VERSION. (Note that there is not a comma after 
+<FONT SIZE=-1>VERSION!)</FONT>
+
+
+
+<P>
+
+Because this is a wide-open interface, pragmas (compiler directives) are
+also implemented this way. Currently implemented pragmas are:
+
+
+<P>
+
+<PRE>    use integer;
+    use diagnostics;
+    use sigtrap qw(SEGV BUS);
+    use strict  qw(subs vars refs);
+    use subs    qw(afunc blurfl);
+</PRE>
+
+<P>
+
+These pseudo-modules import semantics into the current block scope, unlike
+ordinary modules, which import symbols into the current package (which are
+effective through the end of the file).
+
+
+<P>
+
+There's a corresponding ``no'' command that unimports meanings imported by
+use, i.e., it calls <CODE>unimport Module LIST</CODE> instead of <A HREF="#item_import">import</A>.
+
+
+<P>
+
+<PRE>    no integer;
+    no strict 'refs';
+</PRE>
+
+<P>
+
+If no unimport method can be found the call fails with a fatal error.
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#">the perlmod manpage</A> for a list of standard modules and pragmas.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_utime">utime LIST
+
+</A></STRONG><DD>
+Changes the access and modification times on each file of a list of files. The first two elements of the list must be the 
+<FONT SIZE=-1>NUMERICAL</FONT> access and modification times, in that order. Returns the number of files successfully changed. The inode modification time of each file is set to the current time. Example of a ``touch'' command:
+
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl
+    $now = time;
+    utime $now, $now, @ARGV;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_values">values HASH
+
+</A></STRONG><DD>
+Returns a normal array consisting of all the values of the named hash. (In
+a scalar context, returns the number of values.) The values are returned in
+an apparently random order, but it is the same order as either the
+<CODE>keys()</CODE> or <CODE>each()</CODE> function would produce on the
+same hash. As a side effect, it resets HASH's iterator. See also
+<CODE>keys(),</CODE> <CODE>each(),</CODE> and <CODE>sort().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_vec">vec EXPR,OFFSET,BITS
+
+</A></STRONG><DD>
+Treats the string in 
+<FONT SIZE=-1>EXPR</FONT> as a vector of unsigned integers, and returns the value of the bit field specified by 
+<FONT SIZE=-1>OFFSET.</FONT> 
+<FONT SIZE=-1>BITS</FONT> specifies the number of bits that are reserved for each entry in the bit vector. This must be a power of two from 1 to 32. <CODE>vec()</CODE> may also be assigned to, in which case parentheses are needed to give the expression the correct precedence as in
+
+
+
+<P>
+
+<PRE>    vec($image, $max_x * $x + $y, 8) = 3;
+</PRE>
+
+<P>
+
+Vectors created with <CODE>vec()</CODE> can also be manipulated with the
+logical operators |, &amp;, and ^, which will assume a bit vector operation
+is desired when both operands are strings.
+
+
+<P>
+
+To transform a bit vector into a string or array of 0's and 1's, use these:
+
+
+<P>
+
+<PRE>    $bits = unpack(&quot;b*&quot;, $vector);
+    @bits = split(//, unpack(&quot;b*&quot;, $vector));
+</PRE>
+
+<P>
+
+If you know the exact length in bits, it can be used in place of the *.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_wait">wait
+
+</A></STRONG><DD>
+Waits for a child process to terminate and returns the pid of the deceased
+process, or -1 if there are no child processes. The status is returned in <CODE>$?</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_waitpid">waitpid PID,FLAGS
+
+</A></STRONG><DD>
+Waits for a particular child process to terminate and returns the pid of
+the deceased process, or -1 if there is no such child process. The status
+is returned in <CODE>$?</CODE>. If you say
+
+
+<P>
+
+<PRE>    use POSIX &quot;:sys_wait_h&quot;;
+    ...
+    waitpid(-1,&amp;WNOHANG);
+</PRE>
+
+<P>
+
+then you can do a non-blocking wait for any process. Non-blocking wait is available on machines supporting either the <CODE>waitpid(2)</CODE> or <CODE>wait4(2)</CODE> system calls. However, waiting for a particular pid with 
+<FONT SIZE=-1>FLAGS</FONT> of 0 is implemented everywhere. (Perl emulates the system call by remembering the status values of processes that have exited but have not been harvested by the Perl script yet.)
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_wantarray">wantarray
+
+</A></STRONG><DD>
+Returns 
+<FONT SIZE=-1>TRUE</FONT> if the context of the currently executing subroutine is looking for a list value. Returns 
+<FONT SIZE=-1>FALSE</FONT> if the context is looking for a scalar. Returns the undefined value if the context is looking for no value (void context).
+
+
+
+<P>
+
+<PRE>    return unless defined wantarray;    # don't bother doing more
+    my @a = complex_calculation();
+    return wantarray ? @a : &quot;@a&quot;;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_warn">warn LIST
+
+</A></STRONG><DD>
+Produces a message on 
+<FONT SIZE=-1>STDERR</FONT> just like <CODE>die(),</CODE> but doesn't exit
+or throw an exception.
+
+
+<P>
+
+No message is printed if there is a <CODE>$SIG{__WARN__}</CODE> handler installed. It is the handler's responsibility to deal with the
+message as it sees fit (like, for instance, converting it into a
+<CODE>die()).</CODE> Most handlers must therefore make arrangements to
+actually display the warnings that they are not prepared to deal with, by
+calling <CODE>warn()</CODE> again in the handler. Note that this is quite
+safe and will not produce an endless loop, since <CODE>__WARN__</CODE> hooks are not called from inside one.
+
+
+<P>
+
+You will find this behavior is slightly different from that of
+<CODE>$SIG{__DIE__}</CODE> handlers (which don't suppress the error text, but can instead call
+<CODE>die()</CODE> again to change it).
+
+
+<P>
+
+Using a <CODE>__WARN__</CODE> handler provides a powerful way to silence all warnings (even the so-called
+mandatory ones). An example:
+
+
+<P>
+
+<PRE>    # wipe out *all* compile-time warnings
+    BEGIN { $SIG{'__WARN__'} = sub { warn $_[0] if $DOWARN } }
+    my $foo = 10;
+    my $foo = 20;          # no warning about duplicate my $foo,
+                           # but hey, you asked for it!
+    # no compile-time or run-time warnings before here
+    $DOWARN = 1;
+</PRE>
+
+<P>
+
+<PRE>    # run-time warnings enabled after here
+    warn &quot;\$foo is alive and $foo!&quot;;     # does show up
+</PRE>
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#">the perlvar manpage</A> for details on setting <A HREF="#item__SIG">%SIG</A> entries, and for more examples.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_write">write FILEHANDLE
+
+</A></STRONG><DD>
+<DT><STRONG>write EXPR
+
+</A></STRONG><DD>
+<DT><STRONG>write
+
+</A></STRONG><DD>
+Writes a formatted record (possibly multi-line) to the specified file,
+using the format associated with that file. By default the format for a
+file is the one having the same name as the filehandle, but the format for
+the current output channel (see the <CODE>select()</CODE> function) may be
+set explicitly by assigning the name of the format to the <CODE>$~</CODE> variable.
+
+
+<P>
+
+Top of form processing is handled automatically: if there is insufficient room on the current page for the formatted record, the page is advanced by writing a form feed, a special top-of-page format is used to format the new page header, and then the record is written. By default the top-of-page format is the name of the filehandle with 
+<FONT SIZE=-1>``_TOP''</FONT> appended, but it may be dynamically set to the format of your choice by assigning the name to the
+ <CODE>$^</CODE> variable while the filehandle is selected. The number of lines remaining on
+the current page is in variable <CODE>$-</CODE>, which can be set to 0 to force a new page.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>FILEHANDLE</FONT> is unspecified, output goes to the current default output channel, which starts out as 
+<FONT SIZE=-1>STDOUT</FONT> but may be changed by the
+
+<A HREF="#item_select">select</A> operator. If the 
+<FONT SIZE=-1>FILEHANDLE</FONT> is an 
+<FONT SIZE=-1>EXPR,</FONT> then the expression is evaluated and the resulting string is used to look up the name of the 
+<FONT SIZE=-1>FILEHANDLE</FONT> at run time. For more on formats, see
+ <A HREF="/n|/perl/html/./lib/Pod/perlform.html#">the perlform manpage</A>.
+
+
+<P>
+
+Note that write is <EM>NOT</EM> the opposite of read. Unfortunately.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_y">y///
+
+</A></STRONG><DD>
+The translation operator. Same as tr///. See <A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A>.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

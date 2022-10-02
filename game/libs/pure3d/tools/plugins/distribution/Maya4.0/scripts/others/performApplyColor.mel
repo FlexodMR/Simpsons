@@ -1,0 +1,856 @@
+// Copyright (C) 1997-2001 Alias|Wavefront,
+// a division of Silicon Graphics Limited.
+//
+// The information in this file is provided for the exclusive use of the
+// licensees of Alias|Wavefront.  Such users have the right to use, modify,
+// and incorporate this code into other products for purposes authorized
+// by the Alias|Wavefront license agreement, without fee.
+//
+// ALIAS|WAVEFRONT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+// INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+// EVENT SHALL ALIAS|WAVEFRONT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+// DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+// TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+//
+//  Alias|Wavefront Script File
+//  MODIFY THIS AT YOUR OWN RISK
+//
+//  Creation Date:  Nov, 12, 1998
+//
+//  Procedure Name:
+//      performApplyColor
+//
+//  Description:
+//       Perform a color assignment on selected components
+//         
+//  Input Arguments:
+//        $option : Whether to set the options to default values.
+//  Return Value:
+//        command string iff $option==2
+//
+
+// ××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××
+// ×
+// ×  "Radically-Enhanced" edition of Maya's "performApplyColor"
+// ×
+// ×    Added "performApplyColor_SmartSelection" -- converts the appropriate 
+// ×    components  from the current selection (edges and faces) to 
+// ×    vertex-face components before applying vertex color.
+// ×
+// ×        4 Dec 2001 - Bryan Ewert
+// ×
+// ×    6 Dec 2001 - Fixed selection of vtxFace components.
+// ×
+// ××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××
+
+proc setOptionVars (int $forceFactorySettings)
+//
+// Description:
+//      Setup option variables to store UI state.
+// Arguments:
+//      forceFactorySettings : set option vars to default
+// Returns:
+//      none
+//
+{              
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorRed`)
+         optionVar -intValue polyApplyColorRed 1;
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorRedValue`)
+         optionVar -floatValue polyApplyColorRedValue 0.5;
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorGreen`)
+         optionVar -intValue polyApplyColorGreen 1;
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorGreenValue`)
+         optionVar -floatValue polyApplyColorGreenValue 0.5;
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorBlue`)
+         optionVar -intValue polyApplyColorBlue 1;
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorBlueValue`)
+        optionVar -floatValue polyApplyColorBlueValue 0.5;
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorAlpha`)
+         optionVar -intValue polyApplyColorAlpha 1;
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorAlphaValue`)
+        optionVar -floatValue polyApplyColorAlphaValue 1.0;
+     if ($forceFactorySettings || !`optionVar -exists polyAutoColorPerVertex`)
+        optionVar -intValue polyAutoColorPerVertex 1;
+
+     // Color operation. Default is "replace" color.
+     // 1 = repalce, 2 = add, 3 = subtract, 4 = remove
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorOperation`)
+         optionVar -intValue polyApplyColorOperation 1;
+
+     if ($forceFactorySettings || !`optionVar -exists polyApplyColorIndivChannels`)
+         optionVar -intValue polyApplyColorIndivChannels 0;
+}
+
+global proc toggleColorWidgets()
+//
+// Description:
+//      Toggle color widgets (R,G,B,A RGB, relative etc) on
+//      and off.
+// Arguments:
+//      none
+// Returns:
+//      none
+//
+{
+    // Check current operation
+    $cbval = `radioButtonGrp -query -select polyApplyColorOperation`;
+    if ($cbval == 4)
+      $remove = 1;
+    else
+      $remove = 0;
+
+    // If operation is "remove". disable everything
+    if ($remove)
+    {
+        disable polyApplyColorRGBValue;
+        disable polyApplyColorAlphaValue;
+        disable polyColorSwatch;
+        disable polyColorSwatchLabel;
+
+        disable polyApplyColorIndivChannels;
+        disable polyApplyColorRed;
+        disable polyApplyColorGreen;
+        disable polyApplyColorBlue;
+        disable polyApplyColorRedValue;
+        disable polyApplyColorGreenValue;
+        disable polyApplyColorBlueValue;
+        disable polyApplyColorAlpha;
+        disable polyApplyColorAlphaValue1;
+
+        disable polyApplyColorGrabLabel;
+        disable polyApplyColorGrab;
+        disable polyApplyColorVtxGrab;
+    }
+    else
+    {
+        disable -v false polyColorSwatch;
+        disable -v false polyColorSwatchLabel;
+        disable -v false polyApplyColorIndivChannels;
+
+        int $individ = `checkBoxGrp -query -value1 polyApplyColorIndivChannels`;
+
+        // Disable all individual color widgets. Enable other widgets
+        //
+        if (!$individ)
+        {
+            disable polyApplyColorRed;
+            disable polyApplyColorRedValue;
+            disable polyApplyColorBlue;
+            disable polyApplyColorBlueValue;
+            disable polyApplyColorGreen;
+            disable polyApplyColorGreenValue;
+            disable polyApplyColorAlpha;
+            disable polyApplyColorAlphaValue1;
+
+            disable -v false polyApplyColorRGBValue;
+            disable -v false polyApplyColorAlphaValue;
+            disable -v false polyApplyColorGrabLabel;
+            disable -v false polyApplyColorGrab;
+            disable -v false polyApplyColorVtxGrab;
+        }
+
+        // Disable individual ones as needed
+        else
+        {
+            disable -v false polyApplyColorRed;
+            disable -v false polyApplyColorBlue;
+            disable -v false polyApplyColorGreen;
+            disable -v false polyApplyColorAlpha;
+
+            $ival = `optionVar -query polyApplyColorRed`;
+            if ($ival)
+                disable -v false polyApplyColorRedValue;
+            else
+                disable polyApplyColorRedValue;
+            
+            $ival = `optionVar -query polyApplyColorGreen`;     
+            if ($ival)
+                disable -v false polyApplyColorGreenValue;
+            else
+                disable polyApplyColorGreenValue;
+            
+            $ival = `optionVar -query polyApplyColorBlue`;      
+            if ($ival)
+                disable -v false polyApplyColorBlueValue;
+            else
+                disable polyApplyColorBlueValue;
+
+            $ival = `optionVar -query polyApplyColorAlpha`;     
+            if ($ival)
+                disable -v false polyApplyColorAlphaValue1;
+            else
+                disable polyApplyColorAlphaValue1;
+
+            disable polyApplyColorRGBValue;
+            disable polyApplyColorAlphaValue;
+            disable polyApplyColorGrabLabel;
+            disable polyApplyColorGrab;
+            disable polyApplyColorVtxGrab;
+        }
+    }
+}
+
+global proc updatePolyColorSwatch(int $fromColorSlider)
+//
+// Description:
+//      Update real color to apply's swatch
+// Arguments:
+//      none
+// Returns:
+//      none
+//
+{
+    float $rval = 0.0;
+    float $gval = 0.0;
+    float $bval = 0.0;
+    float $aval = 1.0;
+    int $rset, $gset, $bset, $aset;
+    float $rgb[3];
+
+    $cbval = `radioButtonGrp -query -select polyApplyColorOperation`;
+    if ($cbval == 4)
+      $remval = 1;
+    else
+      $remval = 0;
+    //int $remval = `checkBoxGrp -query -value1 polyApplyColorRemove`;
+    if ($remval)
+    {
+        canvas -e -bg 0 0 0 polyColorSwatch;
+        return;
+    }
+
+    // If not setting individual colors, then
+    // grab the color from the RGB color slider
+    int $individual = `checkBoxGrp -query -value1 polyApplyColorIndivChannels`;
+    if ($individual == 0)
+    {
+        $aval = `floatSliderGrp -query -value polyApplyColorAlphaValue1`;
+
+        if ($fromColorSlider == 0)
+        {
+            $rval = `floatSliderGrp -query -value polyApplyColorRedValue`;
+            $gval = `floatSliderGrp -query -value polyApplyColorGreenValue`;
+            $bval = `floatSliderGrp -query -value polyApplyColorBlueValue`; 
+            colorSliderGrp -edit -rgb $rval $gval $bval polyApplyColorRGBValue;
+        }
+        else
+        {
+            $rgb = `colorSliderGrp -query -rgb polyApplyColorRGBValue`;
+            $rval = $rgb[0];
+            $gval = $rgb[1];
+            $bval = $rgb[2];
+
+            // Update the color float sliders also if individual not set
+            floatSliderGrp -edit -value $rval polyApplyColorRedValue;           
+            floatSliderGrp -edit -value $gval polyApplyColorGreenValue;
+            floatSliderGrp -edit -value $bval polyApplyColorBlueValue;
+        }
+        $bset = $rset = $gset = 1;
+    }
+    
+    // else grab the colors from each individual color slider
+    // also update the RGB slider
+    //
+    else {
+        $rset = `checkBoxGrp -query -value1 polyApplyColorRed`;
+        if ($rset)
+            $rval = `floatSliderGrp -query -value polyApplyColorRedValue`;          
+        else
+            $rval = 0.0;
+        
+        $gset = `checkBoxGrp -query -value1 polyApplyColorGreen`;
+        if ($gset)
+            $gval = `floatSliderGrp -query -value polyApplyColorGreenValue`;            
+        else
+            $gbal = 0.0;
+        
+        $bset = `checkBoxGrp -query -value1 polyApplyColorBlue`;
+        if ($bset)
+            $bval = `floatSliderGrp -query -value polyApplyColorBlueValue`;         
+        else
+            $bval = 0.0;
+
+        $aset = `checkBoxGrp -query -value1 polyApplyColorAlpha`;
+        if ($aset)
+            $aval = `floatSliderGrp -query -value polyApplyColorAlphaValue1`;
+        else
+            $aval = 1.0;
+
+        if ($fromColorSlider == 0)
+        {
+            colorSliderGrp -edit -rgb $rval $gval $bval polyApplyColorRGBValue;
+        }
+    }
+    
+    if ($gset || $bset || $rset)
+    {
+        $rval = $rval * $aval;
+        $gval = $gval * $aval;
+        $bval = $bval * $aval;
+    }
+    else
+    {
+        if ($aset)
+            $rval = $gval = $bval = $aval;
+        else
+            $rval = $gval = $bval = 0.0;
+    }
+    
+    canvas -e -bg $rval $gval $bval polyColorSwatch;
+}
+
+global proc performApplyColorSetup (string $parent, int $forceFactorySettings)
+//
+// Description:
+//      Do setup of widget states. 
+// Arguments:
+//      parent : parent widget
+//      forceFactorySettings : set to defaults.
+// Returns:
+//      none
+//
+{
+    setOptionVars($forceFactorySettings);
+    setParent $parent;
+
+    int $ival;
+    float $fval;
+    float $rval, $gval, $bval;
+
+    // R
+    $ival = `optionVar -query polyApplyColorRed`;
+    checkBoxGrp -edit -value1 $ival polyApplyColorRed;
+    $fval = `optionVar -query polyApplyColorRedValue`;
+    $rval = $fval;
+    floatSliderGrp -edit -value $fval polyApplyColorRedValue;
+
+    // G
+    $ival = `optionVar -query polyApplyColorGreen`;
+    $gval = $fval;
+    checkBoxGrp -edit -value1 $ival polyApplyColorGreen;
+
+    $fval = `optionVar -query polyApplyColorGreenValue`;
+    floatSliderGrp -edit -value $fval polyApplyColorGreenValue;
+
+    // B
+    $ival = `optionVar -query polyApplyColorBlue`;
+    $bval = $fval;
+    checkBoxGrp -edit -value1 $ival polyApplyColorBlue;
+    $fval = `optionVar -query polyApplyColorBlueValue`;
+    floatSliderGrp -edit -value $fval polyApplyColorBlueValue;
+
+    // Alpha
+    $ival = `optionVar -query polyApplyColorAlpha`;
+    checkBoxGrp -edit -value1 $ival polyApplyColorAlpha;
+    $fval = `optionVar -query polyApplyColorAlphaValue`;
+    floatSliderGrp -edit -value $fval polyApplyColorAlphaValue;
+    floatSliderGrp -edit -value $fval polyApplyColorAlphaValue1;
+
+    $ival = `optionVar -query polyApplyColorOperation`;
+    radioButtonGrp -edit -sl $ival polyApplyColorOperation;
+
+    // Individual
+    int $idval = `optionVar -query polyApplyColorIndivChannels`;
+    checkBoxGrp -edit -value1 $idval polyApplyColorIndivChannels;
+    if ($idval)
+        frameLayout -e -cl false RGBchannelFrameLayout;
+    else
+        frameLayout -e -cl true RGBchannelFrameLayout;
+
+    // RGB Color slider
+    colorSliderGrp -edit -rgb $rval $gval $bval polyApplyColorRGBValue;
+
+    updatePolyColorSwatch 0;
+    toggleColorWidgets();
+}
+
+global proc performApplyColorCallback (string $parent, int $doIt)
+//
+// Description:
+//      Save option variables before application or save.
+// Arguments:
+//      parent : parent widget
+//      doIt : perform action
+// Returns:
+//      none
+//
+{
+    setParent $parent;
+
+    // R
+    optionVar -intValue polyApplyColorRed
+        `checkBoxGrp -query -value1 polyApplyColorRed`;
+    optionVar -floatValue polyApplyColorRedValue
+        `floatSliderGrp -query -value polyApplyColorRedValue`;      
+
+    // G
+    optionVar -intValue polyApplyColorGreen
+        `checkBoxGrp -query -value1 polyApplyColorGreen`;
+    optionVar -floatValue polyApplyColorGreenValue
+        `floatSliderGrp -query -value polyApplyColorGreenValue`;        
+
+    // B
+    optionVar -intValue polyApplyColorBlue
+        `checkBoxGrp -query -value1 polyApplyColorBlue`;
+    optionVar -floatValue polyApplyColorBlueValue
+        `floatSliderGrp -query -value polyApplyColorBlueValue`;     
+
+    // Alpha
+    optionVar -intValue polyApplyColorAlpha
+        `checkBoxGrp -query -value1 polyApplyColorAlpha`;
+    optionVar -floatValue polyApplyColorAlphaValue
+        `floatSliderGrp -query -value polyApplyColorAlphaValue`;        
+
+    // Individual
+    int $ival = `checkBoxGrp -query -value1 polyApplyColorIndivChannels`;
+    optionVar -intValue polyApplyColorIndivChannels $ival;
+    
+
+    // Operation
+    int $rval = `radioButtonGrp -query -sl polyApplyColorOperation`;
+    optionVar -intValue polyApplyColorOperation $rval;
+    
+    toggleColorWidgets();
+    updatePolyColorSwatch 0;
+
+    if ($doIt) {
+        performApplyColor 0;
+        addToRecentCommandQueue "performApplyColor 0" "ApplyColor";
+    }
+}
+
+global proc polyApplyColorMatchAlphaValues(int $which)
+{
+    float $fval;
+
+    // Set the 1st to the 2nd's value
+    if ($which == 0)
+    {
+        $fval = `floatSliderGrp -query -value polyApplyColorAlphaValue1`;
+        floatSliderGrp -edit -value $fval polyApplyColorAlphaValue;
+    }
+
+    // Set the 2nd to the 1st's value
+    else
+    {
+        $fval = `floatSliderGrp -query -value polyApplyColorAlphaValue`;
+        floatSliderGrp -edit -value $fval polyApplyColorAlphaValue1;
+    }
+}
+
+global proc grabAColor()
+{
+    float $rgb[];
+    float $r, $g, $b;
+    $rgb = `grabColor`;
+
+    //print( $rgb );
+    $r = $rgb[0];
+    $g = $rgb[1];
+    $b = $rgb[2];
+
+    floatSliderGrp -edit -value $r polyApplyColorRedValue;          
+    floatSliderGrp -edit -value $g polyApplyColorGreenValue;
+    floatSliderGrp -edit -value $b polyApplyColorBlueValue; 
+
+    updatePolyColorSwatch 0;
+}
+
+global proc grabSelectedColor()
+{
+    float $rgb[];
+    float $a[];
+
+    int $foundColor = 0;
+
+    // Check for vertex faces first
+    string $selectedVertexFaces[] = `filterExpand -sm 70`;
+    if (size($selectedVertexFaces) != 0)
+    {
+        $rgb = `polyColorPerVertex -q -rgb $selectedVertexFaces[0]`;
+        $a = `polyColorPerVertex -q -a $selectedVertexFaces[0]`;
+        $foundColor = 1;
+    }
+    
+    // Check for vertices
+    else
+    {
+        string $selectedVertices[] = `filterExpand -sm 31`;
+        if (size($selectedVertices) != 0)
+        {
+            $rgb = `polyColorPerVertex -q -rgb $selectedVertices[0]`;
+            $a = `polyColorPerVertex -q -a $selectedVertices[0]`;
+            $foundColor = 1;
+        }
+    }
+
+    if ($foundColor)
+    {
+        floatSliderGrp -edit -value $rgb[0] polyApplyColorRedValue;         
+        floatSliderGrp -edit -value $rgb[1] polyApplyColorGreenValue;
+        floatSliderGrp -edit -value $rgb[2] polyApplyColorBlueValue;    
+        floatSliderGrp -edit -value $a[0] polyApplyColorAlphaValue; 
+        floatSliderGrp -edit -value $a[0] polyApplyColorAlphaValue1;    
+        
+        updatePolyColorSwatch 0;        
+    }
+}
+
+proc polyApplyColorOptions()
+//
+// Description:
+//      Options for apply color
+// Arguments:
+//      none
+// Returns:
+//      none
+//
+{
+    string $commandName = "performApplyColor";
+    string $callback = ($commandName + "Callback");
+    string $setup = ($commandName + "Setup");
+       
+    string $layout = getOptionBox();
+    setParent $layout;
+    setUITemplate -pushTemplate DefaultTemplate;
+    waitCursor -state 1;
+    tabLayout -scr true -tv false;
+    
+    string $parent = `columnLayout -adjustableColumn true`;
+
+    frameLayout -label "Operation (Radically-Enhanced)" -labelAlign "center"
+        -borderStyle "etchedIn" -cl false -cll false;
+    columnLayout;
+
+    radioButtonGrp -numberOfRadioButtons 4
+        -labelArray4 "Replace" "Add" "Subtract" "Remove"
+        -select 1
+        -onCommand4 ("toggleColorWidgets; updatePolyColorSwatch 0")
+        -offCommand4 ("toggleColorWidgets; updatePolyColorSwatch 0")
+        polyApplyColorOperation;
+    
+    setParent $parent;
+
+
+    //----------------------------------------------------------------------
+    frameLayout -label "Color Value" -labelAlign "center"
+        -borderStyle "etchedIn" -cl false -cll false;
+    columnLayout valueLayout;
+
+    // All colors, except alpha. Will update the color
+    // color sliders
+    colorSliderGrp -label "Color" -rgb 0.5 0.5 0.5 
+        -cc ("updatePolyColorSwatch 1")
+        -dragCommand ("updatePolyColorSwatch 1")        
+        polyApplyColorRGBValue;
+
+    //button
+    rowLayout -numberOfColumns 3 -cw3 170 20 170;
+    text -label "Grab Color" polyApplyColorGrabLabel;
+    symbolButton 
+        -image "eyeDropper.xpm"
+        -width 20
+        -height 20
+        -c ("grabAColor") 
+        polyApplyColorGrab;
+    button -label "Selected Vertex Color"
+        -command "grabSelectedColor"
+        polyApplyColorVtxGrab;
+    setParent valueLayout;
+
+    floatSliderGrp -label "Alpha"
+        -minValue 0.0 -maxValue 1.0
+        -fieldMinValue 0.0 -fieldMaxValue 1.0
+        -cc ("polyApplyColorMatchAlphaValues 1; updatePolyColorSwatch 0")
+        -dragCommand ("polyApplyColorMatchAlphaValues 1; updatePolyColorSwatch 0")
+        polyApplyColorAlphaValue;
+
+    rowLayout -numberOfColumns 2 -cw2 170 76;
+    text -label "Resulting Color " polyColorSwatchLabel;
+    canvas -width 76 -height 22 polyColorSwatch;
+
+    setParent $parent;
+
+    //----------------------------------------------------------------------
+    // Seperate or all color setting
+    checkBoxGrp -label1 "Set Individual Color Channels"
+        -on1 ("toggleColorWidgets; updatePolyColorSwatch 0; frameLayout -e -cl false RGBchannelFrameLayout")
+        -of1 ("toggleColorWidgets; updatePolyColorSwatch 0; frameLayout -e -cl true RGBchannelFrameLayout")
+        polyApplyColorIndivChannels;
+
+    frameLayout -label "Color Channel Values" -labelAlign "center"
+        -borderStyle "etchedIn" -cl true -cll true
+        RGBchannelFrameLayout;
+    columnLayout;
+
+    // Red 
+    checkBoxGrp -label1 "Set Red" 
+        -on1 ("disable -v false polyApplyColorRedValue; updatePolyColorSwatch 0")
+        -of1 ("disable polyApplyColorRedValue; updatePolyColorSwatch 0")
+        polyApplyColorRed;
+    floatSliderGrp -label "Red"
+        -minValue 0.0 -maxValue 1.0
+        -fieldMinValue 0.0 -fieldMaxValue 1.0
+        -cc ("updatePolyColorSwatch 0")
+        -dragCommand ("updatePolyColorSwatch 0")
+        polyApplyColorRedValue;
+
+    // Green
+    checkBoxGrp -label1 "Set Green" 
+        -on1 ("disable -v false polyApplyColorGreenValue; updatePolyColorSwatch 0")
+        -of1 ("disable polyApplyColorGreenValue; updatePolyColorSwatch 0")
+        polyApplyColorGreen;
+    floatSliderGrp -label "Green"
+        -minValue 0.0 -maxValue 1.0
+        -fieldMinValue 0.0 -fieldMaxValue 1.0
+        -cc ("updatePolyColorSwatch 0")
+        -dragCommand ("updatePolyColorSwatch 0")
+        polyApplyColorGreenValue;
+
+    // Blue
+    checkBoxGrp -label1 "Set Blue" 
+        -on1 ("disable -v false polyApplyColorBlueValue; updatePolyColorSwatch 0")
+        -of1 ("disable polyApplyColorBlueValue; updatePolyColorSwatch 0")
+        polyApplyColorBlue;
+    floatSliderGrp -label "Blue"
+        -minValue 0.0 -maxValue 1.0
+        -fieldMinValue 0.0 -fieldMaxValue 1.0
+        -cc ("updatePolyColorSwatch 0")
+        -dragCommand ("updatePolyColorSwatch 0")
+        polyApplyColorBlueValue;
+
+    // Alpha
+    checkBoxGrp -label1 "Set Alpha" 
+      -on1 ("disable -v false polyApplyColorAlphaValue1; updatePolyColorSwatch 0")
+      -of1 ("disable polyApplyColorAlphaValue1; updatePolyColorSwatch 0")
+      polyApplyColorAlpha;
+    floatSliderGrp -label "Alpha"
+        -minValue 0.0 -maxValue 1.0
+        -fieldMinValue 0.0 -fieldMaxValue 1.0
+        -cc ("polyApplyColorMatchAlphaValues 0; updatePolyColorSwatch 0")
+        -dragCommand 
+          ("polyApplyColorMatchAlphaValues 0; updatePolyColorSwatch 0") 
+          polyApplyColorAlphaValue1;
+
+    setParent $parent;
+
+    //----------------------------------------------------------------------
+
+    updatePolyColorSwatch 0;
+
+    waitCursor -state 0;
+    setUITemplate -popTemplate;
+       
+    string $applyBtn = getOptionBoxApplyBtn();
+    button -edit -label "Apply Color"
+           -command ($callback + " " + $parent + " " + 1)
+        $applyBtn;
+
+    string $saveBtn = getOptionBoxSaveBtn();
+    button -edit 
+        -command ($callback + " " + $parent + " " + 0 + "; hideOptionBox")
+        $saveBtn;
+
+    string $resetBtn = getOptionBoxResetBtn();
+    button -edit 
+        -command ($setup + " " + $parent + " " + 1)
+        $resetBtn;
+             
+    setOptionBoxTitle("Polygon Apply Color Options");
+
+    //  Customize the 'Help' menu item text.
+    //
+    setOptionBoxHelpTag( "ApplyColor" );
+
+    eval (($setup + " " + $parent + " " + 0));      
+    showOptionBox();
+}
+
+//===========================================================================
+// performApplyColor_SmartSelection
+//===========================================================================
+// Description: Converts the current polymesh component selection to
+//              vertex and vertexFace components.
+//
+//              Added to command (from assembleCmd()) to convert the appropriate
+//              components from the current selection (edges and faces) to 
+//              vertex-face components.
+//
+// Constraints: Radical Entertainment Enhancement
+//
+// Parameters:  (none)
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc performApplyColor_SmartSelection()
+{
+    int $Operation = `optionVar -query polyApplyColorOperation`;
+
+    string $m[], $v[], $e[], $f[];
+
+    $m = `filterExpand -sm 12`;
+    $v = `filterExpand -sm 31`;
+    $e = `filterExpand -sm 32`;
+    $f = `filterExpand -sm 34`;
+    $vf = `filterExpand -sm 70`;
+    
+    if ( $Operation == 4 )      // Remove must be applied to vertex only (no vertexFace)
+    {
+        $e = `polyListComponentConversion -fe -tv $e`;
+        $f = `polyListComponentConversion -ff -tv $f`;
+        $vf = `polyListComponentConversion -fvf -tv $vf`;
+    }
+    else
+    {
+        $e = `polyListComponentConversion -fe -tvf $e`;
+        $f = `polyListComponentConversion -ff -tvf $f`;
+    }
+    
+
+    // Select entire meshes first.  Maya will take care of these
+    // via the "Convert Selection" option.
+    select -r $m;
+    
+    // Now add explicitly selected vertex components
+    // and implicitly selected vertex-face components.
+    select -add $v $e $f $vf;
+}
+
+proc string assembleCmd()
+{
+    // Radically-Enhanced:
+    // Add 'performApplyColor_SmartSelection()' to command.
+    string $cmd = "string $select[] = `ls -sl`;performApplyColor_SmartSelection;polyColorPerVertex";
+
+    int $Red = 1;
+    int $Green = 1; 
+    int $Blue = 1;
+    int $Alpha = 1;
+    float $RedValue, $GreenValue, $BlueValue, $AlphaValue;
+    
+    int $individual = `optionVar -query polyApplyColorIndivChannels`;       
+    if ($individual == 1)
+    {
+        $Red = `optionVar -query polyApplyColorRed`;
+        $Green = `optionVar -query polyApplyColorGreen`;
+        $Blue = `optionVar -query polyApplyColorBlue`;
+        $Alpha = `optionVar -query polyApplyColorAlpha`;
+        
+        $RedValue = `optionVar -query polyApplyColorRedValue`;
+        $GreenValue = `optionVar -query polyApplyColorGreenValue`;
+        $BlueValue = `optionVar -query polyApplyColorBlueValue`;
+        $AlphaValue = `optionVar -query polyApplyColorAlphaValue`;
+    }
+    
+    else
+    {
+        $Red = 1; $Green = 1; $Blue = 1;
+        $Alpha = 1;
+        $RedValue = `optionVar -query polyApplyColorRedValue`;
+        $GreenValue = `optionVar -query polyApplyColorGreenValue`;
+        $BlueValue = `optionVar -query polyApplyColorBlueValue`;
+        $AlphaValue = `optionVar -query polyApplyColorAlphaValue`;
+    }
+    
+    int $Operation = `optionVar -query polyApplyColorOperation`;
+    int $Relative = 0;
+    if ($Operation == 4)
+        $Remove = 1;
+    else {
+        $Remove = 0;
+        
+        // Add relative
+        if ($Operation == 2)
+            $Relative = 1;
+        
+        // Subtract relative
+        else if ($Operation == 3)
+            $Relative = 2;
+        
+        // Replace
+        else {
+            $Relative = 0; 
+        }
+    }
+    
+    // If remove, don't worry about the rest
+    //
+    if ($Remove)
+    {
+        $cmd = ($cmd + " -rem ");
+    }
+    else
+    {
+        if (($Red + $Green + $Blue + $Alpha) == 0)
+        {
+            warning ("No color channels set to apply. No command to execute");
+            $cmd = "";
+        }
+        else
+        {
+            // Handle case of subtracting color
+            //
+            if ($Relative == 2)
+            {
+                $RedValue = -$RedValue;
+                $GreenValue = -$GreenValue;
+                $BlueValue = -$BlueValue;
+            }
+            
+            if ($Red)
+                $cmd = ($cmd + " -r " + $RedValue);
+            if ($Green)
+                $cmd = ($cmd + " -g " + $GreenValue);
+            if ($Blue)
+                $cmd = ($cmd + " -b " + $BlueValue);
+            if ($Alpha)
+                $cmd = ($cmd + " -a " + $AlphaValue);
+
+            if ($Relative)
+                $cmd = ($cmd + " -rel");
+        }
+    }
+
+    // Radically-Enhanced:
+    // Restore selection from results of 'performApplyColor_SmartSelection()'.
+    $cmd = ($cmd + ";select -r $select");
+
+    return $cmd;
+}
+
+global proc string performApplyColor (int $option)
+{
+    string $cmd="";
+
+    switch ($option) 
+    {
+      case 1: 
+        // Just the option box
+        polyApplyColorOptions; 
+        break;
+        
+      default:
+        setOptionVars(false);
+
+        $cmd = assembleCmd();
+
+        if ($option == 2) return $cmd;
+
+        if (`optionVar -q polyAutoShowColorPerVertex`) {
+            optionVar -intValue colorShadedDisplay 1
+                -intValueAppend colorShadedDisplay 1;
+            DisplaySmoothShaded;
+            polyOptions -cs 1;
+        }
+
+        // Radically-Enhanced:
+        // Command is kind of busy now, so suppress echo
+        eval $cmd;
+        break;
+    }
+    return $cmd;
+}

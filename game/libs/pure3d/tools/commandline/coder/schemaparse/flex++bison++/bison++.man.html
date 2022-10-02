@@ -1,0 +1,159 @@
+
+
+<HTML><HEAD><TITLE>Manpage of BISON++</TITLE>
+</HEAD><BODY>
+<H1>BISON++</H1>
+Section: COMMANDS (1)<BR>Updated: 3/3/93<BR><A HREF="#index">Index</A>
+<A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME </H2>
+
+bison++ - generate a parser in c or c++.
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS </H2>
+
+<B>bison++</B> [<B>-dltvyVu</B>] [<B>-b</B> <I>file-prefix</I>] [<B>-p</B> <I>name-prefix</I>] [<B>-o</B> <I>outfile</I>] [<B>-h</B> <I>headerfile</I>] [<B>-S</B> <I>skeleton</I>] [<B>-H</B> <I>header-skeleton</I>] [<B>--debug</B>] [<B>--defines</B>] [<B>--fixed-output-files</B>] [<B>--no-lines</B>] [<B>--verbose</B>] [<B>--version</B>] [<B>--yacc</B>] [<B>--usage</B>] [<B>--help</B>] [<B>--file-prefix=</B><I>prefix</I>] [<B>--name-prefix=</B><I>prefix</I>] [<B>--skeleton=</B><I>skeletonfile</I>] [<B>--headerskeleton=</B><I>headerskeletonfile</I>] [<B>--output=</B><I>outfile</I>] [<B>--header-name=</B><I>header</I>] <I>grammar-file</I>
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION </H2>
+
+Generate a parser. Based on <B>bison</B> version 1.19. See <B><A HREF="http://localhost/cgi-bin/man/man2html?1+bison">bison</A></B>(1) for details of main functionality. Only changes are reported here.
+<P>
+
+You now generate a C++ class if you are compiling with a C++ compiler. The generated header is far more rich than before, and is made from a skeleton-header. The code skeleton is also richer, and the generated code is less important compared to the skeletons. It permit you to modify much things only by changing the two skeletons.
+<P>
+
+In plain C, the <B>bison++</B> is compatible with standard <B>bison</B>.
+<A NAME="lbAE">&nbsp;</A>
+<H2>OPTIONS </H2>
+
+
+<DL COMPACT>
+<DT><b>--name-prefix=</b><i>prefix</i><DD>
+<DT><b>-p</b> <i>prefix</i><DD>
+Set prefix of names of yylex,yyerror. keeped for compatibility, but you should prefer <B>%define LEX </B><I>newname</I>, and similar.
+<DT><b>--skeleton=</b><i>skeleton</i><DD>
+<DT><b>-S</b> <i>skeleton</i><DD>
+Set filename of code skeleton. Default is <B>bison.cc</B>.
+<DT><b>--headerskeleton=</b><i>header-skeleton</i><DD>
+<DT><b>-H</b> <i>header-skeleton</i><DD>
+Set filename of header skeleton. Default is <B>bison.h</B>.
+<DT><b>--header-name=</b><i>header</i><DD>
+<DT><b>-h</b> <i>header</i><DD>
+Set filename of header skeleton. Default is <B>y.tab.h</B>, or <I>prefix</I>.h if option <B>-b</B> is used or <I>c_basename</I>.h if <B>-o</B> is used. <B>.c</B>, <B>.cc</B>, <B>.C</B>, <B>.cpp</B>, <B>.cxx</B> options for output files are replaced by <B>.h</B> for header name.
+
+</DL>
+<A NAME="lbAF">&nbsp;</A>
+<H2>DECLARATIONS </H2>
+
+These are new declarations to put in the declaration section :
+
+<DL COMPACT>
+<DT><b>%name</b> <i>parser_name</i><DD>
+Declare the name of this parser. User for C++ class name, and to render many names unique. default is <B>parse</B>. Must be given before <B>%union</B> and <B>%define</B>, or never.
+<DT><b>%define</b> <i>define_name</i> \fIcontent\.\.\.\fP<DD>
+Declare a macro symbol in header and code. The name of the symbol is <B>YY_</B>'<I>parser_name</I>'<B>_</B>'<I>define_name</I>'. The content if given after, as with #define. Newline can be escaped as with #define. Many symbols are proposed for customisation.
+<DT><b>%union</b><DD>
+as with bison generate a union for semantic type. The difference is that the union is named <B>yy_</B>'<I>parser_name</I>'<B>_stype</B>.
+<DT><b>%pure_parser</b><DD>
+As with bison in C. In C++ generate a parser where yylval, and yylloc (if needed) are passed as parameter to yylex, and where some instance variable are local to yyparse (like yydebug...). Not very useful, since you can create multiple instances for reentering another parser.
+<DT><b>%header{</b><DD>
+Like <B>%{</B>, but include this text both in the header, and in the code. End with <B>%}</B>. When put in declaration section, the text is added before the definitions. It can be put in the last section so that the text is added after all definition in the header, and in the last section at the current position in the code.
+
+</DL>
+<P>
+
+Note that the order of these declaration is important, since they are translated into preprocessor sympols, typedef or code depending on their type. For example use <B>%name</B> before any <B>%define</B>, since the name is needed to compose the name of the define symbols. Order of <B>%header</B> and <B>%union</B> is important, since type may be undefined.
+<A NAME="lbAG">&nbsp;</A>
+<H2>DECLARATION DEFINE SYMBOLS </H2>
+
+These are the symbols you can define with <B>%define</B> in declaration section, or that are already defined. Remind that they are replaced by a preprocessor <B>#define YY_</B>'<I>parser_name</I>'<B>_</B>'<I>name</I>.
+
+<DL COMPACT>
+<DT><b>BISON</b><DD>
+defined to <B>1</B> in the code. used for conditional code. Don't redefine it.
+<DT><b>h_included</b><DD>
+defined in the code, and in the header. used for include anti-reload. Don't redefine it.
+<DT><b>COMPATIBILITY</b><DD>
+Indicate if obsoleted defines are to be used and produced. If defined to 0, indicate no compatibility needed, else if defined to non-0, generate it. If it is undefined, default is to be compatible if classes are not used.
+<DT><b>USE_GOTO</b><DD>
+Indicates (if defined as 1) that <B>goto</B> are to be used (for backward compatibility) in the parser function. By default <B>goto</B> are replaced with a <B>switch</B> construction, to avoid problems with some compiler that don't support <B>goto</B> and destructor in the same function block. If <B>COMPATIBILITY</B> is 1, and <B>USE_GOTO</B> is not defined, then <B>USE_GOTO</B> is defined to 1, to be compatible with older bison.
+<DT><b>USE_CONST_TOKEN</b><DD>
+Indicate (if defined as 1) that <B>static const int</B> are to be used in C++, for token IDs. By default an enum is used to define the token IDs instead of const.
+<DT><b>ENUM_TOKEN</b><DD>
+When <B>enum</B> are used instead of <B>static const int</B> for token IDs, this symbol define the name of the enum type. Defined to <B>yy_</B>'<I>parser_name</I>'<B>_enum_token</B> by default.
+<DT><b>PURE</b><DD>
+Indicate that <B>%pure_parser</B> is asked... Don't redefine it.
+<DT><b>LSP_NEEDED</b><DD>
+if defined indicate that @ construct is used, so <B>LLOC</B> stack is needed. Can be defined to force use of location stack.
+<DT><b>DEBUG</b><DD>
+if defined to non-0 activate debugging code. See<B> YYDEBUG</B> in bison.
+<DT><b>ERROR_VERBOSE</b><DD>
+if defined activate dump parser stack when error append.
+<DT><b>STYPE</b><DD>
+the type of the semantic value of token. defined by <B>%union</B>. default is <B>int</B>. See <B>YYSTYPE</B> in bison. Don't redefine it, if you use a <B>%union</B>.
+<DT><b>LTYPE</b><DD>
+The token location type. If needed default is <B>yyltype</B>. See <B>YYLTYPE</B> in bison. default <B>yyltype</B> is a typedef and struct defined as in old bison.
+<DT><b>LLOC</b><DD>
+The token location variable name. If needed, default is <B>yylloc</B>. See <B>yylloc</B> in bison.
+<DT><b>LVAL</b><DD>
+The token semantic value variable name. Default <B>yylval</B>. See <B>yylval</B> in bison.
+<DT><b>CHAR</b><DD>
+The lookahead token value variable name. Default <B>yychar</B>. See <B>yychar</B> in bison.
+<DT><b>LEX</b><DD>
+The scanner function name. Default <B>yylex</B>. See <B>yylex</B> in bison.
+<DT><b>PARSE</b><DD>
+The parser function name. Default <B>yyparse</B>. See <B>yyparse</B> in bison.
+<DT><b>PARSE_PARAM</b><DD>
+The parser function parameters declaration. Default <B>void</B> in C++ or ANSIC, nothing if old C. In ANSIC and C++ contain the prototype. In old-C comtaim just the list of parameters name. Don't allows default value.
+<DT><b>PARSE_PARAM_DEF</b><DD>
+The parser function parameters definition, for old style C. Default nothing. For example to use an <B>int</B> parameter called <B>x</B>, PARSE_PARAM is <B>x</B>, and PARSE_PARAM_DEF is <B>int x;</B>. In ANSIC or C++ it is unuseful and ignored.
+<DT><b>ERROR</b><DD>
+The error function name. Default <B>yyerror</B>. See <B>yyerror</B> in bison.
+<DT><b>NERRS</b><DD>
+The error count name. Default <B>yynerrs</B>. See <B>yynerrs</B> in bison.
+<DT><b>DEBUG_FLAG</b><DD>
+The runtime debug flag. Default <B>yydebug</B>. See <B>yydebug</B> in bison.
+
+</DL>
+<P>
+
+These are only used if class is generated.
+
+<DL COMPACT>
+<DT><b>CLASS</b><DD>
+The class name. default is the parser name.
+<DT><b>INHERIT</b><DD>
+The inheritance list. Don't forget the <B>:</B> before, if not empty list.
+<DT><b>MEMBERS</b><DD>
+List of members to add to the class definition, before ending it.
+<DT><b>LEX_BODY</b><DD>
+The scanner member function boby. May be defined to <B>=0</B> for pure function, or to an inline body.
+<DT><b>ERROR_BODY</b><DD>
+The error member function boby. May be defined to <B>=0</B> for pure function, or to an inline body.
+<DT><b>CONSTRUCTOR_PARAM</b><DD>
+List ompliance can be enforced by not using extensions. If you want to forbide them, there is a good job !
+:SECTION &quot;FUTUR WORKS&quot;
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TT>tell us !<BR>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TT>Support semantic parser. Is it really used ?<BR>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TT>POSIX compliance. is'nt it good now ?<BR>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TT>Use lex a<BR>
+</DL>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME </A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS </A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION </A><DD>
+<DT><A HREF="#lbAE">OPTIONS </A><DD>
+<DT><A HREF="#lbAF">DECLARATIONS </A><DD>
+<DT><A HREF="#lbAG">DECLARATION DEFINE SYMBOLS </A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time:  GMT, April 13, 2002
+</BODY>
+</HTML>

@@ -1,0 +1,137 @@
+sequencer 
+{
+   name Dude
+   animtarget DudeController
+   speed   1
+
+   states 
+   {
+
+
+      state
+      {
+         name  Stand
+         anim  Wave1
+         minframe 0
+         maxframe 0
+         loop  loopforever
+
+         transitions
+         {
+            transition
+            {
+               from Twitch
+               command start
+            }
+            transition
+            {
+               from Walk
+               time 10
+               command blendin
+            }
+            transition
+            {
+               from Idle
+               time 10
+               command blendin
+            }
+         }
+      }
+
+      state
+      {
+         name  Idle
+         anim  FootTap1
+         loop  loopforever
+         
+         transitions
+         {
+            transition
+            {
+               from Stand
+               command start
+            }
+            transition
+            {
+               from Walk
+               time 5
+               command blendin
+            }
+
+         }
+      }
+
+      state
+      {
+         name  Fall
+         anim  Fall1
+         loop  loopnout
+         loopcount 1
+
+         outtransition
+         {
+            dest Twitch
+            command start
+         }
+
+         transitions
+         {
+
+            transition
+            {
+               from Stand
+               command start
+            }
+            transition
+            {
+               from Walk
+               time  10
+               command blendin
+            }
+
+            transition
+            {
+               from Idle
+               command start
+            }
+         }
+      }
+
+      state
+      {
+         name  Twitch
+         anim  Fall1
+         loop  loopforever
+
+         minframe 30
+         maxframe 60
+      }
+
+      state
+      {
+         name  Walk
+         anim  Walk1
+         loop  loopforever
+
+         transitions
+         {
+            
+            transition
+            {
+               from Stand
+               command start
+            }
+            transition
+            {
+               from Idle
+               time 5
+               command blendin
+            }
+         }
+      }
+   }
+}
+
+            
+
+

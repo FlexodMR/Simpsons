@@ -1,0 +1,534 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>LWP::UserAgent - A WWW UserAgent class
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_ua_new_LWP_UserAgent_">$ua = new LWP::UserAgent;</A>
+		<LI><A HREF="#_ua_simple_request_request_">$ua->simple_request($request, [$arg [, $size]])</A>
+		<LI><A HREF="#_ua_request_request_arg_">$ua->request($request, $arg [, $size])</A>
+		<LI><A HREF="#_ua_redirect_ok">$ua->redirect_ok</A>
+		<LI><A HREF="#_ua_credentials_netloc_realm">$ua->credentials($netloc, $realm, $uname, $pass)</A>
+		<LI><A HREF="#_ua_get_basic_credentials_real">$ua->get_basic_credentials($realm, $uri)</A>
+		<LI><A HREF="#_ua_agent_product_id_">$ua->agent([$product_id])</A>
+		<LI><A HREF="#_ua_from_email_address_">$ua->from([$email_address])</A>
+		<LI><A HREF="#_ua_timeout_secs_">$ua->timeout([$secs])</A>
+		<LI><A HREF="#_ua_use_alarm_boolean_">$ua->use_alarm([$boolean])</A>
+		<LI><A HREF="#_ua_use_eval_boolean_">$ua->use_eval([$boolean])</A>
+		<LI><A HREF="#_ua_parse_head_boolean_">$ua->parse_head([$boolean])</A>
+		<LI><A HREF="#_ua_max_size_bytes_">$ua->max_size([$bytes])</A>
+		<LI><A HREF="#_ua_clone_">$ua->clone;</A>
+		<LI><A HREF="#_ua_is_protocol_supported_sche">$ua->is_protocol_supported($scheme)</A>
+		<LI><A HREF="#_ua_mirror_url_file_">$ua->mirror($url, $file)</A>
+		<LI><A HREF="#_ua_proxy_">$ua->proxy(...)</A>
+		<LI><A HREF="#_ua_env_proxy_">$ua->env_proxy()</A>
+		<LI><A HREF="#_ua_no_proxy_domain_">$ua->no_proxy($domain,...)</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+LWP::UserAgent - 
+<FONT SIZE=-1>A</FONT> 
+<FONT SIZE=-1>WWW</FONT> UserAgent class
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require LWP::UserAgent;
+ $ua = new LWP::UserAgent;
+</PRE>
+
+<P>
+
+<PRE> $request = new <A HREF="HTTP::Request">HTTP::Request</A>('GET', '<A HREF="file://localhost/etc/motd">file://localhost/etc/motd</A>');
+</PRE>
+
+<P>
+
+<PRE> $response = $ua-&gt;request($request); # or
+ $response = $ua-&gt;request($request, '/tmp/sss'); # or
+ $response = $ua-&gt;request($request, \&amp;callback, 4096);
+</PRE>
+
+<P>
+
+<PRE> sub callback { my($data, $response, $protocol) = @_; .... }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>LWP::UserAgent</CODE> is a class implementing a simple World-Wide Web user agent in Perl. It brings together the HTTP::Request, HTTP::Response and the LWP::Protocol classes that form the rest of the core of libwww-perl library. For simple uses this class can be used directly to dispatch 
+<FONT SIZE=-1>WWW</FONT> requests, alternatively it can be subclassed for application-specific behaviour.
+
+
+
+<P>
+
+In normal usage the application creates a UserAgent object, and then
+configures it with values for timeouts proxies, name, etc. The next step is
+to create an instance of <CODE>HTTP::Request</CODE> for the request that needs to be performed. This request is then passed to
+the UserAgent <CODE>request()</CODE> method, which dispatches it using the
+relevant protocol, and returns a <CODE>HTTP::Response</CODE> object.
+
+
+<P>
+
+The basic approach of the library is to use 
+<FONT SIZE=-1>HTTP</FONT> style communication for all protocol schemes,
+i.e. you will receive an <CODE>HTTP::Response</CODE>
+object also for gopher or ftp requests. In order to achieve even more similarities with 
+<FONT SIZE=-1>HTTP</FONT> style communications, gopher menus and file directories will be converted to 
+<FONT SIZE=-1>HTML</FONT> documents.
+
+
+
+<P>
+
+The <CODE>request()</CODE> method can process the content of the response
+in one of three ways: in core, into a file, or into repeated calls of a
+subroutine. You choose which one by the kind of value passed as the second
+argument to <CODE>request().</CODE>
+
+
+<P>
+
+The in core variant simply returns the content in a scalar attribute called <CODE>content()</CODE> of the response object, and is suitable for small 
+<FONT SIZE=-1>HTML</FONT> replies that might need further parsing. This variant is used if the second argument is missing (or is undef).
+
+
+
+<P>
+
+The filename variant requires a scalar containing a filename as the second argument to <CODE>request(),</CODE> and is suitable for large 
+<FONT SIZE=-1>WWW</FONT> objects which need to be written directly to the file, without requiring large amounts of memory. In this case the response object returned from <CODE>request()</CODE> will have empty <CODE>content().</CODE> If the request fails, then the <CODE>content()</CODE> might not be empty, and the file will be untouched.
+
+
+
+<P>
+
+The subroutine variant requires a reference to callback routine as the
+second argument to <CODE>request()</CODE> and it can also take an optional
+chuck size as third argument. This variant can be used to construct
+``pipe-lined'' processing, where processing of received chuncks can begin
+before the complete data has arrived. The callback function is called with
+3 arguments: the data received this time, a reference to the response
+object and a reference to the protocol object. The response object returned
+from <CODE>request()</CODE> will have empty <CODE>content().</CODE> If the
+request fails, then the the callback routine will not have been called, and
+the response-&gt;content() might not be empty.
+
+
+<P>
+
+The request can be aborted by calling <CODE>die()</CODE> within the
+callback routine. The die message will be available as the ``X-Died''
+special response header field.
+
+
+<P>
+
+The library also accepts that you put a subroutine reference as content in
+the request object. This subroutine should return the content (possibly in
+pieces) when called. It should return an empty string when there is no more
+content.
+
+
+<P>
+
+The user of this module can finetune timeouts and error handling by calling
+the <CODE>use_alarm()</CODE> and <CODE>use_eval()</CODE> methods.
+
+
+<P>
+
+By default the library uses <CODE>alarm()</CODE> to implement timeouts,
+dying if the timeout occurs. If this is not the prefered behaviour or it
+interferes with other parts of the application one can disable the use
+alarms. When alarms are disabled timeouts can still occur for example when
+reading data, but other cases like name lookups etc will not be timed out
+by the library itself.
+
+
+<P>
+
+The library catches errors (such as internal errors and timeouts) and present them as 
+<FONT SIZE=-1>HTTP</FONT> error responses. Alternatively one can switch off this behaviour, and let the application handle dies.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+See <A HREF="/n|/perl/html/./lib/site/LWP.html#">the LWP manpage</A> for a complete overview of libwww-perl5. See <EM>request</EM> and
+<EM>mirror</EM> for examples of usage.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="_ua_new_LWP_UserAgent_">$ua = new LWP::UserAgent;
+
+</A></H2>
+Constructor for the UserAgent. Returns a reference to a LWP::UserAgent
+object.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_simple_request_request_">$ua->simple_request($request, [$arg [, $size]])
+
+</A></H2>
+This method dispatches a single 
+<FONT SIZE=-1>WWW</FONT> request on behalf of a user, and returns the
+response received. The <CODE>$request</CODE> should be a reference to a <CODE>HTTP::Request</CODE> object with values defined for at least the <CODE>method()</CODE> and
+<CODE>url()</CODE> attributes.
+
+
+<P>
+
+If <CODE>$arg</CODE> is a scalar it is taken as a filename where the content of the response is
+stored.
+
+
+<P>
+
+If <CODE>$arg</CODE> is a reference to a subroutine, then this routine is called as chunks of
+the content is received. An optional <CODE>$size</CODE> argument is taken as a hint for an appropriate chunk size.
+
+
+<P>
+
+If <CODE>$arg</CODE> is omitted, then the content is stored in the response object itself.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_request_request_arg_">$ua->request($request, $arg [, $size])
+
+</A></H2>
+Process a request, including redirects and security. This method may
+actually send several different simple reqeusts.
+
+
+<P>
+
+The arguments are the same as for <CODE>simple_request()</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_redirect_ok">$ua->redirect_ok
+
+</A></H2>
+This method is called by <CODE>request()</CODE> before it tries to do any
+redirects. It should return a true value if the redirect is allowed to be
+performed. Subclasses might want to override this.
+
+
+<P>
+
+The default implementation will return 
+<FONT SIZE=-1>FALSE</FONT> for 
+<FONT SIZE=-1>POST</FONT> request and 
+<FONT SIZE=-1>TRUE</FONT> for all others.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_credentials_netloc_realm">$ua->credentials($netloc, $realm, $uname, $pass)
+
+</A></H2>
+Set the user name and password to be used for a realm. It is often more
+useful to specialize the <CODE>get_basic_credentials()</CODE> method
+instead.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_get_basic_credentials_real">$ua->get_basic_credentials($realm, $uri)
+
+</A></H2>
+This is called by <CODE>request()</CODE> to retrieve credentials for a
+Realm protected by Basic Authentication or Digest Authentication.
+
+
+<P>
+
+Should return username and password in a list. Return undef to abort the
+authentication resolution atempts.
+
+
+<P>
+
+This implementation simply checks a set of pre-stored member variables.
+Subclasses can override this method to e.g. ask the user for a
+username/password. An example of this can be found in
+<CODE>lwp-request</CODE> program distributed with this library.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_agent_product_id_">$ua->agent([$product_id])
+
+</A></H2>
+Get/set the product token that is used to identify the user agent on the
+network. The agent value is sent as the ``User-Agent'' header in the
+requests. The default agent name is ``libwww-perl/#.##'', where ``#.##'' is
+substitued with the version numer of this library.
+
+
+<P>
+
+The user agent string should be one or more simple product identifiers with
+an optional version number separated by the ``/'' character. Examples are:
+
+
+<P>
+
+<PRE>  $ua-&gt;agent('Checkbot/0.4 ' . $ua-&gt;agent);
+  $ua-&gt;agent('Mozilla/5.0');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_from_email_address_">$ua->from([$email_address])
+
+</A></H2>
+Get/set the Internet e-mail address for the human user who controls the requesting user agent. The address should be machine-usable, as defined in 
+<FONT SIZE=-1>RFC</FONT> 822. The from value is send as the ``From'' header in the requests. There is no default. Example:
+
+
+
+<P>
+
+<PRE>  $ua-&gt;from('aas@sn.no');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_timeout_secs_">$ua->timeout([$secs])
+
+</A></H2>
+Get/set the timeout value in seconds. The default <CODE>timeout()</CODE>
+value is 180 seconds, i.e. 3 minutes.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_use_alarm_boolean_">$ua->use_alarm([$boolean])
+
+</A></H2>
+Get/set a value indicating wether to use <CODE>alarm()</CODE> when implementing timeouts. The default is 
+<FONT SIZE=-1>TRUE,</FONT> if your system supports it. You can disable it if it interfers with other uses of alarm in your application.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_use_eval_boolean_">$ua->use_eval([$boolean])
+
+</A></H2>
+Get/set a value indicating wether to handle internal errors internally by trapping with eval. The default is 
+<FONT SIZE=-1>TRUE,</FONT> i.e. the $ua-&gt;request() will never die.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_parse_head_boolean_">$ua->parse_head([$boolean])
+
+</A></H2>
+Get/set a value indicating wether we should initialize response headers
+from the &lt;head&gt; section of 
+<FONT SIZE=-1>HTML</FONT> documents. The default is 
+<FONT SIZE=-1>TRUE.</FONT> Do not turn this off, unless you know what you are doing.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_max_size_bytes_">$ua->max_size([$bytes])
+
+</A></H2>
+Get/set the size limit for response content. The default is undef, which
+means that there is not limit. If the returned response content is only
+partial, because the size limit was exceeded, then a ``X-Content-Range''
+header will be added to the response.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_clone_">$ua->clone;
+
+</A></H2>
+Returns a copy of the LWP::UserAgent object
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_is_protocol_supported_sche">$ua->is_protocol_supported($scheme)
+
+</A></H2>
+You can use this method to query if the library currently support the
+specified <CODE>scheme</CODE>. The <CODE>scheme</CODE> might be a string (like 'http' or 'ftp') or it might be an 
+<FONT SIZE=-1>URI::URL</FONT> object reference.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_mirror_url_file_">$ua->mirror($url, $file)
+
+</A></H2>
+Get and store a document identified by a 
+<FONT SIZE=-1>URL,</FONT> using If-Modified-Since, and checking of the
+Content-Length. Returns a reference to the response object.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_proxy_">$ua->proxy(...)
+
+</A></H2>
+Set/retrieve proxy 
+<FONT SIZE=-1>URL</FONT> for a scheme:
+
+
+<P>
+
+<PRE> $ua-&gt;proxy(['http', 'ftp'], '<A HREF="http://proxy.sn.no:8001/">http://proxy.sn.no:8001/</A>');
+ $ua-&gt;proxy('gopher', '<A HREF="http://proxy.sn.no:8001/">http://proxy.sn.no:8001/</A>');
+</PRE>
+
+<P>
+
+The first form specifies that the 
+<FONT SIZE=-1>URL</FONT> is to be used for proxying of access methods
+listed in the list in the first method argument, i.e. 'http' and 'ftp'.
+
+
+<P>
+
+The second form shows a shorthand form for specifying proxy 
+<FONT SIZE=-1>URL</FONT> for a single access scheme.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_env_proxy_">$ua->env_proxy()
+
+</A></H2>
+Load proxy settings from <CODE>*_proxy</CODE> environment variables. You
+might specify proxies like this (sh-syntax):
+
+
+<P>
+
+<PRE>  gopher_proxy=<A HREF="http://proxy.my.place/">http://proxy.my.place/</A>
+  wais_proxy=<A HREF="http://proxy.my.place/">http://proxy.my.place/</A>
+  no_proxy=&quot;my.place&quot;
+  export gopher_proxy wais_proxy no_proxy
+</PRE>
+
+<P>
+
+Csh or tcsh users should use the <CODE>setenv</CODE> command to define these envirionment variables.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_ua_no_proxy_domain_">$ua->no_proxy($domain,...)
+
+</A></H2>
+Do not proxy requests to the given domains. Calling no_proxy without any
+domains clears the list of domains. Eg:
+
+
+<P>
+
+<PRE> $ua-&gt;no_proxy('localhost', 'no', ...);
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

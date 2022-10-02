@@ -1,0 +1,53 @@
+global proc FileMenu_SaveItem()
+//
+// If the current file is named, save it.  If it
+// is still untitled, then bring up the Save As
+// dialog.
+//
+{
+    int $ok = true;
+
+    if ( `exists saveParanoia` ) 
+    {
+        if ( !`saveParanoia` )
+        {
+            string $result = `confirmDialog -title "Save Paranoia" -message "One or more attributes is possibly CORRUPT!\nSaving may generate a CRASH!\nContinue?" -messageAlign "center" -button "Yes" -button "Hell no!" -defaultButton "Hell no!"`;
+            $ok = ( $result == "Yes" );
+
+        }
+    }
+
+    if ( $ok )
+    {
+        string $sceneName = `file -q -sceneName`;
+
+        // Get the name of the scene File.
+        if ( size($sceneName) == 0 ) {
+            // Then the name can't be set.
+            projectViewer SaveAs;
+        // bug fix 89970 file save
+        } else if ((`file -q -amf`) || (`file -q -ex` == 0)) {
+            int $incrementalSave = false;
+            if(`optionVar -exists isIncrementalSaveEnabled`)
+                $incrementalSave = `optionVar -q isIncrementalSaveEnabled`;
+            if ( $incrementalSave ) {
+                // Save the scene using the Incremental Save feature.
+                //
+                incrementalSaveScene;
+            } else {
+                string $cmd = "file -save";
+                evalEcho($cmd);
+            }
+        } else {
+            warning ("No changes to save.");
+        }
+    }
+    else
+    {
+        warning ( "Save averted" );
+    }
+}
+
+/*
+source FileMenu_SaveItem
+*/

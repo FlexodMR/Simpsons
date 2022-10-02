@@ -1,0 +1,261 @@
+// Copyright (C) 1997-2001 Alias|Wavefront,
+// a division of Silicon Graphics Limited.
+//
+// The information in this file is provided for the exclusive use of the
+// licensees of Alias|Wavefront.  Such users have the right to use, modify,
+// and incorporate this code into other products for purposes authorized
+// by the Alias|Wavefront license agreement, without fee.
+//
+// ALIAS|WAVEFRONT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+// INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+// EVENT SHALL ALIAS|WAVEFRONT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+// DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+// TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+//
+//  Alias|Wavefront Script File
+//
+//  Creation Date:	1997
+//
+//
+//  Procedure Name:
+//	AElightCommon
+//
+//  Description:
+//	Creates the attribute editor controls for the light Node
+//
+//  Input Value:
+//	nodeName
+//
+//  Output Value:
+//	None
+//
+
+global proc AElightTypeNew( string $messageAttr )
+{
+	setUITemplate -pushTemplate attributeEditorTemplate;
+
+    optionMenuGrp -label "Type" typeMenu;
+
+        // Create a menu item for each type of light. Make sure to
+        // name each menu item after its light type.
+
+        string $nodes[] = `listNodeTypes "light"`;
+        for ($item in $nodes) {
+             menuItem -l `interToUI $item` $item;
+        }
+
+    AElightTypeReplace($messageAttr);
+
+	setUITemplate -popTemplate;
+}
+
+global proc AElightTypeReplace( string $messageAttr )
+{
+    // Get the light node
+    //
+
+    string $buffer[];
+    tokenize($messageAttr, ".", $buffer);
+    if (size($buffer) == 0) return;
+    string $lightNode = $buffer[0];
+
+    string $lightType = `objectType $lightNode`;
+
+    // Figure which menu item to select
+    //
+
+    int $select = 1;
+
+    string $items[] = `optionMenuGrp -q -itemListShort typeMenu`;
+
+    for ($i = 0; $i < size($items); $i += 1) {
+        if ($lightType == $items[$i])
+            $select = $i + 1;
+    }
+
+    // Update the UI
+    //
+
+    string $parent = `setParent -q`;
+
+    optionMenuGrp -e
+        -select $select
+        -cc ("AElightTypeCB "+$parent+" "+$lightNode)
+        typeMenu;
+}
+
+global proc AElightTypeCB( string $parent, string $lightNode )
+{
+    setParent $parent;
+
+    int $select = `optionMenuGrp -q -select typeMenu`;
+    string $items[] = `optionMenuGrp -q -itemListShort typeMenu`;
+
+    if ($select - 1 < size($items)) {
+        string $lightType = `objectType $lightNode`;
+
+        string $parents[] = `listRelatives -parent $lightNode`;
+
+        string $replaceType = $items[$select - 1];
+
+        string $replaceNode = `createNode -parent $parents[0] $replaceType`;
+
+        replaceNode $lightNode $replaceNode;
+
+        // Delete the light node
+
+        delete $lightNode;
+
+        // Rename the parent so its name corresponds to the new light
+        // type. If lightType cannot be found in the parents name,
+        // the current name is assigned to newParentName.
+
+        string $parentName =
+            substitute($lightType, $parents[0], $replaceType);
+
+        if ($parentName != $parents[0])
+            rename $parents[0] $parentName;
+
+        // The AE must be displayed last or the AE will not update to
+        // contain lightNode. We use the parent because the light's
+        // name may have changed by the rename above. Even though we
+        // are using parentName the attribute editor actually updates
+        // to show the replaceNode.
+
+        showEditor($parentName);
+    }
+}
+
+//
+//  Procedure Name:
+//	checkUseRayTraceShadows
+//
+
+global proc checkUseRayTraceShadows ( string $nodeName )
+{
+	string $nodeAttr = $nodeName + ".useRayTraceShadows";
+	int $value = `getAttr $nodeAttr`;
+
+	if ( $value == 1 ) {
+		editorTemplate -dimControl $nodeName "lightRadius" false;
+		editorTemplate -dimControl $nodeName "shadowRays" false;
+		editorTemplate -dimControl $nodeName "rayDepthLimit" false;
+	} else {
+		editorTemplate -dimControl $nodeName "lightRadius" true;
+		editorTemplate -dimControl $nodeName "shadowRays" true;
+		editorTemplate -dimControl $nodeName "rayDepthLimit" true;
+	}
+}
+
+//
+//  Procedure Name:
+//	AElightCommonShadow1
+//
+//
+
+global proc AElightCommonShadow1 ( string $nodeName )
+{
+	editorTemplate -beginLayout "Raytrace Shadow Attributes" -collapse 0;
+		
+		editorTemplate -addControl "useRayTraceShadows" "checkUseRayTraceShadows";
+}
+
+
+//
+//  Procedure Name:
+//	AElightCommonShadow2
+//
+//
+
+
+global proc AElightCommonShadow2 ( string $nodeName )
+{
+		editorTemplate -addControl "shadowRays";
+		editorTemplate -addControl "rayDepthLimit";
+	editorTemplate -endLayout;
+
+
+	//suppressed light parameters
+	editorTemplate -suppress "centerOfIllumination";
+	editorTemplate -suppress "pointCamera";
+	editorTemplate -suppress "matrixWorldToEye";
+	editorTemplate -suppress "matrixEyeToWorld";
+	editorTemplate -suppress "objectId";
+	editorTemplate -suppress "primitiveId";
+	editorTemplate -suppress "raySampler";
+	editorTemplate -suppress "rayDepth";
+	editorTemplate -suppress "lightData";
+	editorTemplate -suppress "opticalFXvisibility";
+	editorTemplate -suppress "renderState";
+
+	// if Maya Fur is loaded (ie. if the Fur shading layout procedure
+	// exists), then end the current layout (ie. Shadows) and add the
+	// Fur shading layout
+	//
+	if ( `exists AEFurShading` ) {
+		editortemplate -endLayout;
+		eval( "AEFurShading " + $nodeName + " true false" );
+	}
+}
+
+
+//
+//  Procedure Name:
+//	AElightCommon
+//
+//
+
+
+global proc AElightCommon ( string $nodeName )
+{	
+    editorTemplate -callCustom AElightTypeNew AElightTypeReplace "message";
+
+	editorTemplate -addControl "color";
+	editorTemplate -addControl "intensity";
+	editorTemplate -callCustom "AEmakeLightExclusive" "AEreplaceLightExclusive" "instObjGroups";
+	
+	editorTemplate -addControl "emitDiffuse";
+	editorTemplate -addControl "emitSpecular";
+
+         // --------  BEGIN Pure3D  --------------------
+
+         // These should only appear in directional, point and spot light as specified in
+         // scene.cpp.
+         editorTemplate -label "Pure3D Illuminates" -addControl "p3dLightIlluminates";
+         editorTemplate -label "Pure3D Cast Shadow" -addControl "useDepthMapShadows";
+
+         // --------  BEGIN Pure3D  --------------------
+
+}
+
+
+//
+// Checkbox for exclusivity of lights
+//
+
+global proc AEmakeLightExclusive(string $instObjGroups)
+{
+    string $lightName[];
+    tokenize($instObjGroups, ".", $lightName);
+
+	setUITemplate -pst attributeEditorTemplate;
+		rowLayout -nc 2 -cal 2 left ;
+		text -l "";
+		exclusiveLightCheckBox  
+			-light $lightName[0] 
+			-l "Illuminates by Default" exclusiveButton;
+		setParent ..;
+	setUITemplate -ppt;
+}
+
+global proc AEreplaceLightExclusive(string $instObjGroups)
+{
+    string $lightName[];
+    tokenize($instObjGroups, ".", $lightName);
+
+    exclusiveLightCheckBox -edit -light $lightName[0] exclusiveButton;
+}
+

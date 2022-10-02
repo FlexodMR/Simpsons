@@ -1,0 +1,29 @@
+; MultMatrix (4x4) 
+;   vi01 : address of source matrix
+;   vi02 : address of source matrix
+;   vi03 : address of destination matrix
+;   vf03-vf10 : temp usage
+;   22 cycles
+MultMatrix:
+    nop                             lqi.xyzw vf07, (vi02++)
+    nop                             lqi.xyzw vf03, (vi01++)
+    mulax.xyzw acc, vf03, vf07x     lqi.xyzw vf04, (vi01++)
+    madday.xyzw acc, vf04, vf07y    lqi.xyzw vf05, (vi01++)
+    maddaz.xyzw acc, vf05, vf07z    lqi.xyzw vf06, (vi01++)
+    maddw.xyzw vf07, vf06, vf07w    lqi.xyzw vf08, (vi02++)
+    mulax.xyzw acc, vf03, vf08x     lqi.xyzw vf09, (vi02++)
+    madday.xyzw acc, vf04, vf08y    lqi.xyzw vf10, (vi02++)
+    maddaz.xyzw acc, vf05, vf08z    nop
+    maddw.xyzw vf08, vf06, vf08w    sqi.xyzw vf07, (vi03++)
+    mulax.xyzw acc, vf03, vf09x     nop
+    madday.xyzw acc, vf04, vf09y    nop
+    maddaz.xyzw acc, vf05, vf09z    nop
+    maddw.xyzw vf09, vf06, vf09w    sqi.xyzw vf08, (vi03++)
+    mulax.xyzw acc, vf03, vf10x     nop
+    madday.xyzw acc, vf04, vf10y    nop
+    maddaz.xyzw acc, vf05, vf10z    nop
+    maddw.xyzw vf10, vf06, vf10w    sqi.xyzw vf09, (vi03++)
+    nop                             nop
+    nop                             nop
+    nop                             jr vi15
+    nop                             sqi.xyzw vf10, (vi03++)

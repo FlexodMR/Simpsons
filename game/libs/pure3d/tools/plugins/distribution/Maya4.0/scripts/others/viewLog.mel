@@ -1,0 +1,98 @@
+//===========================================================================
+// validBMP
+//===========================================================================
+// Description: Maya's UI layout will BOMB if you attempt to create a UI
+//              control that contains an image (a 'symbolButton' for example)
+//              where the specified image does not exist.
+//
+//              This function queries the folders specified in the XBMLANGPATH 
+//              environment variable for the specified BMP image.  If the
+//              image is found, its name is returned.  If the image is not
+//              found, the default image "vacantCell.xpm" is returned instead.
+//
+//              Suggested use is to specify the image for a control by 
+//              wrapping it within validBMP(); e.g.:
+//
+//                  symbolButton -image ( validBMP( "myImage.bmp" );
+//
+// Constraints: 
+//
+//  Parameters: string $bmp: The name of the BMP image (no path, please).
+//
+//      Return: (string): If specified BMP is valid, the BMP name is
+//                        returned; if the BMP is not valid "vacantCell.xpm"
+//                        is returned.
+//
+//===========================================================================
+proc string validBMP( string $bmp )
+{
+    string $validBMP = "vacantCell.xpm";
+    
+    string $pathEnv = `getenv XBMLANGPATH`;
+    string $paths[];
+    tokenize $pathEnv ";" $paths;
+    for ( $p in $paths )
+    {
+        string $bmpPath = ( $p + "/" + $bmp );
+        if ( `file -q -exists $bmpPath` )
+        {
+            $validBMP = $bmpPath;
+            break;
+        }
+    }
+    
+    return $validBMP;
+}
+
+global proc viewLog( string $title, string $message, string $log )
+{
+    string $logMessageFieldUI = "logMessageFieldUI";
+    string $logScrollFieldUI = "logScrollFieldUI";
+
+    if ( !`window -q -exists logUI` )
+    {        
+        window -iconName "Log" logUI;
+
+        string $alertIcon = validBMP( "alert.bmp" );
+
+        string $form = `formLayout`;
+    
+            string $icon = `image -width 32 -height 32 -image $alertIcon`;
+            text -label "" $logMessageFieldUI;
+            scrollField -editable false $logScrollFieldUI;
+            string $dismiss = `button -label "Dismiss"`;
+            setParent ..;
+        
+        formLayout -e
+            -af     $icon           "left"      4
+            -af     $icon           "top"       4
+        
+            -af     $logMessageFieldUI   "top"       12
+            -ac     $logMessageFieldUI   "left"      8   $icon
+            -af     $logMessageFieldUI   "right"     4
+        
+            -af     $dismiss        "left"      2
+            -af     $dismiss        "right"     2
+            -af     $dismiss        "bottom"    2
+        
+            -ac     $logScrollFieldUI    "top"       4   $icon
+            -af     $logScrollFieldUI    "left"      2
+            -af     $logScrollFieldUI    "right"     2
+            -ac     $logScrollFieldUI    "bottom"    4   $dismiss
+                $form;
+
+        button -e
+            -c "evalDeferred( \"deleteUI -window logUI\" );"
+                $dismiss;
+    }
+
+    window -e -title $title logUI;
+
+    text -e -label $message $logMessageFieldUI;
+    scrollField -e -text $log $logScrollFieldUI;
+
+    if ( !`window -q -iconify logUI` )
+        showWindow logUI;
+}
+
+// viewLog( "Title", "Message", "Log" );

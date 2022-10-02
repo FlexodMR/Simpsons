@@ -1,0 +1,593 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlLoL - Manipulating Lists of Lists in Perl
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#Declaration_and_Access_of_Lists_">Declaration and Access of Lists of Lists</A>
+	<LI><A HREF="#Growing_Your_Own">Growing Your Own</A>
+	<LI><A HREF="#Access_and_Printing">Access and Printing</A>
+	<LI><A HREF="#Slices">Slices</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlLoL - Manipulating Lists of Lists in Perl
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<P>
+<HR>
+<H1><A NAME="Declaration_and_Access_of_Lists_">Declaration and Access of Lists of Lists
+
+</A></H1>
+The simplest thing to build is a list of lists (sometimes called an array
+of arrays). It's reasonably easy to understand, and almost everything that
+applies here will also be applicable later on with the fancier data
+structures.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> list of lists, or an array of an array if you would,
+is just a regular old array <CODE>@LoL</CODE> that you can get at with two
+subscripts, like <CODE>$LoL[3][2]</CODE>. Here's a declaration of the array:
+
+
+<P>
+
+<PRE>    # assign to our array a list of list references
+    @LoL = (
+           [ &quot;fred&quot;, &quot;barney&quot; ],
+           [ &quot;george&quot;, &quot;jane&quot;, &quot;elroy&quot; ],
+           [ &quot;homer&quot;, &quot;marge&quot;, &quot;bart&quot; ],
+    );
+</PRE>
+
+<P>
+
+<PRE>    print $LoL[2][2];
+  bart
+</PRE>
+
+<P>
+
+Now you should be very careful that the outer bracket type is a round one,
+that is, parentheses. That's because you're assigning to an @list, so you
+need parentheses. If you wanted there <EM>not</EM> to be an @LoL, but rather just a reference to it, you could do something
+more like this:
+
+
+<P>
+
+<PRE>    # assign a reference to list of list references
+    $ref_to_LoL = [
+        [ &quot;fred&quot;, &quot;barney&quot;, &quot;pebbles&quot;, &quot;bambam&quot;, &quot;dino&quot;, ],
+        [ &quot;homer&quot;, &quot;bart&quot;, &quot;marge&quot;, &quot;maggie&quot;, ],
+        [ &quot;george&quot;, &quot;jane&quot;, &quot;alroy&quot;, &quot;judy&quot;, ],
+    ];
+</PRE>
+
+<P>
+
+<PRE>    print $ref_to_LoL-&gt;[2][2];
+</PRE>
+
+<P>
+
+Notice that the outer bracket type has changed, and so our access syntax has also changed. That's because unlike 
+<FONT SIZE=-1>C,</FONT> in perl you can't freely interchange arrays and references thereto. <CODE>$ref_to_LoL</CODE> is a reference to an array, whereas <CODE>@LoL</CODE> is an array proper. Likewise,
+ <CODE>$LoL[2]</CODE> is not an array, but an array ref. So how come you can write these:
+
+
+<P>
+
+<PRE>    $LoL[2][2]
+    $ref_to_LoL-&gt;[2][2]
+</PRE>
+
+<P>
+
+instead of having to write these:
+
+
+<P>
+
+<PRE>    $LoL[2]-&gt;[2]
+    $ref_to_LoL-&gt;[2]-&gt;[2]
+</PRE>
+
+<P>
+
+Well, that's because the rule is that on adjacent brackets only (whether
+square or curly), you are free to omit the pointer dereferencing arrow. But
+you cannot do so for the very first one if it's a scalar containing a
+reference, which means that <CODE>$ref_to_LoL</CODE> always needs it.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Growing_Your_Own">Growing Your Own
+
+</A></H1>
+That's all well and good for declaration of a fixed data structure, but
+what if you wanted to add new elements on the fly, or build it up entirely
+from scratch?
+
+
+<P>
+
+First, let's look at reading it in from a file. This is something like
+adding a row at a time. We'll assume that there's a flat file in which each
+line is a row and each word an element. If you're trying to develop an
+<CODE>@LoL</CODE> list containing all these, here's the right way to do
+that:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        @tmp = split;
+        push @LoL, [ @tmp ];
+    }
+</PRE>
+
+<P>
+
+You might also have loaded that from a function:
+
+
+<P>
+
+<PRE>    for $i ( 1 .. 10 ) {
+        $LoL[$i] = [ somefunc($i) ];
+    }
+</PRE>
+
+<P>
+
+Or you might have had a temporary variable sitting around with the list in
+it.
+
+
+<P>
+
+<PRE>    for $i ( 1 .. 10 ) {
+        @tmp = somefunc($i);
+        $LoL[$i] = [ @tmp ];
+    }
+</PRE>
+
+<P>
+
+It's very important that you make sure to use the <CODE>[]</CODE> list reference constructor. That's because this will be very wrong:
+
+
+<P>
+
+<PRE>    $LoL[$i] = @tmp;
+</PRE>
+
+<P>
+
+You see, assigning a named list like that to a scalar just counts the
+number of elements in @tmp, which probably isn't what you want.
+
+
+<P>
+
+If you are running under <CODE>use strict</CODE>, you'll have to add some declarations to make it happy:
+
+
+<P>
+
+<PRE>    use strict;
+    my(@LoL, @tmp);
+    while (&lt;&gt;) {
+        @tmp = split;
+        push @LoL, [ @tmp ];
+    }
+</PRE>
+
+<P>
+
+Of course, you don't need the temporary array to have a name at all:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        push @LoL, [ split ];
+    }
+</PRE>
+
+<P>
+
+You also don't have to use <CODE>push().</CODE> You could just make a
+direct assignment if you knew where you wanted to put it:
+
+
+<P>
+
+<PRE>    my (@LoL, $i, $line);
+    for $i ( 0 .. 10 ) {
+        $line = &lt;&gt;;
+        $LoL[$i] = [ split ' ', $line ];
+    }
+</PRE>
+
+<P>
+
+or even just
+
+
+<P>
+
+<PRE>    my (@LoL, $i);
+    for $i ( 0 .. 10 ) {
+        $LoL[$i] = [ split ' ', &lt;&gt; ];
+    }
+</PRE>
+
+<P>
+
+You should in general be leery of using potential list functions in a
+scalar context without explicitly stating such. This would be clearer to
+the casual reader:
+
+
+<P>
+
+<PRE>    my (@LoL, $i);
+    for $i ( 0 .. 10 ) {
+        $LoL[$i] = [ split ' ', scalar(&lt;&gt;) ];
+    }
+</PRE>
+
+<P>
+
+If you wanted to have a <CODE>$ref_to_LoL</CODE> variable as a reference to
+an array, you'd have to do something like this:
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        push @$ref_to_LoL, [ split ];
+    }
+</PRE>
+
+<P>
+
+Actually, if you were using strict, you'd have to declare not only
+<CODE>$ref_to_LoL</CODE> as you had to declare @LoL, but you'd <EM>also</EM> having to initialize it to a reference to an empty list. (This was a bug in
+perl version 5.001m that's been fixed for the 5.002 release.)
+
+
+<P>
+
+<PRE>    my $ref_to_LoL = [];
+    while (&lt;&gt;) {
+        push @$ref_to_LoL, [ split ];
+    }
+</PRE>
+
+<P>
+
+Ok, now you can add new rows. What about adding new columns? If you're
+dealing with just matrices, it's often easiest to use simple assignment:
+
+
+<P>
+
+<PRE>    for $x (1 .. 10) {
+        for $y (1 .. 10) {
+            $LoL[$x][$y] = func($x, $y);
+        }
+    }
+</PRE>
+
+<P>
+
+<PRE>    for $x ( 3, 7, 9 ) {
+        $LoL[$x][20] += func2($x);
+    }
+</PRE>
+
+<P>
+
+It doesn't matter whether those elements are already there or not: it'll
+gladly create them for you, setting intervening elements to <A HREF="#item_undef">undef</A> as need be.
+
+
+<P>
+
+If you wanted just to append to a row, you'd have to do something a bit
+funnier looking:
+
+
+<P>
+
+<PRE>    # add new columns to an existing row
+    push @{ $LoL[0] }, &quot;wilma&quot;, &quot;betty&quot;;
+</PRE>
+
+<P>
+
+Notice that 
+<FONT SIZE=-1>I</FONT> <EM>couldn't</EM> say just:
+
+
+<P>
+
+<PRE>    push $LoL[0], &quot;wilma&quot;, &quot;betty&quot;;  # WRONG!
+</PRE>
+
+<P>
+
+In fact, that wouldn't even compile. How come? Because the argument to
+<CODE>push()</CODE> must be a real array, not just a reference to such.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Access_and_Printing">Access and Printing
+
+</A></H1>
+Now it's time to print your data structure out. How are you going to do
+that? Well, if you want only one of the elements, it's trivial:
+
+
+<P>
+
+<PRE>    print $LoL[0][0];
+</PRE>
+
+<P>
+
+If you want to print the whole thing, though, you can't say
+
+
+<P>
+
+<PRE>    print @LoL;         # WRONG
+</PRE>
+
+<P>
+
+because you'll get just references listed, and perl will never
+automatically dereference things for you. Instead, you have to roll
+yourself a loop or two. This prints the whole structure, using the
+shell-style <CODE>for()</CODE> construct to loop across the outer set of
+subscripts.
+
+
+<P>
+
+<PRE>    for $aref ( @LoL ) {
+        print &quot;\t [ @$aref ],\n&quot;;
+    }
+</PRE>
+
+<P>
+
+If you wanted to keep track of subscripts, you might do this:
+
+
+<P>
+
+<PRE>    for $i ( 0 .. $#LoL ) {
+        print &quot;\t elt $i is [ @{$LoL[$i]} ],\n&quot;;
+    }
+</PRE>
+
+<P>
+
+or maybe even this. Notice the inner loop.
+
+
+<P>
+
+<PRE>    for $i ( 0 .. $#LoL ) {
+        for $j ( 0 .. $#{$LoL[$i]} ) {
+            print &quot;elt $i $j is $LoL[$i][$j]\n&quot;;
+        }
+    }
+</PRE>
+
+<P>
+
+As you can see, it's getting a bit complicated. That's why sometimes is
+easier to take a temporary on your way through:
+
+
+<P>
+
+<PRE>    for $i ( 0 .. $#LoL ) {
+        $aref = $LoL[$i];
+        for $j ( 0 .. $#{$aref} ) {
+            print &quot;elt $i $j is $LoL[$i][$j]\n&quot;;
+        }
+    }
+</PRE>
+
+<P>
+
+Hmm... that's still a bit ugly. How about this:
+
+
+<P>
+
+<PRE>    for $i ( 0 .. $#LoL ) {
+        $aref = $LoL[$i];
+        $n = @$aref - 1;
+        for $j ( 0 .. $n ) {
+            print &quot;elt $i $j is $LoL[$i][$j]\n&quot;;
+        }
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Slices">Slices
+
+</A></H1>
+If you want to get at a slice (part of a row) in a multidimensional array,
+you're going to have to do some fancy subscripting. That's because while we
+have a nice synonym for single elements via the pointer arrow for
+dereferencing, no such convenience exists for slices. (Remember, of course,
+that you can always write a loop to do a slice operation.)
+
+
+<P>
+
+Here's how to do one operation using a loop. We'll assume an
+<CODE>@LoL</CODE> variable as before.
+
+
+<P>
+
+<PRE>    @part = ();
+    $x = 4;
+    for ($y = 7; $y &lt; 13; $y++) {
+        push @part, $LoL[$x][$y];
+    }
+</PRE>
+
+<P>
+
+That same loop could be replaced with a slice operation:
+
+
+<P>
+
+<PRE>    @part = @{ $LoL[4] } [ 7..12 ];
+</PRE>
+
+<P>
+
+but as you might well imagine, this is pretty rough on the reader.
+
+
+<P>
+
+Ah, but what if you wanted a <EM>two-dimensional slice</EM>, such as having <A HREF="#item__x">$x</A> run from 4..8 and <A
+HREF="#item__y">$y</A> run from 7 to 12? Hmm... here's the simple way:
+
+
+<P>
+
+<PRE>    @newLoL = ();
+    for ($startx = $x = 4; $x &lt;= 8; $x++) {
+        for ($starty = $y = 7; $y &lt;= 12; $y++) {
+            $newLoL[$x - $startx][$y - $starty] = $LoL[$x][$y];
+        }
+    }
+</PRE>
+
+<P>
+
+We can reduce some of the looping through slices
+
+
+<P>
+
+<PRE>    for ($x = 4; $x &lt;= 8; $x++) {
+        push @newLoL, [ @{ $LoL[$x] } [ 7..12 ] ];
+    }
+</PRE>
+
+<P>
+
+If you were into Schwartzian Transforms, you would probably have selected
+map for that
+
+
+<P>
+
+<PRE>    @newLoL = map { [ @{ $LoL[$_] } [ 7..12 ] ] } 4 .. 8;
+</PRE>
+
+<P>
+
+Although if your manager accused of seeking job security (or rapid insecurity) through inscrutable code, it would be hard to argue. :-) If 
+<FONT SIZE=-1>I</FONT> were you, I'd put that in a function:
+
+
+
+<P>
+
+<PRE>    @newLoL = splice_2D( \@LoL, 4 =&gt; 8, 7 =&gt; 12 );
+    sub splice_2D {
+        my $lrr = shift;        # ref to list of list refs!
+        my ($x_lo, $x_hi,
+            $y_lo, $y_hi) = @_;
+</PRE>
+
+<P>
+
+<PRE>        return map {
+            [ @{ $lrr-&gt;[$_] } [ $y_lo .. $y_hi ] ]
+        } $x_lo .. $x_hi;
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<CODE>perldata(1),</CODE> <CODE>perlref(1),</CODE> <CODE>perldsc(1)</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Christiansen &lt;<EM>tchrist@perl.com</EM>&gt;
+
+
+<P>
+
+Last udpate: Sat Oct 7 19:35:26 
+<FONT SIZE=-1>MDT</FONT> 1995
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,98 @@
+SelectMission("sr2");
+//The CIRCUIT RACE (with AI cars)
+//Script set up for multipkle laps
+
+
+SetMissionResetPlayerInCar("sr2_carstart");
+SetDynaLoadData("l7z2.p3d;l7r3.p3d;l7r2.p3d;");
+
+SetMissionStartCameraName( "race2camShape" );
+SetMissionStartMulticontName( "race2cam" );
+SetAnimatedCameraName( "race2camShape" );
+SetAnimCamMulticontName( "race2cam" );
+
+//Chuck: StreetRace Prop Load and Unload Setup
+StreetRacePropsLoad("l7_sr2p.p3d;");
+StreetRacePropsUnload("l7_sr2p.p3d:");
+
+AddStage(0, "final");
+SetHUDIcon( "race" );
+DisableHitAndRun();
+PlacePlayerCar("current", "sr2_carstart");
+PutMFPlayerInCar( );  // This makes the play auto reset into their car for this stage.                
+StartCountdown("count");
+	AddToCountdownSequence( "3", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "2", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "1", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "GO", 1000 ); // duration time in milliseconds
+SetStageMessageIndex(223);
+RESET_TO_HERE();
+
+NoTrafficForStage();
+
+AddStageVehicle("cHears","sr2_AI_carstart1","race","Missions/level07/sr2_1st.con");
+SetVehicleAIParams( "cHears", -49, -50 );
+SetStageAIRaceCatchupParams("cHears", 80, 0.8, 1.11, 1.75); 
+
+AddStageVehicle("ship","sr2_AI_carstart2","race","Missions/level07/sr2_2nd.con");
+SetVehicleAIParams( "ship", -49, -50 );
+SetStageAIRaceCatchupParams("ship", 80, 0.75, 1.1, 1.5); 
+
+AddStageVehicle("coffin","sr2_AI_carstart3","race","Missions/level07/sr2_3rd.con");
+SetVehicleAIParams( "coffin", -49, -50 );
+SetStageAIRaceCatchupParams("coffin", 80, 0.75, 1.1, 1.5); 
+
+AddStageVehicle("hallo","sr2_AI_carstart4","race","Missions/level07/sr2_4th.con");
+SetVehicleAIParams( "hallo", -49, -50 );
+SetStageAIRaceCatchupParams("hallo", 80, 0.75, 1.1, 1.5); 
+
+AddStageWaypoint( "sr2_waypoint0" ); 
+AddStageWaypoint( "sr2_waypoint4" ); 
+AddStageWaypoint( "sr2_waypoint3" );
+AddStageWaypoint( "sr2_waypoint3a" );
+AddStageWaypoint( "sr2_waypoint3b" );
+//AddStageWaypoint( "sr2_waypoint3c" );
+//AddStageWaypoint( "sr2_waypoint5" );
+AddStageWaypoint( "sr2_waypoint6" );
+AddStageWaypoint( "sr2_waypoint7" );
+
+AddObjective( "race",neither );
+AddNPC("patty", "sr2_patty");
+AddNPC("selma", "sr2_selma");
+
+AddCollectible("sr2_waypoint1","carsphere");
+SetCollectibleEffect("wrench_collect");
+AddCollectible("sr2_waypoint2","carsphere");
+SetCollectibleEffect("wrench_collect");
+//AddCollectible("sr2_waypoint3","carsphere");
+AddCollectible("sr2_waypoint4","carsphere");
+SetCollectibleEffect("wrench_collect");
+AddCollectible("sr2_waypoint4a","carsphere");
+SetCollectibleEffect("wrench_collect");
+AddCollectible("sr2_waypoint4b","carsphere");
+SetCollectibleEffect("wrench_collect");
+//AddCollectible("sr2_waypoint3","carsphere");
+//AddCollectible("sr2_waypoint2","carsphere");
+//AddCollectible("sr2_waypoint1","carsphere");
+AddCollectible("sr2_waypoint5","carsphere");
+SetCollectibleEffect("wrench_collect");
+AddCollectible("sr2_waypoint6","carsphere");
+SetCollectibleEffect("wrench_collect");
+
+SetRaceLaps(3);
+CloseObjective();
+AddCondition("position");
+	SetConditionPosition(1);
+CloseCondition();
+
+AddCondition( "damage" );
+	SetCondMinHealth( 0.0 );
+	SetCondTargetVehicle( "current");
+CloseCondition();
+AddCondition("outofvehicle");
+	SetCondTime( 5000 );
+CloseCondition();
+
+GoToPsScreenWhenDone();
+CloseStage();
+CloseMission();

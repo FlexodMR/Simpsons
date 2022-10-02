@@ -1,0 +1,123 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Shell - run shell commands transparently within perl
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Shell - run shell commands transparently within perl
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+See below.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<PRE>  Date: Thu, 22 Sep 94 16:18:16 -0700
+  Message-Id: &lt;9409222318.AA17072@scalpel.netlabs.com&gt;
+  To: perl5-porters@isu.edu
+  From: Larry Wall &lt;lwall@scalpel.netlabs.com&gt;
+  Subject: a new module I just wrote
+</PRE>
+
+<P>
+
+Here's one that'll whack your mind a little out.
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl
+</PRE>
+
+<P>
+
+<PRE>    use Shell;
+</PRE>
+
+<P>
+
+<PRE>    $foo = echo(&quot;howdy&quot;, &quot;&lt;funny&gt;&quot;, &quot;world&quot;);
+    print $foo;
+</PRE>
+
+<P>
+
+<PRE>    $passwd = cat(&quot;&lt;/etc/passwd&quot;);
+    print $passwd;
+</PRE>
+
+<P>
+
+<PRE>    sub ps;
+    print ps -ww;
+</PRE>
+
+<P>
+
+<PRE>    cp(&quot;/etc/passwd&quot;, &quot;/tmp/passwd&quot;);
+</PRE>
+
+<P>
+
+That's maybe too gonzo. It actually exports an 
+<FONT SIZE=-1>AUTOLOAD</FONT> to the current package (and uncovered a bug
+in Beta 3, by the way). Maybe the usual usage should be
+
+
+<P>
+
+<PRE>    use Shell qw(echo cat ps cp);
+</PRE>
+
+<P>
+
+Larry
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Larry Wall
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

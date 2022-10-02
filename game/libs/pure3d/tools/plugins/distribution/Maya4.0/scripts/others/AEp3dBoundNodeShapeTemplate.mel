@@ -1,0 +1,50 @@
+global proc AEp3dBoundNodeShapeTemplate( string $nodeName )
+{
+   editorTemplate -beginScrollLayout;
+
+      //now you can i.e. hide some of every Maya nodes default attributes
+      editorTemplate -suppress "input";
+      editorTemplate -suppress "caching";
+      editorTemplate -suppress "nodeState";
+      editorTemplate -suppress "controlPoints";
+      editorTemplate -suppress "weights";
+      editorTemplate -suppress "tweak";
+      editorTemplate -suppress "relativeTweak";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "compInstObjGroups";
+      editorTemplate -suppress "castsShadows";
+      editorTemplate -suppress "motionBlur";
+      editorTemplate -suppress "primaryVisibility";
+      editorTemplate -suppress "visibleInReflections";
+      editorTemplate -suppress "visibleInRefractions";
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "geometryAntialiasingOverride";
+      editorTemplate -suppress "antialiasingLevel";
+      editorTemplate -suppress "shadingSamplesOverride";
+      editorTemplate -suppress "shadingSamples";
+      editorTemplate -suppress "maxShadingSamples";
+      editorTemplate -suppress "volumeSamplesOverride";
+      editorTemplate -suppress "volumeSamples";
+      editorTemplate -suppress "maxVisibilitySamplesOverride";
+      editorTemplate -suppress "maxVisibilitySamples";
+      editorTemplate -suppress "boundingBoxScale"; 
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "smoothShading";
+      editorTemplate -suppress "drawOverride";
+      editorTemplate -suppress "useObjectColor";
+      editorTemplate -suppress "objectColor";
+      editorTemplate -suppress "intermediateObject";
+      editorTemplate -suppress "visibility";
+      editorTemplate -suppress "lodVisibility";
+      editorTemplate -suppress "template";
+
+      editorTemplate -beginLayout "Bounding Node Attributes";
+      editorTemplate -addControl "handleSize";
+      editorTemplate -endLayout;
+
+   	editorTemplate -addExtraControls;
+
+   editorTemplate -endScrollLayout;
+}

@@ -1,0 +1,97 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::Derived - Base class for widgets derived from others
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION </A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::Derived - Base class for widgets derived from others
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  package Tk::Whatever;
+  require Tk::Something; 
+  require Tk::Derived;
+  @ISA = qw(Tk::Derived Tk::Something);
+</PRE>
+
+<P>
+
+<PRE>  sub Populate
+  {
+   my ($cw,$args) = @_;
+   ...
+   $cw-&gt;SUPER::Populate($args);
+   $cw-&gt;ConfigSpecs(...);
+   ...
+  }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION 
+
+</A></H1>
+Tk::Derived is used with perl5's multiple inheritance to override some
+methods normally inherited from Tk::Widget.
+
+
+<P>
+
+Tk::Derived should precede any Tk widgets in the class's 
+<FONT SIZE=-1>@ISA.</FONT>
+
+
+<P>
+
+Tk::Derived's main purpose is to apply wrappers to <CODE>configure</CODE> and <CODE>cget</CODE>
+methods of widgets to allow the derived widget to add to or modify
+behaviour of the configure options supported by the base widget.
+
+
+<P>
+
+The derived class should normally override the <CODE>Populate</CODE> method provided by Tk::Derived and call <CODE>ConfigSpecs</CODE> to declare configure options.
+
+
+<P>
+
+The public methods provided by Tk::Derived are as follows:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__gtConfigSpecs_key">-gtConfigSpecs(-key =gt [kind, name, Class, I<default], ...)
+
+</A></STRONG><DD>
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

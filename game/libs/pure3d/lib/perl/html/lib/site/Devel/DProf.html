@@ -1,0 +1,196 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Devel::DProf - a Perl code profiler
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#PROFILE_FORMAT">PROFILE FORMAT</A>
+	<LI><A HREF="#AUTOLOAD">AUTOLOAD</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Devel::DProf - a Perl code profiler
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        perl5 -d:DProf test.pl
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The Devel::DProf package is a Perl code profiler. This will collect
+information on the execution time of a Perl script and of the subs in that
+script. This information can be used to determine which subroutines are
+using the most time and which subroutines are being called most often. This
+information can also be used to create an execution graph of the script,
+showing subroutine relationships.
+
+
+<P>
+
+To profile a Perl script run the perl interpreter with the <STRONG>-d</STRONG> debugging switch. The profiler uses the debugging hooks. So to profile
+script
+<EM>test.pl</EM> the following command should be used:
+
+
+<P>
+
+<PRE>        perl5 -d:DProf test.pl
+</PRE>
+
+<P>
+
+When the script terminates the profiler will dump the profile information
+to a file called <EM>tmon.out</EM>. 
+<FONT SIZE=-1>A</FONT> tool like <EM>dprofpp</EM> can be used to interpret the information which is in that profile. The
+following command will print the top 15 subroutines which used the most
+time:
+
+
+<P>
+
+<PRE>        dprofpp
+</PRE>
+
+<P>
+
+To print an execution graph of the subroutines in the script use the
+following command:
+
+
+<P>
+
+<PRE>        dprofpp -T
+</PRE>
+
+<P>
+
+Consult <EM>dprofpp</EM> for other options.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="PROFILE_FORMAT">PROFILE FORMAT
+
+</A></H1>
+The profile is a text file which looks like this:
+
+
+<P>
+
+<PRE>        #fOrTyTwO
+        $hz=100;
+        $XS_VERSION='DProf 19970606';
+        # All values are given in HZ
+        $rrun_utime=2; $rrun_stime=0; $rrun_rtime=7
+        PART2
+        + 26 28 566822884 DynaLoader::import
+        - 26 28 566822884 DynaLoader::import
+        + 27 28 566822885 main::bar
+        - 27 28 566822886 main::bar
+        + 27 28 566822886 main::baz
+        + 27 28 566822887 main::bar
+        - 27 28 566822888 main::bar
+        [....]
+</PRE>
+
+<P>
+
+The first line is the magic number. The second line is the hertz value, or
+clock ticks, of the machine where the profile was collected. The third line
+is the name and version identifier of the tool which created the profile.
+The fourth line is a comment. The fifth line contains three variables
+holding the user time, system time, and realtime of the process while it
+was being profiled. The sixth line indicates the beginning of the sub
+entry/exit profile section.
+
+
+<P>
+
+The columns in <STRONG>PART2</STRONG> are:
+
+
+<P>
+
+<PRE>        sub entry(+)/exit(-) mark
+        app's user time at sub entry/exit mark, in ticks
+        app's system time at sub entry/exit mark, in ticks
+        app's realtime at sub entry/exit mark, in ticks
+        fully-qualified sub name, when possible
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTOLOAD">AUTOLOAD
+
+</A></H1>
+When Devel::DProf finds a call to an <A HREF="#item__AUTOLOAD">&AUTOLOAD</A> subroutine it looks at the
+<A HREF="#item__AUTOLOAD">$AUTOLOAD</A> variable to find the real name of the sub being called. See
+<A HREF="/n|/perl/html/./lib/Pod/perlsub.html#Autoloading">Autoloading</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+XSUBs, builtin functions, and destructors cannot be measured by
+Devel::DProf.
+
+
+<P>
+
+Mail bug reports and feature requests to the perl5-porters mailing list at
+<EM>&lt;perl5-porters@africa.nicoh.com&gt;</EM>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Pod/perl.html#">the perl manpage</A>, <EM>dprofpp</EM>, <CODE>times(2)</CODE>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,84 @@
+SelectMission("bm1");
+
+SetMissionResetPlayerInCar("bm1_carstart");
+SetDynaLoadData("l4r7.p3d;l4z1.p3d;l4r1.p3d;");
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(3);
+	RESET_TO_HERE();
+	SetStageMessageIndex(128);
+	SetHUDIcon( "school" );
+	AddObjective("goto");
+		SetDestination("bm1_waypoint3", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(80);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage(16);
+	ShowStageComplete();
+	SetStageMessageIndex(236);
+	SetHUDIcon( "heart" );
+	AddObjective("delivery");
+		AddCollectible("bm1_object1","r_choco");
+		AddCollectible("bm1_object2","r_dent");
+		AddCollectible("bm1_object3","r_diaper");
+		AddCollectible("bm1_object4","r_onions");
+		AddCollectible("bm1_object5","r_tomb");
+		AddCollectible("bm1_item6","r_choco");
+		AddCollectible("bm1_item7","r_dent");
+		AddCollectible("bm1_item8","r_diaper");
+	CloseObjective();
+	AddStageTime(50);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(130);
+	SetHUDIcon( "cbg" );
+	AddObjective( "goto" );
+		SetDestination( "bm_end", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(70);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(54);
+	SetHUDIcon( "cbg" );
+	AddObjective("talkto");
+		SetTalkToTarget("cbg", 0, 0); // 0 - eclamation, 1 is gift, with optional hieight offset
+	CloseObjective();
+CloseStage();
+
+AddStage(0,"final");
+	AddObjective("dialogue");
+		//AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		//AmbientAnimationRandomize( 0, 0 );
+		//AddAmbientNpcAnimation( "none" );
+		//AddAmbientNpcAnimation( "dialogue_no" );
+		//AddAmbientNpcAnimation( "none" );
+		//AddAmbientPcAnimation( "none" );
+		//AddAmbientPcAnimation( "none" );
+		//AddAmbientPcAnimation( "dialogue_scratch_head" );
+		//SetConversationCam( 3, "pc_far" );
+		SetCamBestSide( "bm1_bestside" );
+		SetDialogueInfo("marge","cbg","done",0);
+	CloseObjective();
+CloseStage();
+
+CloseMission();

@@ -1,0 +1,142 @@
+/*===========================================================================
+    File:    cachedPolyNormalPerVertex.mel
+    Created: February 26, 2002
+    Author:  Harold Westlund
+
+    Copyright (c) 2002 Radical Entertainment, Inc.
+    All rights reserved.
+
+    Version: 1.0.0
+
+=============================================================================
+
+global proc float[] cachedPolyNormalPerVertex (
+    string $mesh,
+    int    $vtx,
+    int    $face )
+
+    This procedure is a workaround for a bug in Maya's current version (4.0.1)
+    of polyNormalPerVertex.  Maya's procedure will cause undo information to
+    be saved on queries (-q option) which causes longer and longer execution
+    times.  This procedure works around this by caching normal data for an entire
+    object and re-using it on subsequent calls.  Thus it is only optimal to use
+    this procedure if multiple calls are made on the same object.
+
+    return value:
+    on success
+      float[3] = the normal of the vertex face in question.
+    on fail
+      float[] = {}
+
+===========================================================================*/
+
+// Reset all data so that it will be re-queried on the next call to
+// cachedPolyNormalPerVertex.
+global proc resetCachedPolyNormalPerVertex ()
+{
+    global string $cachedPolyNormalPerVertexMesh;   // The cached mesh name
+    global float  $cachedPolyNormalPerVertexData[]; // The cached normal data
+    global int    $cachedPolyNormalPerVertexIndex[]; // Vertex index in data
+
+    $cachedPolyNormalPerVertexMesh = "";
+
+    clear $cachedPolyNormalPerVertexData;
+    clear $cachedPolyNormalPerVertexIndex;
+}
+
+proc reloadCachedPolyNormalPerVertex( string $newMesh )
+{
+    global string $cachedPolyNormalPerVertexMesh;   // The cached mesh name
+    global float  $cachedPolyNormalPerVertexData[]; // The cached normal data
+    global int    $cachedPolyNormalPerVertexIndex[]; // Vertex index in data
+
+    resetCachedPolyNormalPerVertex();
+
+    // Set the global mesh name
+    $cachedPolyNormalPerVertexMesh = $newMesh;
+
+    // Gather the vertex data.
+    int $verticesEval[] = `polyEvaluate -v $newMesh`;
+    int $numVertices    = $verticesEval[0];
+    clear $verticesEval;
+
+    // Get all the normal data for this mesh.
+    string $allVerts = $newMesh + ".vtx[0:" + $numVertices + "]";
+    $cachedPolyNormalPerVertexData = `polyNormalPerVertex -q -xyz $allVerts`;
+    
+ 
+    int $cumulativeIndex = 0; // Current position in cached normal data
+    int $vIdx;
+    // Step through vertices of this face.
+    for( $vIdx = 0; $vIdx < $numVertices; $vIdx++ )
+    {
+	string $vertex      = $newMesh + ".vtx[" + $vIdx + "]";
+	string $faceInfo[]  = `polyInfo -vertexToFace $vertex`;
+	string $faceIndex[] = {};
+	int $tokCount = `tokenize $faceInfo[0] $faceIndex`;
+	clear $faceInfo;
+        
+	$cachedPolyNormalPerVertexIndex[$vIdx] = $cumulativeIndex;
+
+	// Increment to the next vertex entry.
+	$cumulativeIndex += ( $tokCount - 2 ) * 3;
+    }    
+}
+
+global proc float[] cachedPolyNormalPerVertex (
+    string $mesh,
+    int    $vtx,
+    int    $face )
+{
+    global string $cachedPolyNormalPerVertexMesh;    // The cached mesh name
+    global float  $cachedPolyNormalPerVertexData[];  // The cached normal data
+    global int    $cachedPolyNormalPerVertexIndex[]; // Vertex index in data
+
+    float $result[]; // The normal of the requested vertex face.
+
+    // If the data is not still valid reload it.
+    if( ( $mesh != $cachedPolyNormalPerVertexMesh ) || 
+	( $mesh == "" ) )
+    {
+        reloadCachedPolyNormalPerVertex( $mesh );
+    }
+
+    // Check for validity of $vtx
+    if( ( $vtx > size( $cachedPolyNormalPerVertexIndex ) ) ||
+	( $vtx < 0 ) )
+    {
+        return $result;
+    }
+
+    // Find the faces which use the current vertex.
+    string $faceInfo[] = `polyInfo -vf ( $mesh + ".vtx[" + $vtx + "]" )`;
+    string $faceList[];
+    int $tokCount = `tokenize $faceInfo[0] $faceList`;
+    
+    // Step through the vertexFaces for this vertex to find the match
+    int $faceOffset = -1;
+    int $i;
+    for( $i = 2; $i < $tokCount; $i++ )
+    {
+        if( $faceList[$i] == $face )
+        {
+            $faceOffset = ( $tokCount - $i - 1 );
+            break;
+        }
+    }
+    
+    // Check for validity of $face
+    if( $faceOffset == -1 )
+    {
+        return $result;
+    }
+    
+    // Get the index into the cached normal data for this vertex face.
+    int $index = $cachedPolyNormalPerVertexIndex[$vtx] + $faceOffset * 3;
+    
+    $result[0] = $cachedPolyNormalPerVertexData[$index];
+    $result[1] = $cachedPolyNormalPerVertexData[$index + 1];
+    $result[2] = $cachedPolyNormalPerVertexData[$index + 2];
+
+    return $result;
+}

@@ -1,0 +1,180 @@
+#!/bin/perl 
+
+use FindBin;
+use lib "$FindBin::Bin";
+use Tk;
+use BasicTemplate;
+
+sub finish
+{
+  my $name = $shadername;
+  my $basename;
+  my $classname;
+
+  if( $name =~ /P3D(\w*)/ ){
+	$basename = $1;
+	$classname = $name;
+	$name = "p3d$1";
+  }
+  elsif( $name =~ /p3d(\w*)/ ){
+    $basename = $1;
+	$classname = "P3D$1";
+  }
+  else{
+    $basename = $name;
+	$name = "p3d$name";
+	$classname = "P3D$name";
+  }
+
+  print "Making shader $name\n";
+  mkdir($name,0755) || die "Can't create directory $name";
+  mkdir("$name\\mel",0755) || die "Can't create directory $name\\mel";
+  mkdir("$name\\src",0755) || die "Can't create directory $name\\src";
+  
+  my $desc = $description->get('0.0','end');
+  print "Description: $desc\n";
+
+
+  $template = "$FindBin::Bin/shader.dsp";
+
+  my $bt;
+  my $buf;
+
+  print "Creating $name.dsp\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push($template,"NAME=$name", "BASENAME=$basename");
+  open(OUT, ">$name/$name.dsp") || die "Can't open $name/$name.dsp";
+  print OUT $buf;
+
+  print "Creating src/compute.cpp\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("compute.cpp","NAME=$name","CLASSNAME=$classname", "REGISTERNAME=pure3d$basename");
+  open(OUT, ">$name/src/compute.cpp") || die "Can't open $name/src/compute.cpp";
+  print OUT $buf;
+
+  print "Creating $name.sc\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("shader.sc","BASENAME=$basename","DESCRIPTION=$desc", "REGISTERNAME=pure3D$basename", "ID=$shaderid" );
+  open(OUT, ">$name/$name.sc") || die "Can't open $name/$name.sc";
+  print OUT $buf;
+
+  print "Creating src/resource.h\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("resource.h","NAME=$name");
+  open(OUT, ">$name/src/resource.h") || die "Can't open $name/src/resource.h";
+  print OUT $buf;
+
+  print "Creating src/$name.rc\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("shader.rc","NAME=$name");
+  open(OUT, ">$name/src/$name.rc") || die "Can't open $name/$name.rc";
+  print OUT $buf;
+
+  print "Creating copydebugmll.bat\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("copydebugmll.bat","NAME=$name");
+  open(OUT, ">$name/copydebugmll.bat") || die "Can't open $name/copydebugmll.bat";
+  print OUT $buf;
+
+  print "Creating copyreleasemll.bat\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("copyreleasemll.bat","NAME=$name");
+  open(OUT, ">$name/copyreleasemll.bat") || die "Can't open $name/copyreleasemll.bat";
+  print OUT $buf;
+
+  print "Creating mel/AEpure3d${basename}Template.mel\n";
+  $bt = new BasicTemplate;
+  $buf = $bt->push("shaderTemplate.mel","NAME=AEpure3d${basename}Template");
+  open(OUT, ">$name/mel/AEpure3d${basename}Template.mel" ) || die "Can't open $name/mel/AEpure3d${basename}Template.mel";
+  print OUT $buf;
+
+  print "Done.\n";
+  close OUT;
+
+  exit;
+}
+
+
+$main = new MainWindow();
+$main->title("New Shader");
+$main->Label(-text => 'Create a new shader')->pack;
+
+$labelwidth = 12;
+
+my $frame;
+my $label;
+
+$frame = $main->Frame->pack(-side => 'top', -fill => 'x');
+$frame->Label(
+              -text => 'Shader name:',
+              -width => $labelwidth,
+              -anchor => 'w'
+             )->pack(
+                     -side => 'left'
+                    );
+
+$frame->Entry(-textvariable => \$shadername)
+  ->pack(
+         -side => 'left',
+         -anchor => 'w',
+         -fill => 'x',
+         -expand => 1
+        );
+
+$shadername ='p3dShader';
+
+$frame = $main->Frame->pack(-side => 'top', -fill => 'both', -expand => 1);
+
+$frame->Label(
+              -text => 'Shader ID:',
+              -width => $labelwidth,
+              -anchor => 'w'
+             )->pack(
+                     -side => 'left'
+                    );
+
+$frame->Entry(-textvariable => \$shaderid)
+  ->pack(
+         -side => 'left',
+         -anchor => 'w',
+         -fill => 'x',
+         -expand => 1
+        );
+
+$shaderid = "0x82000";
+
+$frame = $main->Frame->pack(-side => 'top', -fill => 'both', -expand => 1);
+$frame->Label(
+              -text => 'Description:',
+              -width => $labelwidth,
+              -anchor => 'w'
+             )->pack(-side => 'left');
+
+$description = $frame->Scrolled("Text", 
+                                -scrollbars => 'e', 
+                                -height => 4,
+                                -width => 60
+                               )->pack( 
+                                       -side => 'left',
+                                       -anchor => 'w',
+                                       -fill => 'both',
+                                       -expand => 1
+                                      );
+$description->insert('0.0','This shader creats some cool effects for Pure3D objects');
+
+
+$frame = $main->Frame;
+
+$frame->pack(qw/-side bottom/);
+
+$frame->Button(-text => 'Do it!',
+              -command => sub{finish;}
+             )->pack(-side => 'left');
+
+$frame->Button(-text => 'Quit',
+              -command => sub{exit}
+             )->pack(-side => 'right');;
+
+
+MainLoop();
+

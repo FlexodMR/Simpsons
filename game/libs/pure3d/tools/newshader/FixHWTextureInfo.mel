@@ -1,0 +1,49 @@
+
+// This code fixes the hardware texturing on plugin shaders
+
+proc string getMaterialInfo( string $messagePlug )
+{
+    string $connections[] = `listConnections $messagePlug`;
+
+    for ($item in $connections)
+        if (`objectType $item` == "materialInfo")
+            return $item;
+
+    return "";
+}
+
+proc disconnectInfoTexture( string $info )
+{
+    // We need to break all connection because we want to ensure the
+    // texture being displayed has a multi index of zero.
+    //
+    // Note: the connections are broken from back to front because
+    // breaking a connection at the end of the multi will not affect
+    // the connections at the start of the multi.
+
+    string $connections[];
+    $connections = `listConnections -connections true ($info+".texture")`;
+
+    for ($i = size($connections); $i > 0; $i -= 2)
+        disconnectAttr ($connections[$i-1]+".message") $connections[$i-2];
+}
+
+global proc FixHWTextureInfo( string $nodeName )
+{
+    //print ( "FixHWTextureInfo called on " + $nodeName);
+    string $info;
+
+    $info = getMaterialInfo( $nodeName );
+    if($info == "")
+    {
+       return;
+    }
+    string $texture[];
+    $texture = `listConnections ( $nodeName + ".color" )`;
+    if( $texture[0] == "" )
+    {
+       return;
+    }
+    disconnectInfoTexture( $info );
+    connectAttr ( $texture[0] + ".message" ) ( $info + ".texture[0]" );
+}

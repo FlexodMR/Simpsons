@@ -1,0 +1,53 @@
+SelectMission("m6");
+
+SetMissionResetPlayerInCar("m6_carstart");
+SetDynaLoadData("l3z3.p3d;l3r2.p3d;l3r3.p3d;");
+
+AddStage(0); 
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage("final"); 
+	RESET_TO_HERE();
+	SetMaxTraffic(3);
+	SetStageMessageIndex(17);
+	SetHUDIcon( "fish" );
+	SetStageTime(110);
+	AddObjective("delivery");
+		AddCollectible("m6_fish_1","fish");
+		AddCollectible("m6_fish_2","fish");
+		AddCollectible("m6_fish_3","fish");
+		AddCollectible("m6_fish_4","fish");
+//		AddCollectible("m6_fish_5","fish");
+		AddCollectible("m6_fish_6","fish");
+		AddCollectible("m6_fish_7","fish");
+		AddCollectible("m6_fish_8","fish");
+		AddCollectible("m6_fish_9","fish");
+		AddCollectible("m6_fish_10","fish");
+		AddCollectible("m6_fish_11","fish");
+		AddCollectible("m6_fish_12","fish");
+		AddCollectible("m6_fish_14","fish");
+		AddCollectible("m6_fish_15","fish");
+		AddCollectible("m6_fish_16","fish");
+		AddCollectible("m6_fish_16a","fish");
+		AddCollectible("m6_fish_13","fish");
+		AddCollectible("m6_fish_13a","fish");
+		AddCollectible("m6_fish_13b","fish");
+		AddCollectible("m6_fish_17","fish");
+		AddCollectible("m6_fish_18","fish");
+		AddCollectible("m6_fish_19","fish");
+		AddCollectible("m6_fish_20","fish");
+		SetCollectibleEffect("carfish");
+	CloseObjective();
+	AddCondition("timeout");
+	CloseCondition();
+CloseStage();
+
+CloseMission();
+
+
+
+

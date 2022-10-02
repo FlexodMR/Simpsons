@@ -1,0 +1,95 @@
+################################################################################
+#
+#  Files specific: This files specified the location of the generated 
+#		   library/executable file and where to gather source & header 
+#		   files  for compilation.
+################################################################################
+
+####################
+# General defines
+####################
+
+PLATFORM=PS2MW
+
+ROOT = ../../../../..
+ROOTDIR = ../../../../../../Development
+SIMROOT = $(ROOTDIR)/../SimDevelopment
+
+CORE = $(ROOTDIR)/pure3d/p3d
+ANIM = $(ROOTDIR)/pure3d/p3d/anim
+EFFECT = $(ROOTDIR)/pure3d/p3d/effects
+P3DLIBDIR = $(ROOTDIR)/pure3d/build/lib
+P3DDIR = $(ROOTDIR)/pure3d/build/ps2/Pure3D
+RADMATHDIR = $(ROOTDIR)/radmath
+RADCOREDIR = $(ROOTDIR)/radcore
+
+SIMDIR = $(SIMROOT)/sim/lib
+POSERDIR = $(SIMROOT)/poser
+
+BINDIR          = ../../bin
+LIBRARYDIR	= ../../lib
+SOURCEDIR	= ../../Src
+INCLUDEDIR	+= ../../Inc \
+	$(ROOTDIR)/pure3d \
+	$(SIMROOT)/sim \
+	$(RADMATHDIR) \
+	$(RADCOREDIR)/inc \
+	$(POSERDIR)/inc \
+	$(COVERDIR) \
+	$(INCDIR) \
+	$(ROOTDIR) \
+	../../src
+
+TARGET		= $(BINDIR)/coverage
+#TARGET		= coverage
+
+TARGETTYPE	= EXECUTABLE
+
+#-DPS2EE -DP3D_PS2 -DP3D_NO_ASM -DPDDI_NO_ANON_UNION -DPDDI_IMPLICIT_LINK -DPDDI_PS2
+DEFINES +=	\
+	PS2EE \
+	P3D_PS2 \
+	P3D_NO_ASM \
+	PDDI_NO_ANON_UNION \
+	PDDI_IMPLICIT_LINK \
+	PDDI_PS2
+
+ifeq ($(CONFIG), DEBUG)
+LIBEXT = d
+endif
+
+ifeq ($(CONFIG), RELEASE)
+LIBEXT = r
+endif
+
+ifeq ($(CONFIG), TUNE)
+LIBEXT = t
+endif
+
+LIBS += \
+	$(P3DLIBDIR)/pure3dpm$(LIBEXT).a \
+	$(P3DLIBDIR)/pddipm$(LIBEXT).a \
+	$(P3DLIBDIR)/pngpm$(LIBEXT).a \
+	$(P3DLIBDIR)/zlibpm$(LIBEXT).a \
+	$(RADMATHDIR)/lib/radmathpm$(LIBEXT).a \
+	$(RADCOREDIR)/lib/radcorem$(LIBEXT).a \
+	$(SIMDIR)/simpm$(LIBEXT).a \
+	$(POSERDIR)/lib/poserpm$(LIBEXT).a
+
+#####################################
+# source files included in project
+#####################################
+
+SOURCEFILES += \
+	ps2 \
+	coverapp \
+	coverage \
+	harness \
+	userobject \
+	benchmark \
+	benchmarkparameter \
+	benchmarkresults \
+	configparam \
+	grid \
+	viewercamera \
+	controlpad

@@ -1,0 +1,736 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Algorithm - the theory behind it
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#B_Semi_Rings_"><STRONG>Semi-Rings</STRONG></A>
+		<LI><A HREF="#B_Operator_"><STRONG>Operator '*'</STRONG></A>
+		<LI><A HREF="#B_Kleene_s_Algorithm_"><STRONG>Kleene's Algorithm</STRONG></A>
+		<LI><A HREF="#B_Kleene_s_Algorithm_and_Semi_Ri"><STRONG>Kleene's Algorithm and Semi-Rings</STRONG></A>
+	</UL>
+
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Kleene's Algorithm - the theory behind it
+
+
+<P>
+
+brief introduction
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="B_Semi_Rings_"><STRONG>Semi-Rings</STRONG>
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> Semi-Ring 
+<FONT SIZE=-1>(S,</FONT> +, ., 0, 1) is characterized by the following properties:
+
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item__">)
+
+</A></STRONG>
+a)  <CODE>(S, +, 0) is a Semi-Group with neutral element 0</CODE>
+
+
+
+
+<P>
+
+b)  <CODE>(S, ., 1) is a Semi-Group with neutral element 1</CODE>
+
+
+
+
+<P>
+
+c)  <CODE>0 . a = a . 0 = 0  for all a in S</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item__">)
+
+</A></STRONG>
+<CODE>"+"</CODE> is commutative and <STRONG>idempotent</STRONG>, i.e., <CODE>a + a = a</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item__">)
+
+</A></STRONG>
+Distributivity holds, i.e.,
+
+
+<P>
+
+a)  <CODE>a . ( b + c ) = a . b + a . c  for all a,b,c in S</CODE>
+
+
+
+
+<P>
+
+b)  <CODE>( a + b ) . c = a . c + b . c  for all a,b,c in S</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item__">)
+
+</A></STRONG>
+<CODE>SUM_{i=0}^{+infinity} ( a[i] )</CODE>
+
+
+
+
+<P>
+
+exists, is well-defined and unique
+
+
+<P>
+
+<CODE>for all a[i] in S</CODE>
+
+
+
+
+<P>
+
+and associativity, commutativity and idempotency hold
+
+
+<P>
+
+<LI><STRONG><A NAME="item__">)
+
+</A></STRONG>
+Distributivity for infinite series also holds, i.e.,
+
+
+<P>
+
+<PRE>  ( SUM_{i=0}^{+infty} a[i] ) . ( SUM_{j=0}^{+infty} b[j] )
+  = SUM_{i=0}^{+infty} ( SUM_{j=0}^{+infty} ( a[i] . b[j] ) )
+</PRE>
+
+<P>
+
+</OL>
+
+<FONT SIZE=-1>EXAMPLES:</FONT>
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+<CODE>S1 = ({0,1}, |, &, 0, 1)</CODE>
+
+
+
+
+<P>
+
+Boolean Algebra
+
+
+<P>
+
+See also <A HREF="/n|/perl/html/./lib/Math/MatrixBool_3_.html">MatrixBool(3)</A>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>S2 = (pos. reals with 0 and +infty, min, +, +infty, 0)</CODE>
+
+
+
+
+<P>
+
+Positive real numbers including zero and plus infinity
+
+
+<P>
+
+See also <A HREF="/n|/perl/html/./lib/Math/MatrixReal_3_.html">MatrixReal(3)</A>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>S3 = (Pot(Sigma*), union, concat, {}, {''})</CODE>
+
+
+
+
+<P>
+
+Formal languages over Sigma (= alphabet)
+
+
+<P>
+
+See also <A HREF="/n|/perl/html/./lib/site/DFA/Kleene_3_.html">Kleene(3)</A>
+
+
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H2><A NAME="B_Operator_"><STRONG>Operator '*'</STRONG>
+
+</A></H2>
+(reflexive and transitive closure)
+
+
+<P>
+
+Define an operator called ``*'' as follows:
+
+
+<P>
+
+<PRE>    a in S   ==&gt;   a*  :=  SUM_{i=0}^{+infty} a^i
+</PRE>
+
+<P>
+
+where
+
+
+<P>
+
+<PRE>    a^0  =  1,   a^(i+1)  =  a . a^i
+</PRE>
+
+<P>
+
+Then, also
+
+
+<P>
+
+<PRE>    a*  =  1 + a . a*,   0*  =  1*  =  1
+</PRE>
+
+<P>
+
+hold.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="B_Kleene_s_Algorithm_"><STRONG>Kleene's Algorithm</STRONG>
+
+</A></H2>
+In its general form, Kleene's algorithm goes as follows:
+
+
+<P>
+
+<PRE>    for i := 1 to n do
+        for j := 1 to n do
+        begin
+            C^0[i,j] := m(v[i],v[j]);
+            if (i = j) then C^0[i,j] := C^0[i,j] + 1
+        end
+    for k := 1 to n do
+        for i := 1 to n do
+            for j := 1 to n do
+                C^k[i,j] := C^k-1[i,j] +
+                            C^k-1[i,k] . ( C^k-1[k,k] )* . C^k-1[k,j]
+    for i := 1 to n do
+        for j := 1 to n do
+            c(v[i],v[j]) := C^n[i,j]
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="B_Kleene_s_Algorithm_and_Semi_Ri"><STRONG>Kleene's Algorithm and Semi-Rings</STRONG>
+
+</A></H2>
+Kleene's algorithm can be applied to any Semi-Ring having the properties
+listed previously (above). (!)
+
+
+<P>
+
+
+<FONT SIZE=-1>EXAMPLES:</FONT>
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+<CODE>S1 = ({0,1}, |, &, 0, 1)</CODE>
+
+
+
+
+<P>
+
+<CODE>G(V,E)</CODE> be a graph with set of vortices 
+<FONT SIZE=-1>V</FONT> and set of edges 
+<FONT SIZE=-1>E:</FONT>
+
+
+
+<P>
+
+<CODE>m(v[i],v[j])  :=  ( (v[i],v[j]) in E ) ? 1 : 0</CODE>
+
+
+
+
+<P>
+
+Kleene's algorithm then calculates
+
+
+<P>
+
+<CODE>c^{n}_{i,j} = ( path from v[i] to v[j] exists ) ? 1 : 0</CODE>
+
+
+
+
+<P>
+
+using
+
+
+<P>
+
+<CODE>C^k[i,j]  =  C^k-1[i,j]  |  C^k-1[i,k]  &  C^k-1[k,j]</CODE>
+
+
+
+
+<P>
+
+(remember <CODE><PRE> 0*  =  1*  =  1 
+</PRE>
+</CODE>)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>S2 = (pos. reals with 0 and +infty, min, +, +infty, 0)</CODE>
+
+
+
+
+<P>
+
+<CODE>G(V,E)</CODE> be a graph with set of vortices 
+<FONT SIZE=-1>V</FONT> and set of edges 
+<FONT SIZE=-1>E,</FONT> with costs
+ <A HREF="#item_m">m(v[i],v[j])</A> associated with each edge <CODE>(v[i],v[j])</CODE> in 
+<FONT SIZE=-1>E:</FONT>
+
+
+<P>
+
+<CODE>m(v[i],v[j])  :=  costs of (v[i],v[j])</CODE>
+
+
+
+
+<P>
+
+<CODE>for all (v[i],v[j]) in E</CODE>
+
+
+
+
+<P>
+
+Set <CODE>m(v[i],v[j]) := +infinity</CODE> if an edge (v[i],v[j]) is not in 
+<FONT SIZE=-1>E.</FONT>
+
+
+<P>
+
+<CODE><PRE>  ==E&lt;gt&gt;  a* = 0  for all a in S2
+</PRE>
+</CODE>
+
+
+
+
+<P>
+
+<CODE><PRE>  ==E&lt;gt&gt;  C^k[i,j]  =  min( C^k-1[i,j] ,
+</PRE>
+</CODE>
+
+
+
+
+<P>
+
+<CODE><PRE>           C^k-1[i,k]  +  C^k-1[k,j] )
+</PRE>
+</CODE>
+
+
+
+
+<P>
+
+Kleene's algorithm then calculates the costs of the ``shortest'' path from
+any <CODE>v[i]</CODE> to any other <CODE>v[j]</CODE>:
+
+
+<P>
+
+<CODE>C^n[i,j] = costs of "shortest" path from v[i] to v[j]</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>S3 = (Pot(Sigma*), union, concat, {}, {''})</CODE>
+
+
+
+
+<P>
+
+<CODE>M in DFA(Sigma)</CODE> be a Deterministic Finite Automaton with a set of states <CODE>Q</CODE>, a subset <CODE>F</CODE> of <CODE>Q</CODE> of accepting states and a transition function <CODE>delta : Q x Sigma --&gt; Q</CODE>.
+
+
+<P>
+
+Define
+
+
+<P>
+
+<A HREF="#item_m_">m(v[i],v[j])  :=</A>
+
+
+
+
+<P>
+
+<CODE><PRE>    { a in Sigma | delta( q[i] , a ) = q[j] }
+</PRE>
+</CODE>
+
+
+
+
+<P>
+
+and
+
+
+<P>
+
+<CODE>C^0[i,j] := m(v[i],v[j]);</CODE>
+
+
+
+
+<P>
+
+<CODE>if (i = j) then C^0[i,j] := C^0[i,j] union {''}</CODE>
+
+
+
+
+<P>
+
+(<CODE>{''}</CODE> is the set containing the empty string, whereas <CODE>{}</CODE> is the empty set!)
+
+
+<P>
+
+Then Kleene's algorithm calculates the language accepted by Deterministic Finite Automaton 
+<FONT SIZE=-1>M</FONT> using
+
+
+
+<P>
+
+<CODE>C^k[i,j] = C^k-1[i,j] union</CODE>
+
+
+
+
+<P>
+
+<CODE><PRE>    C^k-1[i,k] concat ( C^k-1[k,k] )* concat C^k-1[k,j]
+</PRE>
+</CODE>
+
+
+
+
+<P>
+
+and
+
+
+<P>
+
+<CODE>L(M)  =  UNION_{ q[j] in F }  C^n[1,j]</CODE>
+
+
+
+
+<P>
+
+(state <CODE>q[1]</CODE> is assumed to be the ``start'' state)
+
+
+<P>
+
+finally being the language recognized by Deterministic Finite Automaton 
+<FONT SIZE=-1>M.</FONT>
+
+
+<P>
+
+</UL>
+Note that instead of using Kleene's algorithm, you can also use the ``*''
+operator on the associated matrix:
+
+
+<P>
+
+Define  <CODE>A[i,j]  :=  m(v[i],v[j])</CODE>
+
+
+
+
+<P>
+
+<CODE><PRE>  ==E&lt;gt&gt;   A*[i,j]  =  c(v[i],v[j])
+</PRE>
+</CODE>
+
+
+
+
+<P>
+
+Proof:
+
+
+<P>
+
+<CODE>A*  =  SUM_{i=0}^{+infty} A^i</CODE>
+
+
+
+
+<P>
+
+where  <CODE>A^0  =  E_{n}</CODE>
+
+
+
+
+<P>
+
+(matrix with one's in its main diagonal and zero's elsewhere)
+
+
+<P>
+
+and  <CODE>A^(i+1)  =   A . A^i</CODE>
+
+
+
+
+<P>
+
+Induction over k yields:
+
+
+<P>
+
+<CODE>A^k[i,j]  =  c_{k}(v[i],v[j])</CODE>
+
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_k">k = 0:
+
+</A></STRONG><DD>
+<CODE>c_{0}(v[i],v[j])  =  d_{i,j}</CODE>
+
+
+
+
+<P>
+
+with  <CODE>d_{i,j}  :=  (i = j) ? 1 : 0</CODE>
+
+
+
+
+<P>
+
+and  <CODE>A^0  =  E_{n}  =  [d_{i,j}]</CODE>
+
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_k">k-1 -gt k:
+
+</A></STRONG><DD>
+<CODE>c_{k}(v[i],v[j])</CODE>
+
+
+
+
+<P>
+
+<CODE>= SUM_{l=1}^{n} m(v[i],v[l]) . c_{k-1}(v[l],v[j])</CODE>
+
+
+
+
+<P>
+
+<CODE>= SUM_{l=1}^{n} ( a[i,l] . a[l,j] )</CODE>
+
+
+
+
+<P>
+
+<CODE>= [a^{k}_{i,j}]  =  A^1 . A^(k-1)  =  A^k</CODE>
+
+
+
+
+<P>
+
+</DL>
+qed
+
+
+<P>
+
+In other words, the complexity of calculating the closure and doing matrix
+multiplications is of the same order <A HREF="#item_O">O(&nbsp;n^3&nbsp;)</A> in Semi-Rings!
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Math::MatrixBool(3), Math::MatrixReal(3), DFA::Kleene(3).
+
+
+<P>
+
+(All contained in the distribution of the ``Bit::Vector'' module, formerly
+named ``Set::IntegerFast'')
+
+
+<P>
+
+Dijkstra's algorithm for shortest paths.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+This document is based on lecture notes and has been put into 
+<FONT SIZE=-1>POD</FONT> format by Steffen Beyer <A
+HREF="MAILTO:<sb@sdm.de>."><sb@sdm.de>.</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1997 by Steffen Beyer. All rights reserved.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

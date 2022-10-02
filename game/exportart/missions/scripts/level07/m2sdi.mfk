@@ -1,0 +1,136 @@
+SelectMission("m2sd");
+
+SetMissionResetPlayerOutCar("m2_homer_start", "m2_carstart");
+SetDynaLoadData("l7z3.p3d;l7r2.p3d;l7r3.p3d;");
+
+UsePedGroup(3);
+
+SetMissionStartCameraName( "mission2camShape" );
+SetMissionStartMulticontName( "mission2cam" );
+SetAnimatedCameraName( "mission2camShape" );
+SetAnimCamMulticontName( "mission2cam" );
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(202);
+	SetHUDIcon( "playgrou" );
+	AddObjective( "goto" );
+		AddNPC("cbg", "m2_cbg_sd");
+//		AddStageVehicle("cBlbart","m2_AI_carstart","NULL","Chase\EasyChas.con");
+		SetDestination( "m2_playground", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(54);
+	SetHUDIcon( "cbg" );
+	AddObjective("talkto");
+		AddNPC("cbg", "m2_cbg_sd");
+		AddStageVehicle("cBlbart","m2_AI_carstart","NULL","Missions\level07\M2chase.con");
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk1" );
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk2" );
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk3" );
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk4" );
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk5" );
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk6" );
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk5" );
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk4" );
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk3" );
+		AddObjectiveNPCWaypoint( "cbg", "m2_cbg_walk2" );
+		SetTalkToTarget("cbg", 0, 0);
+	CloseObjective();
+CloseStage();
+
+//LOCKED STAGE FOR THE ZOMBIE CAR
+//
+//THIS DIALOGUE WILL INCLUDE THE GATED LINES
+AddStage("locked","car","zombi_v");
+	SetStageMessageIndex(9);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis07_02.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_thinking" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		SetCamBestSide( "m2_bestside" );
+		SetDialogueInfo("homer","cbg","probe",0);
+		SetDialoguePositions("m2_homer_start","m2_cbg_walk1","m2_carstart");
+	CloseObjective();
+CloseStage();
+
+//THIS DIALOGUE WILL NOT INCLUDE THE GATED LINES AND WILL START THE MISSION
+//AddStage(0);
+//	AddObjective("dialogue");
+//		SetPresentationBitmap( "art/frontend/dynaload/images/mis07_02.p3d" );
+//		SetCamBestSide( "m2_bestside" );
+//		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+//		AmbientAnimationRandomize( 0, 0 );
+//		AddAmbientNpcAnimation( "none" );
+//		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+//		AddAmbientNpcAnimation( "none" );
+//		AddAmbientNpcAnimation( "dialogue_no" );
+//		AddAmbientNpcAnimation( "none" );
+//		AddAmbientNpcAnimation( "dialogue_yes" );
+//		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+//		AddAmbientPcAnimation( "none" );
+//		AddAmbientPcAnimation( "dialogue_thinking" );
+//		AddAmbientPcAnimation( "none" );
+//		AddAmbientPcAnimation( "none" );
+//		AddAmbientPcAnimation( "none" );
+//		AddAmbientPcAnimation( "dialogue_yes" );
+//		SetCamBestSide( "m2_bestside" );
+//		SetDialogueInfo("homer","cbg","probe2",0);
+//		SetDialoguePositions("m2_homer_start","m2_cbg_walk1","m2_carstart");
+//	CloseObjective();
+//CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(218);
+	SetHUDIcon( "cemetery" );
+	AddObjective("buycar", "zombi_v");
+	CloseObjective();
+CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(12);
+//	AddObjective("getin");
+//		SetObjTargetVehicle("current");
+//	CloseObjective();
+//CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(202);
+//	SetHUDIcon( "playgrou" );
+//	AddObjective( "goto" );
+//		AddNPC("cbg", "m2_cbg_sd");
+//		SetDestination( "m2_playground", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

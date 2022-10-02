@@ -1,0 +1,52 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformExpressionZeroAll.mel
+// Author: Bryan Brandt, Senta Kaiser
+//
+// Description: Expression deformer zero all attached states
+//
+
+
+// Zeros out all attached states to a given group
+// - arguments:
+//      group - group whose states need to be zeroed
+//
+global proc p3dDeformExpressionZeroAll(string $group)
+{
+   print("Name of group to zero all: ");
+   print($group);
+   print("\n");
+
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+	   if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[] = `connectionInfo -dfs ($expression + ".output")`;
+	      for ($destination in $destinations)
+	      {
+		      if (`gmatch $destination ($group + "*")` == 1)
+		      {
+               // Senta
+               // ignore expression states with attached joint states
+                  string $state = $expression;
+
+                  // set state slider
+                  eval("setAttr " + $state + ".state 0");
+
+                  // set weight slider, if not connected to state
+                  int $state_weight_connected = eval("isConnected " + $state + ".state " +
+                                                                      $state + ".weight");
+                  if (!$state_weight_connected)
+                  {
+                     eval("setAttr " + $state + ".weight 0");
+                  }
+               
+		      }
+	      }
+      }
+   }
+}
+
+
+// End of file.

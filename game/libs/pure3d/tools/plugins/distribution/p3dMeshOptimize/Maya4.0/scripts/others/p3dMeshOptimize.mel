@@ -1,0 +1,61 @@
+global proc p3dMeshOptimizeInstall()
+{
+    string $menus[] = `lsUI -type "menu"`;
+
+    for ( $menu in $menus )
+    {
+        string $menuLabel = `menu -q -label $menu`;
+        if ( $menuLabel == "Edit Polygons" )
+        {
+            string $menuItems[];
+            
+            $menuItems = `menu -q -ia $menu`;
+
+            if ( size( $menuItems ) == 0 )
+            {
+                // Populate the menu by calling its postMenuCommand.
+                string $pmc = `menu -q -pmc $menu`;
+                eval $pmc;
+                $menuItems = `menu -q -ia $menu`;
+            }
+
+            int $bFoundInstall = false;
+            for ( $menuItem in $menuItems )
+            {
+                if ( `menuItem -q -divider $menuItem` ) continue;
+
+                if ( `menuItem -q -label $menuItem` == "Pure3D Mesh Optimize" )
+                {
+                    $bFoundInstall = true;
+                    break;
+                }
+            }
+
+            if ( !$bFoundInstall )
+            {
+                setParent -m $menu;
+                menuItem 
+                    -label "Pure3D Mesh Optimize"
+                    -c "p3dMeshOptimize"
+                        p3dMeshWaveItem;
+            }
+
+        }   
+    }
+}
+
+global proc p3dMeshOptimizeUninstall()
+{
+    string $menuItems[] = `lsUI -type "menuItem"`;
+
+    for ( $item in $menuItems )
+    {
+        if ( `menuItem -q -divider $item` ) continue;
+
+        string $menuLabel = `menuItem -q -label $item`;
+        if ( $menuLabel == "Pure3D Mesh Optimize" )
+        {
+            deleteUI $item;
+        }   
+    }
+}

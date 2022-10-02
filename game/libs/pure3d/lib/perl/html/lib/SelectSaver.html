@@ -1,0 +1,80 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>SelectSaver - save and restore selected file handle
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+SelectSaver - save and restore selected file handle
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use SelectSaver;
+</PRE>
+
+<P>
+
+<PRE>    {
+       my $saver = new SelectSaver(FILEHANDLE);
+       # FILEHANDLE is selected
+    }
+    # previous handle is selected
+</PRE>
+
+<P>
+
+<PRE>    {
+       my $saver = new SelectSaver;
+       # new handle may be selected, or not
+    }
+    # previous handle is selected
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> <A HREF="#item_SelectSaver">SelectSaver</A> object contains a reference to the file handle that was selected when it
+was created. If its <A HREF="#item_new">new</A> method gets an extra parameter, then that parameter is selected; otherwise,
+the selected file handle remains unchanged.
+
+
+<P>
+
+When a <A HREF="#item_SelectSaver">SelectSaver</A> is destroyed, it re-selects the file handle that was selected when it was
+created.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

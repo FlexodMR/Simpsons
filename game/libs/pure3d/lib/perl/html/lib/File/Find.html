@@ -1,0 +1,131 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>find - traverse a file tree
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+find - traverse a file tree
+
+
+<P>
+
+finddepth - traverse a directory structure depth-first
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use <A HREF="File::Find">File::Find</A>;
+    find(\&amp;wanted, '/foo','/bar');
+    sub wanted { ... }
+    
+    use <A HREF="File::Find">File::Find</A>;
+    finddepth(\&amp;wanted, '/foo','/bar');
+    sub wanted { ... }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>wanted()</CODE> function does whatever verifications you want.
+$File::Find::dir contains the current directory name, and <CODE>$_</CODE>
+the current filename within that directory. $File::Find::name contains
+<CODE>"$File::Find::dir/$_"</CODE>. You are <CODE>chdir()'d</CODE> to $File::Find::dir when the function is
+called. The function may set $File::Find::prune to prune the tree.
+
+
+<P>
+
+File::Find assumes that you don't alter the <CODE>$_</CODE> variable. If
+you do then make sure you return it to its original value before exiting
+your function.
+
+
+<P>
+
+This library is primarily for the <CODE>find2perl</CODE> tool, which when fed, 
+
+
+<P>
+
+<PRE>    find2perl / -name .nfs\* -mtime +7 \
+        -exec rm -f {} \; -o -fstype nfs -prune
+</PRE>
+
+<P>
+
+produces something like:
+
+
+<P>
+
+<PRE>    sub wanted {
+        /^\.nfs.*$/ &amp;&amp;
+        (($dev,$ino,$mode,$nlink,$uid,$gid) = lstat($_)) &amp;&amp;
+        int(-M _) &gt; 7 &amp;&amp;
+        unlink($_)
+        ||
+        ($nlink || (($dev,$ino,$mode,$nlink,$uid,$gid) = lstat($_))) &amp;&amp;
+        $dev &lt; 0 &amp;&amp;
+        ($<A HREF="File::Find::prune">File::Find::prune</A> = 1);
+    }
+</PRE>
+
+<P>
+
+Set the variable $File::Find::dont_use_nlink if you're using 
+<FONT SIZE=-1>AFS,</FONT> since 
+<FONT SIZE=-1>AFS</FONT> cheats.
+
+
+
+<P>
+
+<CODE>finddepth</CODE> is just like <CODE>find</CODE>, except that it does a depth-first search.
+
+
+<P>
+
+Here's another interesting wanted function. It will find all symlinks that
+don't resolve:
+
+
+<P>
+
+<PRE>    sub wanted {
+        -l &amp;&amp; !-e &amp;&amp; print &quot;bogus link: $<A HREF="File::Find::name">File::Find::name</A>\n&quot;;
+    } 
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

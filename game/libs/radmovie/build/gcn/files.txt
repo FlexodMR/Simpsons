@@ -1,0 +1,103 @@
+################################################################################
+#
+#   Files.txt   -   GCN
+#
+#   Specify your project settings here.  (Directory locations, output file,
+#   compiler flags, etc.)
+#
+################################################################################
+
+################################################################################
+# General defines
+################################################################################
+
+    ############################################################################
+    # Relative path the FTech root directory
+    ############################################################################
+
+	ROOTDIR = ../../..
+
+    ############################################################################
+    # Output file directory
+    ############################################################################
+
+	BINDIRECTORY = ../../lib
+
+    ############################################################################
+    # Output file name (don't include extension or the configuration suffix)
+    ############################################################################
+
+	TARGET		= $(BINDIRECTORY)/radmovie
+
+    ############################################################################
+    # Output file type (EXECUTABLE or LIBRARY)
+    ############################################################################
+
+	TARGETTYPE	= LIBRARY
+
+    ############################################################################
+    # Radbuild defined platform specific configuration files
+    #   * one of config.ps2, config.ps2mw, or config.gcn
+    ############################################################################
+
+	include $(ROOTDIR)/radbuild/config.gcn
+
+    ############################################################################
+    # General build dependencies.
+    #   * All client files will be recompiled and linked when files listed
+    #     here are changed
+    ############################################################################
+
+	GENERAL_DEPENDS = files.txt
+
+################################################################################
+# File specification
+# 
+################################################################################
+
+    ############################################################################
+    # Source file directories
+    ############################################################################
+    
+    SOURCEDIR +=         \
+		../../src/common \
+		../../src/pch \
+		../../src/gcn
+
+
+    ############################################################################
+    # Include file directories
+    ############################################################################
+
+	INCLUDEDIR += \
+		../../src/common \
+		../../src/gcn \
+		$(ROOTDIR)/pure3d \
+		$(ROOTDIR)/radmath \
+		$(ROOTDIR)/radmovie/src/pch \
+		$(ROOTDIR)/radmovie/inc \
+		$(ROOTDIR)/radcore/inc \
+		$(ROOTDIR)/radsound/inc \
+		$(ROOTDIR)/radcontent/inc \
+		$(ROOTDIR)/Sdks/GameCube/HVQM4Include \
+		$(ROOTDIR)/Sdks/GameCube/Bink \
+		$(ROOTDIR)/../code
+
+    ############################################################################
+    # Source files names (excluding extension)
+    ############################################################################
+
+	SOURCEFILES +=  \
+		binkmovieplayer \
+		binkrenderstrategy \
+		videodatasourcegcn \
+		renderstrategygcn \
+        videodecodergcn \
+        movieplayer \
+        audiodatasource\
+	binkradfile
+
+
+
+
+

@@ -1,0 +1,301 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     07 March, 2002
+//
+// Description: Determines the potential naming conflicts that will cause
+//              the Pure3D Maya Exporter to fail.
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+// Constraints: 
+//
+//===========================================================================
+proc float version()
+{
+    return ( 1.1 );     // 01 May 2002
+}
+
+//===========================================================================
+// itemIsInArray
+//===========================================================================
+// Description: Determines if the specified item exists in the specified
+//              array.
+//
+// Constraints: 
+//
+//  Parameters: string $item: The item for which to search.
+//              string $array[]: The array in which to search.
+//
+//      Return: (int): TRUE if $item is found in $array; else FALSE.
+//
+//===========================================================================
+proc int itemIsInArray( string $item, string $array[] )
+{
+    int $itemIsInArray = 0;
+    
+    for ( $a in $array )
+    {
+        if ( $item == $a )
+        {
+            $itemIsInArray = 1;
+            break;
+        }
+    }
+    
+    return $itemIsInArray;
+}
+
+//===========================================================================
+// 
+//===========================================================================
+// Description: First checks that $add is not already part of $array[].
+//              If the item is unique, it is appended to $array[].
+//
+// Constraints: MEL passes array by value, so it is not necessary to
+//              return the array.
+//
+//  Parameters: string $add: The value to add to the array.
+//              string $array: The array.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc addToArray( string $add, string $array[] )
+{
+    int $addIt = 1;
+
+    for ( $node in $array )
+    {
+        if ( $add == $node )
+        {
+            $addIt = 0;
+            break;
+        }
+    }
+
+    if ( $addIt )
+        $array[ size($array) ] = $add;
+}
+
+//===========================================================================
+// isAnimatedByCurve
+//===========================================================================
+// Description: Determines if the specified plug is animated by an
+//              animCurve.
+//
+// Constraints: 
+//
+//  Parameters: string $plug: The plug, in the form "node.attribute".
+//
+//      Return: (int): TRUE if plug is animated by an animCurve; else FALSE.
+//
+//===========================================================================
+proc int isAnimatedByCurve( string $plug )
+{
+    int $isAnimatedByCurve = 0;
+    
+    if ( `connectionInfo -isDestination $plug` )
+    {
+        string $source = `connectionInfo -sourceFromDestination $plug`;
+        string $nodeType = `nodeType $source`;
+        
+        if ( `gmatch $nodeType "animCurve*"` )
+            $isAnimatedByCurve = 1;
+    }
+    
+    return $isAnimatedByCurve;
+}
+
+//===========================================================================
+// isEverVisible
+//===========================================================================
+// Description: Determines if the specified node is visible.
+//              If the '.visibility' plug is OFF and is not animated
+//              the object is never visible.  If the '.visibility' plug
+//              is OFF but is animated it will be considered visible.
+//
+// Constraints: 
+//
+//  Parameters: string $node: The node to assess for its visibility.
+//
+//      Return: (int): TRUE if object is considered visible; else FALSE.
+//
+//===========================================================================
+proc int isEverVisible( string $node )
+{
+    int $isEverVisible = false;
+    
+    if( `attributeQuery -node $node -exists "visibility"` )
+    {
+        string $plug = ( $node + ".visibility" );
+        
+        if  ( 
+                ( `getAttr $plug` == true ) ||
+                isAnimatedByCurve( $plug )
+            )
+        {
+            $isEverVisible = true;
+        }
+    }
+    
+    return $isEverVisible;
+}
+
+//===========================================================================
+// shortName
+//===========================================================================
+// Description: Returns the short name for the item.
+//
+// Constraints: The short name is returned regardless if Maya needs the
+//              long name to resolve naming conflicts.  That is the whole
+//              point of this script, after all.
+//
+//  Parameters: string $longName: The long name, potentially in the form
+//                                "path|path|node".
+//
+//      Return: (string): The short name, in the form "node".
+//
+//===========================================================================
+proc string shortName( string $longName )
+{
+    string $shortName = $longName;
+    string $tokens[];
+    int $numTokens = `tokenize $longName "|" $tokens`;
+    if ( $numTokens > 1 )
+    {
+        $shortName = $tokens[$numTokens-1];
+    }
+    
+    return $shortName;
+}
+
+//===========================================================================
+// findNamingConflicts
+//===========================================================================
+// Description: Determines the potential naming conflicts that will cause
+//              the Pure3D Maya Exporter to fail.
+//
+//              All transforms and shape nodes are considered.
+//
+//              Potential visibility is considered: Items which have no
+//              potential to be visible are deemed not to conflict.
+//
+//              All conflicting items are selected, and the short names
+//              for the items (that which generated the potential conflict)
+//              are returned as the command result.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (string[]): The short names for the items that generated
+//                          a naming conflict.
+//
+//===========================================================================
+global proc string[] findNamingConflicts()
+{
+    string $namingConflicts[];
+    string $namingConflictsFriendly[];
+
+    string $transforms[] = `ls -l -type "transform"`;
+
+    // This isn't necessarily a shape node!  Just the last leaf in a branch!!
+    string $shapes[] = `ls -l -dag -leaf`;
+    
+    string $allNames[];
+    
+    int $allProgress = ( `size $transforms` + `size $shapes` );
+    int $progress = 0;
+    int $progressThreshold = 256;   // no progress window for fewer items.
+    
+    if ( $allProgress > $progressThreshold )
+    {
+        progressWindow 
+            -ii false       // not interruptable, sorry.
+            -min 0
+            -max $allProgress
+            -title "Find Naming Conflicts"
+            -status "Searching for naming conflicts."
+            ;
+    }
+    
+    for ( $t in $transforms )
+    {
+        string $name = shortName( $t );
+        string $occurances[] = `ls $name`;
+        if ( isEverVisible( $t ) )
+        {
+            if ( itemIsInArray( $name, $allNames ) )
+            {
+                $namingConflicts[`size $namingConflicts`] = $t;
+
+                addToArray( $name, $namingConflictsFriendly );
+            }
+            
+            $allNames[`size $allNames`] = $name;
+        }
+        
+        $progress++;
+        if ( $allProgress > $progressThreshold )
+        {
+            progressWindow -e -progress $progress;
+        }
+    }
+
+    for ( $s in $shapes )
+    {
+        // If this is a transform, it's already been done.
+        string $isTransform[] = `ls -l -transforms $s`;
+        if ( `size $isTransform` > 0 ) continue;
+        
+        // If this is an Intermediate Object, all bets are off
+        if ( ( "mesh" == `nodeType $s` ) && ( `getAttr ( $s + ".intermediateObject" )` ) ) continue;
+
+        string $name = shortName( $s );
+        string $occurances[] = `ls $name`;
+        if ( isEverVisible( $s ) )
+        {
+            if ( itemIsInArray( $name, $allNames ) )
+            {
+                $namingConflicts[`size $namingConflicts`] = $s;
+                addToArray( $name, $namingConflictsFriendly );
+            }
+
+            $allNames[`size $allNames`] = $name;
+        }
+
+        $progress++;
+        if ( $allProgress > $progressThreshold )
+        {
+            progressWindow -e -progress $progress;
+        }
+    }
+
+    select -clear;    
+    if ( `size $namingConflicts` )
+    {
+        select $namingConflicts;
+    }
+
+    if ( $allProgress > $progressThreshold )
+    {
+        progressWindow -endProgress;
+    }
+
+    return $namingConflictsFriendly;
+}
+
+/*
+source findNamingConflicts; findNamingConflicts;
+*/

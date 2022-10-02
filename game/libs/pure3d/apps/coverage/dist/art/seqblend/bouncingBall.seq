@@ -1,0 +1,98 @@
+sequencer
+{
+   name bouncingball
+   animtarget centerSphere
+   speed 1
+
+   states
+   {
+      count 3
+
+      state
+      {
+         name centerSphereAnim
+         anim centerSphere
+         minframe 1
+         maxframe 30
+         loop loopforever
+
+         transitions
+         {
+            count 2
+
+            transition
+            {
+               from stationarySphereAnim
+               command blendin
+               time 150
+            }
+
+            transition
+            {
+               from movedSphereAnim
+               command blendin
+               time 100
+            }
+
+         }
+      }
+
+      state
+      {
+         name stationarySphereAnim
+         anim stationarySphere
+         minframe 1
+         maxframe 30
+         loop loopforever
+
+         transitions
+         {
+            count 2
+
+            transition
+            {
+               from centerSphereAnim
+               command blendin
+               time 150
+            }
+
+            transition
+            {
+               from movedSphereAnim
+               command blendin
+               time 150
+            }
+
+         }
+      }
+
+      state
+      {
+         name movedSphereAnim
+         anim movedSphere
+         minframe 1
+         maxframe 30
+         loop loopforever
+			
+         transitions
+         {
+            count 2
+
+            transition
+            {
+               from stationarySphereAnim
+               command blendin
+               time 150
+            }
+
+            transition
+            {
+               from centerSphereAnim
+               command blendin
+               time 150
+            }
+
+         }
+      }
+   }
+}

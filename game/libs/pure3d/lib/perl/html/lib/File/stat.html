@@ -1,0 +1,108 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>File::stat - by-name interface to Perl's built-in stat() functions
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+File::stat - by-name interface to Perl's built-in <CODE>stat()</CODE>
+functions
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use <A HREF="File::stat">File::stat</A>;
+ $st = stat($file) or die &quot;No $file: $!&quot;;
+ if ( ($st-&gt;mode &amp; 0111) &amp;&amp; $st-&gt;nlink &gt; 1) ) {
+     print &quot;$file is executable with lotsa links\n&quot;;
+ } 
+</PRE>
+
+<P>
+
+<PRE> use <A HREF="File::stat">File::stat</A> qw(:FIELDS);
+ stat($file) or die &quot;No $file: $!&quot;;
+ if ( ($st_mode &amp; 0111) &amp;&amp; $st_nlink &gt; 1) ) {
+     print &quot;$file is executable with lotsa links\n&quot;;
+ } 
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module's default exports override the core <CODE>stat()</CODE> and
+<CODE>lstat()</CODE> functions, replacing them with versions that return
+``File::stat'' objects. This object has methods that return the similarly
+named structure field name from the <CODE>stat(2)</CODE> function; namely,
+dev, ino, mode, nlink, uid, gid, rdev, size, atime, mtime, ctime, blksize,
+and blocks.  
+
+
+<P>
+
+You may also import all the structure fields directly into your namespace as regular variables using the 
+<FONT SIZE=-1>:FIELDS</FONT> import tag. (Note that this still overrides your <CODE>stat()</CODE> and <CODE>lstat()</CODE> functions.) Access these fields as variables named with a preceding
+ <CODE>st_</CODE> in front their method names. Thus, <CODE>$stat_obj-&gt;dev()</CODE> corresponds to <CODE>$st_dev</CODE> if you import the fields.
+
+
+<P>
+
+To access this functionality without the core overrides, pass the <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_use">use</A> an empty import list, and then access function functions with their full
+qualified names. On the other hand, the built-ins are still available via
+the <CODE>CORE::</CODE> pseudo-package.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+While this class is currently implemented using the Class::Struct module to
+build a struct-like class, you shouldn't rely upon this.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Christiansen
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

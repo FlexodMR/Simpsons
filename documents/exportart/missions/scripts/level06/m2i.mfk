@@ -1,0 +1,66 @@
+SelectMission("m2");
+
+SetMissionResetPlayerOutCar("bart_barneytalk","level6_carstart");
+SetDynaLoadData("l6z4.p3d;l6r3.p3d;l6r4.p3d;");
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetHUDIcon( "observ" );
+	SetStageMessageIndex(266);
+	AddStageVehicle("IStruck","m2_truck_start","race","Missions\level06\M2follow.con");
+	AddStageVehicle("cKlimo","m2_limo_start","NULL","Missions\level06\M2race.con", "eddie");
+	SetVehicleAIParams( "IStruck", 0, 1 ); 
+	AddStageWaypoint( "m2_truck" );
+	AddObjective("follow");
+		SetObjTargetVehicle("IStruck");
+	CloseObjective();
+	AddCondition("followdistance");
+		SetFollowDistances(0, 200);
+		SetCondTargetVehicle("IStruck");
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetHUDIcon( "krusty_v" );
+	SetMaxTraffic(1);
+	SetStageMessageIndex(191);
+	AddObjective("goto");
+		AddStageVehicle("cKlimo","m2_limo_start","NULL","Missions\level06\M2race.con", "eddie");
+		SetDestination("m2_limo_wait","triggersphere");
+		SetCollectibleEffect("wrench_collect");
+		MustActionTrigger();
+	CloseObjective();
+CloseStage();
+
+AddStage(0,"final");
+	ActivateVehicle("cKlimo","NULL","race");
+	SetMaxTraffic(3); 
+	SetStageMessageIndex(70);
+	SetHUDIcon( "squidp" );
+	//PutMFPlayerInCar();  // This makes the play auto reset into their car for this stage.
+//SetStageAIRaceCatchupParams( 
+//	STAGEVEHICLENAME,
+//      ALONGROADDISTFROMPLAYER_TO_APPLYMAXCATCHUP, // default = 80
+//      FRACTIONPLAYERSPEED_MINCATCHUP,   // default = 0.5
+//      FRACTIONPLAYERSPEED_NOCATCHUP,    // default = 1.1
+//      FRACTIONPLAYERSPEED_MAXCATCHUP )  // default = 1.7	AddStageWaypoint( "m7_smithers_race1" );
+	//SetStageAIRaceCatchupParams("wiggu_v", 80, 0.5, 1.1, 1.7); 
+	SetStageAIRaceCatchupParams("cKlimo", 80, 0.9, 1.5, 2.3); 
+	SetVehicleAIParams( "cKlimo", 50, 51 );   // no shortcuts
+ 	AddStageWaypoint( "m2_limo_path3" ); 	
+	AddStageWaypoint( "m2_limo_path5" );
+	AddStageWaypoint( "m2_limo_path7" );
+	AddStageWaypoint( "m2_limo_path8" );
+	AddObjective( "race" );
+		AddNPC("krusty", "m3_krusty_sd");
+		AddCollectible("m2_limo_path8", "finish_line");
+		SetCollectibleEffect("finish_line_col");
+	CloseObjective();
+	AddCondition("race");
+		SetCondTargetVehicle("cKlimo");
+	CloseCondition();
+	AddStageMusicChange();
+CloseStage();
+
+CloseMission();

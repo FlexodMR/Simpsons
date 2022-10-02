@@ -1,0 +1,205 @@
+SelectMission("m6");
+
+SetMissionResetPlayerInCar("m6_carstart");
+SetDynaLoadData("l5z3.p3d;l5r2.p3d;l5r3.p3d;");
+InitLevelPlayerVehicle("snake_v","m6_snakecar","OTHER");
+
+UsePedGroup(4);
+SetForcedCar();
+SetNumValidFailureHints( 5 );
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetHUDIcon( "google" );
+	SetStageMessageIndex(260);
+	SetStageTime(60);
+	AddObjective("goto");
+		AddNPC("snake", "m6_snakehide");
+		SetDestination("m6_wiggumtrigger", "carsphere");
+		//SetCollectibleEffect("wrench_collect");
+		AddStageVehicle("cPolice","m6_wiggumstart","NULL", "Missions\level05\M4chase.con", "wiggum");
+	CloseObjective();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "snake_v" );
+	CloseCondition();
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(48);
+	SetHUDIcon( "wiggu_v" );
+	ActivateVehicle( "cPolice","NULL","chase" );
+	AddObjective( "losetail" );
+		SetObjTargetVehicle( "cPolice" );
+		SetObjDistance(150);
+	CloseObjective();
+	AddStageTime(45);
+	AddCondition( "timeout" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "snake_v" );
+	CloseCondition();
+	StageStartMusicEvent("L6_drama");
+	ShowStageComplete();
+	AddStageVehicle("cArmor","m6_armor_carstart","NULL","Missions\level05\M6dest.con", "eddie");
+CloseStage();
+
+AddStage(0); // find the armored car
+	SetMaxTraffic(5);
+	SetStageMessageIndex(167);
+	SetHUDIcon( "google" );
+	AddObjective("goto");
+		SetDestination("m6_armor_start", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "snake_v" );
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(79);
+	SetHUDIcon( "arm_v" );
+	SetMaxTraffic(3);
+	ActivateVehicle("cArmor","NULL","target");
+	SetVehicleAIParams( "cArmor", -10, -9 ); //  <=== name, min, max; 0,1 = really dumb, no shortcuts
+	AddStageWaypoint( "m6_armor_path1" );
+	AddStageWaypoint( "m6_armor_path2" );
+	AddStageWaypoint( "m6_armor_path3" );
+	AddStageWaypoint( "m6_armor_path4" );
+	AddStageWaypoint( "m6_armor_path5" );
+	AddStageWaypoint( "m6_armor_path7" );
+	AddStageWaypoint( "m6_armor_path8" );
+	AddStageWaypoint( "m6_armor_path1" );
+	AddStageWaypoint( "m6_armor_path2" );
+	AddStageWaypoint( "m6_armor_path3" );
+	AddStageWaypoint( "m6_armor_path4" );
+	AddStageWaypoint( "m6_armor_path5" );
+	AddStageWaypoint( "m6_armor_path7" );
+	AddStageWaypoint( "m6_armor_path8" );
+	AddObjective("destroy");
+		SetObjTargetVehicle("cArmor");
+	CloseObjective();
+//	AddStageTime(210);
+//	AddCondition("timeout");
+//		//SetHitNRun();
+//	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "snake_v" );
+	CloseCondition();
+	AddStageMusicChange();
+	ShowStageComplete();
+	SetCompletionDialog("hideout","snake");
+CloseStage();
+
+
+AddStage(0);
+	SetHUDIcon( "lexicon" );
+	SetStageMessageIndex(80);
+	AddObjective("goto");
+		SetDestination("m6_snake_hideout", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+		AddStageVehicle("cPolice","m6_wiggumstart2","NULL", "level05\M4chase.con", "wiggum");
+	CloseObjective();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "snake_v" );
+	CloseCondition();
+CloseStage();
+
+AddStage(0); // Oh Oh there's wiggum again
+	SetStageMessageIndex(48);
+	SetHUDIcon( "wiggu_v" );
+	ActivateVehicle( "cPolice","NULL","chase" );
+	AddObjective( "losetail" );
+		SetObjTargetVehicle( "cPolice" );
+		SetObjDistance(150);
+	CloseObjective();
+	AddStageTime(45);
+	AddCondition( "timeout" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "snake_v" );
+	CloseCondition();
+	StageStartMusicEvent("L6_drama");
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0); // get back to snake's hidout
+	SetStageMessageIndex(80);
+	SetHUDIcon( "lexicon" );
+	AddObjective("goto");
+		TurnGotoDialogOff();
+		AddNPC("bart", "m7_bart_sd");
+		AddStageVehicle("bart_v","m7_carstart","NULL","Pursuit\Hardcop.con");
+		SetDestination("m6_snake_hideout", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "snake_v" );
+	CloseCondition();
+//	SetCompletionDialog("profanity","snake");
+	SetFadeOut( 0.1 );
+	SwapInDefaultCar();
+	SetSwapDefaultCarLocator("level5_carstart");
+	SetSwapForcedCarLocator("m5_carstart"); 
+	SetSwapPlayerLocator("m7_apu_start");
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0); // gets APU out of the Car rand hides the car
+	AddObjective("timer");
+		RemoveDriver("snake");
+		AddNPC("snake", "m7_bart_walk1");
+		StayInBlack();
+		SetDurationTime(1);
+	CloseObjective();
+CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+		AddNPC("snake", "m7_bart_walk1");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		SetCamBestSide("lenny_walk1");
+		SetDialogueInfo("apu","snake","profanity",0);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+

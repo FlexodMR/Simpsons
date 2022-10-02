@@ -1,0 +1,322 @@
+AddMission("m1");
+AddMission("m2");
+AddMission("m3");
+AddMission("m4");
+AddMission("m5");
+AddMission("m6");
+AddMission("m7");
+AddBonusMission("sr1"); // street race 1 - a time trial
+AddBonusMission("sr2"); // street race 2 - circuit race
+AddBonusMission("sr3"); // street race 3 - waypoint race
+AddBonusMission("gr1"); // street race 4 - wager race
+AddBonusMission("bm1"); // bonus mission 1
+AddBonusMission("ismovie"); // itchy and scratchy movie
+
+AddTeleportDest("Android's Dungeon", 28.7, 6.9, -1.2, "l3z1.p3d;l3r1.p3d;l3r5.p3d;");
+AddTeleportDest("Aztec Theatre", -130, -32.2, -120.2, "l3z2.p3d;l3r1.p3d;l3r2.p3d;");
+AddTeleportDest("Casino", -354.7, -52.5, -200.4, "l3r2.p3d;l3z2.p3d;l3z3.p3d;");
+AddTeleportDest("Planet Hype", -512.9, -68.4, -84.8, "l3z3.p3d;l3r2.p3d;l3r3.p3d;");
+AddTeleportDest("Docks", -371.8, -68.5, 37.9, "l3z3.p3d;l3r3.p3d;l3z4.p3d;");
+AddTeleportDest("Krustylu Studios", -325.4, -53, 237.6, "l3r3.p3d;l3z4.p3d;l3r4.p3d;");
+AddTeleportDest("Observatory", 185, 3.9, 476.5, "l3z5.p3d;l3r5.p3d;l3r4.p3d;");
+
+LoadP3DFile("art\phonecamera.p3d");
+LoadP3DFile("art\cards.p3d");
+LoadP3DFile("art\wrench.p3d");
+LoadP3DFile("art\missions\generic\missgen.p3d");
+LoadP3DFile("art\missions\generic\ad_door.p3d");
+LoadP3DFile("art\l03_fx.p3d","GMA_LEVEL_OTHER");
+LoadP3DFile("art\chars\lisa_kickwave.p3d");
+LoadP3DFile("art\chars\lisa_electrocuted.p3d");
+LoadP3DFile("art\missions\level03\l3_doors.p3d");
+
+//Wasps
+LoadP3DFile("art\missions\level03\wasps.p3d");
+
+//This is the level WB data that is persistent.
+LoadP3DFile("art\missions\level03\level.p3d");
+
+//This is the level "jump boost zones"
+LoadP3DFile("art\missions\level03\jumps.p3d");
+
+// This is the level vehicle, always present
+LoadDisposableCar( "art\cars\lisa_v.p3d","lisa_v","DEFAULT" );
+
+//Adding Harass Vehicles to the second half of Mission 1
+LoadP3DFile( "art\cars\cPolice.p3d" );
+
+
+// Traffic vehicle models
+//
+LoadP3DFile( "art\cars\huskA.p3d" );
+LoadP3DFile( "art\cars\compactA.p3d" ); // compactA
+LoadP3DFile( "art\cars\pickupA.p3d" );  // pickupA
+LoadP3DFile( "art\cars\sportsA.p3d" );  // sportsA
+LoadP3DFile( "art\cars\fishtruc.p3d" ); // SUVA
+
+
+AddVehicleSelectInfo( "ART\CARS\snake_v.p3d", "snake_v", "snake" );
+AddVehicleSelectInfo( "ART\CARS\wiggu_v.p3d", "wiggu_v", "wiggum" );
+//AddVehicleSelectInfo( "ART\CARS\gramp_v.p3d", "gramp_v", "grampa" );
+AddVehicleSelectInfo( "ART\CARS\cletu_v.p3d", "cletu_v", "cletus" );
+
+AddGagBinding( "Android", "gag0600.p3d", "cycle", 1, "" );
+// GagSetSound("OTT0801b.wav");AD_gag_otto_playing_slot_cars.mb 
+// T:\Simpsons2\Sound\WAVE FILES\SOUND_FOR_GAGS\Androids_Dungeion_sound
+
+AddGagBinding( "Android", "gag0601.p3d", "single", 1, "" );
+// GagSetSound("OTT0801b.wav") AD_willie_chases_after_pig.mb
+// T:\Simpsons2\Sound\WAVE FILES\SOUND_FOR_GAGS\Androids_Dungeion_sound
+
+//
+///OBSERVATORY TOUCH GAGS
+//
+
+//gag_will
+GagBegin("gag_will.p3d");
+GagSetInterior("Observatory");
+GagSetCycle("cycle");
+GagSetPosition(158.831  ,-19.97  ,-328.777 );
+GagSetRandom(1);
+// GagSetSound("WIL0501A.wav");  T:\Simpsons2\Sound\WAVE FILES\SOUND_FOR_GAGS\Observatory_sound
+GagSetTrigger("touch", 153.049  , -20 , -339.926  ,  2.5 );
+GagEnd();
+
+//gag_ralf
+GagBegin("gag_ralf.p3d");
+GagSetInterior("Observatory");
+GagSetCycle("cycle");
+GagSetPosition(153.733  ,-19.335   ,-338.94   );
+GagSetRandom(1);
+// GagSetSound("RLP2101A.wav");  T:\Simpsons2\Sound\WAVE FILES\SOUND_FOR_GAGS\Observatory_sound
+GagSetTrigger("touch", 153.049  , -20 , -339.926  ,  3.5 );
+GagEnd();
+
+//gag_beem
+GagBegin("gag_beem.p3d");
+GagSetInterior("Observatory");
+GagSetCycle("single");
+GagSetPosition(154.264  ,-20 ,-338.86   );
+GagSetRandom(1);
+// GagSetSound("BUM7002.wav");  T:\Simpsons2\Sound\WAVE FILES\SOUND_FOR_GAGS\Observatory_sound
+GagSetTrigger("touch", 153.049  , -20 , -339.926  ,  1.4 );
+GagEnd();
+
+//gag_buly
+GagBegin("gag_buly.p3d");
+GagSetInterior("Observatory");
+GagSetCycle("cycle");
+GagSetPosition(160.514 ,-18.594 ,-331.329 );
+GagSetRandom(1);
+// GagSetSound("MIL2201.wav");  T:\Simpsons2\Sound\WAVE FILES\SOUND_FOR_GAGS\Observatory_sound
+GagSetTrigger("touch", 153.049  , -20 , -339.926  ,  2.5 );
+GagEnd();
+
+
+
+//
+//ADDING INTERACTIVE GAGS FOR LEVEL 01
+//
+
+//Radioactiveman gag
+GagBegin("gag_racm.p3d");
+GagSetInterior("Android");
+GagSetCycle("reset");
+GagSetPosition(Radio);
+GagSetRandom(0);
+GagSetSound("gag_racm");
+GagSetTrigger("action", RadioTrig, 1.5);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagEnd();
+
+//Clank Clank robot gag
+GagBegin("gag_clnk.p3d");
+GagSetInterior("Android");
+GagSetCycle("single");
+GagSetPosition(Robot);
+GagSetRandom(0);
+GagSetSound("gag_clnk");
+GagSetTrigger("action", RobotTrig, 1.2);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagEnd();
+
+// I&S movie ticket.
+GagBegin("gag_ismv.p3d");
+GagSetInterior("Android");
+GagSetPosition(2.9, -19.1, -346.55);
+GagSetRandom(0);
+GagSetCycle("reset");
+GagCheckCollCards("cbg", "lisa", "rewardsuccess", "rewardintro", "rewardfail"); // char1, char2, accept, instruct, reject.
+GagSetTrigger("action", 2.9, -19, -347, 1.5);
+GagSetSparkle(1);
+GagEnd();
+
+// I&S movie.
+GagBegin("gag_ismv.p3d");
+GagSetPosition(-132, -33, -114);
+GagSetRandom(0);
+GagSetCycle("reset");
+GagCheckMovie("teen", "lisa", "fmv8.rmv", "aztec"); // char1, char2, fmv, reject.
+GagSetTrigger("action", -132, -32, -114, 2.0);
+GagEnd();
+
+//Blowup Doll gag
+//GagBegin("gag_blow.p3d");
+//GagSetInterior("Android");
+//GagSetCycle("single");
+//GagSetPosition(Doll);
+//GagSetRandom(0);
+//GagSetSound("gag_blow");
+//GagSetTrigger("action", DollTrig, 1);
+//GagEnd();
+
+//kamp krusty flag
+GagBegin("gag_flag.p3d");
+GagSetCycle("single");
+GagSetPosition(61.628, -20.112, 315.541);
+GagSetSparkle(1);
+GagSetIntro(80);
+GagSetOutro(80);
+GagSetRandom(0);
+GagSetSound("gag_flag");
+GagSetTrigger("action", 62.417, -20.147, 315.512, 2.1);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagEnd();
+
+//kamp krusty pig on a stick
+GagBegin("gag_pig.p3d");
+GagSetCycle("cycle");
+GagSetPosition(70.375, -20.133, 335.162);
+GagSetSparkle(1);
+GagSetRandom(0);
+GagSetSound("gag_lisa_saying_EW");
+GagSetTrigger("action", 70.428, -19.504, 335.216, 3.625);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagEnd();
+
+//silent alarm in observ
+GagBegin("gag_alrm.p3d");
+GagSetInterior("Observatory");
+GagSetCycle("single");
+GagSetPosition(SAlarm);
+GagSetRandom(0);
+GagSetSound("gag_alrm");
+GagSetTrigger("action", 149.979, -20, -358.705, 2);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagEnd();
+
+//Matter transporter
+GagBegin("gag_matt.p3d");
+GagSetInterior("Observatory");
+GagSetCycle("reset");
+GagSetPosition(Tele);
+GagSetRandom(0);
+GagSetSound("gag_matt");
+GagSetTrigger("action", TeleTrig, 2.503);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagEnd();
+
+//perpetual motion machine
+GagBegin("gag_perp.p3d");
+GagSetInterior("Observatory");
+GagSetCycle("cycle");
+GagSetPosition(Perp);
+GagSetRandom(0);
+GagSetSound("gag_perp");
+GagSetTrigger("action", PerpTrig, 1.308);
+GagSetPersist(1);
+GagSetCoins(1, 1);
+GagEnd();
+
+//moleman in cadillac
+//GagBegin("gag_mole.p3d");
+//GagSetCycle("single");
+//GagSetPosition(-495.76, -62.487, -75.88);
+//GagSetRandom(0);
+//GasSound("gag_")
+//GagSetTrigger("touch", 2.163, -6.047, 16.343, 26.57);
+//GagEnd();
+
+
+//Crane That Spills HotPants
+GagBegin("gag_pant.p3d");
+GagSetCycle("single");
+GagSetPosition(-417.344, -58.909, 59.234);
+GagSetSparkle(1);
+GagSetRandom(0);
+GagSetSound("gag_pant");
+GagSetTrigger("action", -421.022, -59.036, 60.075, 2.6);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagSetAnimCollision(1);
+GagEnd();
+
+//Kids in the Wally Weazles Ball Room
+GagBegin("gag_kids.p3d");
+GagSetCycle("single");
+GagSetPosition(45.808, .521, -22.388);
+GagSetSparkle(1);
+GagSetRandom(0);
+GagSetSound("gag_kids");
+GagSetTrigger("action", 46.243, -1.302, -25.587, 2.58);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagEnd();
+
+//Observatory Video in telescope
+GagBegin("gag_tele.p3d");
+GagSetInterior("Observatory");
+GagPlayFMV("tele.rmv");
+GagSetCycle("reset");
+GagSetPosition(151.225, -25.789, -352.077);
+GagSetRandom(0);
+GagSetSound("gag_tele");
+GagSetTrigger("action", 151.225, -19.789, -352.077, .907);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagEnd();
+
+//Level 3 Dumpster Gag
+GagBegin("l3_dump.p3d");
+GagSetCycle("reset");
+GagSetPosition(62.401, 7.037, 39.72);
+GagSetSparkle(1);
+GagSetRandom(0);
+GagSetSound("gag_lvl6_dumpster");
+GagSetTrigger("action", 63.11, 7.026, 38.072, 2.4);
+GagSetPersist(1);
+GagSetCoins(1, -1);
+GagEnd();
+
+
+//Suppress Characters from being Drivers
+//
+SuppressDriver("lisa");
+SuppressDriver("bart");
+SuppressDriver("apu");
+//SuppressDriver("cletus");
+//SuppressDriver("skinner");
+SuppressDriver("frink");
+SuppressDriver("grandpa");
+SuppressDriver("wiggum");
+SuppressDriver("captain");
+SuppressDriver("otto");
+SuppressDriver("apu");
+SuppressDriver("milhouse");
+SuppressDriver("gil");
+SuppressDriver("ralph");
+SuppressDriver("nelson");
+SuppressDriver("cbg");
+SuppressDriver("louie");
+//SuppressDriver("teen");
+SuppressDriver("barney");
+SuppressDriver("captain");
+SuppressDriver("smithers");
+SuppressDriver("dolph");
+SuppressDriver("marge");

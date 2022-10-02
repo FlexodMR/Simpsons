@@ -1,0 +1,135 @@
+// Copyright (C) 1997-2001 Alias|Wavefront,
+// a division of Silicon Graphics Limited.
+//
+// The information in this file is provided for the exclusive use of the
+// licensees of Alias|Wavefront.  Such users have the right to use, modify,
+// and incorporate this code into other products for purposes authorized
+// by the Alias|Wavefront license agreement, without fee.
+//
+// ALIAS|WAVEFRONT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+// INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+// EVENT SHALL ALIAS|WAVEFRONT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+// DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+// TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+// 
+// Toggle the ignore while rendering flag on = 1 or off = 0 for all the shaders 
+// attached to the selected objects. 
+//
+// The only problem with this script is that .transparency defaults
+// to a non-opaque value !
+// 
+
+//  Modified September 23, 2002
+//  Harold B. Westlund
+//
+//  The original version of toggleMaterialMapping fails to work consistently across
+//  members of a group.  The elements are now selected using the "ls" command.
+
+global proc toggleMaterialMapping(int $state) 
+{ 
+    // string $selList[] = `selectedNodes -do`;
+    string $selList[] = `ls -l -flatten -dag -leaf -type mesh`;
+    string $currentObj; 
+    for ( $currentObj in $selList ) 
+    { 
+		//print("Handle object " + $currentObj + "\n");
+
+        string $shdGrpList[] = `listSets -type 1 -ets -object $currentObj`; 
+        string $currentSG; 
+		//print ($shdGrpList);
+        for ($currentSG in $shdGrpList ) 
+        { 
+            string $srfShdrs[] = `listConnections -d off 
+				($currentSG + ".surfaceShader")`; 
+
+			if (size($srfShdrs) > 0)
+			{
+				string $killShader;
+				$killShader = $srfShdrs[0];
+
+				//print("// Ignore texture on shader " + $killShader + 
+				//	  "( shading group " + $currentSG + ")\n");
+
+				//
+				// To create the initial ignore attribute, set
+				// just one of the texturable attributes to "ignore".
+				// "color" is as good as any attribute.
+				//
+				// Check for a layered shader or layered texture. If it's
+				// a layered shader, then you want to turn off a each of it's
+				// inputs.
+				// 
+				string $shaderType = `nodeType $killShader`;
+				if ($shaderType == "layeredShader")
+				{
+					string $layeredShaders[] = 
+						`listConnections -d off ($killShader+".inputs")`;
+					if (size($layeredShaders))
+					{
+						int $count = 0;
+						for ($s in $layeredShaders)
+						{
+							//print("Change layered shader texture input " + $s + "\n");
+							shadingConnection -e -cs $state 
+								($killShader + ".inputs["+$count+"].color"); 
+							$count++;
+						}
+					}
+				}
+				else
+				{
+					//print("Touch shader input " + $killShader + "\n");
+					shadingConnection -e -cs $state ($killShader + ".color"); 
+
+					string $attrs[] = `listAttr -ud $killShader`;
+					int $i;
+					int $ignoreExists = 0;
+					for ($i =0; $i < size($attrs); $i++)
+					{
+						if (match("ignored", $attrs[$i]) == "ignored")
+						{
+							$ignoreExists = 1;
+							$i = size($attrs)+10;
+						}
+					}
+					
+					if ($ignoreExists == 0)
+					{
+						//print("Add ignore attribute\n");
+						addAttr -multi -at long -sn "isc" -bt "IGSC" 
+							-ln "ignoredShadingConnections" $killShader;
+					}
+					else
+					{
+						//print("Ignore attribute already exists\n");
+					}
+					
+					// Just hard code enough entries to make sure we
+					// toggle on/off every mappable attribute.
+					//
+					//$ignoreSize = 
+					//`getAttr -s ($killShader + ".ignoredShadingConnections")`;
+					$ignoreSize = 3;
+					//print ("Kill shader " + $killShader + ". Ignore size = " 
+					// + $ignoreSize + "\n");
+					for ($i=0; $i < $ignoreSize; $i++)
+					{
+						//print ($killShader + ".ignoredShadingConnections[" + $i + "]");
+						//print (" set to state " + $state + "\n");
+						if ($state)
+							setAttr ($killShader + 
+									 ".ignoredShadingConnections[" + $i + "]") 
+							0;
+						else
+							setAttr ($killShader + 
+									 ".ignoredShadingConnections[" + $i + "]") 
+							1064744371;
+					}
+				}
+			}
+        }
+    } 
+} 

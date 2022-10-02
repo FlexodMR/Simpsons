@@ -1,0 +1,106 @@
+SelectMission("m2");
+
+SetMissionResetPlayerInCar("m2_carstart");
+SetDynaLoadData("l5z2.p3d;l5r1.p3d;l5r2.p3d;");
+
+UsePedGroup(2);
+//AddStage(0);
+//	SetStageMessageIndex(12);
+//	AddObjective("getin");
+//		SetObjTargetVehicle("current");
+//	CloseObjective();
+//CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(71);
+	SetHUDIcon( "hospital" );
+	SetStageTime(45);
+	AddObjective("goto");
+		RemoveNPC( "louie" );
+		AddStageVehicle("cLimo","m2_limo1","NULL","Missions\level05\M2evade.con", "louie");
+		SetDestination("m2_limostart", "carsphere");
+	CloseObjective();
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetHUDIcon( "blimo_v" );
+	SetStageMessageIndex(258);
+	ActivateVehicle("cLimo","NULL","chase");
+	AddObjective("losetail");
+		SetObjTargetVehicle("cLimo");
+		AddNPC("hibbert", "m3_hibbert_sd");
+		SetObjDistance(150);
+	CloseObjective();
+	AddStageMusicChange();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+	AddStageTime(45);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+
+AddStage(0);
+	SetStageMessageIndex(71);
+	SetHUDIcon( "hospital" );
+	SetStageTime(45);
+	AddObjective("goto");
+		AddStageVehicle("cLimo","m2_sedan_carstart1","NULL","Missions\level05\M2evade.con", "louie");
+		SetDestination("m2_dest_derby_loc1", "carsphere");
+	CloseObjective();
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetHUDIcon( "blimo_v" );
+	SetStageMessageIndex(258);
+	ActivateVehicle("cLimo","NULL","chase");
+	AddObjective("losetail");
+		SetObjTargetVehicle("cLimo");
+		AddNPC("hibbert", "m3_hibbert_sd");
+		SetObjDistance(200);
+	CloseObjective();
+	AddStageMusicChange();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+	AddStageTime(45);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(1);
+	SetStageMessageIndex(71);
+	SetHUDIcon( "hospital" );
+	SetMaxTraffic(5);
+	AddStageTime(15);
+	AddObjective("goto");
+		AddNPC("hibbert", "m3_hibbert_sd");
+		SetDestination("m2_hospital", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage("final"); 
+	AddObjective("timer");
+		SetDurationTime(0.5);
+	CloseObjective();
+CloseStage();
+
+CloseMission();

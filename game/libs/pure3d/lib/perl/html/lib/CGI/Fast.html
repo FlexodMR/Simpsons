@@ -1,0 +1,267 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>CGI::Fast - CGI Interface for Fast CGI
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OTHER_PIECES_OF_THE_PUZZLE">OTHER PIECES OF THE PUZZLE</A>
+	<LI><A HREF="#WRITING_FASTCGI_PERL_SCRIPTS">WRITING FASTCGI PERL SCRIPTS</A>
+	<LI><A HREF="#INSTALLING_FASTCGI_SCRIPTS">INSTALLING FASTCGI SCRIPTS</A>
+	<LI><A HREF="#USING_FASTCGI_SCRIPTS_AS_CGI_SCR">USING FASTCGI SCRIPTS AS CGI SCRIPTS</A>
+	<LI><A HREF="#CAVEATS">CAVEATS</A>
+	<LI><A HREF="#AUTHOR_INFORMATION">AUTHOR INFORMATION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+CGI::Fast - 
+<FONT SIZE=-1>CGI</FONT> Interface for Fast 
+<FONT SIZE=-1>CGI</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use CGI::Fast qw(:standard);
+    $COUNTER = 0;
+    while (new CGI::Fast) {
+        print header;
+        print start_html(&quot;Fast CGI Rocks&quot;);
+        print
+            h1(&quot;Fast CGI Rocks&quot;),
+            &quot;Invocation number &quot;,b($COUNTER++),
+            &quot; PID &quot;,b($$),&quot;.&quot;,
+            hr;
+        print end_html;
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+CGI::Fast is a subclass of the 
+<FONT SIZE=-1>CGI</FONT> object created by CGI.pm. It is specialized to work well with the Open Market FastCGI standard, which greatly speeds up 
+<FONT SIZE=-1>CGI</FONT> scripts by turning them into persistently running server processes. Scripts that perform time-consuming initialization processes, such as loading large modules or opening persistent database connections, will see large performance improvements.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="OTHER_PIECES_OF_THE_PUZZLE">OTHER PIECES OF THE PUZZLE
+
+</A></H1>
+In order to use CGI::Fast you'll need a FastCGI-enabled Web server. Open Market's server is FastCGI-savvy. There are also freely redistributable FastCGI modules for 
+<FONT SIZE=-1>NCSA</FONT> httpd 1.5 and Apache. FastCGI-enabling modules for Microsoft Internet Information Server and Netscape Communications Server have been announced.
+
+
+
+<P>
+
+In addition, you'll need a version of the Perl interpreter that has been linked with the FastCGI 
+<FONT SIZE=-1>I/O</FONT> library. Precompiled binaries are available for several platforms, including 
+<FONT SIZE=-1>DEC</FONT> Alpha, 
+<FONT SIZE=-1>HP-UX</FONT> and SPARC/Solaris, or you can rebuild Perl from source with patches provided in the FastCGI developer's kit. The FastCGI Perl interpreter can be used in place of your normal Perl without ill consequences.
+
+
+
+<P>
+
+You can find FastCGI modules for Apache and 
+<FONT SIZE=-1>NCSA</FONT> httpd, precompiled Perl interpreters, and the FastCGI developer's kit all at 
+<FONT SIZE=-1>URL:</FONT>
+
+
+
+<P>
+
+<PRE>  <A HREF="http://www.fastcgi.com/">http://www.fastcgi.com/</A>
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="WRITING_FASTCGI_PERL_SCRIPTS">WRITING FASTCGI PERL SCRIPTS
+
+</A></H1>
+FastCGI scripts are persistent: one or more copies of the script are
+started up when the server initializes, and stay around until the server
+exits or they die a natural death. After performing whatever one-time
+initialization it needs, the script enters a loop waiting for incoming
+connections, processing the request, and waiting some more.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> typical FastCGI script will look like this:
+
+
+<P>
+
+<PRE>    #!/usr/local/bin/perl    # must be a FastCGI version of perl!
+    use CGI::Fast;
+    &amp;do_some_initialization();
+    while ($q = new CGI::Fast) {
+        &amp;process_request($q);
+    }
+</PRE>
+
+<P>
+
+Each time there's a new request, CGI::Fast returns a 
+<FONT SIZE=-1>CGI</FONT> object to your loop. The rest of the time your script waits in the call to <CODE>new().</CODE> When the server requests that your script be terminated, <CODE>new()</CODE> will return undef. You can of course exit earlier if you choose. 
+<FONT SIZE=-1>A</FONT> new version of the script will be respawned to take its place (this may be necessary in order to avoid Perl memory leaks in long-running scripts).
+
+
+
+<P>
+
+CGI.pm's default 
+<FONT SIZE=-1>CGI</FONT> object mode also works. Just modify the loop this
+way:
+
+
+<P>
+
+<PRE>    while (new CGI::Fast) {
+        &amp;process_request;
+    }
+</PRE>
+
+<P>
+
+Calls to <CODE>header(),</CODE> <CODE>start_form(),</CODE> etc. will all
+operate on the current request.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="INSTALLING_FASTCGI_SCRIPTS">INSTALLING FASTCGI SCRIPTS
+
+</A></H1>
+See the FastCGI developer's kit documentation for full details. On the
+Apache server, the following line must be added to srm.conf:
+
+
+<P>
+
+<PRE>    AddType application/x-httpd-fcgi .fcgi
+</PRE>
+
+<P>
+
+FastCGI scripts must end in the extension .fcgi. For each script you
+install, you must add something like the following to srm.conf:
+
+
+<P>
+
+<PRE>   AppClass /usr/etc/httpd/fcgi-bin/file_upload.fcgi -processes 2
+</PRE>
+
+<P>
+
+This instructs Apache to launch two copies of file_upload.fcgi at startup
+time.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="USING_FASTCGI_SCRIPTS_AS_CGI_SCR">USING FASTCGI SCRIPTS AS CGI SCRIPTS
+
+</A></H1>
+Any script that works correctly as a FastCGI script will also work correctly when installed as a vanilla 
+<FONT SIZE=-1>CGI</FONT> script. However it will not see any performance benefit.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CAVEATS">CAVEATS
+
+</A></H1>
+
+<FONT SIZE=-1>I</FONT> haven't tested this very much.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR_INFORMATION">AUTHOR INFORMATION
+
+</A></H1>
+be used and modified freely, but 
+<FONT SIZE=-1>I</FONT> do request that this copyright notice remain
+attached to the file. You may modify this module as you wish, but if you
+redistribute a modified version, please attach a note listing the
+modifications you have made.
+
+
+<P>
+
+Address bug reports and comments to: <A
+HREF="MAILTO:lstein@genome.wi.mit.edu">lstein@genome.wi.mit.edu</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+This section intentionally left blank.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/CGI/Carp.html">Carp</A>, <A HREF="/n|/perl/html/./lib/CGI.html#">the CGI manpage</A>
+ 
+=cut
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

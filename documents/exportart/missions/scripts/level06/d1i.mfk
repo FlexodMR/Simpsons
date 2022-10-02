@@ -1,0 +1,53 @@
+SelectMission("d1");
+
+	SetMissionResetPlayerInCar("demo_carstart");
+	SetDynaLoadData("l6z1.p3d;l6r1.p3d;l6r5.p3d;l6r5_dam.p3d;");
+
+	PlacePlayerCar("current", "demo_carstart");
+
+	AddStage(0, "final"); 
+		SetStageMessageIndex(94);
+		RESET_TO_HERE();
+		SetMaxTraffic(4); 
+		//AddStageVehicle("sportsA","m7_AI_carstart1","race","L6Race\AI_1st.con");
+		//AddStageVehicle("cSedan","m7_AI_carstart2","race","L6Race\AI_2nd.con");
+		//AddStageVehicle("compactA","m7_AI_carstart3","race","L6Race\AI_3rd.con");
+		//AddStageVehicle("pickupA","m7_AI_carstart4","race","L6Race\AI_4th.con");
+		AddStageVehicle("fone_v","d1_fone_carstart","race","HardRace\AI_2nd.con");
+		AddStageWaypoint( "d1_path13" );
+		AddStageWaypoint( "d1_path12" );
+		AddStageWaypoint( "d1_path11" );
+		AddStageWaypoint( "d1_path10" );
+		AddStageWaypoint( "d1_path9" );
+		AddStageWaypoint( "d1_path8" );
+		AddStageWaypoint( "d1_path7" );
+		AddStageWaypoint( "d1_path6a" );
+		AddStageWaypoint( "d1_path6" );
+		AddStageWaypoint( "d1_path5a" );
+		AddStageWaypoint( "d1_path5" );
+		AddStageWaypoint( "d1_path4" );
+		AddStageWaypoint( "d1_path3" );
+		AddStageWaypoint( "d1_path2" );
+		AddStageWaypoint( "d1_path1" );
+		AddObjective( "race" );
+			AddCollectible("d1_path13");
+			AddCollectible("d1_path12");
+			AddCollectible("d1_path11");
+			AddCollectible("d1_path10");
+			AddCollectible("d1_path9");
+			AddCollectible("d1_path8");
+			AddCollectible("d1_path7");
+			AddCollectible("d1_path6a");
+			AddCollectible("d1_path6");
+			AddCollectible("d1_path5a");
+			AddCollectible("d1_path5");
+			AddCollectible("d1_path4");
+			AddCollectible("d1_path3");
+			AddCollectible("d1_path2");
+			AddCollectible("d1_path1");
+			SetRaceLaps(2);
+		CloseObjective();
+		SetDemoLoopTime(500000);
+	CloseStage();
+
+CloseMission();

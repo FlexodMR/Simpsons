@@ -1,0 +1,353 @@
+// //////////////////////////////////////////////////////////////
+//  rootNode
+//
+// Description: Strips the dot-suffix of the specified string.
+//  e.g. "object.attribute" is returned as "object"
+proc string rootNode( string $object )
+{
+  string $buffer[];
+  tokenize $object "." $buffer;
+  return $buffer[0];
+}
+
+proc int isComponent( string $object )
+{
+    string $buffer[];
+    int $numTokens;
+    $numTokens = `tokenize $object "." $buffer`;
+    if ( $numTokens > 1 )
+        return 1;
+    else
+        return 0;
+}
+
+proc string getShape( string $xform )
+{
+    string $shapes[];
+    
+    $shapes[0] = $xform;
+    
+    if ( "transform" == `nodeType $xform` )
+    // If given node is not a transform, assume it is a shape 
+    // and pass it through
+    {
+        $shapes = `listRelatives -fullPath -shapes $xform`;
+    }
+    
+    return $shapes[0];
+}
+
+// ////////////////////////////////////////////////////////////////////
+//  getSGsFromShape
+//
+// Description: Returns an array of the Shading Groups (shadingEngine 
+//  nodes) responsible for shading the specified shape node.
+proc string[] getSGsFromShape( string $shape )
+{
+  string $shadingEngines[];
+
+  if ( `objExists $shape` )
+  {
+    string $dest[] = `listConnections -destination true -source false
+      -plugs false -type "shadingEngine" $shape`;
+
+    // listConnections can return duplicates within its list.
+    // The select below is a quick trick to avoid dupes in the 
+    // returned array.
+    if ( size( $dest ) )
+    {
+      string $select[] = `ls -sl`;
+      select -r -ne $dest;
+      $shadingEngines = `ls -sl`;
+      select -r $select;
+    }
+  }
+
+  return $shadingEngines;
+}
+
+// ////////////////////////////////////////////////////////////////////
+//  getMaterialFromSG
+//
+// Description: Returns the Material node feeing the '.surfaceShader'
+//  attribute of the specified Shading Group node (shadingEngine).
+proc string getMaterialFromSG( string $SG )
+{
+  string $material = "";
+
+  if ( "shadingEngine" == `nodeType $SG` &&
+    `connectionInfo -id ( $SG + ".surfaceShader" )` )
+  {
+    $material = rootNode( `connectionInfo -sfd
+      ( $SG + ".surfaceShader" )` );
+  }
+
+  return $material;
+}
+
+proc setMultiListerSelection( string $mlSelect[] )
+{
+    // Get the MultiLister panel.  There _should_ be only one of these.
+    string $scriptPanels[] = `getPanel -scriptType "multiListerPanel"`;
+
+    // Just in case...  
+    if ( size( $scriptPanels ) > 1 )
+    {
+        warning ( "More than one active multiListerPanel!" );
+    }
+
+    string $nameRoot = $scriptPanels[0];
+
+    // Get the control for the panel.
+    // Append the Panel name to get the "topLayout"
+    string $control = `scriptedPanel -q -control $nameRoot`;
+    
+    // If no control is present, MultiLister is not open
+    if ( "" != $control )
+    {
+        string $topLayout = $control + "|" + $nameRoot;
+
+        // And finally, the active MultiLister  
+        $theLister = `findActiveLister $topLayout $nameRoot`;   
+
+        if ( `listerEditor -exists $theLister` )
+        {
+            // Code unabashedly copy and paste from 'buildMultiListerEditMenu.mel'
+            
+            int $inSelectMode = `listerEditor -q -inSelectMode $theLister`;
+    
+            if($inSelectMode == 0) 
+            {
+                // get highlight list
+                string $current[] = `listerEditor -q -highlight $theLister`;
+                for ( $hi in $current ) listerEditor -e -unHighlight $hi $theLister;
+                
+                for ( $hi in $mlSelect ) listerEditor -e -highlight $hi $theLister;
+            }
+            else
+            {
+                select $mlSelect;
+            }
+        }
+    }
+}
+
+// ////////////////////////////////////////////////////////////////////
+//  getSGFromMaterial
+//
+// Description: Returns the Shading Group set whose '.surfaceShader'
+//  attribute is being fed by the specified Material.
+//
+//  Returns an array for all Shading Groups using the Material.
+global proc string[] getSGFromMaterial( string $material )
+{
+  string $SG[];
+
+  // First, assert that $material is a Material.
+  // (Returns a string array, unfortunately, so requires variable.)
+  string $class[] = getClassification( `nodeType $material` );
+
+  if ( $class[0] == "shader/surface" )
+  {
+    // Assert that there is a connection from the Material's .outColor
+    if ( `connectionInfo -is ( $material + ".outColor" )` )
+    {
+      // There may be more than one connection...
+      string $dests[] = `connectionInfo -dfs ( $material + ".outColor" )`;
+      for ( $dest in $dests )
+      {
+        // Iterate through connections and identify ShadingGroup sets.
+        if ( "shadingEngine" == `nodeType $dest` )
+        {
+          $SG[`size $SG`] = rootNode( $dest );
+          break;
+        }
+      }
+    }
+  }
+
+  return $SG;
+}
+
+proc int powerOfTwo( int $value )
+{
+    int $ofTwo = ( $value > 1 );
+    
+    float $byTwo;
+    while ( $value > 1 )
+    {
+        $byTwo = ( $value / 2.0 );
+        int $etTu = $byTwo;
+        if ( $etTu != $byTwo ) 
+        {
+            $ofTwo = false;
+            break;
+        }
+        $value /= 2;
+    }
+    
+    return $ofTwo;
+}
+
+proc int lmapNamingConvention( string $nc )
+{
+    int $convention = false;
+    
+    string $validPrefixes[] = { "lmap", "lmapL" };
+    
+    for ( $prefix in $validPrefixes )
+    {
+        string $matched = `match ( $prefix + "[0-9]+" ) $nc`;
+        if ( $matched != "" )
+        {
+            int $size = `size $matched`;
+            int $prefixSize = `size $prefix`;
+            int $numeric = 0;
+            $matched = `substring $matched ($prefixSize+1) $size`;
+            $matched = `match "^[0-9]*" $matched`;
+            if ( $matched != "" ) $numeric = (int)$matched;
+            if ( powerOfTwo( $numeric ) ) 
+            {
+                $convention = true;
+                break;
+            }
+        }
+    }
+    
+    return $convention;
+}
+
+global proc isLightMappedButShouldNotBe()
+{
+    string $lightMapPrefix = "lmap";
+    string $badMaterials[];
+    string $badObjects[];
+    int $bIsBad = false;
+    string $tokens[];
+    
+    waitCursor -state on;
+
+    string $materials[] = `ls -materials`;
+    
+    for ( $mat in $materials )
+    {
+        if (
+                ( `attributeQuery -node $mat -exists "isLightMapped"` && `getAttr ( $mat + ".isLightMapped" )` ) ||
+                (
+                    ( `attributeQuery -node $mat -exists "dynamicallyLit"` && !`getAttr ( $mat + ".dynamicallyLit" )` ) &&
+                    ( `attributeQuery -node $mat -exists "prelightMode"` && ( `getAttr ( $mat + ".prelightMode" )` == 2 ) )
+                )    
+            )
+        {
+            string $sgs[] = getSGFromMaterial($mat);
+            for ( $sg in $sgs )
+            {
+                string $assignedTo[] = `sets -q $sg`;
+                for ( $a in $assignedTo )
+                {
+                    int $bMatch;
+                    
+                    // Default to match on assignment.
+//                    int $bMatch = `gmatch $a ( $lightMapPrefix + "*" )`;
+                    $bMatch = lmapNamingConvention( $a );
+                    
+                    // It may be that Maya has returned either
+                    //  (a) assignment to a transform, or
+                    //  (b) assignment to a component.
+                    if ( !$bMatch )
+                    {
+                        // Convert component to shape node.
+                        if ( isComponent( $a ) )
+                        {
+                            tokenize $a "." $tokens;
+                            $a = getShape( $tokens[0] ) + "." + $tokens[1];
+                        }
+                        else 
+                        // Convert transform to shape node.
+                        {
+                            // Why the hell is Maya telling me that a TRANSFORM
+                            // is assigned to a shader???
+                            $a = getShape( $a );
+                        }
+
+                        // Consider only short name.
+                        tokenize $a "|" $tokens;
+                        $a = $tokens[`size $tokens`-1];
+
+                        // Now finally check for match.
+//                        $bMatch = `gmatch $a ( $lightMapPrefix + "*" )`;
+                        $bMatch = lmapNamingConvention( $a );
+                    }
+                
+                    if ( !$bMatch )
+                    {
+                        $badMaterials[`size $badMaterials`] = $mat;
+                        $bIsBad = true;
+                    }
+                }
+            }
+        }
+    }
+
+    // Now look the other way.. for all mesh nodes named with
+    // $lightMapPrefix, make sure shader is a lightmap shader.
+    string $lmapNodes[] = `ls -dag -leaf "lmap*"`;
+    for ( $node in $lmapNodes )
+    {
+        // Get list of shaders on this node.
+        string $shaders[] = getSGsFromShape( $node );
+        
+        for ( $sg in $shaders )
+        {
+            string $material = getMaterialFromSG( $sg );
+            
+            int $LIT = 0;
+            int $PLMD = 2;
+            
+            if ( `attributeQuery -node $material -exists "dynamicallyLit"` )
+            {
+                $LIT  = `getAttr ( $material + ".dynamicallyLit" )`;
+            }
+            if ( `attributeQuery -node $material -exists "prelightMode"` )
+            {
+                $PLMD = `getAttr ( $material + ".prelightMode" )`;
+            }
+            
+            if ( ( $LIT != 0 ) || ( $PLMD != 2 ) )
+            {
+                $badObjects[`size $badObjects`] = $node;
+                $bIsBad = true;
+            }
+        }
+    }
+    
+    waitCursor -state off;
+
+    if ( $bIsBad )
+    {
+        string $error = "";
+        
+        select -clear;
+
+        if ( `size $badMaterials` )
+        {
+            select -add $badMaterials;
+            setMultiListerSelection( $badMaterials );
+            print ( "Selected materials are tagged as LightMapped but are assigned to geometry which does not match naming convention.\n" );
+            print $badMaterials;
+        }
+
+        if ( `size $badObjects` )
+        {
+            select -add $badObjects;
+            print ( "Selected objects use naming convention but are not assigned to LightMapped shaders.\n" );
+            print $badObjects;
+        }
+        
+        error ( "One or more bad materials or objects was found." );
+    }
+}
+
+/*
+source "D:/depot/users/bewert/Development/pure3d/tools/scripts/isLightMappedButShouldNotBe.mel"; isLightMappedButShouldNotBe;
+*/

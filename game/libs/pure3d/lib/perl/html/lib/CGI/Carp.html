@@ -1,0 +1,276 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>B<CGI::Carp> - CGI routines for writing to the HTTPD (or other) error log
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#REDIRECTING_ERROR_MESSAGES">REDIRECTING ERROR MESSAGES</A>
+	<LI><A HREF="#MAKING_PERL_ERRORS_APPEAR_IN_THE">MAKING PERL ERRORS APPEAR IN THE BROWSER WINDOW</A>
+	<LI><A HREF="#CHANGE_LOG">CHANGE LOG</A>
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+<STRONG>CGI::Carp</STRONG> - 
+<FONT SIZE=-1>CGI</FONT> routines for writing to the 
+<FONT SIZE=-1>HTTPD</FONT> (or other) error log
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use CGI::Carp;
+</PRE>
+
+<P>
+
+<PRE>    croak &quot;We're outta here!&quot;;
+    confess &quot;It was my fault: $!&quot;;
+    carp &quot;It was your fault!&quot;;   
+    warn &quot;I'm confused&quot;;
+    die  &quot;I'm dying.\n&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+
+<FONT SIZE=-1>CGI</FONT> scripts have a nasty habit of leaving warning
+messages in the error logs that are neither time stamped nor fully
+identified. Tracking down the script that caused the error is a pain. This
+fixes that. Replace the usual
+
+
+<P>
+
+<PRE>    use Carp;
+</PRE>
+
+<P>
+
+with
+
+
+<P>
+
+<PRE>    use CGI::Carp
+</PRE>
+
+<P>
+
+And the standard <CODE>warn(),</CODE> die (), <CODE>croak(),</CODE> <CODE>confess()</CODE> and <CODE>carp()</CODE> calls will automagically be replaced with functions that write out nicely time-stamped messages to the 
+<FONT SIZE=-1>HTTP</FONT> server error log.
+
+
+
+<P>
+
+For example:
+
+
+<P>
+
+<PRE>   [Fri Nov 17 21:40:43 1995] test.pl: I'm confused at test.pl line 3.
+   [Fri Nov 17 21:40:43 1995] test.pl: Got an error message: Permission denied.
+   [Fri Nov 17 21:40:43 1995] test.pl: I'm dying.
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="REDIRECTING_ERROR_MESSAGES">REDIRECTING ERROR MESSAGES
+
+</A></H1>
+By default, error messages are sent to 
+<FONT SIZE=-1>STDERR.</FONT> Most 
+<FONT SIZE=-1>HTTPD</FONT> servers direct 
+<FONT SIZE=-1>STDERR</FONT> to the server's error log. Some applications may wish to keep private error logs, distinct from the server's error log, or they may wish to direct error messages to 
+<FONT SIZE=-1>STDOUT</FONT> so that the browser will receive them.
+
+
+
+<P>
+
+The <CODE>carpout()</CODE> function is provided for this purpose. Since <CODE>carpout()</CODE> is not
+exported by default, you must import it explicitly by saying
+
+
+<P>
+
+<PRE>   use CGI::Carp qw(carpout);
+</PRE>
+
+<P>
+
+The <CODE>carpout()</CODE> function requires one argument, which should be
+a reference to an open filehandle for writing errors. It should be called
+in a <CODE>BEGIN</CODE> block at the top of the 
+<FONT SIZE=-1>CGI</FONT> application so that compiler errors will be
+caught. Example:
+
+
+<P>
+
+<PRE>   BEGIN {
+     use CGI::Carp qw(carpout);
+     open(LOG, &quot;&gt;&gt;/usr/local/cgi-logs/mycgi-log&quot;) or
+       die(&quot;Unable to open mycgi-log: $!\n&quot;);
+     carpout(LOG);
+   }
+</PRE>
+
+<P>
+
+<CODE>carpout()</CODE> does not handle file locking on the log for you at
+this point.
+
+
+<P>
+
+The real 
+<FONT SIZE=-1>STDERR</FONT> is not closed -- it is moved to 
+<FONT SIZE=-1>SAVEERR.</FONT> Some servers, when dealing with 
+<FONT SIZE=-1>CGI</FONT> scripts, close their connection to the browser when the script closes 
+<FONT SIZE=-1>STDOUT</FONT> and 
+<FONT SIZE=-1>STDERR.</FONT> 
+<FONT SIZE=-1>SAVEERR</FONT> is used to prevent this from happening prematurely.
+
+
+
+<P>
+
+You can pass filehandles to <CODE>carpout()</CODE> in a variety of ways. The ``correct'' way according to Tom Christiansen is to pass a reference to a filehandle 
+<FONT SIZE=-1>GLOB:</FONT>
+
+
+
+<P>
+
+<PRE>    carpout(\*LOG);
+</PRE>
+
+<P>
+
+This looks weird to mere mortals however, so the following syntaxes are
+accepted as well:
+
+
+<P>
+
+<PRE>    carpout(LOG);
+    carpout(main::LOG);
+    carpout(main'LOG);
+    carpout(\LOG);
+    carpout(\'main::LOG');
+</PRE>
+
+<P>
+
+<PRE>    ... and so on
+</PRE>
+
+<P>
+
+Use of <CODE>carpout()</CODE> is not great for performance, so it is recommended for debugging purposes or for moderate-use applications. 
+<FONT SIZE=-1>A</FONT> future version of this module may delay redirecting 
+<FONT SIZE=-1>STDERR</FONT> until one of the CGI::Carp methods is called to prevent the performance hit.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="MAKING_PERL_ERRORS_APPEAR_IN_THE">MAKING PERL ERRORS APPEAR IN THE BROWSER WINDOW
+
+</A></H1>
+If you want to send fatal (die, confess) errors to the browser, ask to
+import the special ``fatalsToBrowser'' subroutine:
+
+
+<P>
+
+<PRE>    use CGI::Carp qw(fatalsToBrowser);
+    die &quot;Bad error here&quot;;
+</PRE>
+
+<P>
+
+Fatal errors will now be echoed to the browser as well as to the log. CGI::Carp arranges to send a minimal 
+<FONT SIZE=-1>HTTP</FONT> header to the browser so that even errors that occur in the early compile phase will be seen. Nonfatal errors will still be directed to the log file only (unless redirected with carpout).
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CHANGE_LOG">CHANGE LOG
+
+</A></H1>
+1.05 <CODE>carpout()</CODE> added and minor corrections by Marc Hedlund <A
+HREF="MAILTO:<hedlund@best.com>"><hedlund@best.com></A> on 11/26/95.
+
+
+<P>
+
+1.06 <CODE>fatalsToBrowser()</CODE> no longer aborts for fatal errors
+within <CODE>eval()</CODE> statements.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+Lincoln 
+<FONT SIZE=-1>D.</FONT> Stein <A
+HREF="MAILTO:<lstein@genome.wi.mit.edu>."><lstein@genome.wi.mit.edu>.</A>
+Feel free to redistribute this under the Perl Artistic License.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Carp, CGI::Base, CGI::BasePlus, CGI::Request, CGI::MiniSvr, CGI::Form,
+CGI::Response
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

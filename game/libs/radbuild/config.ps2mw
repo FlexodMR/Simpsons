@@ -1,0 +1,265 @@
+##########################################################################
+#
+#  Platform Specific Configuration : PS2 Metrowerks Configuation files
+#
+##########################################################################
+#
+# Input Variables:
+#
+#	CONFIG		: build define
+#	TARGET		: output target file name (ie: radcore)
+#	TARGETTYPE	: file extension define (library or executable)
+#	
+##########################################################################
+
+########################################################################
+#
+# Setup build type 
+#
+########################################################################
+
+DEFINES += \
+			RAD_CONSOLE \
+			RAD_PS2 \
+			RAD_MW \
+			PS2 \
+			PS2MW \
+			PDDI_NO_ANON_UNION \
+			PDDI_IMPLICIT_LINK \
+
+
+ifeq ($(CONFIG),RELEASE)
+EXT     = mr
+DEFINES += NRAD_DEBUG RAD_RELEASE
+
+COMPILERFLAGS += -opt intrinsics
+OBJDIR = Release
+endif
+
+ifeq ($(CONFIG),DEBUG)
+EXT     = md
+DEFINES += RAD_DEBUG  \
+           _DEBUG 
+COMPILERFLAGS += -g -opt off -inline off
+OBJDIR = Debug
+DEBUG=1
+endif
+
+ifeq ($(CONFIG),TUNE)
+EXT	= mt
+DEFINES += NRAD_DEBUG RAD_TUNE
+COMPILERFLAGS += -g -Op,s -opt intrinsics -inline auto
+DEBUG=1
+OBJDIR = Tune
+endif
+
+########################################################################
+#
+# Setup cross compiler for target platform.
+#
+########################################################################
+SCE	= $(CURRENTDRIVE)/usr/local/sce
+SONY	= $(SCE)/$(PREFIX)
+PREFIX      = ee
+PLATFORM = PS2MW
+
+########################################################################
+#
+# Setup file extension name
+#
+########################################################################
+ifeq ($(TARGETTYPE), LIBRARY)
+PLAT_EXT  = a
+else
+PLAT_EXT  = elf
+endif
+
+##########################################################################
+# Compiler tools
+##########################################################################
+# MWDIR		top level directory of Metrowerks CodeWarrior product
+# CWFOLDER	environment variable installed by CodeWarrior installation
+# MWCLDIR	command line tool directory
+# MWLIBDIR	standard C library directory
+# CC AS LD AR	command line tools
+# MWINCS	standard library includes
+# MWLIBS	standard libraries + EABI libraries
+
+MWDIR1	 = $(subst Program Files,progra~1,$(CWFOLDER))
+MWDIR	 = $(subst \,/,$(MWDIR1))
+MWCLDIR	 = $(MWDIR)/PS2_Tools/Command_Line_Tools
+#MWLIBDIR = 
+#$(subst $(space),\$(space),$(subst \,/,$(MWDIR)/blahblahblah))
+MWINCS   = -ir $(MWDIR)/ps2sup~1
+
+CC      = $(MWCLDIR)/mwccps2.exe
+DP      = $(ROOTDIR)/radbuild/GlobalTools/makedepend.exe
+AS      = $(MWCLDIR)/asm_r5900_elf.exe
+LD      = $(MWCLDIR)/mwldps2.exe
+AR      = $(MWCLDIR)/mwldps2.exe
+PERL    = $(ROOTDIR)/radbuild/GlobalTools/Perl.exe
+FIXDEP  = $(ROOTDIR)/radbuild/fixdep.pl
+EEGCC   = $(SONY)/gcc/bin/$(PREFIX)-gcc2953.exe
+DVPASM  = $(SONY)/gcc/bin/$(PREFIX)-dvp-as.exe
+VCL	= $(ROOTDIR)/pure3d/pddi/ps2/vcl/vcl.exe
+
+ARFLAGS	    = \
+
+##########################################################################
+# HARDWARE FLAGS
+##########################################################################
+HWCONFIG = 
+
+##########################################################################
+# DEPDENCIES FLAGS
+##########################################################################
+# DPFLAG		dependencies flag
+# DPPREPROCFLAGS	preproc c flag
+# DPPREPROCXXFLAGS	prepro cxx flag
+
+DPFLAG = -D__IEEE_LITTLE_ENDIAN -D__MWERKS
+DPPREPROCFLAGS = $(OPTFLAGS) $(PLAT_INCS) $(HWCONFIG) $(BUGLIST)
+DPPREPROCXXFLAGS = $(OPTFLAGS) $(PLAT_INCS) $(HWCONFIG) $(BUGLIST) 
+##########################################################################
+# COMPILE FLAGS
+##########################################################################
+# PLAT_INCS	include flags
+# OPTFLAGS	optiona flags
+# CXXFLAGS	CPP compiler flags
+# CFLAGS	C compiler flags
+
+PLAT_INCS	= $(MWINCS) -i- $(SNEINC)
+
+OPTFLAGS = \
+	-msgstyle gcc \
+	-c \
+	-nodefaults \
+	-wchar_t on \
+	-enum int \
+	-strict off \
+	-fp single \
+	-Cpp_exceptions off \
+	-RTTI on \
+	-nosyspath \
+	-prefix PREFIX_PS2.h \
+	$(DBGFLAG) \
+	-sdatathreshold 1 \
+	-w noemptydecl, possible, noempty, unusedvar, extracomma, pedantic, largeargs, structclass, nounusedarg, noimplicit, nocmdline
+
+CXXFLAGS = $(COMPILERFLAGS) $(OPTFLAGS) $(PLAT_INCS) $(HWCONFIG) $(BUGLIST)
+CFLAGS   = $(COMPILERFLAGS) $(OPTFLAGS) $(PLAT_INCS) $(HWCONFIG) $(BUGLIST)
+
+#####################################################################
+#
+# DSM FLAGS
+#
+#####################################################################
+
+ifeq ($(TARGETTYPE),LIBRARY)
+    DEBUG_OPTIMIZATIONFLAG =
+else
+    DEBUG_OPTIMIZATIONFLAG =
+endif
+
+ifeq ($(CONFIG), DEBUG)
+    COMPILERFLAGS = -g $(DEBUG_OPTIMIZATIONFLAG)
+endif
+
+
+ifeq ($(CONFIG), DEBUG)
+DVPASMFLAGS = --gstabs
+endif
+
+ifeq ($(CONFIG), RELEASE)
+DVPASMFLAGS = --gstabs
+endif
+
+ifeq ($(CONFIG), TUNE)
+DVPASMFLAGS = -J -W
+endif
+
+#####################################################################
+#
+# AS FLAGS
+#
+#####################################################################
+
+#ASFLAGS  = -c -xassembler-with-cpp -Wa,-al,-G,-no-mips16
+ASFLAGS  = -gnu -c_preprocess
+
+#####################################################################
+#
+# VCL FLAGS
+#
+#####################################################################
+
+VCLFLAGS =  -g -t4 -A
+
+##########################################################################
+# LINKER FLAGS
+##########################################################################
+# LDFLAGS	linker flags
+# LCF		linker command file
+
+ifndef DEBUG
+	LDFLAGS	+= -search -nodefaults -fp single -Cpp_exceptions off -w off -sdatathreshold 1 
+	VERSION = 
+else
+	LDFLAGS += -g -search -nodefaults -fp single -Cpp_exceptions off -w off -sdatathreshold 1 
+	VERSION = d
+endif
+
+ifeq ($(TARGETTYPE),LIBRARY)
+	LDFLAGS += -library
+endif
+
+#LCF      = LinkSegment_Ps2.lcf
+#LCF      = Command_Line.lcf
+LCF       = $(MWDIR)/PS2SUP~1/Command_Line.lcf
+ARFLAGS = -library
+
+# make sure to leave a empty line at the end of included files
+
+#####################################################################
+#
+# SONY INCLUDES & SONY LIBRARIES
+#
+#####################################################################
+
+PS2_ROOT = $(SCE)
+
+INCLUDEDIR +=                                        \
+    $(MWDIR)/ps2sup~1                                \
+    $(PS2_ROOT)/ee/include                           \
+    $(PS2_ROOT)/common/include                       \
+    $(PS2_ROOT)/ee/gcc/ee/include                    \
+    $(PS2_ROOT)/ee/gcc/lib/gcc-lib/ee/2.95.3/include \
+		
+		
+
+SDKLIBS = \
+
+
+LIBS +=	$(MWDIR)/ps2sup~1/runtime/libraries/MSLGCC_PS2.LIB   \
+        $(ROOTDIR)/radbuild/crt0.o                           \
+        gcc_wrapper.o                                        \
+        $(PS2_ROOT)/ee/gcc/ee/lib/libc.a                     \
+        $(PS2_ROOT)/ee/gcc/ee/lib/libm.a                     \
+        $(PS2_ROOT)/ee/lib/libcdvd.a                         \
+        $(PS2_ROOT)/ee/lib/libscf.a                          \
+        $(PS2_ROOT)/ee/lib/libdma.a                          \
+        $(PS2_ROOT)/ee/lib/libgraph.a                        \
+        $(PS2_ROOT)/ee/lib/libipu.a                          \
+        $(PS2_ROOT)/ee/lib/libkernl.a                        \
+        $(PS2_ROOT)/ee/lib/libmc.a                           \
+        $(PS2_ROOT)/ee/lib/libmpeg.a                         \
+        $(PS2_ROOT)/ee/lib/libmtap.a                         \
+        $(PS2_ROOT)/ee/lib/libpad.a                          \
+        $(PS2_ROOT)/ee/lib/libpkt.a                          \
+        $(PS2_ROOT)/ee/lib/libsdr.a                          \
+        $(PS2_ROOT)/ee/lib/libdev.a                          \
+        $(PS2_ROOT)/ee/gcc/lib/gcc-lib/ee/2.95.3/libgcc.a 
+
+
+#	    mipsstack.o                                     \
+

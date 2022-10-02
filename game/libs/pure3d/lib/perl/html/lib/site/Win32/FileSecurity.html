@@ -1,0 +1,263 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Win32::FileSecurity - manage FileSecurity Discretionary Access Control Lists in perl
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTANTS">CONSTANTS</A>
+	<LI><A HREF="#FUNCTIONS">FUNCTIONS</A>
+	<UL>
+
+		<LI><A HREF="#NOTE_">NOTE:</A>
+		<LI><A HREF="#_permisshash">%permisshash</A>
+	</UL>
+
+	<LI><A HREF="#EXAMPLE1">EXAMPLE1</A>
+	<LI><A HREF="#EXAMPLE2">EXAMPLE2</A>
+	<LI><A HREF="#VERSION">VERSION</A>
+	<LI><A HREF="#REVISION_NOTES">REVISION NOTES</A>
+	<LI><A HREF="#KNOWN_ISSUES_BUGS">KNOWN ISSUES / BUGS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Win32::FileSecurity - manage FileSecurity Discretionary Access Control
+Lists in perl
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use Win32::FileSecurity;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module offers control over the administration of system FileSecurity
+DACLs. You may want to use Get and EnumerateRights to get an idea of what
+mask values correspond to what rights as viewed from File Manager.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTANTS">CONSTANTS
+
+</A></H1>
+<PRE>  DELETE, READ_CONTROL, WRITE_DAC, WRITE_OWNER,
+  SYNCHRONIZE, STANDARD_RIGHTS_REQUIRED, 
+  STANDARD_RIGHTS_READ, STANDARD_RIGHTS_WRITE,
+  STANDARD_RIGHTS_EXECUTE, STANDARD_RIGHTS_ALL,
+  SPECIFIC_RIGHTS_ALL, ACCESS_SYSTEM_SECURITY, 
+  MAXIMUM_ALLOWED, GENERIC_READ, GENERIC_WRITE,
+  GENERIC_EXECUTE, GENERIC_ALL, F, FULL, R, READ,
+  C, CHANGE
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="FUNCTIONS">FUNCTIONS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="NOTE_">NOTE:
+
+</A></H2>
+All of the functions return 
+<FONT SIZE=-1>FALSE</FONT> (0) if they fail, unless otherwise noted. Errors
+returned via $! containing both Win32 <CODE>GetLastError()</CODE> and a
+text message indicating Win32 function that failed.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_constant">constant( $name, $set )
+	Stores the value of named constant $name into $set.
+	Alternatively, $set = Win32::FileSecurity::NAME_OF_CONSTANT() ;
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Get">Get( $filename, \%permisshash )
+	Gets the DACLs of a file or directory
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Set">Set( $filename, \%permisshash )
+	Sets the DACL for a file or directory
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_EnumerateRights">EnumerateRights( $mask, \@rightslist )
+	Turns the bitmask in $mask into a list of strings in @rightslist
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_MakeMask">MakeMask( qw( DELETE READ_CONTROL ) )
+	Takes a list of strings representing constants and returns a bitmasked integer value.
+
+</A></STRONG><DD>
+</DL>
+<P>
+<HR>
+<H2><A NAME="_permisshash">%permisshash
+
+</A></H2>
+Entries take the form $permisshash{USERNAME} = <CODE>$mask</CODE> ;
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLE1">EXAMPLE1
+
+</A></H1>
+# Gets the rights for all files listed on the command line. use
+Win32::FileSecurity ;
+
+
+<P>
+
+<CODE>foreach(</CODE> <CODE>@ARGV</CODE> ) { next unless -e <CODE>$_</CODE>
+; if ( Win32::FileSecurity::Get( $_, \%hash ) ) { <CODE>while(</CODE>
+($name, $mask) = each <CODE>%hash</CODE> ) { print ``$name:\n\t'';
+Win32::FileSecurity::EnumerateRights( $mask, \@happy ) ; print
+<CODE>join(</CODE> ``\n\t'', <CODE>@happy</CODE> ), ``\n''; } } else {
+<CODE>print(</CODE> ``Error #'', <CODE>int(</CODE> $! ), ``: $!'' ) ; } }
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLE2">EXAMPLE2
+
+</A></H1>
+# Gets existing 
+<FONT SIZE=-1>DACL</FONT> and modifies Administrator rights use
+Win32::FileSecurity ;
+
+
+<P>
+
+# These masks show up as Full Control in File Manager <CODE>$file</CODE> = Win32::FileSecurity::MakeMask( <CODE>qw(</CODE> 
+<FONT SIZE=-1>FULL</FONT> ) );
+
+
+
+<P>
+
+<A HREF="#item__dir">$dir</A> = Win32::FileSecurity::MakeMask( <CODE>qw(</CODE> 
+<FONT SIZE=-1>FULL</FONT> 
+<FONT SIZE=-1>GENERIC_ALL</FONT> ) );
+
+
+
+<P>
+
+<CODE>foreach(</CODE> <CODE>@ARGV</CODE> ) { s/\\$//; next unless -e;
+Win32::FileSecurity::Get( $_, \%hash ) ; $hash{Administrator} = ( -d ) ? <A
+HREF="#item__dir">$dir</A> : <CODE>$file</CODE> ; Win32::FileSecurity::Set(
+$_, \%hash ) ; }
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VERSION">VERSION
+
+</A></H1>
+1.01 
+<FONT SIZE=-1>ALPHA</FONT> 97-04-25
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="REVISION_NOTES">REVISION NOTES
+
+</A></H1>
+<OL>
+<LI><STRONG><A NAME="item_01_ALPHA_1997_04_25_CORE_Win32_v">01 ALPHA 1997.04.25
+	CORE Win32 version imported from 0.66 <gsar@umich.edu>
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_66_ALPHA_1997_03_13_Fixed_bug_in">66 ALPHA 1997.03.13
+	Fixed bug in memory allocation check
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_65_ALPHA_1997_02_25_Tested_with_">65 ALPHA 1997.02.25
+	Tested with 5.003 build 303
+	Added ISA exporter, and @EXPORT_OK
+	Added F, FULL, R, READ, C, CHANGE as composite pre-built mask names.
+	Added server\ to keys returned in hash from Get
+	Made constants and MakeMask case insensitive (I don't know why I did that)
+	Fixed mask comparison in ListDacl and Enumerate Rights from simple &amp; mask
+		to exact bit match ! ( ( x &amp; y ) ^ x ) makes sure all bits in x
+		are set in y
+	Fixed some "wild" pointers
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_60_ALPHA_1996_07_31_Now_suitable">60 ALPHA 1996.07.31
+	Now suitable for file and directory permissions
+	Included ListDacl.exe in bundle for debugging
+	Added "intuitive" inheritance for directories, basically functions like FM
+		triggered by presence of GENERIC_ rights this may need to change
+		see EXAMPLE2
+	Changed from AddAccessAllowedAce to AddAce for control over inheritance
+	
+=item 0.51 ALPHA 1996.07.20
+	Fixed memory allocation bug
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_50_ALPHA_1996_07_29_Base_functio">50 ALPHA 1996.07.29
+	Base functionality
+	Using AddAccessAllowedAce
+	Suitable for file permissions
+=back
+
+</A></STRONG>
+<H1><A NAME="KNOWN_ISSUES_BUGS">KNOWN ISSUES / BUGS
+
+</A></H1>
+<OL>
+<LI><STRONG><A NAME="item_May_not_work_on_remote_drives_">
+	May not work on remote drives.
+
+</A></STRONG>
+<LI><STRONG><A NAME="item_Errors_croak_don_t_return_via_">
+	Errors croak, don't return via $! as documented.
+
+</A></STRONG>
+</DL>
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

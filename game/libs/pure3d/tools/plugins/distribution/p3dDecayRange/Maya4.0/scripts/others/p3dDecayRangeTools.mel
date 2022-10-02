@@ -1,0 +1,261 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     01 August, 2002
+// Modified:    01 August, 2002
+// Version:     
+//
+// Component:   
+//
+// Description: 
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+//===========================================================================
+// getShape
+//===========================================================================
+// Description: Returns the shape node, if any, for the specified transform.
+//
+// Constraints: Considers only a single shape.
+//
+//  Parameters: string $xform: The transform node.
+//
+//      Return: (string): The shape node.
+//
+//===========================================================================
+proc string getShape( string $xform )
+{
+    string $shapes[];
+    
+    $shapes[0] = $xform;
+    
+    string $isTransform[] = `ls -transforms $xform`;
+    
+    if ( `size $isTransform` > 0 )
+    // If given node is not a transform, assume it is a shape 
+    // and pass it through
+    {
+        $shapes = `listRelatives -fullPath -shapes $xform`;
+    }
+    
+    return $shapes[0];
+}
+
+//===========================================================================
+// getTransform
+//===========================================================================
+// Description: Returns the transform for the specified shape node.
+//
+//  Parameters: string $shape: The shape node.
+//
+//      Return: (string): The transform node.
+//
+//===========================================================================
+proc string getTransform( string $shape )
+{
+    string $transform = $shape;
+    
+    // Special case for "joint" -- 
+    // a joint is a transform and has no corresponding Shape.
+    if ( `objExists $shape` && ( "transform" != `nodeType $shape` ) && ( "joint" != `nodeType $shape` ) )
+    // If given node is already a transform, just pass on through
+    {
+        string $parents[] = `listRelatives -fullPath -parent $shape`;
+        $transform = $parents[0];
+    }
+
+    return $transform;
+}
+
+// //////////////////////////////////////////////////////////////////////
+//  shortName
+//
+// Description: Returns the shortest possible name that is unique to 
+//  the specified node.
+//
+//  $reallyShort - if TRUE, strip leading '|' character as well
+
+proc string shortName( string $node, int $reallyShort )
+{
+	string $shortName = "";
+	
+	string $bloodyArray[] = `ls -shortNames $node`;
+	$shortName = $bloodyArray[0];
+	
+	if ( $reallyShort )
+		$shortName = `match "[^|]*$" $shortName`;
+		
+	return $shortName;
+}
+
+proc string decayRange( string $light )
+{
+    string $decayRange = "";
+
+    $light = getShape( $light );
+
+    string $cc[] = `listConnections -shapes true ( $light + ".worldMatrix" )`;
+    for ( $c in $cc )
+    {
+        if ( `nodeType $c` == "p3dDecayRange" )
+        {
+            $bHasRange = true;
+            string $long[] = `ls -l $c`;
+            $decayRange = $long[0];
+            break;
+        }
+    }
+
+    return $decayRange;
+}
+
+global proc p3dDecayRange_CreateDir()
+{
+    string $light = `directionalLight`;
+    p3dDecayRange_Add;
+    select $light;
+}
+
+global proc p3dDecayRange_CreateSpot()
+{
+    string $light = `spotLight`;
+    p3dDecayRange_Add;
+    select $light;
+}
+
+global proc p3dDecayRange_CreateSpotEx( int $type )
+{
+    string $light = `spotLight`;
+    string $decay[] = `p3dDecayRange_Add`;
+    if ( $type == 1 && `size $decay` > 0 )
+    {
+        setAttr ( $decay[0] + ".decayMode" ) 1;
+    }
+    select $light;
+}
+
+global proc p3dDecayRange_CreatePoint()
+{
+    string $light = `pointLight`;
+    p3dDecayRange_Add;
+    select $light;
+}
+
+global proc p3dDecayRange_CreateAmb()
+{
+    string $light = `ambientLight`;
+    p3dDecayRange_Add;
+    select $light;
+}
+
+proc string addDecayRange( string $light )
+{
+    string $newDecay = "";
+
+    // Does this light already have a p3dDecayRange node?
+    int $bHasRange = false;
+
+    string $cc[] = `listConnections -shapes true ( $light + ".worldMatrix" )`;
+    for ( $c in $cc )
+    {
+        if ( `nodeType $c` == "p3dDecayRange" )
+        {
+            $bHasRange = true;
+            // Select the decay range for the user.
+            select $c;
+            break;
+        }
+    }
+    
+    if ( !$bHasRange )
+    {
+        string $decay = `createNode "p3dDecayRange"`;
+
+        connectAttr ( $light + ".worldMatrix" ) ( $decay + ".inWorldMatrix" );
+
+        string $lightT = shortName( getTransform( $light ), true );
+        string $decayT = getTransform( $decay );
+
+        string $result[] = `parent $decayT $lightT`;
+        $decayT = $result[0];
+
+        string $newName = `rename $decayT ( $lightT + "_decayRange" )`;
+        $newDecay = getShape( $newName );
+    }
+
+    return $newDecay;
+}
+
+global proc string[] p3dDecayRange_Add()
+{
+    string $newDecayRange[];
+
+    string $lights[] = `ls -sl -dag -leaf -type "light"`;
+
+    for ( $light in $lights )
+    {
+        string $newDecay = addDecayRange( $light );
+        if ( $newDecay != "" )
+        {
+            $newDecayRange[`size $newDecayRange`] = $newDecay;
+        }
+    }
+
+    return $newDecayRange;
+}
+
+global proc string[] p3dDecayRange_Duplicate()
+{
+    string $newStuff[];
+
+    string $lights[] = `ls -sl -dag -leaf -type "light"`;
+
+    for ( $light in $lights )
+    {
+        // Does this light already have a p3dDecayRange node?
+        string $decay = decayRange( $light );
+
+        // Duplicate the light
+        string $dupes[] = `duplicate -rr $light`;
+        string $newLightA[] = `ls -l -dag -leaf -type "light" $dupes`;
+        string $newLight = $newLightA[0];
+        $newStuff[`size $newStuff`] = $newLight;
+        string $lightT = getTransform( $newLight );
+
+        string $newDupes[] = `listRelatives -f -ad $lightT`;
+        for ( $dupe in $newDupes)
+        {
+            if ( `objExists $dupe` && ( `nodeType $dupe` == "p3dDecayRange" ) )
+            {
+                string $decayT = getTransform( $dupe );
+                delete $decayT;
+            }
+        }
+
+        if ( $newLight != "" )
+        {
+            $newDecay = addDecayRange( $newLight );
+
+            // Copy the attributes 
+            float $value[3];
+            int $decayMode = `getAttr ( $decay + ".decayMode" )`;
+            setAttr ( $newDecay + ".decayMode" ) $decayMode;
+
+            setAttr ( $newDecay + ".innerRadius" ) 0.0 0.0 0.0;
+
+            $value = getAttr ( $decay + ".outerRadius" );
+            setAttr ( $newDecay + ".outerRadius" ) $value[0] $value[1] $value[2];
+
+            $value = getAttr ( $decay + ".innerRadius" );
+            setAttr ( $newDecay + ".innerRadius" ) $value[0] $value[1] $value[2];
+        }
+    }
+
+    select $newStuff;
+
+    return $newStuff;
+}

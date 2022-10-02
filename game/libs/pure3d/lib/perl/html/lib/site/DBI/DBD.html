@@ -1,0 +1,864 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>DBI::DBD - DBD Driver Writer's Guide (draft)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#VERSION_and_VOLATILITY">VERSION and VOLATILITY</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#REGISTERING_A_NEW_DRIVER">REGISTERING A NEW DRIVER</A>
+	<UL>
+
+		<LI><A HREF="#Locating_drivers">Locating drivers</A>
+		<LI><A HREF="#DBI_Mailing_Lists">DBI Mailing Lists</A>
+		<LI><A HREF="#Registering_a_new_driver">Registering a new driver</A>
+	</UL>
+
+	<LI><A HREF="#CREATING_A_NEW_DRIVER">CREATING A NEW DRIVER</A>
+	<LI><A HREF="#REQUIREMENTS_ON_A_DRIVER">REQUIREMENTS ON A DRIVER</A>
+	<LI><A HREF="#CODE_TO_BE_WRITTEN">CODE TO BE WRITTEN</A>
+	<UL>
+
+		<LI><A HREF="#Driver_pm">Driver.pm</A>
+		<LI><A HREF="#Driver_xs">Driver.xs</A>
+		<LI><A HREF="#Driver_h">Driver.h</A>
+		<LI><A HREF="#Implementation_header_dbdimp_h">Implementation header dbdimp.h</A>
+		<LI><A HREF="#Implementation_source_dbdimp_c">Implementation source dbdimp.c</A>
+		<LI><A HREF="#Makefile_PL">Makefile.PL</A>
+		<LI><A HREF="#README_file">README file</A>
+		<LI><A HREF="#MANIFEST">MANIFEST</A>
+		<LI><A HREF="#Tests">Tests</A>
+	</UL>
+
+	<LI><A HREF="#METHODS_WHICH_DO_NOT_NEED_TO_BE_">METHODS WHICH DO NOT NEED TO BE WRITTEN</A>
+	<LI><A HREF="#OTHER_MISCELLANEOUS_INFORMATION">OTHER MISCELLANEOUS INFORMATION</A>
+	<UL>
+
+		<LI><A HREF="#The_imp_xyz_t_types">The imp_xyz_t types</A>
+		<LI><A HREF="#Using_DBIc_IMPSET_on">Using DBIc_IMPSET_on</A>
+		<LI><A HREF="#Using_DBIc_is_DBIc_on_and_D">Using DBIc_is(), DBIc_on() and DBIc_off()</A>
+		<LI><A HREF="#Using_DBIS_get_fbav_">Using DBIS->get_fbav()</A>
+	</UL>
+
+	<LI><A HREF="#ACKNOWLEDGEMENTS">ACKNOWLEDGEMENTS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+
+<FONT SIZE=-1>DBI::DBD</FONT> - 
+<FONT SIZE=-1>DBD</FONT> Driver Writer's Guide (draft)
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    perldoc DBI::FAQ
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VERSION_and_VOLATILITY">VERSION and VOLATILITY
+
+</A></H1>
+<PRE>        $Revision: 1.5 $
+        $Date: 1997/07/22 23:17:50 $
+</PRE>
+
+<P>
+
+This document is very much a minimal draft which will need to be revised
+frequently (and extensively).
+
+
+<P>
+
+The changes will occur both because the 
+<FONT SIZE=-1>DBI</FONT> specification is changing and hence the requirements on 
+<FONT SIZE=-1>DBD</FONT> drivers change, and because feedback from people reading this document will suggest improvements to it.
+
+
+
+<P>
+
+Please read the 
+<FONT SIZE=-1>DBI</FONT> documentation first and fully, including the 
+<FONT SIZE=-1>DBI</FONT> 
+<FONT SIZE=-1>FAQ.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This document is primarily intended to help people writing new database drivers for the Perl Database Interface (Perl 
+<FONT SIZE=-1>DBI).</FONT> It may also help others interested in discovering why the internals of a 
+<FONT SIZE=-1>DBD</FONT> driver are written the way they are.
+
+
+
+<P>
+
+This is a guide. Few (if any) of the statements in it are completely
+authoritative under all possible circumstances. This means you will need to
+use judgement in applying the guidelines in this document.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="REGISTERING_A_NEW_DRIVER">REGISTERING A NEW DRIVER
+
+</A></H1>
+Before writing a new driver, it is in your interests to find out whether
+there already is a driver for your database. If there is such a driver, it
+should be easier to make use of it than to write your own.
+
+
+<P>
+
+<PRE>        [...More info TBS...]
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Locating_drivers">Locating drivers
+
+</A></H2>
+The primary web-site for locating Perl software is
+<EM>http:</EM>. You should look under the various modules listings for the software you
+are after. Two of the main pages you should look at are:
+
+
+<P>
+
+<PRE>  <A HREF="http://www.perl.org/CPAN/modules/by-category/07_Database_Interfaces/DBI">http://www.perl.org/CPAN/modules/by-category/07_Database_Interfaces/DBI</A>
+</PRE>
+
+<P>
+
+<PRE>  <A HREF="http://www.perl.org/CPAN/modules/by-category/07_Database_Interfaces/DBD">http://www.perl.org/CPAN/modules/by-category/07_Database_Interfaces/DBD</A>
+</PRE>
+
+<P>
+
+The primary web-site for locating 
+<FONT SIZE=-1>DBI</FONT> software and information is <A
+HREF="http://www.hermetica.com/technologia/DBI.">http://www.hermetica.com/technologia/DBI.</A>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="DBI_Mailing_Lists">DBI Mailing Lists
+
+</A></H2>
+There are 2 main and one auxilliary mailing lists for people working with 
+<FONT SIZE=-1>DBI.</FONT> The primary lists are <A HREF="MAILTO:dbi-users@fugue.com">dbi-users@fugue.com</A> for general users of 
+<FONT SIZE=-1>DBI</FONT> and 
+<FONT SIZE=-1>DBD</FONT> drivers, and <A HREF="MAILTO:dbi-dev@fugue.com">dbi-dev@fugue.com</A> mainly for 
+<FONT SIZE=-1>DBD</FONT> driver writers (don't join the dbi-dev list unless you have a good reason). The auxilliary list is <A HREF="MAILTO:dbi-announce@fugue.com">dbi-announce@fugue.com</A> for announcing new releases of 
+<FONT SIZE=-1>DBI</FONT> or 
+<FONT SIZE=-1>DBD</FONT> drivers.
+
+
+
+<P>
+
+You can join these lists by accessing the web-site
+<EM>http:</EM>. If you have not got web access, you may send a request to <A
+HREF="MAILTO:dbi-request@fugue.com,">dbi-request@fugue.com,</A> but this
+will be handled manually when the people in charge find the time to deal
+with it. Use the web-site.
+
+
+<P>
+
+You should also consider monitoring the comp.lang.perl newsgroups.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Registering_a_new_driver">Registering a new driver
+
+</A></H2>
+Before going through any official registration process, you will need to establish that there is no driver already in the works. You'll do that by asking the 
+<FONT SIZE=-1>DBI</FONT> mailing lists whether there is such a driver available, or whether anybody is working on one.
+
+
+
+<P>
+
+<PRE>        [...More info TBS...]
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CREATING_A_NEW_DRIVER">CREATING A NEW DRIVER
+
+</A></H1>
+Creating a new driver from scratch will always be a daunting task. You can
+and should greatly simplify your task by taking a good reference driver
+implementation and modifying that to match the database product for which
+you are writing a driver.
+
+
+<P>
+
+The de facto reference driver is the one for DBD::Oracle, written by Tim Bunce who is also the author of the 
+<FONT SIZE=-1>DBI</FONT> package. The DBD::Oracle module is a good example of a driver implemented around a C-level 
+<FONT SIZE=-1>API.</FONT>
+
+
+
+<P>
+
+The 
+<FONT SIZE=-1>DBD::ODBC</FONT> module is also a good reference for a driver implemented around an 
+<FONT SIZE=-1>SQL</FONT> 
+<FONT SIZE=-1>CLI</FONT> or 
+<FONT SIZE=-1>ODBC</FONT> based C-level 
+<FONT SIZE=-1>API.</FONT>
+
+
+
+<P>
+
+The DBD::Informix driver is a good reference for a driver implemented using 'embedded 
+<FONT SIZE=-1>SQL'.</FONT>
+
+
+
+<P>
+
+<PRE>        [...More info TBS...]
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="REQUIREMENTS_ON_A_DRIVER">REQUIREMENTS ON A DRIVER
+
+</A></H1>
+
+<FONT SIZE=-1>T.B.S.</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CODE_TO_BE_WRITTEN">CODE TO BE WRITTEN
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> minimal driver will contain 7 files plus some tests.
+Assuming that your driver is called DBD::Driver, these files are:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Driver">Driver.pm
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Driver">Driver.xs
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Driver">Driver.h
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_dbdimp">dbdimp.h
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_dbdimp">dbdimp.c
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Makefile">Makefile.PL
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_README">README
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_MANIFEST">MANIFEST
+
+</A></STRONG><DD>
+</DL>
+<P>
+<HR>
+<H2><A NAME="Driver_pm">Driver.pm
+
+</A></H2>
+The Driver.pm file defines the Perl module DBD::Driver for your driver. It
+will define a package DBD::Driver along with some version information, some
+variable definitions, and a function <CODE>driver()</CODE> which will have
+a more or less standard structure.
+
+
+<P>
+
+It will also define a package DBD::Driver::dr (which will define the
+<CODE>driver()</CODE> and <CODE>connect()</CODE> methods), and a package
+DBD::Driver::db (which will define a function <CODE>prepare()</CODE> etc),
+and a package DBD::Driver::st.
+
+
+<P>
+
+Each of these classes may define a function <CODE>errstr(),</CODE> which
+will simply relay its arguments to DBD::Driver::errstr() and implicitly
+return the value from DBD::Driver::errstr(). The DBD::Driver::errstr()
+function is actually defined in Driver.xs.
+
+
+<P>
+
+The Driver.pm file will also contain the documentation specific to
+DBD::Driver in the format used by perldoc.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Driver_xs">Driver.xs
+
+</A></H2>
+Driver.xs should look like this:
+
+
+<P>
+
+<PRE>  #include &quot;Driver.h&quot;
+</PRE>
+
+<P>
+
+<PRE>  DBISTATE_DECLARE;
+</PRE>
+
+<P>
+
+<PRE>  MODULE = DBD::Driver    PACKAGE = DBD::Driver
+</PRE>
+
+<P>
+
+<PRE>  INCLUDE: Driver.xsi
+</PRE>
+
+<P>
+
+<PRE>  MODULE = DBD::Driver    PACKAGE = DBD::Driver::st
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Driver_h">Driver.h
+
+</A></H2>
+Driver.h should look like this:
+
+
+<P>
+
+<PRE>  #define NEED_DBIXS_VERSION 9
+</PRE>
+
+<P>
+
+<PRE>  #include &lt;DBIXS.h&gt;      /* installed by the DBI module  */
+</PRE>
+
+<P>
+
+<PRE>  #include &quot;dbdimp.h&quot;
+</PRE>
+
+<P>
+
+<PRE>  #include &lt;dbd_xsh.h&gt;     /* installed by the DBI module  */
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Implementation_header_dbdimp_h">Implementation header dbdimp.h
+
+</A></H2>
+
+<FONT SIZE=-1>T.B.S</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Implementation_source_dbdimp_c">Implementation source dbdimp.c
+
+</A></H2>
+
+<FONT SIZE=-1>T.B.S</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Makefile_PL">Makefile.PL
+
+</A></H2>
+Driver.xs should look like this:
+
+
+<P>
+
+<PRE>  use 5.004;
+  use ExtUtils::MakeMaker;
+  use Config;
+  use strict;
+  use DBI 0.86;
+  use DBI::DBD;
+</PRE>
+
+<P>
+
+<PRE>  my %opts = (
+    NAME =&gt; 'DBD::Driver',
+    VERSION_FROM =&gt; 'Driver.pm',
+    clean =&gt; { FILES=&gt; 'Driver.xsi' },
+    dist  =&gt; { DIST_DEFAULT=&gt; 'clean distcheck disttest ci tardist',
+                PREOP =&gt; '$(MAKE) -f Makefile.old distdir' },
+</PRE>
+
+<P>
+
+Add other options here as needed. See ExtUtils::MakeMaker for more info.
+
+
+<P>
+
+<PRE>  );
+</PRE>
+
+<P>
+
+<PRE>  WriteMakefile(%opts);
+</PRE>
+
+<P>
+
+<PRE>  exit(0);
+</PRE>
+
+<P>
+
+<PRE>  sub MY::postamble {
+    return dbd_postamble();
+  }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="README_file">README file
+
+</A></H2>
+The 
+<FONT SIZE=-1>README</FONT> file should describe the pre-requisites for the build process, the actual build process, and how to report errors. Note that users will find ways of breaking the driver build and test process which you would never dream possible. Therefore, you need to write this document defensively and precisely. Also, it is in your interests to ensure that your tests work as widely as possible. As always, use the 
+<FONT SIZE=-1>README</FONT> from one of the established drivers as a basis for your own.
+
+
+
+<P>
+
+<PRE>        [...More info TBS...]
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MANIFEST">MANIFEST
+
+</A></H2>
+The 
+<FONT SIZE=-1>MANIFEST</FONT> will be used by the Makefile'd dist target to build the distribution tar file that is uploaded to 
+<FONT SIZE=-1>CPAN.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Tests">Tests
+
+</A></H2>
+The test process should conform as closely as possibly to the Perl standard
+test harness.
+
+
+<P>
+
+In particular, most of the tests should be run in the t sub-directory, and
+should simply produce an 'ok' when run under 'make test'. For details on
+how this is done, see the Camel book and the section in Chapter 7, ``The
+Standard Perl Library'' on Test::Harness.
+
+
+<P>
+
+The tests may need to adapt to the type of database which is being used for
+testing, and to the privileges of the user testing the driver. The
+DBD::Informix test code has to adapt in a number of places to the type of
+database to which it is connected as different Informix databases have
+different capabilities.
+
+
+<P>
+
+<PRE>        [...More info TBS...]
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS_WHICH_DO_NOT_NEED_TO_BE_">METHODS WHICH DO NOT NEED TO BE WRITTEN
+
+</A></H1>
+The 
+<FONT SIZE=-1>DBI</FONT> code implements the majority of the methods which
+are accessed using the notation DBI-&gt;function(), the only exceptions
+being DBI-&gt;connect() and DBI-&gt;data_sources() which require support
+from the driver.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_DBI">DBI->available_drivers()
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_DBI">DBI->neat_list()
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_DBI">DBI->neat()
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_DBI">DBI->dump_results()
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_DBI">DBI->func()
+
+</A></STRONG><DD>
+</DL>
+The 
+<FONT SIZE=-1>DBI</FONT> code implements the following documented driver, database and statement functions which do not need to be written by the 
+<FONT SIZE=-1>DBD</FONT> driver writer.
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__dbh_do_">$dbh->do()
+
+</A></STRONG><DD>
+The default implementation of this function prepares, executes and destroys the statement. This should be replaced if there is a better way to implement this, such as 
+<FONT SIZE=-1>EXECUTE</FONT> 
+<FONT SIZE=-1>IMMEDIATE.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__h_err_">$h->err()
+
+</A></STRONG><DD>
+See the comments on $h-&gt;errstr() below.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__h_state_">$h->state()
+
+</A></STRONG><DD>
+See the comments on $h-&gt;errstr() below.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__h_trace_">$h->trace()
+
+</A></STRONG><DD>
+The 
+<FONT SIZE=-1>DBD</FONT> driver does not need to worry about this routine
+at all.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__h_ChopBlanks_">$h->{ChopBlanks}
+
+</A></STRONG><DD>
+This attribute needs to be honured during fetch operations, but does not
+need to be handled by the attribute handling code.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__h_RaiseError_">$h->{RaiseError}
+
+</A></STRONG><DD>
+The 
+<FONT SIZE=-1>DBD</FONT> driver does not need to worry about this attribute
+at all.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__h_PrintError_">$h->{PrintError}
+
+</A></STRONG><DD>
+The 
+<FONT SIZE=-1>DBD</FONT> driver does not need to worry about this attribute
+at all.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__sth_bind_col_">$sth->bind_col()
+
+</A></STRONG><DD>
+Assuming the driver uses the DBIS-&gt;get_fbav() function (see below), the
+driver does not need to do anything about this routine.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__sth_bind_columns_">$sth->bind_columns()
+
+</A></STRONG><DD>
+Regardless of whether the driver uses DBIS-&gt;get_fbav(), the driver does
+not need to do anything about this routine as it simply iteratively calls
+$sth-&gt;bind_col().
+
+
+<P>
+
+</DL>
+The 
+<FONT SIZE=-1>DBI</FONT> code implements a default implementation of the following functions which do not need to be written by the 
+<FONT SIZE=-1>DBD</FONT> driver writer unless the default implementation is incorrect for the Driver.
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__dbh_quote_">$dbh->quote()
+
+</A></STRONG><DD>
+This should only be written if the database does not accept the 
+<FONT SIZE=-1>ANSI</FONT> 
+<FONT SIZE=-1>SQL</FONT> standard for quoting strings, with the string enclosed in single quotes and any embedded single quotes replaced by two consecutive single quotes.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__h_errstr_">$h->errstr()
+
+</A></STRONG><DD>
+As documented previously, this routine should currently be written for each
+sub-package (dr, db, st). It is not clear why the $h-&gt;state and
+$h-&gt;err routines are not treated symmetrically.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__dbh_ping_">$dbh->ping()
+
+</A></STRONG><DD>
+This should only be written if there is a simple, efficient way to
+determine whether the connection to the database is still alive. Many
+drivers will accept the default, do-nothing implementation.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="OTHER_MISCELLANEOUS_INFORMATION">OTHER MISCELLANEOUS INFORMATION
+
+</A></H1>
+Many details still 
+<FONT SIZE=-1>T.B.S.</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="The_imp_xyz_t_types">The imp_xyz_t types
+
+</A></H2>
+
+<FONT SIZE=-1>T.B.S.</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Using_DBIc_IMPSET_on">Using DBIc_IMPSET_on
+
+</A></H2>
+The driver code which initializes a handle should use
+<CODE>DBIc_IMPSET_on()</CODE> as soon as its state is such that the cleanup
+code must be called. When this happens is determined by your driver code.
+
+
+<P>
+
+Failure to call this can lead to corruption of data structures. For
+example, DBD::Informix maintains a linked list of database handles in the
+driver, and within each handle, a linked list of statements. Once a
+statement is added to the linked list, it is crucial that it is cleaned up
+(removed from the list). When <CODE>DBIc_IMPSET_on()</CODE> was being
+called too late, it was able to cause all sorts of problems.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Using_DBIc_is_DBIc_on_and_D">Using DBIc_is(), DBIc_on() and DBIc_off()
+
+</A></H2>
+Once upon a long time ago, the only way of handling the attributes such as
+DBIcf_IMPSET, DBIcf_WARN, DBIcf_COMPAT etc was through macros such as:
+
+
+<P>
+
+<PRE>    DBIc_IMPSET     DBIc_IMPSET_on      DBIc_IMPSET_off
+    DBIc_WARN       DBIc_WARN_on        DBIc_WARN_off
+    DBIc_COMPAT     DBIc_COMPAT_on      DBIc_COMPAT_off
+</PRE>
+
+<P>
+
+Each of these took an imp_xyz pointer as an argument.
+
+
+<P>
+
+Since then, new attributes have been added such as ChopBlanks, RaiseError
+and PrintError, and these do not have the full set of macros. The approved
+method for handling these is now the triplet of macros:
+
+
+<P>
+
+<PRE>        DBIc_is(imp, flag)
+        DBIc_has(imp, flag)    an alias for DBIc_is
+        DBIc_on(imp, flag)
+        DBIc_off(imp, flag)
+</PRE>
+
+<P>
+
+Consequently, the DBIc_IMPSET family of macros is now deprecated and new
+drivers should avoid using them, even though the older drivers will
+probably continue to do so for quite a while yet.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Using_DBIS_get_fbav_">Using DBIS->get_fbav()
+
+</A></H2>
+The $sth-&gt;bind_col() and $sth-&gt;bind_columns() documented in the 
+<FONT SIZE=-1>DBI</FONT> specification do not have to be implemented by the driver writer becuase 
+<FONT SIZE=-1>DBI</FONT> takes care of the details for you. However, the key to ensuring that bound columns work is to call the function DBIS-&gt;get_fbav() in the code which fetches a row of data. This returns an 
+<FONT SIZE=-1>AV,</FONT> and each element of the 
+<FONT SIZE=-1>AV</FONT> contains the 
+<FONT SIZE=-1>SV</FONT> which should be set to contain the returned data.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ACKNOWLEDGEMENTS">ACKNOWLEDGEMENTS
+
+</A></H1>
+Tim Bunce <A HREF="MAILTO:(tim.bunce@ig.co.uk)">(tim.bunce@ig.co.uk)</A> - for writing 
+<FONT SIZE=-1>DBI</FONT> and managing the 
+<FONT SIZE=-1>DBI</FONT> specification and the DBD::Oracle driver.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Jonathan Leffler <A
+HREF="MAILTO:(johnl@informix.com)">(johnl@informix.com)</A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

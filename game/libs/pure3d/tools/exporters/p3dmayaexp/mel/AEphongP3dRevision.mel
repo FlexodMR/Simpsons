@@ -1,0 +1,60 @@
+/*===========================================================================
+   AEPhongP3dRevision.mel
+   created: Mar. 3, 2000
+   Eric Honsch
+
+   Copyright (c) 2000 Radical Entertainment, Inc.
+   All rights reserved.
+===========================================================================*/
+
+//
+//  Procedure Name:
+//  AEPhongTemplate
+//
+//  Description:
+//  This file duplicates the content of AEPhongTemplate.mel,
+//  but adds additional functionality for the p3d exporter plug-in.
+//
+//  Input Value:
+//  nodeName
+//
+//  Output Value:
+//  None
+//
+
+//--------------------------------------------------------------
+//  Procedure Name:
+//  AEphongTemplate
+//      (with additions for pure3d)
+//
+global proc AEphongTemplate ( string $nodeName )
+{
+    AEswatchDisplay $nodeName;
+    editorTemplate -beginScrollLayout;
+
+        AElambertCommon $nodeName;
+        editorTemplate -beginLayout "Specular Shading" -collapse 0;
+            editorTemplate -addControl "cosinePower";
+
+            // include/call base class/node attributes
+            AEreflectCommonSpecularShading $nodeName;
+        editorTemplate -endLayout;
+
+        // include/call base class/node attributes
+        AEreflectCommon $nodeName;
+
+        editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+            AEhardwareTextureTemplate $nodeName
+                ("color transparency ambientColor incandescence " + 
+                 "normalCamera diffuse translucence cosinePower " +
+                 "specularColor reflectivity reflectedColor");
+        editorTemplate -endLayout;
+
+        // THIS IS THE NEW PART
+        p3dMatAttr();
+        // END OF NEW PART
+
+        editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+
+}

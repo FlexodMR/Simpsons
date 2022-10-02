@@ -1,0 +1,29 @@
+VU_LOAD_CONTEXT:
+; v17 version code
+; warning: shininess is in the wrong spot
+    
+    nop      xitop vi01                 ; load address of transform context
+
+    load_transform_context
+
+    nop      iaddiu vi01, vi08, 0       ; load address of lighting context
+
+    load_lighting_context
+
+    nop[e]   nop
+    nop      nop
+
+;----------------------------------------
+VU_CHECKSKINNING_LOADPRIMGROUP:
+
+    nop     iaddiu vi09,vi15,0         ; store return addy in vi09 (which the skinner doesnt use!)
+    check_skinning
+
+    nop     iaddiu vi15,vi09,0         ; restore return addy
+
+VU_LOADPRIMGROUP:
+
+   load_primgroup
+
+   nop      jr vi15
+   nop      nop

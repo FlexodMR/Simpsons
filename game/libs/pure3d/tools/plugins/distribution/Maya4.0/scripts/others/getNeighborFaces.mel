@@ -1,0 +1,110 @@
+/*===========================================================================
+    File:    neighborFaces.mel
+    Created: January 28, 2002
+    Author:  Harold Westlund
+
+    Copyright (c) 2002 Radical Entertainment, Inc.
+    All rights reserved.
+
+    Version: 1.0.0
+
+=============================================================================
+
+    getNeighborFaces( 
+                    int    $neighbors[],
+                    int    $faceIndex,
+                    string $mesh,
+                    int    $faceVisited[] )
+
+    This procedure takes a mesh and a face index and determines which faces
+    are neighbors of that face.  The face's neighbors are those bounded by
+    the same hard edges, and connected with soft edges ( neighbors of
+    neighbors are themselves neighbors ). The procedure appends the face
+    indices of all the neighbors to the array $neighbors.  Additionally,
+    the array $faceVisited is used to determine which faces have already been
+    visited ( perhaps on previous calls to getNegihborFaces() ).  Element i
+    of $faceVisited is a bool value corresponding to "has face i been visited?"
+
+
+===========================================================================*/
+
+// Find all faces conected to $face by soft edges.
+proc findNeighborFaces( 
+                        int    $neighbors[],
+                        int    $faceIndex,
+                        string $mesh,
+                        int    $edgeVisited[],
+                        int    $faceVisited[] )
+{
+    // Add this face to the list of neighbors
+    int $neighborCount = size($neighbors);
+    $neighbors[$neighborCount] = $faceIndex;
+
+    string $face = ( $mesh + ".f[" + $faceIndex + "]" );
+
+    // Find the indices of the edges of this face.
+    string $s[] = `polyInfo -fe $face`;
+    string $edgeIndex[];
+    int $eTokCount = `tokenize $s[0] $edgeIndex`;
+    clear $s;
+    
+    // Step through the edges of this this face
+    for( $i = 2; $i < $eTokCount; $i++ )
+    {
+        // Check to see if this edge has been examined.
+        int $index = $edgeIndex[$i];
+        if( $edgeVisited[$index] != 0 )
+        {
+            // Already used this edge.
+            continue;
+        }
+        else 
+        {
+            // Mark this edge for next time.
+            $edgeVisited[$index] = 1;
+        }
+        
+        string $fe = $mesh + ".e[" + $index + "]";
+        if( `isEdgeSmooth $fe` == false )
+        {
+            // Hard edge - don't use.
+            continue;
+        }
+        else
+        {
+            // Find the face on the other side of this edge.
+            string $f[] = `polyInfo -ef $fe`;
+            string $adjacentFaceIndex[];
+            int $fTokCount = `tokenize $f[0] $adjacentFaceIndex`;
+            clear $f;
+
+            // Step through the faces of this this edge
+            for( $j = 2; $j < $fTokCount; $j++ )
+            {
+                int $adjacentIndex = $adjacentFaceIndex[$j];
+                if( ( $faceIndex != $adjacentIndex ) &&
+                    ( $faceVisited[$adjacentIndex] == 0 ) )
+                {
+                    $faceVisited[$adjacentIndex] = 1;
+                    findNeighborFaces $neighbors $adjacentIndex $mesh $edgeVisited $faceVisited;
+                }                
+            }            
+        }        
+    }
+}
+
+global proc getNeighborFaces( 
+                    int    $neighbors[],
+                    int    $faceIndex,
+                    string $mesh,
+                    int    $faceVisited[] )
+{
+    int $edgeVisited[];       // Keep track of which edges have been processed.
+    int $edgesList[] = `polyEvaluate -e $mesh`;
+    $edgeVistited[$edgesList[0]] = 0; // Expand to maximum required size.
+
+    $faceVisited[$faceIndex] = 1; // The starting face is now visited.
+
+    findNeighborFaces( $neighbors, $faceIndex, $mesh, $edgeVisited, $faceVisited );
+}
+

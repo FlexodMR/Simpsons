@@ -1,0 +1,83 @@
+//**************************************************************************************************
+//  Procedure Name:
+//    P3dSetupBoundVolShelf()
+//
+//  Description:
+//    Sets up the bounding volume command buttons in P3DBoundingVolumeTools shelf
+//
+//  Input Arguments:
+//    None.
+//
+//  Return Value:
+//    None.
+//**************************************************************************************************
+global proc p3dBoundVolInstallCommand()
+{
+   source p3dBoundingTools;
+   source p3dSetAttribute;
+   
+   // BUG FIX: Do NOT create Shelf if Shelf UI is hidden!
+   //          The Shelf may already exist in Maya's Preferences
+   //          but be deferred until the Shelf UI is visible,
+   //          and a clash will result if a duplicate is made.
+   // BUG FIX: Do NOT attempt if without UI.
+   if ( !`about -batch` && isUIComponentVisible( "Shelf" ) )
+   {
+       if (`shelfLayout -exists "P3DBoundingVolumeTools"`==0)
+       {
+          addNewShelfTab "P3DBoundingVolumeTools";
+       }
+
+       string $buttons[] = `shelfLayout -q -ca P3DBoundingVolumeTools`;
+       int $bound_vol_exists = 0;
+       int $setAttributes = 0;
+
+       int $i;
+       for ( $i = 0; 
+             ($i < size($buttons)) 
+             && 
+             (($bound_vol_exists == 0)||($setAttributes == 0)); 
+             $i++
+           )
+       {
+          string $command = `shelfButton -q -c $buttons[$i]`;
+          string $label =  `shelfButton -q -label $buttons[$i]`;
+
+          if ( $label == "P3DCreateBoundVolButton" ) // $command == "P3DCreateBoundingVolumeSetupGUI")
+          {
+             $bound_vol_exists = 1;
+          } 
+          else if ( $label == "P3DSetAttributeButton" ) // $command == "P3DSetAttributeTool_GUICreate")
+          {
+             $setAttributes = 1;
+          }
+       }
+
+       if (!$bound_vol_exists)
+       {
+          shelfButton -c   "P3DCreateBoundingVolumeSetupGUI" 
+                      -p   "P3DBoundingVolumeTools"
+                      -i1  "p3dCreateBV.BMP" 
+                      -ann "Create P3D Bounding Volume Tool"
+                      -l   "P3DCreateBoundVolButton";
+       }
+       if (!$setAttributes)
+       {
+
+         shelfButton  -c   "P3DSetAttributeTool_GUICreate" 
+                      -p   "P3DBoundingVolumeTools"
+                      -i1  "p3dAttrSet.BMP" 
+                      -ann "Set attributes for nodes"
+                      -l   "P3DSetAttributeButton";
+
+       }
+    }
+}
+
+global proc p3dBoundVolInstall()
+{
+   evalDeferred "p3dBoundVolInstallCommand";
+}
+
+
+// End of file.

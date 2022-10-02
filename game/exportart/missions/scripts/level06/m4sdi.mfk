@@ -1,0 +1,62 @@
+SelectMission("m4sd");
+
+SetMissionResetPlayerOutCar("m4_bart_start","m4_carstart");
+SetDynaLoadData("l6z5.p3d;l6r4.p3d;l6r5.p3d;l6r5_dam.p3d;");
+
+UsePedGroup(6);
+
+SetMissionStartCameraName( "mission4camShape" );
+SetMissionStartMulticontName( "mission4cam" );
+SetAnimatedCameraName( "mission4camShape" );
+SetAnimCamMulticontName( "mission4cam" );
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(182);
+	SetHUDIcon("observ");
+	AddObjective( "interior" );
+		AddNPC("frink", "m4_frink_sd");
+		SetDestination("Observatory", "obsv_mission_doorstar");
+	CloseObjective();
+CloseStage();
+
+AddStage(5);
+	SetStageMessageIndex(66);
+	SetHUDIcon("frink");
+	AddObjective("talkto");
+		AddNPC("frink", "m4_frink_sd");
+		AddObjectiveNPCWaypoint( "frink", "m4_frink_walk2" );
+		AddObjectiveNPCWaypoint( "frink", "m4_frink_walk3" );
+		AddObjectiveNPCWaypoint( "frink", "m4_frink_walk4" );
+		SetTalkToTarget("frink", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis06_04.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_thinking" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		SetDialogueInfo("bart","frink","wolf",0);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

@@ -1,0 +1,209 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>parse_html - Parse HTML text
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+parse_html - Parse 
+<FONT SIZE=-1>HTML</FONT> text
+
+
+<P>
+
+parse_htmlfile - Parse 
+<FONT SIZE=-1>HTML</FONT> text from file
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use HTML::Parse;
+ $h = parse_htmlfile(&quot;test.html&quot;);
+ print $h-&gt;dump;
+ $h = parse_html(&quot;&lt;p&gt;Some more &lt;i&gt;italic&lt;/i&gt; text&quot;, $h);
+ $h-&gt;delete;
+</PRE>
+
+<P>
+
+<PRE> print parse_htmlfile(&quot;index.html&quot;)-&gt;as_HTML;  # tidy up markup in a file
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<EM>Disclaimer: This module is provided for backwards compatibility with
+earlier versions of this library.  New code will probably prefer to
+use the HTML::Parser and HTML::TreeBuilder modules directly.</EM>
+
+
+
+
+<P>
+
+The <CODE>HTML::Parse</CODE> module provides functions to parse 
+<FONT SIZE=-1>HTML</FONT> documents. There are two functions exported by
+this module:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_parse_html">parse_html($html, [$obj])
+
+</A></STRONG><DD>
+This function is really just a synonym for $obj-&gt;parse($html) and
+<CODE>$obj</CODE> is assumed to be a subclass of <CODE>HTML::Parser</CODE>. Refer to
+<A HREF="/n|/perl/html/./lib/site/HTML/Parser.html">Parser</A> for more documentation.
+
+
+<P>
+
+The <CODE>$obj</CODE> will default to a internally created <CODE>HTML::TreeBuilder</CODE>
+object. This class implements a parser that builds (and is) a 
+<FONT SIZE=-1>HTML</FONT> syntax tree with HTML::Element objects as nodes.
+
+
+<P>
+
+The return value from <CODE>parse_html()</CODE> is $obj.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_parse_htmlfile">parse_htmlfile($file, [$obj])
+
+</A></STRONG><DD>
+Same as <CODE>parse_html(),</CODE> but obtains 
+<FONT SIZE=-1>HTML</FONT> text from the named file.
+
+
+<P>
+
+Returns <A HREF="#item_undef">undef</A> if the file could not be opened, or <CODE>$obj</CODE> otherwise.
+
+
+<P>
+
+</DL>
+When a <CODE>HTML::TreeBuilder</CODE> object is created, the following variables control how parsing takes place:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__HTML_Parse_IMPLICIT_TAGS">$HTML::Parse::IMPLICIT_TAGS
+
+</A></STRONG><DD>
+Setting this variable to true will instruct the parser to try to deduce
+implicit elements and implicit end tags. If this variable is false you get
+a parse tree that just reflects the text as it stands. Might be useful for
+quick &amp; dirty parsing. Default is true.
+
+
+<P>
+
+Implicit elements have the <CODE>implicit()</CODE> attribute set.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__HTML_Parse_IGNORE_UNKNOWN">$HTML::Parse::IGNORE_UNKNOWN
+
+</A></STRONG><DD>
+This variable contols whether unknow tags should be represented as elements
+in the parse tree. Default is true.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__HTML_Parse_IGNORE_TEXT">$HTML::Parse::IGNORE_TEXT
+
+</A></STRONG><DD>
+Do not represent the text content of elements. This saves space if all you
+want is to examine the structure of the document. Default is false.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__HTML_Parse_WARN">$HTML::Parse::WARN
+
+</A></STRONG><DD>
+Call <CODE>warn()</CODE> with an apropriate message for syntax errors.
+Default is false.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/HTML/Parser.html">Parser</A>, <A HREF="/n|/perl/html/./lib/site/HTML/TreeBuilder.html">TreeBuilder</A>, <A HREF="/n|/perl/html/./lib/site/HTML/Element.html">Element</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1995-1996 Gisle Aas. All rights reserved.
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gisle Aas <A HREF="MAILTO:<aas@sn.no>"><aas@sn.no></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

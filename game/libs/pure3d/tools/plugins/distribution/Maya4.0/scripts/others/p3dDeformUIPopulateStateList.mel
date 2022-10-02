@@ -1,0 +1,174 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformUIPopulateStateList.mel
+// Author: Bryan Brandt
+//
+// Description: Deformation tool utility function for populating UI state lists
+//
+
+
+// Populates a given state list
+// - arguments:
+//     arg_column_form - column form containing the state panel list
+//
+global proc p3dDeformUIPopulateStateList(string $arg_column_form)
+{
+   string $states[] = `ls -type p3dDeformExpressionState`;
+   int $state_count = size($states);
+
+   int $state_flags[];
+   $state_flags[$state_count] = 0;
+
+   string $state_panels[] = `columnLayout -q -ca $arg_column_form`;
+   int $state_panel_count = size($state_panels);
+
+   int $i, $j;
+
+   string $P3D_PREFIX = "p3dDeformExpressionState_Panel_";
+   int $P3D_PREFIX_LENGTH = size($P3D_PREFIX);
+   int $P3D_PREFIX_LENGTH_PLUS_ONE = $P3D_PREFIX_LENGTH + 1;
+
+   for ($i = 0; $i < $state_panel_count; $i++)
+   {
+      // reset j so that the "found state" check fails
+      $j = $state_count;
+
+      // extract (what should be) the prefix
+      string $state_prefix = `substring $state_panels[$i] 1 $P3D_PREFIX_LENGTH`;
+
+      // verify prefix
+      if ($state_prefix == $P3D_PREFIX)
+      {
+         // extract the associated state
+         int $state_panels_i_size = size($state_panels[$i]);
+         string $state_name = `substring $state_panels[$i] $P3D_PREFIX_LENGTH_PLUS_ONE $state_panels_i_size`;
+
+         // find the actual state
+         for ($j = 0; $j < $state_count; $j++)
+         {
+            if ($state_name == $states[$j])
+            {
+               break;
+            }
+         }
+      }
+
+      // found the state, so update the flags to
+      // reflect that a control for it already exists
+      if (($j < $state_count) &&
+          ($state_flags[$j] == 0))
+      {
+         $state_flags[$j] = 1;
+      }
+      // a state by that name doesn't exist, so delete the child UI item
+      else
+      {
+         deleteUI -layout $state_panels[$i];
+      }
+   }
+
+   for ($i = 0; $i < $state_count; $i++)
+   {
+      
+      // check if the state is connected to the correct group
+      if(`connectionInfo -isSource ($states[$i] + ".output")`)
+      {
+           
+         string $destinations[] = `connectionInfo -dfs ($states[$i] + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $regular_expr = "^[^\.]*";
+            string $group = match($regular_expr, $destination);
+            
+            string $columnGrpName;
+            string $tmpGrpArr[];
+            string $tmpColFormArr[];
+            
+            tokenize $arg_column_form "|" $tmpGrpArr;
+            for ($stIt =0; $stIt < size($tmpGrpArr); $stIt++)
+            {
+               if (gmatch($tmpGrpArr[$stIt], "*_Panel_*") == 1)
+               {
+                  break;
+               }
+            }
+
+            
+            //so now $stIt points to the correct string
+
+            string $deUnder[];
+            tokenize $tmpGrpArr[$stIt] "_" $deUnder;
+            
+            int $stIt = 0;
+            int $nameStart = 0;
+            for ($stIt = 0; $stIt < size($deUnder); $stIt++)
+            {
+               if ($deUnder[$stIt] == "Panel")
+               {
+                  $nameStart = $stIt + 1;
+                  break;
+               }
+
+            }
+            
+            $columnGrpName = "";
+            for ($stIt = $nameStart; $stIt < size($deUnder); $stIt++)
+            {
+               if ($stIt - $nameStart != 0)
+                  $columnGrpName+="_";
+               $columnGrpName+=$deUnder[$stIt];
+               
+
+               
+            }
+            
+            if ($columnGrpName == $group)
+            {
+            // state UI hasn't been created yet, so create it
+               setParent $arg_column_form;
+
+               string $sub_form_name = `formLayout`;
+
+               setParent $sub_form_name;
+               // execute callback to create sliders
+               string $selName = "p3dDeformStateSelectBtn_" + $states[$i];
+               button -l "Sel" $selName;
+               string $cbCmd = "p3dDeformUpdateSelection " + $states[$i];
+               button -e -c $cbCmd $selName;
+   
+               string $slider = `p3dDeformExpressionUISliderCallback $states[$i] $sub_form_name`;
+
+               
+            
+               // create key button
+               string $key_cmd = "p3dDeformExpressionUIKeyStateCallback " + $states[$i];
+               string $key_btn = `button -l "Key" 
+                                         -annotation ("Key state " + $states[$i])
+                                         -c $key_cmd`;
+
+            
+               formLayout -edit
+                          -ap $selName left 3 0
+                          -af $selName top 3
+                          -an $selName right
+                          -an $selName bottom
+                          -aoc $slider top 0 $selName
+                          -ac $slider left 0 $selName
+                          -an $slider right
+                          -an $slider bottom
+                          -aoc $key_btn top 0 $slider
+                          -ac $key_btn left 0 $slider
+                          -af $key_btn right 3
+                          -an $key_btn bottom
+                          $sub_form_name;
+            }
+         }  //end for destinations ...
+      }// end if connectionInfo ...
+   
+   }  //end for all states
+
+   setParent $arg_column_form;
+}
+
+
+// End of file.

@@ -1,0 +1,1319 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlXStut - Tutorial for XSUBs
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#VERSION_CAVEAT">VERSION CAVEAT</A>
+		<LI><A HREF="#DYNAMIC_VERSUS_STATIC">DYNAMIC VERSUS STATIC</A>
+		<LI><A HREF="#EXAMPLE_1">EXAMPLE 1</A>
+		<LI><A HREF="#EXAMPLE_2">EXAMPLE 2</A>
+		<LI><A HREF="#WHAT_HAS_GONE_ON_">WHAT HAS GONE ON?</A>
+		<LI><A HREF="#WRITING_GOOD_TEST_SCRIPTS">WRITING GOOD TEST SCRIPTS</A>
+		<LI><A HREF="#EXAMPLE_3">EXAMPLE 3</A>
+		<LI><A HREF="#WHAT_S_NEW_HERE_">WHAT'S NEW HERE?</A>
+		<LI><A HREF="#INPUT_AND_OUTPUT_PARAMETERS">INPUT AND OUTPUT PARAMETERS</A>
+		<LI><A HREF="#THE_XSUBPP_COMPILER">THE XSUBPP COMPILER</A>
+		<LI><A HREF="#THE_TYPEMAP_FILE">THE TYPEMAP FILE</A>
+		<LI><A HREF="#WARNING">WARNING</A>
+		<LI><A HREF="#EXAMPLE_4">EXAMPLE 4</A>
+		<LI><A HREF="#WHAT_HAS_HAPPENED_HERE_">WHAT HAS HAPPENED HERE?</A>
+		<LI><A HREF="#SPECIFYING_ARGUMENTS_TO_XSUBPP">SPECIFYING ARGUMENTS TO XSUBPP</A>
+		<LI><A HREF="#THE_ARGUMENT_STACK">THE ARGUMENT STACK</A>
+		<LI><A HREF="#EXTENDING_YOUR_EXTENSION">EXTENDING YOUR EXTENSION</A>
+		<LI><A HREF="#DOCUMENTING_YOUR_EXTENSION">DOCUMENTING YOUR EXTENSION</A>
+		<LI><A HREF="#INSTALLING_YOUR_EXTENSION">INSTALLING YOUR EXTENSION</A>
+		<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+		<LI><A HREF="#Author">Author</A>
+		<LI><A HREF="#Last_Changed">Last Changed</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlXStut - Tutorial for XSUBs
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This tutorial will educate the reader on the steps involved in creating a
+Perl extension. The reader is assumed to have access to <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlxs.html#">the perlxs manpage</A>.
+
+
+<P>
+
+This tutorial starts with very simple examples and becomes more complex,
+with each new example adding new features. Certain concepts may not be
+completely explained until later in the tutorial to ease the reader slowly
+into building extensions.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="VERSION_CAVEAT">VERSION CAVEAT
+
+</A></H2>
+This tutorial tries hard to keep up with the latest development versions of
+Perl. This often means that it is sometimes in advance of the latest
+released version of Perl, and that certain features described here might
+not work on earlier versions. This section will keep track of when various
+features were added to Perl 5.
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+In versions of Perl 5.002 prior to the gamma version, the test script in
+Example 1 will not function properly. You need to change the ``use lib''
+line to read:
+
+
+<P>
+
+<PRE>        use lib './blib';
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+In versions of Perl 5.002 prior to version beta 3, the line in the .xs file about 
+<FONT SIZE=-1>``PROTOTYPES:</FONT> 
+<FONT SIZE=-1>DISABLE''</FONT> will cause a compiler error. Simply remove that line from the file.
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+In versions of Perl 5.002 prior to version 5.002b1h, the test.pl file was
+not automatically created by h2xs. This means that you cannot say ``make
+test'' to run the test script. You will need to add the following line
+before the ``use extension'' statement:
+
+
+<P>
+
+<PRE>        use lib './blib';
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+In versions 5.000 and 5.001, instead of using the above line, you will need
+to use the following line:
+
+
+<P>
+
+<PRE>        BEGIN { unshift(@INC, &quot;./blib&quot;) }
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+This document assumes that the executable named ``perl'' is Perl version 5.
+Some systems may have installed Perl version 5 as ``perl5''.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H2><A NAME="DYNAMIC_VERSUS_STATIC">DYNAMIC VERSUS STATIC
+
+</A></H2>
+It is commonly thought that if a system does not have the capability to
+load a library dynamically, you cannot build XSUBs. This is incorrect. You <EM>can</EM> build them, but you must link the XSUB's subroutines with the rest of Perl,
+creating a new executable. This situation is similar to Perl 4.
+
+
+<P>
+
+This tutorial can still be used on such a system. The 
+<FONT SIZE=-1>XSUB</FONT> build mechanism will check the system and build a
+dynamically-loadable library if possible, or else a static library and
+then, optionally, a new statically-linked executable with that static
+library linked in.
+
+
+<P>
+
+Should you wish to build a statically-linked executable on a system which
+can dynamically load libraries, you may, in all the following examples,
+where the command ``make'' with no arguments is executed, run the command
+``make perl'' instead.
+
+
+<P>
+
+If you have generated such a statically-linked executable by choice, then
+instead of saying ``make test'', you should say ``make test_static''. On
+systems that cannot build dynamically-loadable libraries at all, simply
+saying ``make test'' is sufficient.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="EXAMPLE_1">EXAMPLE 1
+
+</A></H2>
+Our first extension will be very simple. When we call the routine in the
+extension, it will print out a well-known message and return.
+
+
+<P>
+
+Run <CODE>h2xs -A -n Mytest</CODE>. This creates a directory named Mytest, possibly under ext/ if that directory exists in the current working directory. Several files will be created in the Mytest dir, including 
+<FONT SIZE=-1>MANIFEST,</FONT> Makefile.PL, Mytest.pm, Mytest.xs, test.pl, and Changes.
+
+
+
+<P>
+
+The 
+<FONT SIZE=-1>MANIFEST</FONT> file contains the names of all the files
+created.
+
+
+<P>
+
+The file Makefile.PL should look something like this:
+
+
+<P>
+
+<PRE>        use ExtUtils::MakeMaker;
+        # See lib/ExtUtils/MakeMaker.pm for details of how to influence
+        # the contents of the Makefile that is written.
+        WriteMakefile(
+            'NAME'      =&gt; 'Mytest',
+            'VERSION_FROM' =&gt; 'Mytest.pm', # finds $VERSION
+            'LIBS'      =&gt; [''],   # e.g., '-lm'
+            'DEFINE'    =&gt; '',     # e.g., '-DHAVE_SOMETHING'
+            'INC'       =&gt; '',     # e.g., '-I/usr/include/other'
+        );
+</PRE>
+
+<P>
+
+The file Mytest.pm should start with something like this:
+
+
+<P>
+
+<PRE>        package Mytest;
+</PRE>
+
+<P>
+
+<PRE>        require Exporter;
+        require DynaLoader;
+</PRE>
+
+<P>
+
+<PRE>        @ISA = qw(Exporter DynaLoader);
+        # Items to export into callers namespace by default. Note: do not export
+        # names by default without a very good reason. Use EXPORT_OK instead.
+        # Do not simply export all your public functions/methods/constants.
+        @EXPORT = qw(
+</PRE>
+
+<P>
+
+<PRE>        );
+        $VERSION = '0.01';
+</PRE>
+
+<P>
+
+<PRE>        bootstrap Mytest $VERSION;
+</PRE>
+
+<P>
+
+<PRE>        # Preloaded methods go here.
+</PRE>
+
+<P>
+
+<PRE>        # Autoload methods go after __END__, and are processed by the autosplit program.
+</PRE>
+
+<P>
+
+<PRE>        1;
+        __END__
+        # Below is the stub of documentation for your module. You better edit it!
+</PRE>
+
+<P>
+
+And the Mytest.xs file should look something like this:
+
+
+<P>
+
+<PRE>        #ifdef __cplusplus
+        extern &quot;C&quot; {
+        #endif
+        #include &quot;EXTERN.h&quot;
+        #include &quot;perl.h&quot;
+        #include &quot;XSUB.h&quot;
+        #ifdef __cplusplus
+        }
+        #endif
+</PRE>
+
+<P>
+
+<PRE>        PROTOTYPES: DISABLE
+</PRE>
+
+<P>
+
+<PRE>        MODULE = Mytest         PACKAGE = Mytest
+</PRE>
+
+<P>
+
+Let's edit the .xs file by adding this to the end of the file:
+
+
+<P>
+
+<PRE>        void
+        hello()
+                CODE:
+                printf(&quot;Hello, world!\n&quot;);
+</PRE>
+
+<P>
+
+Now we'll run ``perl Makefile.PL''. This will create a real Makefile, which
+make needs. Its output looks something like:
+
+
+<P>
+
+<PRE>        % perl Makefile.PL
+        Checking if your kit is complete...
+        Looks good
+        Writing Makefile for Mytest
+        %
+</PRE>
+
+<P>
+
+Now, running make will produce output that looks something like this (some
+long lines shortened for clarity):
+
+
+<P>
+
+<PRE>        % make
+        umask 0 &amp;&amp; cp Mytest.pm ./blib/Mytest.pm
+        perl xsubpp -typemap typemap Mytest.xs &gt;Mytest.tc &amp;&amp; mv Mytest.tc Mytest.c
+        cc -c Mytest.c
+        Running Mkbootstrap for Mytest ()
+        chmod 644 Mytest.bs
+        LD_RUN_PATH=&quot;&quot; ld -o ./blib/PA-RISC1.1/auto/Mytest/Mytest.sl -b Mytest.o
+        chmod 755 ./blib/PA-RISC1.1/auto/Mytest/Mytest.sl
+        cp Mytest.bs ./blib/PA-RISC1.1/auto/Mytest/Mytest.bs
+        chmod 644 ./blib/PA-RISC1.1/auto/Mytest/Mytest.bs
+</PRE>
+
+<P>
+
+Now, although there is already a test.pl template ready for us, for this
+example only, we'll create a special test script. Create a file called
+hello that looks like this:
+
+
+<P>
+
+<PRE>        #! /opt/perl5/bin/perl
+</PRE>
+
+<P>
+
+<PRE>        use ExtUtils::testlib;
+</PRE>
+
+<P>
+
+<PRE>        use Mytest;
+</PRE>
+
+<P>
+
+<PRE>        Mytest::hello();
+</PRE>
+
+<P>
+
+Now we run the script and we should see the following output:
+
+
+<P>
+
+<PRE>        % perl hello
+        Hello, world!
+        %
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="EXAMPLE_2">EXAMPLE 2
+
+</A></H2>
+Now let's add to our extension a subroutine that will take a single
+argument and return 1 if the argument is even, 0 if the argument is odd.
+
+
+<P>
+
+Add the following to the end of Mytest.xs:
+
+
+<P>
+
+<PRE>        int
+        is_even(input)
+                int     input
+                CODE:
+                RETVAL = (input % 2 == 0);
+                OUTPUT:
+                RETVAL
+</PRE>
+
+<P>
+
+There does not need to be white space at the start of the ``int input''
+line, but it is useful for improving readability. The semi-colon at the end
+of that line is also optional.
+
+
+<P>
+
+Any white space may be between the ``int'' and ``input''. It is also okay for the four lines starting at the 
+<FONT SIZE=-1>``CODE:''</FONT> line to not be indented. However, for readability purposes, it is suggested that you indent them 8 spaces (or one normal tab stop).
+
+
+
+<P>
+
+Now rerun make to rebuild our new shared library.
+
+
+<P>
+
+Now perform the same steps as before, generating a Makefile from the
+Makefile.PL file, and running make.
+
+
+<P>
+
+To test that our extension works, we now need to look at the file test.pl. This file is set up to imitate the same kind of testing structure that Perl itself has. Within the test script, you perform a number of tests to confirm the behavior of the extension, printing ``ok'' when the test is correct, ``not ok'' when it is not. Change the print statement in the 
+<FONT SIZE=-1>BEGIN</FONT> block to print ``1..4'', and add the following code to the end of the file:
+
+
+
+<P>
+
+<PRE>        print &amp;Mytest::is_even(0) == 1 ? &quot;ok 2&quot; : &quot;not ok 2&quot;, &quot;\n&quot;;
+        print &amp;Mytest::is_even(1) == 0 ? &quot;ok 3&quot; : &quot;not ok 3&quot;, &quot;\n&quot;;
+        print &amp;Mytest::is_even(2) == 1 ? &quot;ok 4&quot; : &quot;not ok 4&quot;, &quot;\n&quot;;
+</PRE>
+
+<P>
+
+We will be calling the test script through the command ``make test''. You
+should see output that looks something like this:
+
+
+<P>
+
+<PRE>        % make test
+        PERL_DL_NONLAZY=1 /opt/perl5.002b2/bin/perl (lots of -I arguments) test.pl
+        1..4
+        ok 1
+        ok 2
+        ok 3
+        ok 4
+        %
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="WHAT_HAS_GONE_ON_">WHAT HAS GONE ON?
+
+</A></H2>
+The program h2xs is the starting point for creating extensions. In later examples we'll see how we can use h2xs to read header files and generate templates to connect to 
+<FONT SIZE=-1>C</FONT> routines.
+
+
+
+<P>
+
+h2xs creates a number of files in the extension directory. The file
+Makefile.PL is a perl script which will generate a true Makefile to build
+the extension. We'll take a closer look at it later.
+
+
+<P>
+
+The files &lt;extension&gt;.pm and &lt;extension&gt;.xs contain the meat of the extension. The .xs file holds the 
+<FONT SIZE=-1>C</FONT> routines that make up the extension. The .pm file
+contains routines that tell Perl how to load your extension.
+
+
+<P>
+
+Generating and invoking the Makefile created a directory blib (which stands
+for ``build library'') in the current working directory. This directory
+will contain the shared library that we will build. Once we have tested it,
+we can install it into its final location.
+
+
+<P>
+
+Invoking the test script via ``make test'' did something very important. It
+invoked perl with all those <A HREF="#item__I">-I</A> arguments so that it could find the various files that are part of the
+extension.
+
+
+<P>
+
+It is <EM>very</EM> important that while you are still testing extensions that you use ``make
+test''. If you try to run the test script all by itself, you will get a
+fatal error.
+
+
+<P>
+
+Another reason it is important to use ``make test'' to run your test script
+is that if you are testing an upgrade to an already-existing version, using
+``make test'' insures that you use your new extension, not the
+already-existing version.
+
+
+<P>
+
+When Perl sees a <CODE>use extension;</CODE>, it searches for a file with the same name as the use'd extension that has
+a .pm suffix. If that file cannot be found, Perl dies with a fatal error.
+The default search path is contained in the <A HREF="#item__INC">@INC</A>
+array.
+
+
+<P>
+
+In our case, Mytest.pm tells perl that it will need the Exporter and
+Dynamic Loader extensions. It then sets the <CODE>@ISA</CODE> and <A
+HREF="#item__EXPORT">@EXPORT</A> arrays and the <A
+HREF="#item__VERSION">$VERSION</A> scalar; finally it tells perl to
+bootstrap the module. Perl will call its dynamic loader routine (if there
+is one) and load the shared library.
+
+
+<P>
+
+The two arrays that are set in the .pm file are very important. The
+<CODE>@ISA</CODE> array contains a list of other packages in which to
+search for methods (or subroutines) that do not exist in the current
+package. The <A HREF="#item__EXPORT">@EXPORT</A> array tells Perl which of
+the extension's routines should be placed into the calling package's
+namespace.
+
+
+<P>
+
+It's important to select what to export carefully. Do 
+<FONT SIZE=-1>NOT</FONT> export method names and do 
+<FONT SIZE=-1>NOT</FONT> export anything else
+ <EM>by default</EM> without a good reason.
+
+
+<P>
+
+As a general rule, if the module is trying to be object-oriented then don't export anything. If it's just a collection of functions then you can export any of the functions via another array, called 
+<FONT SIZE=-1>@EXPORT_OK.</FONT>
+
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#">the perlmod manpage</A> for more information.
+
+
+<P>
+
+The <A HREF="#item__VERSION">$VERSION</A> variable is used to ensure that
+the .pm file and the shared library are ``in sync'' with each other. Any
+time you make changes to the .pm or .xs files, you should increment the
+value of this variable.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="WRITING_GOOD_TEST_SCRIPTS">WRITING GOOD TEST SCRIPTS
+
+</A></H2>
+The importance of writing good test scripts cannot be overemphasized. You
+should closely follow the ``ok/not ok'' style that Perl itself uses, so
+that it is very easy and unambiguous to determine the outcome of each test
+case. When you find and fix a bug, make sure you add a test case for it.
+
+
+<P>
+
+By running ``make test'', you ensure that your test.pl script runs and uses
+the correct version of your extension. If you have many test cases, you
+might want to copy Perl's test style. Create a directory named ``t'', and
+ensure all your test files end with the suffix ``.t''. The Makefile will
+properly run all these test files.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="EXAMPLE_3">EXAMPLE 3
+
+</A></H2>
+Our third extension will take one argument as its input, round off that
+value, and set the <EM>argument</EM> to the rounded value.
+
+
+<P>
+
+Add the following to the end of Mytest.xs:
+
+
+<P>
+
+<PRE>        void
+        round(arg)
+                double  arg
+                CODE:
+                if (arg &gt; 0.0) {
+                        arg = floor(arg + 0.5);
+                } else if (arg &lt; 0.0) {
+                        arg = ceil(arg - 0.5);
+                } else {
+                        arg = 0.0;
+                }
+                OUTPUT:
+                arg
+</PRE>
+
+<P>
+
+Edit the Makefile.PL file so that the corresponding line looks like this:
+
+
+<P>
+
+<PRE>        'LIBS'      =&gt; ['-lm'],   # e.g., '-lm'
+</PRE>
+
+<P>
+
+Generate the Makefile and run make. Change the 
+<FONT SIZE=-1>BEGIN</FONT> block to print out ``1..9'' and add the
+following to test.pl:
+
+
+<P>
+
+<PRE>        $i = -1.5; &amp;Mytest::round($i); print $i == -2.0 ? &quot;ok 5&quot; : &quot;not ok 5&quot;, &quot;\n&quot;;
+        $i = -1.1; &amp;Mytest::round($i); print $i == -1.0 ? &quot;ok 6&quot; : &quot;not ok 6&quot;, &quot;\n&quot;;
+        $i = 0.0; &amp;Mytest::round($i); print $i == 0.0 ? &quot;ok 7&quot; : &quot;not ok 7&quot;, &quot;\n&quot;;
+        $i = 0.5; &amp;Mytest::round($i); print $i == 1.0 ? &quot;ok 8&quot; : &quot;not ok 8&quot;, &quot;\n&quot;;
+        $i = 1.2; &amp;Mytest::round($i); print $i == 1.0 ? &quot;ok 9&quot; : &quot;not ok 9&quot;, &quot;\n&quot;;
+</PRE>
+
+<P>
+
+Running ``make test'' should now print out that all nine tests are okay.
+
+
+<P>
+
+You might be wondering if you can round a constant. To see what happens,
+add the following line to test.pl temporarily:
+
+
+<P>
+
+<PRE>        &amp;Mytest::round(3);
+</PRE>
+
+<P>
+
+Run ``make test'' and notice that Perl dies with a fatal error. Perl won't
+let you change the value of constants!
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="WHAT_S_NEW_HERE_">WHAT'S NEW HERE?
+
+</A></H2>
+Two things are new here. First, we've made some changes to Makefile.PL. In
+this case, we've specified an extra library to link in, the math library
+libm. We'll talk later about how to write XSUBs that can call every routine
+in a library.
+
+
+<P>
+
+Second, the value of the function is being passed back not as the
+function's return value, but through the same variable that was passed into
+the function.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="INPUT_AND_OUTPUT_PARAMETERS">INPUT AND OUTPUT PARAMETERS
+
+</A></H2>
+You specify the parameters that will be passed into the 
+<FONT SIZE=-1>XSUB</FONT> just after you declare the function return value
+and name. Each parameter line starts with optional white space, and may
+have an optional terminating semicolon.
+
+
+<P>
+
+The list of output parameters occurs after the 
+<FONT SIZE=-1>OUTPUT:</FONT> directive. The use of 
+<FONT SIZE=-1>RETVAL</FONT> tells Perl that you wish to send this value back as the return value of the 
+<FONT SIZE=-1>XSUB</FONT> function. In Example 3, the value we wanted returned was contained in the same variable we passed in, so we listed it (and not 
+<FONT SIZE=-1>RETVAL)</FONT> in the 
+<FONT SIZE=-1>OUTPUT:</FONT> section.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="THE_XSUBPP_COMPILER">THE XSUBPP COMPILER
+
+</A></H2>
+The compiler xsubpp takes the 
+<FONT SIZE=-1>XS</FONT> code in the .xs file and converts it into 
+<FONT SIZE=-1>C</FONT> code, placing it in a file whose suffix is .c. The 
+<FONT SIZE=-1>C</FONT> code created makes heavy use of the 
+<FONT SIZE=-1>C</FONT> functions within Perl.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="THE_TYPEMAP_FILE">THE TYPEMAP FILE
+
+</A></H2>
+The xsubpp compiler uses rules to convert from Perl's data types (scalar,
+array, etc.) to C's data types (int, char *, etc.). These rules are stored
+in the typemap file ($PERLLIB/ExtUtils/typemap). This file is split into
+three parts.
+
+
+<P>
+
+The first part attempts to map various 
+<FONT SIZE=-1>C</FONT> data types to a coded flag, which has some correspondence with the various Perl types. The second part contains 
+<FONT SIZE=-1>C</FONT> code which xsubpp uses for input parameters. The third part contains 
+<FONT SIZE=-1>C</FONT> code which xsubpp uses for output parameters. We'll talk more about the 
+<FONT SIZE=-1>C</FONT> code later.
+
+
+
+<P>
+
+Let's now take a look at a portion of the .c file created for our
+extension.
+
+
+<P>
+
+<PRE>        XS(XS_Mytest_round)
+        {
+            dXSARGS;
+            if (items != 1)
+                croak(&quot;Usage: Mytest::round(arg)&quot;);
+            {
+                double  arg = (double)SvNV(ST(0));      /* XXXXX */
+                if (arg &gt; 0.0) {
+                        arg = floor(arg + 0.5);
+                } else if (arg &lt; 0.0) {
+                        arg = ceil(arg - 0.5);
+                } else {
+                        arg = 0.0;
+                }
+                sv_setnv(ST(0), (double)arg);   /* XXXXX */
+            }
+            XSRETURN(1);
+        }
+</PRE>
+
+<P>
+
+Notice the two lines marked with 
+<FONT SIZE=-1>``XXXXX''.</FONT> If you check the first section of the typemap file, you'll see that doubles are of type 
+<FONT SIZE=-1>T_DOUBLE.</FONT> In the 
+<FONT SIZE=-1>INPUT</FONT> section, an argument that is 
+<FONT SIZE=-1>T_DOUBLE</FONT> is assigned to the variable arg by calling the routine SvNV on something, then casting it to double, then assigned to the variable arg. Similarly, in the 
+<FONT SIZE=-1>OUTPUT</FONT> section, once arg has its final value, it is passed to the sv_setnv function to be passed back to the calling subroutine. These two functions are explained in
+ <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A>; we'll talk more later about what that 
+<FONT SIZE=-1>``ST(0)''</FONT> means in the section on the argument stack.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="WARNING">WARNING
+
+</A></H2>
+In general, it's not a good idea to write extensions that modify their input parameters, as in Example 3. However, to accommodate better calling pre-existing 
+<FONT SIZE=-1>C</FONT> routines, which often do modify their input parameters, this behavior is tolerated. The next example will show how to do this.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="EXAMPLE_4">EXAMPLE 4
+
+</A></H2>
+In this example, we'll now begin to write XSUBs that will interact with predefined 
+<FONT SIZE=-1>C</FONT> libraries. To begin with, we will build a small library of our own, then let h2xs write our .pm and .xs files for us.
+
+
+
+<P>
+
+Create a new directory called Mytest2 at the same level as the directory
+Mytest. In the Mytest2 directory, create another directory called mylib,
+and cd into that directory.
+
+
+<P>
+
+Here we'll create some files that will generate a test library. These will include a 
+<FONT SIZE=-1>C</FONT> source file and a header file. We'll also create a Makefile.PL in this directory. Then we'll make sure that running make at the Mytest2 level will automatically run this Makefile.PL file and the resulting Makefile.
+
+
+
+<P>
+
+In the testlib directory, create a file mylib.h that looks like this:
+
+
+<P>
+
+<PRE>        #define TESTVAL 4
+</PRE>
+
+<P>
+
+<PRE>        extern double   foo(int, long, const char*);
+</PRE>
+
+<P>
+
+Also create a file mylib.c that looks like this:
+
+
+<P>
+
+<PRE>        #include &lt;stdlib.h&gt;
+        #include &quot;./mylib.h&quot;
+</PRE>
+
+<P>
+
+<PRE>        double
+        foo(a, b, c)
+        int             a;
+        long            b;
+        const char *    c;
+        {
+                return (a + b + atof(c) + TESTVAL);
+        }
+</PRE>
+
+<P>
+
+And finally create a file Makefile.PL that looks like this:
+
+
+<P>
+
+<PRE>        use ExtUtils::MakeMaker;
+        $Verbose = 1;
+        WriteMakefile(
+            NAME      =&gt; 'Mytest2::mylib',
+            SKIP      =&gt; [qw(all static static_lib dynamic dynamic_lib)],
+            clean     =&gt; {'FILES' =&gt; 'libmylib$(LIB_EXT)'},
+        );
+</PRE>
+
+<P>
+
+<PRE>        sub MY::top_targets {
+                '
+        all :: static
+</PRE>
+
+<P>
+
+<PRE>        static ::       libmylib$(LIB_EXT)
+</PRE>
+
+<P>
+
+<PRE>        libmylib$(LIB_EXT): $(O_FILES)
+                $(AR) cr libmylib$(LIB_EXT) $(O_FILES)
+                $(RANLIB) libmylib$(LIB_EXT)
+</PRE>
+
+<P>
+
+<PRE>        ';
+        }
+</PRE>
+
+<P>
+
+We will now create the main top-level Mytest2 files. Change to the
+directory above Mytest2 and run the following command:
+
+
+<P>
+
+<PRE>        % h2xs -O -n Mytest2 ./Mytest2/mylib/mylib.h
+</PRE>
+
+<P>
+
+This will print out a warning about overwriting Mytest2, but that's okay.
+Our files are stored in Mytest2/mylib, and will be untouched.
+
+
+<P>
+
+The normal Makefile.PL that h2xs generates doesn't know about the mylib
+directory. We need to tell it that there is a subdirectory and that we will
+be generating a library in it. Let's add the following key-value pair to
+the WriteMakefile call:
+
+
+<P>
+
+<PRE>        'MYEXTLIB' =&gt; 'mylib/libmylib$(LIB_EXT)',
+</PRE>
+
+<P>
+
+and a new replacement subroutine too:
+
+
+<P>
+
+<PRE>        sub MY::postamble {
+        '
+        $(MYEXTLIB): mylib/Makefile
+                cd mylib &amp;&amp; $(MAKE) $(PASTHRU)
+        ';
+        }
+</PRE>
+
+<P>
+
+(Note: Most makes will require that there be a tab character that indents
+the line <CODE>cd mylib && $(MAKE) $(PASTHRU)</CODE>, similarly for the Makefile in the subdirectory.)
+
+
+<P>
+
+Let's also fix the 
+<FONT SIZE=-1>MANIFEST</FONT> file so that it accurately reflects the
+contents of our extension. The single line that says ``mylib'' should be
+replaced by the following three lines:
+
+
+<P>
+
+<PRE>        mylib/Makefile.PL
+        mylib/mylib.c
+        mylib/mylib.h
+</PRE>
+
+<P>
+
+To keep our namespace nice and unpolluted, edit the .pm file and change the
+lines setting <A HREF="#item__EXPORT">@EXPORT</A> to <A
+HREF="#item__EXPORT_OK">@EXPORT_OK</A> (there are two: one in the line
+beginning ``use vars'' and one setting the array itself). Finally, in the
+.xs file, edit the #include line to read:
+
+
+<P>
+
+<PRE>        #include &quot;mylib/mylib.h&quot;
+</PRE>
+
+<P>
+
+And also add the following function definition to the end of the .xs file:
+
+
+<P>
+
+<PRE>        double
+        foo(a,b,c)
+                int             a
+                long            b
+                const char *    c
+                OUTPUT:
+                RETVAL
+</PRE>
+
+<P>
+
+Now we also need to create a typemap file because the default Perl doesn't
+currently support the const char * type. Create a file called typemap and
+place the following in it:
+
+
+<P>
+
+<PRE>        const char *    T_PV
+</PRE>
+
+<P>
+
+Now run perl on the top-level Makefile.PL. Notice that it also created a
+Makefile in the mylib directory. Run make and see that it does cd into the
+mylib directory and run make in there as well.
+
+
+<P>
+
+Now edit the test.pl script and change the 
+<FONT SIZE=-1>BEGIN</FONT> block to print ``1..4'', and add the following
+lines to the end of the script:
+
+
+<P>
+
+<PRE>        print &amp;Mytest2::foo(1, 2, &quot;Hello, world!&quot;) == 7 ? &quot;ok 2\n&quot; : &quot;not ok 2\n&quot;;
+        print &amp;Mytest2::foo(1, 2, &quot;0.0&quot;) == 7 ? &quot;ok 3\n&quot; : &quot;not ok 3\n&quot;;
+        print abs(&amp;Mytest2::foo(0, 0, &quot;-3.4&quot;) - 0.6) &lt;= 0.01 ? &quot;ok 4\n&quot; : &quot;not ok 4\n&quot;;
+</PRE>
+
+<P>
+
+(When dealing with floating-point comparisons, it is often useful not to
+check for equality, but rather the difference being below a certain epsilon
+factor, 0.01 in this case)
+
+
+<P>
+
+Run ``make test'' and all should be well.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="WHAT_HAS_HAPPENED_HERE_">WHAT HAS HAPPENED HERE?
+
+</A></H2>
+Unlike previous examples, we've now run h2xs on a real include file. This
+has caused some extra goodies to appear in both the .pm and .xs files.
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+In the .xs file, there's now a #include declaration with the full path to
+the mylib.h header file.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+There's now some new 
+<FONT SIZE=-1>C</FONT> code that's been added to the .xs file. The purpose
+of the <CODE>constant</CODE> routine is to make the values that are #define'd in the header file
+available to the Perl script (in this case, by calling
+<CODE>&main::TESTVAL</CODE>). There's also some 
+<FONT SIZE=-1>XS</FONT> code to allow calls to the
+<CODE>constant</CODE> routine.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+The .pm file has exported the name 
+<FONT SIZE=-1>TESTVAL</FONT> in the <A HREF="#item__EXPORT">@EXPORT</A> array. This could lead to name clashes. 
+<FONT SIZE=-1>A</FONT> good rule of thumb is that if the #define is going to be used by only the 
+<FONT SIZE=-1>C</FONT> routines themselves, and not by the user, they should be removed from the <A HREF="#item__EXPORT">@EXPORT</A> array. Alternately, if you don't mind using the ``fully qualified name'' of a variable, you could remove most or all of the items in the <A HREF="#item__EXPORT">@EXPORT</A> array.
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+If our include file contained #include directives, these would not be
+processed at all by h2xs. There is no good solution to this right now.
+
+
+<P>
+
+</UL>
+We've also told Perl about the library that we built in the mylib subdirectory. That required the addition of only the 
+<FONT SIZE=-1>MYEXTLIB</FONT> variable to the WriteMakefile call and the replacement of the postamble subroutine to cd into the subdirectory and run make. The Makefile.PL for the library is a bit more complicated, but not excessively so. Again we replaced the postamble subroutine to insert our own code. This code specified simply that the library to be created here was a static archive (as opposed to a dynamically loadable library) and provided the commands to build it.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="SPECIFYING_ARGUMENTS_TO_XSUBPP">SPECIFYING ARGUMENTS TO XSUBPP
+
+</A></H2>
+With the completion of Example 4, we now have an easy way to simulate some
+real-life libraries whose interfaces may not be the cleanest in the world.
+We shall now continue with a discussion of the arguments passed to the
+xsubpp compiler.
+
+
+<P>
+
+When you specify arguments in the .xs file, you are really passing three pieces of information for each one listed. The first piece is the order of that argument relative to the others (first, second, etc). The second is the type of argument, and consists of the type declaration of the argument (e.g., int, char*, etc). The third piece is the exact way in which the argument should be used in the call to the library function from this 
+<FONT SIZE=-1>XSUB.</FONT> This would mean whether or not to place a ``&amp;'' before the argument or not, meaning the argument expects to be passed the address of the specified data type.
+
+
+
+<P>
+
+There is a difference between the two arguments in this hypothetical
+function:
+
+
+<P>
+
+<PRE>        int
+        foo(a,b)
+                char    &amp;a
+                char *  b
+</PRE>
+
+<P>
+
+The first argument to this function would be treated as a char and assigned
+to the variable a, and its address would be passed into the function foo.
+The second argument would be treated as a string pointer and assigned to
+the variable b. The <EM>value</EM> of b would be passed into the function foo. The actual call to the function
+foo that xsubpp generates would look like this:
+
+
+<P>
+
+<PRE>        foo(&amp;a, b);
+</PRE>
+
+<P>
+
+Xsubpp will identically parse the following function argument lists:
+
+
+<P>
+
+<PRE>        char    &amp;a
+        char&amp;a
+        char    &amp; a
+</PRE>
+
+<P>
+
+However, to help ease understanding, it is suggested that you place a ``&amp;'' next to the variable name and away from the variable type), and place a ``*'' near the variable type, but away from the variable name (as in the complete example above). By doing so, it is easy to understand exactly what will be passed to the 
+<FONT SIZE=-1>C</FONT> function -- it will be whatever is in the ``last column''.
+
+
+
+<P>
+
+You should take great pains to try to pass the function the type of
+variable it wants, when possible. It will save you a lot of trouble in the
+long run.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="THE_ARGUMENT_STACK">THE ARGUMENT STACK
+
+</A></H2>
+If we look at any of the 
+<FONT SIZE=-1>C</FONT> code generated by any of the examples except example 1, you will notice a number of references to <CODE>ST(n),</CODE> where n is usually 0. The 
+<FONT SIZE=-1>``ST''</FONT> is actually a macro that points to the n'th argument on the argument stack. <CODE>ST(0)</CODE> is thus the first argument passed to the 
+<FONT SIZE=-1>XSUB,</FONT> <CODE>ST(1)</CODE> is the second argument, and so on.
+
+
+
+<P>
+
+When you list the arguments to the 
+<FONT SIZE=-1>XSUB</FONT> in the .xs file, that tells xsubpp which argument
+corresponds to which of the argument stack (i.e., the first one listed is
+the first argument, and so on). You invite disaster if you do not list them
+in the same order as the function expects them.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="EXTENDING_YOUR_EXTENSION">EXTENDING YOUR EXTENSION
+
+</A></H2>
+Sometimes you might want to provide some extra methods or subroutines to
+assist in making the interface between Perl and your extension simpler or
+easier to understand. These routines should live in the .pm file. Whether
+they are automatically loaded when the extension itself is loaded or loaded
+only when called depends on where in the .pm file the subroutine definition
+is placed.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="DOCUMENTING_YOUR_EXTENSION">DOCUMENTING YOUR EXTENSION
+
+</A></H2>
+There is absolutely no excuse for not documenting your extension.
+Documentation belongs in the .pm file. This file will be fed to pod2man,
+and the embedded documentation will be converted to the manpage format,
+then placed in the blib directory. It will be copied to Perl's man page
+directory when the extension is installed.
+
+
+<P>
+
+You may intersperse documentation and Perl code within the .pm file. In
+fact, if you want to use method autoloading, you must do this, as the
+comment inside the .pm file explains.
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlpod.html#">the perlpod manpage</A> for more information about the pod format.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="INSTALLING_YOUR_EXTENSION">INSTALLING YOUR EXTENSION
+
+</A></H2>
+Once your extension is complete and passes all its tests, installing it is
+quite simple: you simply run ``make install''. You will either need to have
+write permission into the directories where Perl is installed, or ask your
+system administrator to run the make for you.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H2>
+For more information, consult <A HREF="/n|/perl/html/./lib/Pod/perlguts.html#">the perlguts manpage</A>, <A HREF="/n|/perl/html/./lib/Pod/perlxs.html#">the perlxs manpage</A>, <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#">the perlmod manpage</A>, and <A HREF="/n|/perl/html/./lib/Pod/perlpod.html#">the perlpod manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Author">Author
+
+</A></H2>
+Jeff Okamoto &lt;<EM>okamoto@corp.hp.com</EM>&gt;
+
+
+<P>
+
+Reviewed and assisted by Dean Roehrich, Ilya Zakharevich, Andreas Koenig,
+and Tim Bunce.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Last_Changed">Last Changed
+
+</A></H2>
+1996/7/10
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

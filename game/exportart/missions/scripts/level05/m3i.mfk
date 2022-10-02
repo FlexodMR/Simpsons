@@ -1,0 +1,166 @@
+SelectMission("m3");
+
+SetMissionResetPlayerInCar("m3_carstart");
+SetDynaLoadData("l5z1.p3d;l5r1.p3d;l5r4.p3d;");
+
+UsePedGroup(0);
+AddStage(0);
+//	RESET_TO_HERE();
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+		AddStageVehicle("cNonup","m3_diaper_carstart","NULL","Missions\level05\M3dump.con"); 
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(71);
+	SetHUDIcon( "hospital" );
+	AddObjective("goto");
+		SetDestination("m2_startpoint", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+//AddStage(1);
+//	RESET_TO_HERE();
+//	SetMaxTraffic(3);
+//	SetStageMessageIndex(73);
+//	SetHUDIcon( "diaper" );
+//	AddObjective("goto");
+//		AddStageVehicle("cNonup","m3_diaper_carstart","NULL","Missions\level05\M3dump.con"); 
+//		SetDestination("m3_diaper_chase", "carsphere");
+//		//SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//	AddCondition("timeout");
+//		//SetHitNRun();
+//	CloseCondition();
+//	AddCondition( "damage" );
+//		SetCondMinHealth( 0.0 );
+//		SetCondTargetVehicle( "carhom_v" );
+//	CloseCondition();
+//	AddCondition("outofvehicle");
+//		SetCondTime( 10000 );
+//	CloseCondition();
+//	ShowStageComplete();
+//CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(73);
+	SetHUDIcon( "diaper" );
+	SetMaxTraffic(2);
+	ActivateVehicle("cNonup","NULL","target");  
+	SetVehicleAIParams( "cNonup", -10, -9 ); //  <=== name, min, max; 0,1 = really dumb, no shortcuts
+	AddStageWaypoint( "m3_path1" );
+	AddStageWaypoint( "m3_path2" );
+	AddStageWaypoint( "m3_path3" );
+	AddStageWaypoint( "m3_path4" );
+	AddStageWaypoint( "m3_path5" );
+	AddStageWaypoint( "m3_path6" );
+	AddStageWaypoint( "m3_path7" );
+	AddStageWaypoint( "m3_path1" );
+	AddStageWaypoint( "m3_path8" );
+	AddStageWaypoint( "m3_path9" );
+	AddStageWaypoint( "m3_path2" );
+	AddStageWaypoint( "m3_path3" );
+	AddStageWaypoint( "m3_path4" );
+	AddStageWaypoint( "m3_path7" );
+	AddObjective("dump", "neither");
+		SetObjTargetVehicle("cNonup"); 
+		AddCollectible("m3_diapers1","diaper");
+		AddCollectible("m3_diapers2","diaper");
+		AddCollectible("m3_diapers3","diaper");
+		AddCollectible("m3_diapers4","diaper");
+		AddCollectible("m3_diapers5","diaper");
+		AddCollectible("m3_diapers6","diaper");
+		AddCollectible("m3_diapers7","diaper");
+		AddCollectible("m3_diapers8","diaper");
+		AddCollectible("m3_diapers9","diaper");
+		AddCollectible("m3_diapers10","diaper");
+	CloseObjective();
+	AddStageTime(90);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+//	AddCondition("race");
+//		SetCondTargetVehicle("cNonup");
+//	CloseCondition();
+
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "carhom_v" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+//	AddCondition("race");
+//		SetCondTargetVehicle("cNonup");
+//	CloseCondition();
+
+	ShowStageComplete();
+CloseStage();
+
+AddStage();
+	SetStageMessageIndex(71);
+	SetHUDIcon( "hospital" );
+	AddObjective("goto");
+		AddNPC("hibbert", "m3_hibbert_sd");
+		SetDestination("m3_hospital", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddStageTime(20); 
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "carhom_v" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(72);
+	SetHUDIcon( "drhibert" );
+	AddObjective("talkto");
+		AddNPC("hibbert", "m3_hibbert_sd");
+			AddObjectiveNPCWaypoint( "hibbert", "m3_hibbert_walk1" );
+			AddObjectiveNPCWaypoint( "hibbert", "m3_hibbert_walk2" );
+			AddObjectiveNPCWaypoint( "hibbert", "m3_hibbert_walk1" );
+			AddObjectiveNPCWaypoint( "hibbert", "m3_hibbert_sd" );
+		SetTalkToTarget("hibbert", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(final);
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide("m3_bestside");
+		SetDialogueInfo("apu","hibbert","tushie",0);
+		SetDialoguePositions("m3_apu_start","m3_hibbert_walk2","m3_carstart",1);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

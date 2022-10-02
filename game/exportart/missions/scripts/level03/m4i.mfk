@@ -1,0 +1,165 @@
+SelectMission("m4");
+
+SetMissionResetPlayerInCar("m4_carstart");
+SetDynaLoadData("l3z5.p3d;l3r5.p3d;l3r4.p3d;l3r5_dam.p3d;");
+
+SetNumValidFailureHints( 5 );
+
+UsePedGroup(4);
+
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(181);
+	SetHUDIcon( "observ" );
+	AddObjective("goto");
+		SetDestination("m4_observatory_sd", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetMaxTraffic(3);
+	SetStageMessageIndex(184);
+	SetHUDIcon( "redhat" );
+	AddStageVehicle("cSedan","m4_AI_carstart_1","NULL","Missions\level03\M4dest.con");
+	AddObjective("goto");
+		SetDestination("m4_redhat","rhat");
+		TurnGotoDialogOff();
+	CloseObjective();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(97);
+	SetHUDIcon( "bsedan_v");
+	SetStageTime(120);
+	ActivateVehicle("cSedan","NULL","target");
+	SetVehicleAIParams( "cSedan", -10, -9 );   // very dumb - no shortcuts
+	AddStageWaypoint( "m4_AI_1_path8" );
+	AddStageWaypoint( "m4_AI_2_path2" );
+	AddStageWaypoint( "m4_AI_1_path3" );
+	AddStageWaypoint( "m4_AI_2_path2" );
+	AddObjective("destroy", "neither");
+		SetObjTargetVehicle("cSedan");
+	CloseObjective();
+	AddCondition("timeout");
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(185);
+	SetHUDIcon( "aztec" );
+	AddObjective("goto");
+		AddStageVehicle("cSedan","m4_AI_carstart_8","NULL","Missions\level03\M4dest.con");
+		SetDestination("m4_AI_carstart_2", "carsphere"); 
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(97);
+	SetHUDIcon( "bsedan_v");
+	SetStageTime(90);
+	ActivateVehicle("cSedan","NULL","target");
+	AddStageWaypoint( "m4_AI_2_path2" );
+	AddStageWaypoint( "m4_AI_2_path8" );
+	AddStageWaypoint( "m4_AI_3_path9" );
+	AddObjective("destroy");
+		SetObjTargetVehicle("cSedan");
+	CloseObjective();
+	AddCondition("timeout");
+	CloseCondition();
+	AddCondition( "damage", "neither");
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(186); 
+	SetHUDIcon( "planethy" );
+	AddObjective("goto");
+		AddStageVehicle("cSedan","m4_AI_carstart_3","NULL","Missions\level03\M4dest.con");
+		SetDestination("m4_carstart_3", "carsphere"); 
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+CloseStage();
+
+AddStage("final");
+	SetMaxTraffic(3); //for this race, reduce traffic to prevent overwhelming the user
+	SetStageMessageIndex(97);
+	SetHUDIcon( "bsedan_v" );
+	SetStageTime(75);
+	ActivateVehicle("cSedan","NULL","target");
+	AddStageWaypoint( "m4_AI_2_path2" );
+	AddStageWaypoint( "m4_AI_1_path3" );
+	AddStageWaypoint( "m4_AI_3_path9" );
+	AddObjective("destroy", "neither");
+		SetObjTargetVehicle("cSedan");
+	CloseObjective();
+	AddCondition("timeout");
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	SetCompletionDialog("empty");
+CloseStage();
+
+CloseMission();
+
+
+
+

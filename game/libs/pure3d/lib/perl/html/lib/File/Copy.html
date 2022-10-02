@@ -1,0 +1,239 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>File::Copy - Copy files or filehandles
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Special_behavior_if_C_syscopy_i">Special behavior if <CODE>syscopy</CODE> is defined (VMS and OS/2)</A>
+	</UL>
+
+	<LI><A HREF="#RETURN">RETURN</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+File::Copy - Copy files or filehandles
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use <A HREF="File::Copy">File::Copy</A>;
+</PRE>
+
+<P>
+
+<PRE>        copy(&quot;file1&quot;,&quot;file2&quot;);
+        copy(&quot;Copy.pm&quot;,\*STDOUT);'
+        move(&quot;/dev1/fileA&quot;,&quot;/dev2/fileB&quot;);
+</PRE>
+
+<P>
+
+<PRE>        use POSIX;
+        use <A HREF="File::Copy">File::Copy</A> cp;
+</PRE>
+
+<P>
+
+<PRE>        $n=FileHandle-&gt;new(&quot;/dev/null&quot;,&quot;r&quot;);
+        cp($n,&quot;x&quot;);'
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The File::Copy module provides two basic functions, <CODE>copy</CODE> and
+<CODE>move</CODE>, which are useful for getting the contents of a file from one place to
+another.
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+The <CODE>copy</CODE> function takes two parameters: a file to copy from and a file to copy to.
+Either argument may be a string, a FileHandle reference or a FileHandle
+glob. Obviously, if the first argument is a filehandle of some sort, it
+will be read from, and if it is a file <EM>name</EM> it will be opened for reading. Likewise, the second argument will be
+written to (and created if need be).
+
+
+<P>
+
+<STRONG>Note that passing in
+files as handles instead of names may lead to loss of information
+on some operating systems; it is recommended that you use file
+names whenever possible.</STRONG>  Files are opened in binary mode where applicable. To get a consistent
+behavour when copying from a filehandle to a file, use <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_binmode">binmode</A> on the filehandle.
+
+
+<P>
+
+An optional third parameter can be used to specify the buffer size used for
+copying. This is the number of bytes from the first file, that wil be held
+in memory at any given time, before being written to the second file. The
+default buffer size depends upon the file, but will generally be the whole
+file (up to 2Mb), or 1k for filehandles that do not reference files (eg.
+sockets).
+
+
+<P>
+
+You may use the syntax <CODE>use File::Copy "cp"</CODE> to get at the ``cp'' alias for this function. The syntax is <EM>exactly</EM> the same.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+The <CODE>move</CODE> function also takes two parameters: the current name and the intended name
+of the file to be moved. If the destination already exists and is a
+directory, and the source is not a directory, then the source file will be
+renamed into the directory specified by the destination.
+
+
+<P>
+
+If possible, <CODE>move()</CODE> will simply rename the file. Otherwise, it
+copies the file to the new location and deletes the original. If an error
+occurs during this copy-and-delete process, you may be left with a
+(possibly partial) copy of the file under the destination name.
+
+
+<P>
+
+You may use the ``mv'' alias for this function in the same way that you may
+use the ``cp'' alias for <CODE>copy</CODE>.
+
+
+<P>
+
+</UL>
+File::Copy also provides the <CODE>syscopy</CODE> routine, which copies the file specified in the first parameter to the file
+specified in the second parameter, preserving OS-specific attributes and
+file structure. For Unix systems, this is equivalent to the simple
+<CODE>copy</CODE> routine. For 
+<FONT SIZE=-1>VMS</FONT> systems, this calls the <A HREF="#item_rmscopy">rmscopy</A>
+routine (see below). For 
+<FONT SIZE=-1>OS/2</FONT> systems, this calls the <CODE>syscopy</CODE>
+
+<FONT SIZE=-1>XSUB</FONT> directly.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Special_behavior_if_C_syscopy_i">Special behavior if <CODE>syscopy</CODE> is defined (VMS and OS/2)
+
+</A></H2>
+If both arguments to <CODE>copy</CODE> are not file handles, then <CODE>copy</CODE> will perform a ``system copy'' of the input file to a new output file, in
+order to preserve file attributes, indexed file structure, <EM>etc.</EM>  The buffer size parameter is ignored. If either argument to <CODE>copy</CODE> is a handle to an opened file, then data is copied using Perl operators,
+and no effort is made to preserve file attributes or record structure.
+
+
+<P>
+
+The system copy routine may also be called directly under 
+<FONT SIZE=-1>VMS</FONT> and 
+<FONT SIZE=-1>OS/2</FONT> as
+ <CODE>File::Copy::syscopy</CODE> (or under 
+<FONT SIZE=-1>VMS</FONT> as <CODE>File::Copy::rmscopy</CODE>, which is the routine that does the actual work for syscopy).
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_rmscopy">rmscopy($from,$to[,$date_flag])
+
+</A></STRONG><DD>
+The first and second arguments may be strings, typeglobs, typeglob
+references, or objects inheriting from IO::Handle; they are used in all
+cases to obtain the
+<EM>filespec</EM> of the input and output files, respectively. The name and type of the input
+file are used as defaults for the output file, if necessary.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> new version of the output file is always created, which inherits the structure and 
+<FONT SIZE=-1>RMS</FONT> attributes of the input file, except for owner and protections (and possibly timestamps; see below). All data from the input file is copied to the output file; if either of the first two parameters to
+ <A HREF="#item_rmscopy">rmscopy</A>
+is a file handle, its position is unchanged. (Note that this means a file
+handle pointing to the output file will be associated with an old version
+of that file after <A HREF="#item_rmscopy">rmscopy</A>
+returns, not the newly created version.)
+
+
+<P>
+
+The third parameter is an integer flag, which tells <A HREF="#item_rmscopy">rmscopy</A>
+how to handle timestamps. If it is &lt; 0, none of the input file's timestamps are propagated to the output file.
+If it is &gt; 0, then it is interpreted as a bitmask: if bit 0 (the 
+<FONT SIZE=-1>LSB)</FONT> is set, then timestamps other than the revision
+date are propagated; if bit 1 is set, the revision date is propagated. If
+the third parameter to <A HREF="#item_rmscopy">rmscopy</A> is 0, then it behaves much like the 
+<FONT SIZE=-1>DCL</FONT> 
+<FONT SIZE=-1>COPY</FONT> command: if the name or type of the output file was explicitly specified, then no timestamps are propagated, but if they were taken implicitly from the input filespec, then all timestamps other than the revision date are propagated. If this parameter is not supplied, it defaults to 0.
+
+
+
+<P>
+
+Like <CODE>copy</CODE>, <A HREF="#item_rmscopy">rmscopy</A> returns 1 on success. If an error occurs, it sets <CODE>$!</CODE>, deletes the output file, and returns 0.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="RETURN">RETURN
+
+</A></H1>
+All functions return 1 on success, 0 on failure. $! will be set if an error
+was encountered.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+File::Copy was written by Aaron Sherman <EM>&lt;ajs@ajs.com&gt;</EM> in 1995, and updated by Charles Bailey <EM>&lt;bailey@genetics.upenn.edu&gt;</EM> in 1996.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

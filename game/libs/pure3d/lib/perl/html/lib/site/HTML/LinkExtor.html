@@ -1,0 +1,210 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTML::LinkExtor - Extract links from an HTML document
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#_p_HTML_LinkExtor_new_call">$p = HTML::LinkExtor->new([$callback[, $base]])</A>
+		<LI><A HREF="#_p_links">$p->links</A>
+	</UL>
+
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTML::LinkExtor - Extract links from an 
+<FONT SIZE=-1>HTML</FONT> document
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require HTML::LinkExtor;
+ $p = HTML::LinkExtor-&gt;new(\&amp;cb, &quot;<A HREF="http://www.sn.no/&quot">http://www.sn.no/&quot</A>;);
+ sub cb {
+     my($tag, %links) = @_;
+     print &quot;$tag @{[%links]}\n&quot;;
+ }
+ $p-&gt;parse_file(&quot;index.html&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <EM>HTML::LinkExtor</EM> (link extractor) is an 
+<FONT SIZE=-1>HTML</FONT> parser that takes a callback routine as
+parameter. This routine is then called as the various link attributes are
+recognized.
+
+
+<P>
+
+The <EM>HTML::LinkExtor</EM> is a subclass of <EM>HTML::Parser</EM>. This means that the document should be given to the parser by calling the
+$p-&gt;parse() or $p-&gt;parse_file() methods.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_p_HTML_LinkExtor_new_call">$p = HTML::LinkExtor->new([$callback[, $base]])
+
+</A></H2>
+The constructor takes two optional argument. The first is a reference to a callback routine. It will be called as links are found. If a callback is not provided, then links are just accumulated internally and can be retrieved by calling the $p-&gt;links() method. The <CODE>$base</CODE> is an optional base 
+<FONT SIZE=-1>URL</FONT> used to absolutize all URLs found.
+
+
+
+<P>
+
+The callback is called with the lowercase tag name as first argument, and
+then all link attributes as separate key/value pairs. All non-link
+attributes are removed.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_p_links">$p->links
+
+</A></H2>
+Returns a list of all links found in the document. The returned values will
+be anonymous arrays with the follwing elements:
+
+
+<P>
+
+<PRE>  [$tag, $attr =&gt; $url1, $attr2 =&gt; $url2,...]
+</PRE>
+
+<P>
+
+The $p-&gt;links method will also truncate the internal link list. This
+means that if the method is called twice without any parsing in between
+then the second call will return an empty list.
+
+
+<P>
+
+Also note that $p-&gt;links will always be empty if a callback routine was
+provided when the <A HREF="/n|/perl/html/./lib/site/HTML/LinkExtor.html">LinkExtor</A> was created.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+This is an example showing how you can extract links as a document is received using 
+<FONT SIZE=-1>LWP:</FONT>
+
+
+
+<P>
+
+<PRE>  use LWP::UserAgent;
+  use HTML::LinkExtor;
+  use URI::URL;
+</PRE>
+
+<P>
+
+<PRE>  $url = &quot;<A HREF="http://www.sn.no/&quot">http://www.sn.no/&quot</A>;;  # for instance
+  $ua = new LWP::UserAgent;
+</PRE>
+
+<P>
+
+<PRE>  # Set up a callback that collect image links
+  my @imgs = ();
+  sub callback {
+     my($tag, %attr) = @_;
+     return if $tag ne 'img';  # we only look closer at &lt;img ...&gt;
+     push(@imgs, values %attr);
+  }
+</PRE>
+
+<P>
+
+<PRE>  # Make the parser.  Unfortunately, we don't know the base yet (it might
+  # be diffent from $url)
+  $p = HTML::LinkExtor-&gt;new(\&amp;callback);
+</PRE>
+
+<P>
+
+<PRE>  # Request document and parse it as it arrives
+  $res = $ua-&gt;request(<A HREF="HTTP::Request-&gt">HTTP::Request-&gt</A>;new(GET =&gt; $url), sub {$p-&gt;parse($_[0])});
+</PRE>
+
+<P>
+
+<PRE>  # Expand all image URLs to absolute ones
+  my $base = $res-&gt;base;
+  @imgs = map { $_ = url($_, $base)-&gt;abs; } @imgs;
+</PRE>
+
+<P>
+
+<PRE>  # Print them out
+  print join(&quot;\n&quot;, @imgs), &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/HTML/Parser.html">Parser</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gisle Aas &lt;<A HREF="MAILTO:aas@sn.no>">aas@sn.no></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,406 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>choose - choose a variant of a document to serve (HTTP content negotiation)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#VARIANTS">VARIANTS</A>
+	<LI><A HREF="#ACCEPT_HEADERS">ACCEPT HEADERS</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+choose - choose a variant of a document to serve 
+<FONT SIZE=-1>(HTTP</FONT> content negotiation)
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use <A HREF="HTTP::Negotiate">HTTP::Negotiate</A>;
+</PRE>
+
+<P>
+
+<PRE> #  ID       QS     Content-Type   Encoding Char-Set        Lang   Size
+ $variants =
+  [['var1',  1.000, 'text/html',   undef,   'iso-8859-1',   'en',   3000],
+   ['var2',  0.950, 'text/plain',  'gzip',  'us-ascii',     'no',    400],
+   ['var3',  0.3,   'image/gif',   undef,   undef,          undef, 43555],
+  ];
+</PRE>
+
+<P>
+
+<PRE> @prefered = choose($variants, $request_headers);
+ $the_one  = choose($variants);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provide a complete implementation of the 
+<FONT SIZE=-1>HTTP</FONT> content negotiation algorithm specified in <EM>draft-ietf-http-v11-spec-00.ps</EM>
+chapter 12. Content negotiation allows for the selection of a preferred
+content representation based upon attributes of the negotiable variants and
+the value of the various Accept* header fields in the request.
+
+
+<P>
+
+The variants are ordered by preference by calling the function
+<CODE>choose().</CODE>
+
+
+<P>
+
+The first parameter is a description of the variants that we can choose
+among. The variants are described by a reference to an array. Each element
+in this array is an array with the values [$id, $qs, $content_type,
+$content_encoding, $charset, $content_language, $content_length]. The
+meaning of these values are described below. The
+<CODE>$content_encoding</CODE> and <CODE>$content_language</CODE> can be
+either a single scalar value or an array reference if there are several
+values.
+
+
+<P>
+
+The second optional parameter is a reference to the request headers. This is used to look for ``Accept*'' headers. You can pass a reference to either a HTTP::Request or a HTTP::Headers object. If this parameter is missing, then the accept specification is initialized from the 
+<FONT SIZE=-1>CGI</FONT> environment variables 
+<FONT SIZE=-1>HTTP_ACCEPT,</FONT> 
+<FONT SIZE=-1>HTTP_ACCEPT_CHARSET,</FONT> 
+<FONT SIZE=-1>HTTP_ACCEPT_ENCODING</FONT> and 
+<FONT SIZE=-1>HTTP_ACCEPT_LANGUAGE.</FONT>
+
+
+
+<P>
+
+In array context, <CODE>choose()</CODE> returns a list of variant
+identifier/calculated quality pairs. The values are sorted by quality,
+highest quality first. If the calculated quality is the same for two
+variants, then they are sorted by size (smallest first). <EM>E.g.</EM>:
+
+
+<P>
+
+<PRE>  (['var1' =&gt; 1], ['var2', 0.3], ['var3' =&gt; 0]);
+</PRE>
+
+<P>
+
+Note that also zero quality variants are included in the return list even
+if these should never be served to the client.
+
+
+<P>
+
+In scalar context, it returns the identifier of the variant with the
+highest score or <A HREF="#item_undef">undef</A> if none have non-zero quality.
+
+
+<P>
+
+If the $HTTP::Negotiate::DEBUG variable is set to 
+<FONT SIZE=-1>TRUE,</FONT> then a lot of noise is generated on 
+<FONT SIZE=-1>STDOUT</FONT> during evaluation of <CODE>choose().</CODE>
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VARIANTS">VARIANTS
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> variant is described by a list of the following
+values. If the attribute does not make sense or is unknown for a variant,
+then use
+<A HREF="#item_undef">undef</A> instead.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_identifier">identifier
+
+</A></STRONG><DD>
+This is just some string that you use as a name for the variant. The
+identifier of the preferred variant is returned by <CODE>choose().</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_qs">qs
+
+</A></STRONG><DD>
+This is a number between 0.000 and 1.000 that describes the ``source
+quality''. This is what <EM>draft-ietf-http-v11-spec-00.ps</EM> says about this value:
+
+
+<P>
+
+Source quality is measured by the content provider as representing the amount of degradation from the original source. For example, a picture in 
+<FONT SIZE=-1>JPEG</FONT> form would have a lower qs when translated to the 
+<FONT SIZE=-1>XBM</FONT> format, and much lower qs when translated to an ASCII-art representation. Note, however, that this is a function of the source - an original piece of ASCII-art may degrade in quality if it is captured in 
+<FONT SIZE=-1>JPEG</FONT> form. The qs values should be assigned to each variant by the content provider; if no qs value has been assigned, the default is generally ``qs=1''.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_content">content-type
+
+</A></STRONG><DD>
+This is the media type of the variant. The media type does not include a
+charset attribute, but might contain other parameters. Examples are:
+
+
+<P>
+
+<PRE>  text/html
+  text/html;version=2.0
+  text/plain
+  image/gif
+  image/jpg
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_content">content-encoding
+
+</A></STRONG><DD>
+This is one or more content encodings that has been applied to the variant.
+The content encoding is generally used as a modifier to the content media
+type. The most common content encodings are:
+
+
+<P>
+
+<PRE>  gzip
+  compress
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_content">content-charset
+
+</A></STRONG><DD>
+This is the character set used when the variant contains textual content.
+The charset value should generally be <A HREF="#item_undef">undef</A> or one of these:
+
+
+<P>
+
+<PRE>  us-ascii
+  iso-8859-1 ... iso-8859-9
+  iso-2022-jp
+  iso-2022-jp-2
+  iso-2022-kr
+  unicode-1-1
+  unicode-1-1-utf-7
+  unicode-1-1-utf-8
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_content">content-language
+
+</A></STRONG><DD>
+This describes one or more languages that are used in the variant. Language
+is described like this in <EM>draft-ietf-http-v11-spec-00.ps</EM>: 
+<FONT SIZE=-1>A</FONT> language is in this context a natural language
+spoken, written, or otherwise conveyed by human beings for communication of
+information to other human beings. Computer languages are explicitly
+excluded.
+
+
+<P>
+
+The language tags are the same as those defined by 
+<FONT SIZE=-1>RFC-1766.</FONT> Examples are:
+
+
+<P>
+
+<PRE>  no               Norwegian
+  en               International English
+  en-US            US English
+  en-cockney
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_content">content-length
+
+</A></STRONG><DD>
+This is the number of bytes used to represent the content.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="ACCEPT_HEADERS">ACCEPT HEADERS
+
+</A></H1>
+The following Accept* headers can be used for describing content
+preferences in a request (This description is an edited extract from
+<EM>draft-ietf-http-v11-spec-00.ps</EM>):
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Accept">Accept
+
+</A></STRONG><DD>
+This header can be used to indicate a list of media ranges which are
+acceptable as a reponse to the request. The ``*'' character is used to
+group media types into ranges, with ``*/*'' indicating all media types and
+``type/*'' indicating all subtypes of that type.
+
+
+<P>
+
+The parameter q is used to indicate the quality factor, which represents
+the user's preference for that range of media types. The parameter mbx
+gives the maximum acceptable size of the response content. The default
+values are: q=1 and mbx=infinity. If no Accept header is present, then the
+client accepts all media types with q=1.
+
+
+<P>
+
+For example:
+
+
+<P>
+
+<PRE>  Accept: audio/*;q=0.2;mbx=200000, audio/basic
+</PRE>
+
+<P>
+
+would mean: 
+<FONT SIZE=-1>``I</FONT> prefer audio/basic (of any size), but send me any
+audio type if it is the best available after an 80% mark-down in quality
+and its size is less than 200000 bytes''
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Accept">Accept-Charset
+
+</A></STRONG><DD>
+Used to indicate what character sets are acceptable for the response. The
+``us-ascii'' character set is assumed to be acceptable for all user agents.
+If no Accept-Charset field is given, the default is that any charset is
+acceptable. Example:
+
+
+<P>
+
+<PRE>  Accept-Charset: iso-8859-1, unicode-1-1
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Accept">Accept-Encoding
+
+</A></STRONG><DD>
+Restricts the Content-Encoding values which are acceptable in the response.
+If no Accept-Encoding field is present, the server may assume that the
+client will accept any content encoding. An empty Accept-Encoding means
+that no content encoding is acceptable. Example:
+
+
+<P>
+
+<PRE>  Accept-Encoding: compress, gzip
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Accept">Accept-Language
+
+</A></STRONG><DD>
+This field is similar to Accept, but restrict the set of natural languages
+that are preferred as a response. Each language may be given an associated
+quality value which represents an estimate of the user's comprehension of
+that language. For example:
+
+
+<P>
+
+<PRE>  Accept-Language: no, en-gb;q=0.8, de;q=0.55
+</PRE>
+
+<P>
+
+would mean: 
+<FONT SIZE=-1>``I</FONT> prefer Norwegian, but will accept British English
+(with 80% comprehension) or German (with 55% comprehension).
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1996, Gisle Aas.
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gisle Aas <A HREF="MAILTO:<aas@sn.no>"><aas@sn.no></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

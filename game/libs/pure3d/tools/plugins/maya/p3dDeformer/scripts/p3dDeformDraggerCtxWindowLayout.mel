@@ -1,0 +1,363 @@
+//------------------------------------------------------------------------------------------------------------
+//  UI script for Pure3D Deformer tool 
+//     -- sets up the dragger tool floating command panel
+//     -- set up the dragger tool marking menu
+//           -this marking menu is enabled in "buildObjectMenuItemsNow.mel"
+//           -appears when you are in the dragger context, and the
+//            mouse is not over a regular marking menu geometry item
+//
+//  Date: Some time just at the beginning of December 2001
+//  Author:  Alex Kew
+//           akew@radical.ca
+//
+//------------------------------------------------------------------------------------------------------------
+
+
+global proc p3dDeformDoButtonCmd(string $buttonCmd, string $currentDeformerExpr) {
+//This proc is a shell proc that needs to be called so that the command strings
+//are not evaluated before deformer expressions have been set up
+
+
+	global string $p3dDeformSelectedExpression;
+
+	if ($p3dDeformSelectedExpression != "")
+	{
+		//get the group the deformer expression belongs to:
+		string $deformerGroup = `p3dDeformFindInHistory "p3dDeformExpressionGroup" 1 $currentDeformerExpr`;
+
+		switch ($buttonCmd)
+		{
+		case "KeyExpr":  eval ("p3dDeformCallbackMgr " + $buttonCmd + " {\"" + $p3dDeformSelectedExpression + "\"}"); break;
+		case "ZeroExpr": eval ("p3dDeformCallbackMgr " + $buttonCmd + " {\"" + $p3dDeformSelectedExpression + "\"}"); break;
+
+		default : eval ("p3dDeformCallbackMgr " + $buttonCmd + " {\"" + $deformerGroup + "\"}");
+	
+		}
+	}
+}
+
+
+global proc makeDraggerMM() {
+
+//	popupMenu -e -deleteAllItems tempMM;
+
+  print ( "makeDraggerMM\n" );
+
+    menuItem
+        -label "Key Expression" 
+        -command "p3dDeformDoButtonCmd(\"KeyExpr\", $p3dDeformSelectedExpression);" 
+        -radialPosition "N" 
+        -image "commandButton.xpm" 
+       draggerKeyExprMM;
+
+    menuItem
+        -label "Key All" 
+        -command "p3dDeformDoButtonCmd(\"KeyAll\", $p3dDeformSelectedExpression);" 
+        -radialPosition "E" 
+        -image "commandButton.xpm" 
+	  draggerKeyAllMM;
+
+
+	menuItem
+		-label "Zero Expr"
+		-command "p3dDeformDoButtonCmd(\"ZeroExpr\", $p3dDeformSelectedExpression);"
+		-radialPosition "W"
+		-image "commandButton.xpm"
+	  draggerZeroExprMM;
+
+    menuItem
+        -label "Zero All" 
+        -command "p3dDeformDoButtonCmd(\"ZeroAll\", $p3dDeformSelectedExpression);\r\n" 
+        -radialPosition "S" 
+        -image "commandButton.xpm" 
+	  draggerZeroAllMM;
+
+// Alex note:  we need a proc that will query all expressions, and auto generate the next set of menuItems
+
+/*
+    menuItem
+        -label "Select Expr 1" 
+        -command "print \"Select Expression 1\\n\"" 
+        -image "commandButton.xpm" 
+	  draggerSelectExpr1MM;
+
+    menuItem
+        -label "Select Expr 2" 
+        -command "print \"Select Expression 2\\n\"" 
+        -image "commandButton.xpm" 
+	  draggerSelectExpr2MM;
+
+    menuItem
+        -label "Select Expr 3" 
+        -command "print \"Select Expression 3\\n\"" 
+        -image "commandButton.xpm" 
+	  draggerSelectExpr3MM;
+*/
+
+setParent -m ..;
+
+}
+
+
+global proc buildDraggerMM() {
+
+	print ( "buildDraggerMM\n" );
+
+	if (`popupMenu -exists tempMM` ) 	{
+		deleteUI tempMM;
+	}
+
+	popupMenu
+		-markingMenu true
+		-b 3
+		-p viewPanes
+		-pmc "makeDraggerMM"
+	  tempMM;
+}
+
+
+
+
+
+global proc p3dDeformCreateDraggerWindow() {
+
+	if (`window -exists p3dDeformDraggerWindow`) deleteUI p3dDeformDraggerWindow;
+
+	//Reset the selected expression, if the window is being re-enabled
+	global string $p3dDeformSelectedExpression = "";
+
+
+	//If it doesn't already exist, Set up a node to hold the dragger tolerance value.
+	//This node has probably already been created from the Deformer Setup panel...
+
+	if (!`objExists deformerSettings`) {
+		createNode "unknown" -name deformerSettings;
+		addAttr
+			-at "short"
+			-dv 50
+			-sn "tol"
+			-ln "tolerance"
+		  deformerSettings;
+	}
+
+
+
+	//Get controls state from Deformer Setup Panel, if this window has been used to set up the deformer dragger
+	//before the floating window has been enabled...  These will be used in floating window init.
+
+	int $setupWindowMMStaticKeyState = 0;
+	int $setupWindowMMDragKeyState = 0;
+	int $setupWindowOnOffState = 0;
+
+	//set the on/off state of the floating window based off of the main deformer setup panel
+	if (`frameLayout -exists p3dDeformDraggerFrame`) {
+		$setupWindowMMStaticKeyState = `checkBox -query -value p3dDeformSetupWindowMMStaticKeyChkBox`;
+		$setupWindowMMDragKeyState = `checkBox -query -value p3dDeformSetupWindowMMDragKeyChkBox`;
+		$setupWindowOnOffState 	= `checkBox -query -value draggerCtxEnableChkBox`;
+	}
+
+
+
+	// Set up the floating window
+
+	string $draggerWindow			= `window	-title ""
+												-width 405
+												-height 200
+											p3dDeformDraggerWindow`;
+
+	string $draggerForm				= `formLayout -numberOfDivisions 100`;
+
+
+	
+	//create top row DeformerTool buttons
+
+	string $draggerKeyAllBtn		= `button	-l "Key All"
+												-width 100
+												-ann "Key all P3D Deformer expressions"
+												-command "p3dDeformDoButtonCmd(\"KeyAll\", $p3dDeformSelectedExpression)" `;
+
+	string $draggerZeroAllBtn		= `button	-l "Zero All"
+												-ann "Zero all P3D Deformer expressions"
+												-command "p3dDeformDoButtonCmd(\"ZeroAll\", $p3dDeformSelectedExpression)" `;
+												
+	string $draggerSelAllBtn		= `button	-l "Select All" 
+												-ann "Select all P3D Deformer expressions"
+												-command "p3dDeformDoButtonCmd(\"SelectAll\", $p3dDeformSelectedExpression)" `;
+
+	string $draggerSelNoneBtn		= `button	-l "Select None" 
+												-ann "Deselect all P3D Deformer expressions"
+												-command "p3dDeformDoButtonCmd(\"SelectNone\", $p3dDeformSelectedExpression)" `;
+
+	string $draggerCopyAllBtn		= `button	-l "Copy All"
+												-ann "Copy all P3D Deformer keyframes in group to clipboard"
+												-command "p3dDeformDoButtonCmd(\"CopyAll\", $p3dDeformSelectedExpression)" `;
+
+	string $draggerPasteAllBtn		= `button -l "Paste All"
+												-ann "Paste P3D Deformer keyframes to from clipboard"
+												-command "p3dDeformDoButtonCmd(\"PasteAll\"$p3dDeformSelectedExpression, )" `;
+
+	string $draggerDividerOne		= `separator`;
+
+
+	//create middle row (within rowColumn layout for ease of hiding...
+
+	string $noDeformerGroupsText	= `text		-l "No deformer groups found"
+												-align "center"
+												-visible false
+										  draggerErrorText`;	
+
+	string $draggerDefSliderStuff	= `rowColumnLayout 
+											-numberOfColumns 2
+											-columnWidth 1 350
+											-columnWidth 2 45
+											-visible false
+										  p3dDefExprSliderStuff`;
+	
+					//this uses p3dDeformUpdateDraggerWindowControls to set up the control, called in the nameCommand of the deformer expression
+
+					string $draggerStateValSlider	= `attrFieldSliderGrp
+															-label ""
+													//		-at ($p3dDeformSelectedExpression + ".state")
+													//		-at ($p3dDeformSelectedExpression + ".state")
+													//		-at "cubeHeight.state"
+															-cal 1 "left"
+															-cw4 110 50 150 40
+														  draggerWindowStateSliderCopy`;
+			
+					//once again, uses p3dDeformUpdateDraggerWindowControls to do stuff...
+					string $draggerWindowKeyButton	= `button
+															-label "Key"
+													      draggerWindowStateSliderKeyButton`;
+
+					// This will add hotkey re-registration, implement this when we have a callback set up to automatically re-register the hotkey, change the rowColumn layout to three columns...
+					// string $draggerHotkeyField		= `textField	-visible true`;
+
+	setParent ..;
+
+	//create bottom row (dragger tool options)
+
+	string $draggerDividerTwo		= `separator`;
+
+	string $draggerVerticalDivider	= `separator -horizontal false`;
+																																// Enable MM Static Keying Slider
+	string $draggerMMStaticKeying	= `checkBox
+											-label "Enable Static Middle Mouse Button Keying" 
+											-align "left"
+											-value $setupWindowMMStaticKeyState
+											-onCommand  "checkBox -edit -value true  p3dDeformSetupWindowMMStaticKeyChkBox"
+											-offCommand "checkBox -edit -value false p3dDeformSetupWindowMMDragKeyChkBox; checkBox -edit -value false dragWindowMMDragKeyChkBox; checkBox -edit -value false p3dDeformSetupWindowMMStaticKeyChkBox;"
+
+										  dragWindowMMStaticKeyChkBox`;
+																																// Enable MM Drag Keying Slider
+	string $draggerMMDragKeying		= `checkBox
+											-label "Enable Middle Mouse Drag Keying" 
+											-align "left"
+											-value $setupWindowMMDragKeyState
+											-onCommand  "checkBox -edit -value true p3dDeformSetupWindowMMStaticKeyChkBox; checkBox -edit -value true dragWindowMMStaticKeyChkBox; checkBox -edit -value true p3dDeformSetupWindowMMDragKeyChkBox;"
+											-offCommand "checkBox -edit -value false p3dDeformSetupWindowMMDragKeyChkBox;"
+
+										  dragWindowMMDragKeyChkBox`;
+																																// Dragger Tolerance Slider
+	string $draggerToleranceSlider	= `intSliderGrp
+											-label "Drag Factor"
+											-width 220
+											-columnAlign 1 "left"
+											-columnWidth 1 66
+											-columnWidth 2 30
+									//		-columnWidth 3 100
+											-field true
+											-value 50
+											-minValue 1  -maxValue 100
+											-fieldMinValue 1 -fieldMaxValue 100
+										  newDragToleranceIntSliderGrp `;
+	
+
+																																// Enable/Disable Hotkeys CheckBox
+	string $draggerOnOffChkBox		= `checkBox
+											-label "Dragger On/Off"
+											-align "left"
+										//	-value false
+											-value $setupWindowOnOffState
+											-onCommand "enableDeformerDraggerCtx;  checkBox -edit -value true draggerCtxEnableChkBox;"
+											-offCommand "disableDeformerDraggerCtx;  checkBox -edit -value false draggerCtxEnableChkBox;"
+										  newDraggerCtxEnableChkBox `;
+																																// Update Hotkeys Button
+	string $draggerUpdateHotkeys	= `button	-l "Update Hotkeys"
+												-c "p3dDeformUpdateHotKeys" `;
+
+
+	formLayout -edit
+
+		//setup first row of the formLayout controls
+
+		-attachForm		$draggerKeyAllBtn	"top"		5
+		-attachForm		$draggerKeyAllBtn	"left"		5
+
+		-attachForm		$draggerZeroAllBtn	"top"		5
+		-attachControl	$draggerZeroAllBtn	"left"		5	$draggerKeyAllBtn
+
+		-attachForm		$draggerSelAllBtn	"top"		5
+		-attachControl	$draggerSelAllBtn	"left"		5	$draggerZeroAllBtn
+
+		-attachForm		$draggerSelNoneBtn	"top"		5
+		-attachControl	$draggerSelNoneBtn	"left"		5	$draggerSelAllBtn
+
+		-attachForm		$draggerCopyAllBtn	"top"		5
+		-attachControl	$draggerCopyAllBtn	"left"		5	$draggerSelNoneBtn
+
+		-attachForm		$draggerPasteAllBtn	"top"		5
+		-attachControl	$draggerPasteAllBtn	"left"		5	$draggerCopyAllBtn
+
+		//divider
+		-attachForm		$draggerDividerOne	"left"		0
+		-attachForm		$draggerDividerOne	"right"		0
+		-attachControl	$draggerDividerOne	"top"		5	$draggerKeyAllBtn
+
+
+		//set up the second row of controls
+
+		-attachForm		$draggerDefSliderStuff	"left"		5
+		-attachControl	$draggerDefSliderStuff	"top"		5	$draggerDividerOne
+
+		-attachForm		$noDeformerGroupsText	"left"		5								// set this text up over top of the $draggerDefSliderStuff
+		-attachForm		$noDeformerGroupsText	"right"		5								// as either that or the text will only be visible at any
+		-attachControl	$noDeformerGroupsText	"top"		10	$draggerDividerOne			// given time...
+
+		//divider
+		-attachForm		$draggerDividerTwo		"left"		0
+		-attachForm		$draggerDividerTwo		"right"		0
+		-attachControl	$draggerDividerTwo		"top"		5	$draggerDefSliderStuff
+
+		//set up last row, the dragger toolbar row
+
+		-attachForm		$draggerMMStaticKeying	"left"		5
+		-attachControl	$draggerMMStaticKeying	"top"		5	$draggerDividerTwo
+
+		-attachForm		$draggerMMDragKeying	"left"		5
+		-attachControl	$draggerMMDragKeying	"top"		5	$draggerMMStaticKeying
+
+		-attachForm		$draggerToleranceSlider	"left"		5
+		-attachControl	$draggerToleranceSlider "top"		5	$draggerMMDragKeying
+
+		-attachControl	$draggerVerticalDivider	"top"		5	$draggerDividerTwo
+		-attachForm		$draggerVerticalDivider	"bottom"	5
+		-attachControl	$draggerVerticalDivider	"left"		15	$draggerToleranceSlider
+
+		-attachControl	$draggerOnOffChkBox		"top"		10	$draggerDividerTwo
+		-attachControl	$draggerOnOffChkBox		"left"		35	$draggerVerticalDivider
+
+		-attachControl	$draggerUpdateHotkeys	"top"		5	$draggerOnOffChkBox
+		-attachControl	$draggerUpdateHotkeys	"left"		35	$draggerVerticalDivider
+
+
+	$draggerForm;
+
+
+	showWindow p3dDeformDraggerWindow;
+
+	//Connects the tolerance slider value to the deformerSettings node to share the tolerance 
+	//value between the Deformer Setup dragger tool panel, and the floating dragger tool panel
+
+	connectControl newDragToleranceIntSliderGrp deformerSettings.tolerance;
+
+}

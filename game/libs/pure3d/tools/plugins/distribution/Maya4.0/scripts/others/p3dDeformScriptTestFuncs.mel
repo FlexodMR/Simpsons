@@ -1,0 +1,178 @@
+// Copyright (C) 2001 Radical Entertainment
+// 
+// Name:   p3dDeformModellingFuncs.mel
+// Author: Pamela Chow
+//
+// Description: Contains functions that facilitate script-driven testing
+// of the deformer UI.
+//
+
+
+proc string p3dScriptGetGroupNum(string $groupName)
+{
+   string $allLayouts[] = `lsUI -type controlLayout`;
+   for ($frameName in $allLayouts)
+   {
+         if (`frameLayout -exists $frameName`)
+         {
+            string $curGrpName = `frameLayout -q -ann $frameName`;
+            if ( strcmp($curGrpName, $groupName ) == 0 )
+            {
+				string $tempStr[];
+				int $numToks = `tokenize $frameName "_" $tempStr`;
+				if($numToks == 2) return $tempStr[1];
+				else error "Unexpected result from tokenize";
+			}
+         }
+    }
+	error "Invalid group ordinal";
+	return -1;
+}
+
+proc int p3dScriptGetExprNum(string $exprName)
+{
+	string $temp[];
+	int $numToks = `tokenize $exprName "_" $temp`;
+	if(size($temp) != 2) 
+	{
+		error "Invalid expression";
+		return -1;
+	}
+	else 
+		return $temp[1];
+}
+
+global proc p3dScriptCreateState(string $groupName)
+{
+   int $groupOrdinal = p3dScriptGetGroupNum($groupName);
+   if($groupOrdinal == -1)
+   {
+		error "Invalid group";
+		return;
+   }
+   p3dDeformCreateState($groupOrdinal);
+}
+
+global proc p3dScriptEnterSetKey(string $groupName, float $value)
+{
+   int $groupOrdinal = p3dScriptGetGroupNum($groupName);
+   string $p3dKeyPoseSlider = "p3dDeformSetupKeyPoseSlider_" + $groupOrdinal;
+
+   if(!( $value > 1 || $value < -1 ) )
+   {
+	   floatSliderButtonGrp -edit
+							-value $value
+							$p3dKeyPoseSlider;
+   }
+}
+
+global proc p3dScriptSelectExpr(string $exprName, string $groupName)
+{
+	
+	int $groupOrdinal = p3dScriptGetGroupNum($groupName);
+	if($groupOrdinal == -1)
+	{
+		error "Invalid group name";
+		return;
+	}
+
+	string $optionMenu = "p3dDeformExpressionMenu_" + $groupOrdinal;
+
+	//check that $exprName is in this menu
+    string $menuItems[] = `optionMenu -q -ill $optionMenu`;
+	int $i = 0;
+	for($menuItem in $menuItems)
+	{
+		p3dDeformDebugStr("$menuItem =", $menuItem);
+		string $annotation = `menuItem -q -ann $menuItem`;
+		//debug
+		p3dDeformDebugStr("$annotation =",$annotation);
+		//debug
+		$i++;
+		if($annotation == $exprName)
+		{
+			//debug
+			p3dDeformDebugInt("$i =",$i);
+			//debug
+			optionMenu -e -select $i $optionMenu;
+			string $groupOrdinalStr = $groupOrdinal;
+			p3dDeformCallbackMgr("UpdateKeyList", {$groupOrdinalStr});
+			return;
+		}
+	}
+	error "Invalid expression";
+	return;
+}
+
+global proc p3dScriptSetNeutralShape(string $groupName)
+{
+	int $groupOrdinal = p3dScriptGetGroupNum($groupName);
+	if($groupOrdinal == -1)
+	{
+		error "Invalid group";
+		return;
+	}
+	string $groupOrdinalStr = $groupOrdinal;
+	p3dDeformCallbackMgr("NeutralPose", {$groupOrdinalStr});
+}
+
+global proc p3dScriptSetPoseKey(string $groupName)
+{
+	int $groupOrdinal = p3dScriptGetGroupNum($groupName);
+	if($groupOrdinal == -1)
+	{
+		error "Invalid group";
+		return;
+	}
+	string $groupOrdinalStr = $groupOrdinal;
+	p3dDeformCallbackMgr("SetPose", {$groupOrdinalStr});
+}
+
+global proc p3dScriptSelectAnimLayout()
+{
+	tabLayout -e -sti 2 p3dDeformTabLayout;
+	return;
+}
+
+global proc p3dScriptExpAnimFrame(string $groupName)
+{
+	string $frameName = "p3dDeformExpressionGroup_Frame_"+ $groupName;
+	frameLayout -e -cl false $frameName;
+}
+
+/*************************************************************************
+// Description:	 Causes the animation slider for specified state to move to new
+// position. Note that when you set the slider value in this way the 
+// weight value is not constrained by the slider's max/min.
+// 
+//
+// Parameters: $state = the name of the expression e.g "p3dExpression1"
+//			   $weight = the slider position or value e.g. 0.5.
+//
+// Returns:
+//
+*************************************************************************/
+global proc p3dDeformSetAnimSliderState(string $state, float $weight)
+{
+	select -replace $state;
+	string $state_attr = $state + ".state";
+	setAttr $state_attr $weight;	
+}
+
+
+/*************************************************************************
+// Description:	
+//
+// Parameters:
+//
+// Returns:
+//
+***************************************************************************/
+
+/*global proc p3dDeformSetTestSlider(string $state, int $weight)
+{
+	//find the name of UI controls for given state
+	floatSliderGrp -e -v $weight $;
+	p3dDeformTestState $state $weight;
+}
+*/

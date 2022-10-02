@@ -1,0 +1,658 @@
+/*===========================================================================
+   p3dMatAttr.mel
+   created: Feb. 22, 2000
+   Torre Zuk
+
+   Copyright (c) 2000 Radical Entertainment, Inc.
+   All rights reserved.
+===========================================================================*/
+
+// This file is what is used to add Material/Shader attributes to the shaders
+// so that pure3d attributes can be utilized. If the appropriate AEtemplates
+// are sourced (e.g. AElambertP3dRevision, AEphongP3dRevision, etc.) then the
+// materials will be grouped in collapsible frame layouts: ???, ???, etc. If these
+// AE templates aren't showing up for some reason, you can add the p3dMatAttr call
+// just before 'editorTemplate -addExtraControls' call.
+
+// You can also modify the p3dMatAttr function that is in this file to group the data
+// according to how you'd like to see it. The function should be relatively self-
+// explanatory -- add any extra groups or domains as you need, just add them according
+// to how it looks here.
+// p3dMaterialTags is where the attributes get added to the shaders, but it uses p3dGetAllAttrs()
+// and p3dGetAllTypes(), which are both in this file and should be easy to modify
+// Make sure you add a 'type' for any attribute you add (otherwise addAttr won't know how
+// to create the attribute), and make sure you modify p3dGetAllAttrTypes in the same order
+// you modifiy p3dGetAllAttrs().
+
+// Adding an attribute to one of the domains that's here is easy -- just add the attribute
+// to the appropriate string array and an appropriate type to AttrType string array.
+
+
+global proc string[] p3dGetMaterialAttrs()
+{
+    string  $attrs[];
+
+    $attrs = { "p3dLit",
+               "p3dShadeMode",
+               "p3dBlendMode",
+               "p3dTextureGen"
+             };
+
+    return $attrs;
+}
+
+global proc string[] p3dGetMaterialAttrTypes()
+{
+    string $types[];
+
+    // type & default value
+   $types = { "-at short -dv 1",  // bool 
+              "-at short -dv 1",
+              "-at short -dv 0",
+              "-at short -dv 0"
+            };
+
+    return $types;
+}
+
+global proc string[] p3dGetTextureAttrs()
+{
+    string  $attrs[];
+
+    $attrs = { "p3dUVMode",
+               "p3dFilterMode",
+               "p3dAlphaTest",
+               "p3dAlphaCompareMode",
+               "p3dProceduralTexXRes",
+               "p3dProceduralTexYRes"
+             };
+
+    return $attrs;
+}
+
+global proc string[] p3dGetTextureAttrTypes()
+{
+    string $types[];
+
+    // type & default value
+    $types = { "-at short -dv 1", 
+               "-at short -dv 1",
+               "-at short -dv 0", // bool
+               "-at short -dv 0",
+               "-at short -dv 0",
+               "-at short -dv 0"
+             };
+
+    return $types;
+}
+
+
+global proc string[] p3dGetAllAttrs()
+{
+    string $retArray[];
+    string $materialAttrs[] = p3dGetMaterialAttrs();
+    string $textureAttrs[] = p3dGetTextureAttrs();
+
+    int $index = 0;
+
+    for ( $attr in $materialAttrs )
+        $retArray[$index++] = $attr;
+
+    for ( $attr in $textureAttrs )
+        $retArray[$index++] = $attr;
+
+    return $retArray;
+}
+
+global proc string[] p3dGetAllAttrTypes()
+{
+    string $retArray[];
+    string $materialTypes[] = p3dGetMaterialAttrTypes();
+    string $textureTypes[] = p3dGetTextureAttrTypes();
+
+    int  $index = 0;
+
+    for ( $type in $materialTypes )
+        $retArray[$index++] = $type;
+
+    for ( $type in $textureTypes )
+        $retArray[$index++] = $type;
+
+    return $retArray;
+}
+
+
+// proc AEOptionGroupNew 
+//    params: attrName - the new attribute you want to add, enumString[] - the array of options
+//       defaultIndex - from 0 to arraySize-1 that will be the default option
+//       groupLabel - the GUI label for this option group
+//
+proc AEOptionGroupNew ( string $attrName, string $enumString[], string $grouplabel )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    if ( !`attributeQuery -ex -node $nodeName $attr` )
+    {
+        return;
+    }
+
+    setUITemplate -pst attributeEditorTemplate;
+
+    optionMenuGrp -label $grouplabel
+    $grpName;
+
+    int $arraySize = size($enumString);
+    for ( $counter = 0; $counter < $arraySize; $counter++ )
+    {
+        menuItem -label $enumString[$counter] -data $counter;
+    }
+
+    // set defaults
+    optionMenuGrp -e $grpName; 
+
+    connectControl -index 2 $grpName $attrName;  // index 1 = label, 2 = selection
+
+    setUITemplate -ppt;
+}
+
+//
+//
+
+// proc AECheckBoxNew 
+//    params: attrName - the new attribute you want to add
+//       defaultIndex - from 0 to arraySize-1 that will be the default option
+//       groupLabel - the GUI label for this option group
+//
+proc AECheckBoxNew ( string $attrName, string $grouplabel )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    if ( !`attributeQuery -ex -node $nodeName $attr` )
+    {
+        return;
+    }
+
+    setUITemplate -pst attributeEditorTemplate;
+
+    radioButtonGrp
+        -l $grouplabel
+        -nrb 2 -cw3 175 75 75
+        -la2 "no" "yes"
+        -data1 0 -data2 1
+        -en1 true -en2 true
+        $grpName;
+
+    // checkBox -label $grouplabel -align "center" 
+    //    $grpName;
+
+    // set defaults
+    radioButtonGrp -e $grpName; 
+
+    //connectControl -index 2 $grpName $attrName;  // index 1 = label, 2 = selection
+
+    setUITemplate -ppt;
+}
+
+
+//
+//
+global proc AEp3dLitNew ( string $attrName )
+{
+    string $boolString[] = { "NO",  "YES" };
+
+    AEOptionGroupNew( $attrName, $boolString, "Lit:" );
+}
+
+global proc AEp3dLitReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    //
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dLitNew( $attrName );
+    } 
+    else 
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+
+//
+//
+
+global proc AEp3dShadeModeNew ( string $attrName )
+{
+    string $shadeModeEnumString[] = { "PDDI_SHADE_FLAT", "PDDI_SHADE_GOURAUD" };
+    AEOptionGroupNew( $attrName, $shadeModeEnumString, "Shade Mode:" );
+}
+
+
+
+global proc AEp3dShadeModeReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    //
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dShadeModeNew( $attrName );
+    } 
+    else 
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+//
+//  NOTE: This order MUST match the enum in Pure3D!!
+//
+global proc AEp3dBlendModeNew ( string $attrName )
+{
+    string $EnumString[] = { "PDDI_BLEND_NONE",  
+                             "PDDI_BLEND_ALPHA", 
+                             "PDDI_BLEND_ADD", 
+                             "PDDI_BLEND_SUBTRACT", 
+                             "PDDI_BLEND_MODULATE", 
+                             "PDDI_BLEND_MODULATE2", 
+                             "PDDI_BLEND_ADDMODULATEALPHA" 
+                           };
+
+    AEOptionGroupNew( $attrName, $EnumString, "Blend Mode:" );
+}
+
+global proc AEp3dBlendModeReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    //
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dBlendModeNew( $attrName );
+    } 
+    else 
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+//
+//
+
+global proc AEp3dTextureGenNew ( string $attrName )
+{
+    string  $EnumString[] = { "PDDI_TEXGEN_NONE",  
+                              "PDDI_TEXGEN_ENVMAP", 
+                              "PDDI_TEXGEN_SPHEREMAP" 
+                            };
+
+    AEOptionGroupNew( $attrName, $EnumString, "Texture Gen:" );
+}
+
+global proc AEp3dTextureGenReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    //
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dTextureGenNew( $attrName );
+    }
+    else
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+//
+// Texture Section
+//
+
+global proc AEp3dUVModeNew ( string $attrName )
+{
+    string $EnumString[] = { "PDDI_UV_TILE",  
+                             "PDDI_UV_CLAMP"
+                           };
+ 
+    AEOptionGroupNew( $attrName, $EnumString, "UV Mode:" );
+}
+
+
+
+global proc AEp3dUVModeReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    //
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dUVModeNew( $attrName );
+    } 
+    else 
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+//
+global proc AEp3dFilterNew ( string $attrName )
+{
+    string $EnumString[] = { "PDDI_FILTER_NONE",  
+                             "PDDI_FILTER_BILINEAR", 
+                             "PDDI_FILTER_MIPMAP", 
+                             "PDDI_FILTER_MIPMAP_BILINEAR", 
+                             "PDDI_FILTER_MIPMAP_TRILINEAR" 
+                           };
+
+    AEOptionGroupNew( $attrName, $EnumString, "Filter:" );
+}
+
+
+global proc AEp3dFilterReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    //
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dFilterNew( $attrName );
+    } 
+    else 
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+//
+//
+global proc AEp3dAlphaTestNew ( string $attrName )
+{
+    string $boolString[] = { "NO",  "YES" };
+    AEOptionGroupNew( $attrName, $boolString, "Alpha Test:" );
+}
+
+global proc AEp3dAlphaTestReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    // 
+    // checkBox
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dAlphaTestNew( $attrName );
+    } 
+    else 
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+//
+//
+global proc AEp3dAlphaCompareNew ( string $attrName )
+{
+    string  $EnumString[] = { "PDDI_COMPARE_NONE",  
+                              "PDDI_COMPARE_ALWAYS",     
+                              "PDDI_COMPARE_LESS", 
+                              "PDDI_COMPARE_LESSEQUAL", 
+                              "PDDI_COMPARE_GREATER", 
+                              "PDDI_COMPARE_GREATEREQUAL",
+                              "PDDI_COMPARE_EQUAL", 
+                              "PDDI_COMPARE_NOTEQUAL" 
+                            };  
+
+    AEOptionGroupNew( $attrName, $EnumString, "Alpha Mode:" );
+}
+
+
+
+global proc AEp3dAlphaCompareReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    //
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dAlphaCompareNew( $attrName );
+    } 
+    else 
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+//
+global proc AEp3dProcTexXResNew ( string $attrName )
+{
+    string  $powerOf2String[] = { "global", 
+                                       "1", 
+                                       "2", 
+                                       "4", 
+                                       "8", 
+                                      "16", 
+                                      "32", 
+                                      "64", 
+                                     "128", 
+                                     "256", 
+                                     "512", 
+                                    "1024", 
+                                    "2048", 
+                                    "4096", 
+                                    "8192", 
+                                    "16384" 
+                                };
+
+    AEOptionGroupNew( $attrName, $powerOf2String, "Procedural X Res:" );
+}
+
+global proc AEp3dProcTexXResReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    //
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dProcTexXResNew( $attrName );
+    } 
+    else 
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+//
+//
+
+global proc AEp3dProcTexYResNew ( string $attrName )
+{
+    string  $powerOf2String[] = { "global", 
+                                       "1", 
+                                       "2", 
+                                       "4", 
+                                       "8", 
+                                      "16", 
+                                      "32", 
+                                      "64", 
+                                     "128", 
+                                     "256", 
+                                     "512", 
+                                    "1024", 
+                                    "2048", 
+                                    "4096", 
+                                    "8192", 
+                                   "16384" 
+                                };
+
+    AEOptionGroupNew( $attrName, $powerOf2String, "Procedural Y Res:" );
+}
+
+global proc AEp3dProcTexYResReplace ( string $attrName )
+{
+    string $list[];
+    tokenize( $attrName, ".", $list);
+    string $nodeName = $list[0];
+    string $attr = $list[1];
+    string $nodeType = `nodeType $nodeName`;
+    string $grpName = $attr + $nodeType;
+
+    // If the control doesn't exist, create it.
+    //
+    if ( !`optionMenuGrp -ex $grpName`)
+    {
+        AEp3dProcTexYResNew( $attrName );
+    } 
+    else 
+    {
+        connectControl -index 2 $grpName $attrName;
+        optionMenuGrp -edit $grpName;
+    }
+}
+
+
+//
+// setup new gui
+// 
+global proc
+p3dMatAttr()
+{
+    editorTemplate -beginLayout "Pure3D Material Attributes";
+        editorTemplate -beginLayout "Material Related";
+            $domainAttrs = p3dGetMaterialAttrs();
+            for ( $attr in $domainAttrs )
+            {
+                if ( "p3dLit" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dLitNew" "AEp3dLitReplace" $attr;
+                }
+                else if ( "p3dShadeMode" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dShadeModeNew" "AEp3dShadeModeReplace" $attr;
+                }
+                else if ( "p3dBlendMode" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dBlendModeNew" "AEp3dBlendModeReplace" $attr;
+                }
+                else if ( "p3dTextureGen" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dTextureGenNew" "AEp3dTextureGenReplace" $attr;
+                }
+            }
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Texture Related";
+            $domainAttrs = p3dGetTextureAttrs();
+            for ( $attr in $domainAttrs )
+            {
+                if ( "p3dUVMode" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dUVModeNew" "AEp3dUVModeReplace" $attr;
+                }
+                else if ( "p3dFilterMode" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dFilterNew" "AEp3dFilterReplace" $attr;
+                }
+                else if ( "p3dAlphaTest" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dAlphaTestNew" "AEp3dAlphaTestReplace" $attr;
+                }
+                else if ( "p3dAlphaCompareMode" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dAlphaCompareNew" "AEp3dAlphaCompareReplace" $attr;
+                }
+                else if ( "p3dProceduralTexXRes" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dProcTexXResNew" "AEp3dProcTexXResReplace" $attr;
+                }
+                else if ( "p3dProceduralTexYRes" == $attr )
+                {
+                    editorTemplate -suppress $attr;
+                    editorTemplate -ccu "AEp3dProcTexYResNew" "AEp3dProcTexYResReplace" $attr;
+                }
+            }
+        editorTemplate -endLayout;
+
+    editorTemplate -endLayout;
+}

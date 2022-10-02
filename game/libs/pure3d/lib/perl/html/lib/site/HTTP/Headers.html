@@ -1,0 +1,483 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTTP::Headers - Class encapsulating HTTP Message headers
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_h_new_HTTP_Headers">$h = new HTTP::Headers</A>
+		<LI><A HREF="#_h_header_field_val_">$h->header($field [=> $val],...)</A>
+		<LI><A HREF="#_h_scan_doit_">$h->scan(\&doit)</A>
+		<LI><A HREF="#_h_as_string_endl_">$h->as_string([$endl])</A>
+		<LI><A HREF="#_h_push_header_field_val_">$h->push_header($field, $val)</A>
+		<LI><A HREF="#_h_remove_header_field_">$h->remove_header($field,...)</A>
+		<LI><A HREF="#_h_clone">$h->clone</A>
+	</UL>
+
+	<LI><A HREF="#CONVENIENCE_METHODS">CONVENIENCE METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_h_date">$h->date</A>
+		<LI><A HREF="#_h_expires">$h->expires</A>
+		<LI><A HREF="#_h_if_modified_since">$h->if_modified_since</A>
+		<LI><A HREF="#_h_last_modified">$h->last_modified</A>
+		<LI><A HREF="#_h_content_type">$h->content_type</A>
+		<LI><A HREF="#_h_content_encoding">$h->content_encoding</A>
+		<LI><A HREF="#_h_content_length">$h->content_length</A>
+		<LI><A HREF="#_h_title">$h->title</A>
+		<LI><A HREF="#_h_user_agent">$h->user_agent</A>
+		<LI><A HREF="#_h_server">$h->server</A>
+		<LI><A HREF="#_h_from">$h->from</A>
+		<LI><A HREF="#_h_referer">$h->referer</A>
+		<LI><A HREF="#_h_www_authenticate">$h->www_authenticate</A>
+		<LI><A HREF="#_h_authorization">$h->authorization</A>
+		<LI><A HREF="#_h_authorization_basic">$h->authorization_basic</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTTP::Headers - Class encapsulating 
+<FONT SIZE=-1>HTTP</FONT> Message headers
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require <A HREF="HTTP::Headers">HTTP::Headers</A>;
+ $request = new <A HREF="HTTP::Headers">HTTP::Headers</A>;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>HTTP::Headers</CODE> class encapsulates HTTP-style message headers. The headers consist of
+attribute-value pairs, which may be repeated, and which are printed in a
+particular order.
+
+
+<P>
+
+Instances of this class are usually created as member variables of the
+<CODE>HTTP::Request</CODE> and <CODE>HTTP::Response</CODE> classes, internal to the library.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="_h_new_HTTP_Headers">$h = new HTTP::Headers
+
+</A></H2>
+Constructs a new <CODE>HTTP::Headers</CODE> object. You might pass some initial attribute-value pairs as parameters to
+the constructor.  <EM>E.g.</EM>:
+
+
+<P>
+
+<PRE> $h = new <A HREF="HTTP::Headers">HTTP::Headers</A>
+     Date         =&gt; 'Thu, 03 Feb 1994 00:00:00 GMT',
+     Content_Type =&gt; 'text/html; version=3.2',
+     Content_Base =&gt; '<A HREF="http://www.sn.no/">http://www.sn.no/</A>';
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_header_field_val_">$h->header($field [=> $val],...)
+
+</A></H2>
+Get or set the value of a header. The header field name is not case
+sensitive. To make the life easier for perl users who wants to avoid
+quoting before the =&gt; operator, you can use '_' as a synonym for '-' in
+header names.
+
+
+<P>
+
+The value argument may be a scalar or a reference to a list of scalars. If
+the value argument is not defined, then the header is not modified.
+
+
+<P>
+
+The <CODE>header()</CODE> method accepts multiple ($field =&gt; $value)
+pairs.
+
+
+<P>
+
+The list of previous values for the last <CODE>$field</CODE> is returned.
+Only the first header value is returned in scalar context.
+
+
+<P>
+
+<PRE> $header-&gt;header(MIME_Version =&gt; '1.0',
+                 User_Agent   =&gt; 'My-Web-Client/0.01');
+ $header-&gt;header(Accept =&gt; &quot;text/html, text/plain, image/*&quot;);
+ $header-&gt;header(Accept =&gt; [qw(text/html text/plain image/*)]);
+ @accepts = $header-&gt;header('Accept');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_scan_doit_">$h->scan(\&doit)
+
+</A></H2>
+Apply a subroutine to each header in turn. The callback routine is called with two parameters; the name of the field and a single value. If the header has more than one value, then the routine is called once for each value. The field name passed to the callback routine has case as suggested by 
+<FONT SIZE=-1>HTTP</FONT> Spec, and the headers will be visited in the recommended ``Good Practice'' order.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_as_string_endl_">$h->as_string([$endl])
+
+</A></H2>
+Return the header fields as a formatted 
+<FONT SIZE=-1>MIME</FONT> header. Since it internally uses the <CODE>scan()</CODE> method to build the string, the result will use case as suggested by 
+<FONT SIZE=-1>HTTP</FONT> Spec, and it will follow recommended ``Good
+Practice'' of ordering the header fieds. Long header values are not folded. 
+
+
+<P>
+
+The optional parameter specifies the line ending sequence to use. The
+default is <A HREF="#item__n_">"\n"</A>. Embedded ``\n'' characters in the header will be substitued with this
+line ending sequence.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_push_header_field_val_">$h->push_header($field, $val)
+
+</A></H2>
+Add a new field value of the specified header. The header field name is not
+case sensitive. The field need not already have a value. Previous values
+for the same field are retained. The argument may be a scalar or a
+reference to a list of scalars.
+
+
+<P>
+
+<PRE> $header-&gt;push_header(Accept =&gt; 'image/jpeg');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_remove_header_field_">$h->remove_header($field,...)
+
+</A></H2>
+This function removes the headers with the specified names.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_clone">$h->clone
+
+</A></H2>
+Returns a copy of this HTTP::Headers object.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONVENIENCE_METHODS">CONVENIENCE METHODS
+
+</A></H1>
+The most frequently used headers can also be accessed through the following
+convenience methods. These methods can both be used to read and to set the
+value of a header. The header value is set if you pass an argument to the
+method. The old header value is always returned.
+
+
+<P>
+
+Methods that deal with dates/times always convert their value to system
+time (seconds since Jan 1, 1970) and they also expect this kind of value
+when the header value is set.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_date">$h->date
+
+</A></H2>
+This header represents the date and time at which the message was
+originated. <EM>E.g.</EM>:
+
+
+<P>
+
+<PRE>  $h-&gt;date(time);  # set current date
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_expires">$h->expires
+
+</A></H2>
+This header gives the date and time after which the entity should be
+considered stale.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_if_modified_since">$h->if_modified_since
+
+</A></H2>
+This header is used to make a request conditional. If the requested
+resource has not been modified since the time specified in this field, then
+the server will return a <CODE>"304 Not Modified"</CODE> response instead of the document itself.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_last_modified">$h->last_modified
+
+</A></H2>
+This header indicates the date and time at which the resource was last
+modified. <EM>E.g.</EM>:
+
+
+<P>
+
+<PRE>  # check if document is more than 1 hour old
+  if ($h-&gt;last_modified &lt; time - 60*60) {
+        ...
+  }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_content_type">$h->content_type
+
+</A></H2>
+The Content-Type header field indicates the media type of the message
+content. <EM>E.g.</EM>:
+
+
+<P>
+
+<PRE>  $h-&gt;content_type('text/html');
+</PRE>
+
+<P>
+
+The value returned will be converted to lower case, and potential
+parameters will be chopped off and returned as a separate value if in an
+array context. This makes it safe to do the following:
+
+
+<P>
+
+<PRE>  if ($h-&gt;content_type eq 'text/html') {
+     # we enter this place even if the real header value happens to
+     # be 'TEXT/HTML; version=3.0'
+     ...
+  }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_content_encoding">$h->content_encoding
+
+</A></H2>
+The Content-Encoding header field is used as a modifier to the media type.
+When present, its value indicates what additional encoding mechanism has
+been applied to the resource.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_content_length">$h->content_length
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> decimal number indicating the size in bytes of the
+message content.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_title">$h->title
+
+</A></H2>
+The title of the document. In libwww-perl this header will be initialized
+automatically from the &lt;
+<FONT SIZE=-1>TITLE&gt;...</FONT>&lt;
+<FONT SIZE=-1>/TITLE&gt;</FONT> element of 
+<FONT SIZE=-1>HTML</FONT> documents.
+  <EM>This header is no longer part of the HTTP
+standard.</EM>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_user_agent">$h->user_agent
+
+</A></H2>
+This header field is used in request messages and contains information
+about the user agent originating the request.  <EM>E.g.</EM>:
+
+
+<P>
+
+<PRE>  $h-&gt;user_agent('Mozilla/1.2');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_server">$h->server
+
+</A></H2>
+The server header field contains information about the software being used
+by the originating server program handling the request.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_from">$h->from
+
+</A></H2>
+This header should contain an Internet e-mail address for the human user who controls the requesting user agent. The address should be machine-usable, as defined by 
+<FONT SIZE=-1>RFC822.</FONT> E.g.:
+
+
+
+<P>
+
+<PRE>  $h-&gt;from('Gisle Aas &lt;aas@sn.no&gt;');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_referer">$h->referer
+
+</A></H2>
+Used to specify the address 
+<FONT SIZE=-1>(URI)</FONT> of the document from which the requested resouce
+address was obtained.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_www_authenticate">$h->www_authenticate
+
+</A></H2>
+This header must be included as part of a ``401 Unauthorized'' response. The field value consist of a challenge that indicates the authentication scheme and parameters applicable to the requested 
+<FONT SIZE=-1>URI.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_authorization">$h->authorization
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> user agent that wishes to authenticate itself with a
+server, may do so by including this header.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_h_authorization_basic">$h->authorization_basic
+
+</A></H2>
+This method is used to get or set an authorization header that use the
+``Basic Authentication Scheme''. In array context it will return two
+values; the user name and the password. In scalar context it will return <EM>"uname:password"</EM> as a single string value.
+
+
+<P>
+
+When used to set the header value, it expects two arguments.  <EM>E.g.</EM>:
+
+
+<P>
+
+<PRE>  $h-&gt;authorization_basic($uname, $password);
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

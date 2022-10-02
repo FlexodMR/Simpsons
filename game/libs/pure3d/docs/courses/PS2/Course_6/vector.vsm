@@ -1,0 +1,37 @@
+;=======================================
+; PS2 Lecture Series
+; Course 6 - Advanced VU
+; July 12, 2000
+; Neall Verheyde (verheyde@radical.ca)
+;=======================================
+
+; This program transforms an array of vectors by the supplied matrix.
+; The transformed vectors are written over top of the input data
+; The count and matrix are stored in a header right before the
+; input data.
+
+; register usage
+; VF05-VF08 matrix
+; VF09 input vector
+; VF10 transformed vector
+; VI01 vector address
+; VI02 count
+
+VU_VectorTransform:
+   nop                        iaddi vi01, vi00, 0     ; vi01 = base pointer
+   nop                        ilwr.x vi02, (vi01)x    ; vi02 = count
+   nop                        iaddiu vi01, vi01, 1    ; move to next qword
+   nop                        lqi vf05, (vi01++)      ; load 1st matrix row
+   nop                        lqi vf06, (vi01++)      ; load 2nd matrix row
+   nop                        lqi vf07, (vi01++)      ; load 3rd matrix row
+   nop                        lqi vf08, (vi01++)      ; load 4th matrix row
+
+top:
+   mulaw ACC,  vf08, vf00w    lq vf09, 0(vi01)        ; compute w component, load vector
+   maddaz ACC, vf07, vf09z    iaddi vi02, vi02, -1    ; compute z component, decrement count
+   madday ACC, vf06, vf09y    nop                     ; compute y component
+   maddx vf10, vf05, vf09x    nop                     ; compute x component - store result in vf10
+   nop                        ibne vi02, vi00, top    ; goto top if more vectors remain
+   nop                        sqi vf10, (vi01++)      ; store result
+   
+   nop[e]                     nop                     ; stop the VU

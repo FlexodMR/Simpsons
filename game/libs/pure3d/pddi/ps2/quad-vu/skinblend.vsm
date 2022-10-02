@@ -1,0 +1,442 @@
+
+
+
+;;******************************************
+;; 
+;; VU_SkinBlend
+;; 
+;; Inputs
+;; VI02 1023
+;; VI15 Return address
+;; VI10 Scracth area pointer
+;;
+;; Outputs
+;; 
+;; Temporaries:
+;;
+VU_SKINBLEND:
+
+; Change this to 0 for copy only
+#if 1
+    NOP     iaddiu  vi03, vi0, 0x7FFE
+    NOP     ilwr.x vi1, (vi2)x  ; Load the address from the first quadword of skinning info
+    NOP     jr  vi1             ; jump to the code
+    NOP     iand _CLIPPER, _CLIPPER, vi03
+
+#else
+;--------------------------------------------
+; Skinblend Copy
+    NOP                             xtop        vi04
+    NOP                             ilwr.x      vi02, (vi04)x        ; load vertex count
+    NOP                             iaddiu      vi04, vi04, 2       ; first input vertex address
+    NOP                             iaddiu      vi05, vi04, 0       ; Output vertex data address            
+
+VU_SkinBlendCopy_Looptop:
+    NOP                             lq.xyzw     vf02, 0x01(vi04)    ; Load Normal 
+    NOP                             lq.xyzw     vf01, 0x00(vi04)    ; Load UV
+    NOP                             lq.xyzw     vf03, 0x02(vi04)    ; Load Position
+    
+    NOP                             isubiu      vi02, vi02, 1       ; decrement loop counter
+    itof12.xyzw  vf02, vf02         iaddiu      vi04, vi04, 4       ; increment input pointer <<<===========
+    
+    NOP                             sq.xyzw     vf01, 0x00(vi05)    ; Store UV
+    NOP                             sq.xyzw     vf03, 0x02(vi05)    ; Store Positions
+    NOP                             sq.xyzw     vf02, 0x01(vi05)    ; Store Normals
+    
+    NOP                             ibgtz       vi02, VU_SkinBlendCopy_Looptop
+    NOP                             iaddiu      vi05, vi05, 3
+
+    NOP                             jr          vi15                ; Done, return to calling function
+    NOP                             NOP
+#endif
+
+
+;;******************************************
+;; 
+;; VU_SkinBlendNT
+;; 
+;; Inputs
+;; VI10 Scracth area pointer
+;; VI15 Return address
+;;
+;; Outputs
+;; 
+;; Temporaries:
+;;
+VU_SKINBLEND_NT:
+    ; Build jump table for bone count
+    NOP                             iaddiu      vi2, vi0, VU_SkinBlend_NT_Bone1
+    NOP                             iaddiu      vi3, vi0, VU_SkinBlend_NT_Bone2
+    NOP                             iaddiu      vi4, vi0, VU_SkinBlend_NT_Bone3
+    NOP                             iaddiu      vi5, vi0, VU_SkinBlend_NT_Bone4
+    NOP                             isw.x       vi2, 0x00(vi10)x    ; Store jump table
+    NOP                             isw.x       vi3, 0x01(vi10)x
+    NOP                             isw.x       vi4, 0x02(vi10)x
+    NOP                             isw.x       vi5, 0x03(vi10)x
+    NOP                             iaddiu      vi8, vi0, 0x03 ; mask for jump table
+    NOP                             xtop        vi04
+    NOP                             ilwr.x      vi2, (vi4)x     ; load vertex count
+    NOP                             iaddiu      vi3, vi0, 5     ; Input stride
+    NOP                             iaddiu      vi4, vi4, 2     ; first input vertex address
+    NOP                             iadd        vi5, vi4, vi0   ; first output vertex address
+
+    NOP                             ilw.z       vi7, 0x02(vi4)z ; load bone count
+    NOP                             ilw.w       vi6, 0x03(vi4)w ; load bone 4 matrix pointer
+    NOP                             lq.xyzw     vf10, 0x04(vi4) ; load integer bone weights
+    NOP                             lq.xyzw     vf1, 0x01(vi4)  ; Load Normal
+    NOP                             lq.xyzw     vf2, 0x02(vi4)  ; Load Position
+    itof15.xyzw vf9, vf10           iand        vi7, vi7, vi8   ; convert 1.15 weights to floats, mask table index
+    NOP                             iadd        vi7, vi7, vi10  ; add scratch area pointer to jump table index
+    NOP                             ilw.x       vi7, 0x00(vi7)x ; Load bone address
+    NOP                             lq.xyzw     vf11, 0x00(vi6) ; Load Matrix into register VF11-VF14     
+    itof12.xyzw vf1, vf1            lq.xyzw     vf12, 0x01(vi6) ; Convert normals to floats from 4.12
+    NOP                             lq.xyzw     vf13, 0x02(vi6)      
+    NOP                             lq.xyzw     vf14, 0x03(vi6)      
+VU_SkinBlendNT_Looptop:
+    ; Code to skip ahead to the correct bone count goes here
+    add.xyzw        vf5, vf0, vf0   jr          vi7             ; jump to correct bone
+    add.xyzw        vf6, vf0, vf0   lq.xyzw     vf8, 0x00(vi4)  ; UV
+
+VU_SkinBlend_NT_Bone4:
+
+    mulax.xyzw     ACC, vf11, vf1x  ilw.z       vi6, 0x03(vi4)z ; Matrix * Normal mult into vf5   ; load bone 3 matrix pointer
+    madday.xyzw    ACC, vf12, vf1y  NOP                         ;
+    maddz.xyzw     vf5, vf13, vf1z  NOP                         ;
+
+    mulax.xyzw     ACC, vf11, vf2x  lq.xyzw     vf11, 0x00(vi6) ; Matrix * Position mult into vf6
+    madday.xyzw    ACC, vf12, vf2y  lq.xyzw     vf12, 0x01(vi6) ;
+    maddaz.xyzw    ACC, vf13, vf2z  lq.xyzw     vf13, 0x02(vi6) ;
+    maddw.xyzw     vf6, vf14, vf0w  lq.xyzw     vf14, 0x03(vi6) ;
+
+VU_SkinBlend_NT_Bone3:
+    mulaw.xyzw     ACC, vf5,  vf9w  ilw.y       vi6, 0x03(vi4)y ; Put N4B4 into ACC    ; load bone 2 matrix pointer
+    maddax.xyzw    ACC, vf11, vf1x  NOP                         ; Matrix * Normal mult into vf5
+    madday.xyzw    ACC, vf12, vf1y  NOP                         ;
+    maddz.xyzw     vf5, vf13, vf1z  NOP                         ;
+
+    mulaw.xyzw     ACC, vf6,  vf9w  NOP                         ; Put V4B4 into ACC
+    maddax.xyzw    ACC, vf11, vf2x  lq.xyzw     vf11, 0x00(vi6) ; Matrix * Position mult into vf6
+    madday.xyzw    ACC, vf12, vf2y  lq.xyzw     vf12, 0x01(vi6) ;
+    maddaz.xyzw    ACC, vf13, vf2z  lq.xyzw     vf13, 0x02(vi6) ;
+    maddw.xyzw     vf6, vf14, vf0w  lq.xyzw     vf14, 0x03(vi6) ;
+
+VU_SkinBlend_NT_Bone2:
+    mulaz.xyzw     ACC, vf5,  vf9z  ilw.x       vi6, 0x03(vi4)x ; Put N3B3 into ACC ; load bone 1 matrix pointer
+    maddax.xyzw    ACC, vf11, vf1x  NOP                         ; Matrix * Normal mult into vf5   
+    madday.xyzw    ACC, vf12, vf1y  NOP
+    maddz.xyzw     vf5, vf13, vf1z  NOP                         ;
+
+    mulaz.xyzw     ACC, vf6,  vf9z  NOP                         ; Put V3B3 into ACC
+    maddax.xyzw    ACC, vf11, vf2x  lq.xyzw     vf11, 0x00(vi6) ; Matrix * Position mult into vf6
+    madday.xyzw    ACC, vf12, vf2y  lq.xyzw     vf12, 0x01(vi6) ;
+    maddaz.xyzw    ACC, vf13, vf2z  lq.xyzw     vf13, 0x02(vi6) ;
+    maddw.xyzw     vf6, vf14, vf0w  lq.xyzw     vf14, 0x03(vi6) ;
+
+VU_SkinBlend_NT_Bone1:
+    mulay.xyzw     ACC, vf5,  vf9y  iadd        vi4, vi4, vi3   ; Put N2B2 into ACC; increment input pointer by input pitch
+    maddax.xyzw    ACC, vf11, vf1x  ilw.z       vi7, 0x02(vi4)z ; Matrix * Normal mult into vf5  ; Load bone 4 matrix pointer
+    madday.xyzw    ACC, vf12, vf1y  ilw.w       vi6, 0x03(vi4)w ; Load next vertex matrix indices
+    NOP                             lq.xyzw     vf10, 0x04(vi4) ; Load next vertex integer bone weights
+    maddz.xyzw     vf5, vf13, vf1z  iand        vi7, vi7, vi8   ; mask off bone count
+
+    NOP                             iadd        vi7, vi7, vi10  ; add scratch area pointer to jump table index
+    mulay.xyzw     ACC, vf6,  vf9y  ilw.x       vi7,  0x00(vi7)x ; Put V2B2 into ACC  ; load next vertex jump table
+    maddax.xyzw    ACC, vf11, vf2x  lq.xyzw     vf11, 0x00(vi6) ; Matrix * Position mult into vf6
+    madday.xyzw    ACC, vf12, vf2y  lq.xyzw     vf12, 0x01(vi6) ;
+    maddaz.xyzw    ACC, vf13, vf2z  lq.xyzw     vf13, 0x02(vi6) ;
+    maddw.xyzw     vf6, vf14, vf0w  lq.xyzw     vf14, 0x03(vi6) ;
+
+    mulx.xyzw      vf3, vf5, vf9x   lq.xyzw     vf1, 0x01(vi4)  ; Scale N1 by B1   ; Load next normal
+    NOP                             isubiu      vi2, vi2, 1     ; decrement loop counter
+    mulx.xyzw      vf4, vf6, vf9x   lq.xyzw     vf2, 0x02(vi4)  ; Scale V1 by B1   ; Load next pos
+    NOP                             sqi.xyzw    vf8, (vi5++)    ; store UV and post increment poionter
+
+    ; Loop tail
+    NOP                             sqi.xyzw    vf3, (vi5++)    ;                                  ; store normal
+    itof12.xyzw    vf1, vf1         ibgtz       vi2, VU_SkinBlendNT_Looptop ; convet next normal to floats
+    itof15.xyzw    vf9, vf10        sqi.xyzw    vf4, (vi5++)    ; Convert next weigfhts to float   ; Store Positions
+
+VU_SkinBlendNT_Loopbottom:
+    NOP                             jr          vi15            ; Done, return to calling function
+    NOP                             NOP
+
+
+
+
+
+;;******************************************
+;; 
+;; VU_SkinBlend1BNT
+;; 
+;; Inputs
+;; VI10 Scracth area pointer
+;; VI15 Return address
+;;
+;; Outputs
+;; 
+;; Temporaries:
+;;
+#if 1
+VU_SKINBLEND1B_NT:
+    NOP                                 xtop        vi04
+    NOP                                 ilwr.x      vi02, (vi4)x        ; load vertex count
+    NOP                                 iaddiu      vi03, vi00, 4       ; Input stride
+    NOP                                 iaddiu      vi04, vi04, 2       ; first input vertex address
+    NOP                                 iaddiu      vi05, vi04, 0       ; Output vertex data address            
+
+    NOP                                 ilw.x       vi06, 0x03(vi04)x   ; load bone matrix pointer
+    NOP                                 ilw.y       vi01, 0x03(vi04)y   ; load RLE count
+    NOP                                 lq.xyzw     vf01, 0x01(vi04)    ; Load Normal
+    NOP                                 lq.xyzw     vf02, 0x02(vi04)    ; Load Position
+    NOP                                 lq.xyzw     vf11, 0x00(vi06)    ; Load first bone matrix  
+    NOP                                 lq.xyzw     vf12, 0x01(vi06)    ;  
+    itof12.xyzw  vf01, vf01             lq.xyzw     vf13, 0x02(vi06)    ; Convert normal to floats
+    NOP                                 lq.xyzw     vf14, 0x03(vi06)    ;
+
+VU_SkinBlend1BNT_Looptop:
+    NOP                                 ibeq        vi01, vi00, VU_SkinBlend1BNT_Last
+    NOP                                 isub        vi02, vi02, vi01    ; subtract out RLE run from vertex count
+
+VU_SkinBlend1BNT_RLE:
+    mulax.xyzw     ACC, vf11, vf01x     lq.xyzw     vf08, 0x00(vi04)    ; Load current UV
+    madday.xyzw    ACC, vf12, vf01y     iadd        vi04, vi04, vi03    ; increment input pointer
+    maddz.xyzw     vf5, vf13, vf01z     lq.xyzw     vf01, 0x01(vi04)    ; Load next normal 
+
+    mulax.xyzw     ACC, vf11, vf02x     lq.xyzw     vf04, 0x02(vi04)    ; Load next Position into temp register
+    madday.xyzw    ACC, vf12, vf02y     isubiu      vi01, vi01, 1       ; Decrement RLE loop counter
+    maddaz.xyzw    ACC, vf13, vf02z     sqi.xyzw    vf08, (vi05++)      ; Store UV
+
+    maddw.xyzw     vf6, vf14, vf00w     sqi.xyzw    vf05, (vi05++)      ; Store Normals
+    itof12.xyzw    vf01, vf01           NOP                             ; Convert next normal to floats
+    NOP                                 NOP
+    mulw.xyzw      vf02, vf04, vf00w    ibgtz       vi01, VU_SkinBlend1BNT_RLE  ; Move next Position into correct register
+    NOP                                 sqi.xyzw    vf06, (vi05++)      ; Store Positions
+
+VU_SkinBlend1BNT_Last:
+    mulax.xyzw     ACC, vf11, vf01x     lq.xyzw     vf08, 0x00(vi04)    ; Matrix * Normal mult into vf5      ; Load current UV
+    madday.xyzw    ACC, vf12, vf01y     iadd        vi04, vi04, vi03    ; increment input pointer
+    maddz.xyzw     vf5, vf13, vf01z     ilw.x       vi06, 0x03(vi04)x   ; Load next vertex matrix indices
+    NOP                                 isubiu      vi02, vi02, 1       ; decrement loop counter
+
+    mulax.xyzw     ACC, vf11, vf02x     lq.xyzw     vf01, 0x01(vi04)    ; Load next normal 
+    madday.xyzw    ACC, vf12, vf02y     lq.xyzw     vf04, 0x02(vi04)    ; Load next Position into temp register
+    maddaz.xyzw    ACC, vf13, vf02z     lq.xyzw     vf11, 0x00(vi06)    ; Load next matrix
+    maddw.xyzw     vf6, vf14, vf00w     lq.xyzw     vf12, 0x01(vi06)    ;
+    NOP                                 ilw.y       vi01, 0x03(vi04)y   ; load RLE count
+    itof12.xyzw  vf01, vf01             lq.xyzw     vf13, 0x02(vi06)    ; COnvert next normal to floats
+    NOP                                 lq.xyzw     vf14, 0x03(vi06)    ; 
+
+    mulw.xyzw      vf02, vf04, vf00w    sqi.xyzw    vf08, (vi05++)      ; Move next Position into correct register;  Store UV
+    NOP                                 sqi.xyzw    vf05, (vi05++)      ; Store Normals
+    NOP                                 ibgtz       vi02, VU_SkinBlend1BNT_Looptop
+    NOP                                 sqi.xyzw    vf06, (vi05++)      ; Store Positions
+
+VU_SkinBlend1BNT_Loopbottom:
+    NOP                                 jr          vi15                ; Done, return to calling function
+    NOP                                 NOP
+
+#else
+VU_SKINBLEND1B_NT:
+    NOP                                 xtop        vi04
+    NOP                                 ilwr.x      vi02, (vi4)x        ; load vertex count
+    NOP                                 iaddiu      vi03, vi00, 4       ; Input stride
+    NOP                                 iaddiu      vi04, vi04, 2       ; first input vertex address
+    NOP                                 iaddiu      vi05, vi04, 0       ; Output vertex data address            
+
+    NOP                                 ilw.x       vi06, 0x03(vi04)x   ; load bone matrix pointer
+    NOP                                 lq.xyzw     vf01, 0x01(vi04)    ; Load Normal
+    NOP                                 lq.xyzw     vf02, 0x02(vi04)    ; Load Position
+    NOP                                 lq.xyzw     vf11, 0x00(vi06)    ; Load first bone matrix  
+    NOP                                 lq.xyzw     vf12, 0x01(vi06)    ;  
+    itof12.xyzw  vf01, vf01             lq.xyzw     vf13, 0x02(vi06)    ; Convert normal to floats
+    NOP                                 lq.xyzw     vf14, 0x03(vi06)    ;
+
+VU_SkinBlend1BNT_Looptop:
+    mulax.xyzw     ACC, vf11, vf01x     lq.xyzw     vf08, 0x00(vi04)    ; Matrix * Normal mult into vf5      ; Load current UV
+    madday.xyzw    ACC, vf12, vf01y     iadd        vi04, vi04, vi03    ; increment input pointer
+    maddz.xyzw     vf5, vf13, vf01z     ilw.x       vi06, 0x03(vi04)x   ; Load next vertex matrix indices
+    NOP                                 isubiu      vi02, vi02, 1       ; decrement loop counter
+
+    mulax.xyzw     ACC, vf11, vf02x     lq.xyzw     vf01, 0x01(vi04)    ; Load next normal 
+    madday.xyzw    ACC, vf12, vf02y     lq.xyzw     vf04, 0x02(vi04)    ; Load next Position into temp register
+    maddaz.xyzw    ACC, vf13, vf02z     lq.xyzw     vf11, 0x00(vi06)    ; Load next matrix
+    maddw.xyzw     vf6, vf14, vf00w     lq.xyzw     vf12, 0x01(vi06)    ;
+    NOP                                 lq.xyzw     vf13, 0x02(vi06)    ;
+    itof12.xyzw    vf01, vf01           lq.xyzw     vf14, 0x03(vi06)    ; Convert next normal to floats
+
+    mulw.xyzw      vf02, vf04, vf00w    sqi.xyzw    vf08, (vi05++)      ; Move next Position into correct register;  Store UV
+    NOP                                 sqi.xyzw    vf05, (vi05++)      ; Store Normals
+    NOP                                 ibgtz       vi02, VU_SkinBlend1BNT_Looptop
+    NOP                                 sqi.xyzw    vf06, (vi05++)      ; Store Positions
+
+VU_SkinBlend1BNT_Loopbottom:
+    NOP                                 jr          vi15                ; Done, return to calling function
+    NOP                                 NOP
+
+#endif
+
+
+
+
+;;******************************************
+;; 
+;; VU_SkinBlendCT
+;; 
+;; Inputs
+;; VI10 Scracth area pointer
+;; VI15 Return address
+;;
+;; Outputs
+;; 
+;; Temporaries:
+;;
+VU_SKINBLEND_CT:
+    ; Build jump table for bone count
+    NOP                             iaddiu      vi2, vi0, VU_SkinBlend_CT_Bone1
+    NOP                             iaddiu      vi3, vi0, VU_SkinBlend_CT_Bone2
+    NOP                             iaddiu      vi4, vi0, VU_SkinBlend_CT_Bone3
+    NOP                             iaddiu      vi5, vi0, VU_SkinBlend_CT_Bone4
+    NOP                             isw.x       vi2, 0x00(vi10)x    ; Store jump table
+    NOP                             isw.x       vi3, 0x01(vi10)x
+    NOP                             isw.x       vi4, 0x02(vi10)x
+    NOP                             isw.x       vi5, 0x03(vi10)x
+    NOP                             iaddiu      vi8, vi0, 0x03 ; mask for jump table
+    NOP                             xtop        vi04
+    NOP                             ilwr.x      vi2, (vi4)x     ; load vertex count
+    NOP                             iaddiu      vi3, vi0, 5     ; Input stride
+    NOP                             iaddiu      vi4, vi4, 2     ; first input vertex address
+    NOP                             iadd        vi5, vi4, vi0   ; first output vertex address
+
+    NOP                             ilw.z       vi7, 0x02(vi4)z ; load bone count
+    NOP                             ilw.w       vi6, 0x03(vi4)w ; load bone 4 matrix pointer
+    NOP                             lq.xyzw     vf10, 0x04(vi4) ; load integer bone weights
+    NOP                             lq.xyzw     vf2, 0x02(vi4)  ; Load Position
+    itof15.xyzw vf9, vf10           iand        vi7, vi7, vi8   ; convert 1.15 weights to floats, mask table index
+    NOP                             iadd        vi7, vi7, vi10  ; add scratch area pointer to jump table index
+    NOP                             ilw.x       vi7, 0x00(vi7)x ; Load bone address
+    NOP                             lq.xyzw     vf11, 0x00(vi6) ; Load Matrix into register VF11-VF14     
+    NOP                             lq.xyzw     vf12, 0x01(vi6)      
+    NOP                             lq.xyzw     vf13, 0x02(vi6)      
+    NOP                             lq.xyzw     vf14, 0x03(vi6)      
+VU_SkinBlendCT_Looptop:
+    ; Code to skip ahead to the correct bone count goes here
+    add.xyzw        vf5, vf0, vf0   jr          vi7             ; jump to correct bone
+    add.xyzw        vf6, vf0, vf0   lq.xyzw     vf8, 0x00(vi4)  ; UV
+
+VU_SkinBlend_CT_Bone4:
+
+    NOP                             ilw.z       vi6, 0x03(vi4)z ; Matrix * Normal mult into vf5   ; load bone 3 matrix pointer
+    NOP                             NOP                         ;
+    NOP                             NOP                         ;
+
+    mulax.xyzw     ACC, vf11, vf2x  lq.xyzw     vf11, 0x00(vi6) ; Matrix * Position mult into vf6
+    madday.xyzw    ACC, vf12, vf2y  lq.xyzw     vf12, 0x01(vi6) ;
+    maddaz.xyzw    ACC, vf13, vf2z  lq.xyzw     vf13, 0x02(vi6) ;
+    maddw.xyzw     vf6, vf14, vf0w  lq.xyzw     vf14, 0x03(vi6) ;
+
+VU_SkinBlend_CT_Bone3:
+    NOP                             ilw.y       vi6, 0x03(vi4)y ; Load next matrix pointer
+    NOP                             NOP                         ;
+    NOP                             NOP                         ; 
+    NOP                             NOP                         ; 
+
+    mulaw.xyzw     ACC, vf6,  vf9w  NOP                         ; Put V4B4 into ACC
+    maddax.xyzw    ACC, vf11, vf2x  lq.xyzw     vf11, 0x00(vi6) ; Matrix * Position mult into vf6
+    madday.xyzw    ACC, vf12, vf2y  lq.xyzw     vf12, 0x01(vi6) ;
+    maddaz.xyzw    ACC, vf13, vf2z  lq.xyzw     vf13, 0x02(vi6) ;
+    maddw.xyzw     vf6, vf14, vf0w  lq.xyzw     vf14, 0x03(vi6) ;
+
+VU_SkinBlend_CT_Bone2:
+    NOP                             ilw.x       vi6, 0x03(vi4)x ; load bone 1 matrix pointer
+    NOP                             NOP                         
+    NOP                             NOP
+    NOP                             NOP                         ;
+
+    mulaz.xyzw     ACC, vf6,  vf9z  NOP                         ; Put V3B3 into ACC
+    maddax.xyzw    ACC, vf11, vf2x  lq.xyzw     vf11, 0x00(vi6) ; Matrix * Position mult into vf6
+    madday.xyzw    ACC, vf12, vf2y  lq.xyzw     vf12, 0x01(vi6) ;
+    maddaz.xyzw    ACC, vf13, vf2z  lq.xyzw     vf13, 0x02(vi6) ;
+    maddw.xyzw     vf6, vf14, vf0w  lq.xyzw     vf14, 0x03(vi6) ;
+
+VU_SkinBlend_CT_Bone1:
+    NOP                             lq.xyzw     vf1, 0x01(vi4)  ; Load current Colour
+    NOP                             iadd        vi4, vi4, vi3   ; increment input pointer by input pitch
+    NOP                             ilw.z       vi7, 0x02(vi4)z ; Load bone 4 matrix pointer
+    NOP                             ilw.w       vi6, 0x03(vi4)w ; Load next vertex matrix indices
+    NOP                             lq.xyzw     vf10, 0x04(vi4) ; Load next vertex integer bone weights
+    NOP                             iand        vi7, vi7, vi8   ; mask off bone count
+
+    NOP                             iadd        vi7, vi7, vi10  ; add scratch area pointer to jump table index
+    mulay.xyzw     ACC, vf6,  vf9y  ilw.x       vi7, 0x00(vi7)x ; Put V2B2 into ACC  ; load next vertex jump table
+    maddax.xyzw    ACC, vf11, vf2x  lq.xyzw     vf11, 0x00(vi6) ; Matrix * Position mult into vf6
+    madday.xyzw    ACC, vf12, vf2y  lq.xyzw     vf12, 0x01(vi6) ;
+    maddaz.xyzw    ACC, vf13, vf2z  lq.xyzw     vf13, 0x02(vi6) ;
+    maddw.xyzw     vf6, vf14, vf0w  lq.xyzw     vf14, 0x03(vi6) ;
+
+    NOP                             isubiu      vi2, vi2, 1     ; decrement loop counter
+    mulx.xyzw      vf4, vf6, vf9x   lq.xyzw     vf2, 0x02(vi4)  ; Scale V1 by B1   ; Load next pos
+
+    NOP                             sqi.xyzw    vf8, (vi5++)    ; store UV and post increment poionter
+    NOP                             sqi.xyzw    vf1, (vi5++)    ;                                 ; store Colour
+    NOP                             ibgtz       vi2, VU_SkinBlendCT_Looptop   ; Move colour into correct register
+    itof15.xyzw    vf9, vf10        sqi.xyzw    vf4, (vi5++)    ; Convert next weigfhts to float   ; Store Positions
+
+VU_SkinBlendCT_Loopbottom:
+    NOP                             jr          vi15            ; Done, return to calling function
+    NOP                             NOP
+
+
+
+
+
+;;******************************************
+;; 
+;; VU_SkinBlend1BCT
+;; 
+;; Inputs
+;; VI10 Scracth area pointer
+;; VI15 Return address
+;;
+;; Outputs
+;; 
+;; Temporaries:
+;;
+VU_SKINBLEND1B_CT:
+
+    NOP                             xtop        vi04
+    NOP                             ilwr.x      vi2, (vi4)x     ; load vertex count
+    NOP                             iaddiu      vi3, vi0, 4     ; Input stride
+    NOP                             iaddiu      vi4, vi4, 2     ; first input vertex address
+    NOP                             iaddiu      vi5, vi4, 0     ; Output vertex data address            
+
+    NOP                             ilw.x       vi6, 0x03(vi4)x ; load bone matrix pointer
+    NOP                             lq.xyzw     vf2, 0x02(vi4)  ; Load Position
+    NOP                             lq.xyzw     vf11, 0x00(vi6)      
+    NOP                             lq.xyzw     vf12, 0x01(vi6)      
+    NOP                             lq.xyzw     vf13, 0x02(vi6)      
+    NOP                             lq.xyzw     vf14, 0x03(vi6)      
+
+VU_SkinBlend1BCT_Looptop:
+    NOP                             lq.xyzw     vf8, 0x00(vi4)  ; Load UV
+    NOP                             lq.xyzw     vf1, 0x01(vi4)  ; Load Colour
+    NOP                             iadd        vi4, vi4, vi3   ; increment input pointer
+    NOP                             ilw.x       vi6, 0x03(vi4)x ; Load next vertex matrix indices
+    NOP                             isubiu      vi2, vi2, 1     ; decrement loop counter
+
+    mulax.xyzw     ACC, vf11, vf2x  sqi.xyzw    vf8, (vi5++)    ; Store UV 
+    madday.xyzw    ACC, vf12, vf2y  lq.xyzw     vf4,  0x02(vi4) ; Load next Position into temp register
+    maddaz.xyzw    ACC, vf13, vf2z  lq.xyzw     vf11, 0x00(vi6) ; Load next matrix
+    maddw.xyzw     vf6, vf14, vf0w  lq.xyzw     vf12, 0x01(vi6) ;
+    NOP                             lq.xyzw     vf13, 0x02(vi6) ;
+    mulw.xyzw      vf2, vf4, vf0w   lq.xyzw     vf14, 0x03(vi6) ; Move next Position into correct register
+
+    NOP                             sqi.xyzw    vf1, (vi5++)   ; Store Colours
+    NOP                             ibgtz       vi2, VU_SkinBlend1BCT_Looptop
+    NOP                             sqi.xyzw    vf6, (vi5++)   ; Store Positions
+
+VU_SkinBlend1BCT_Loopbottom:
+    NOP                             jr          vi15            ; Done, return to calling function
+    NOP                             NOP
+
+
+

@@ -1,0 +1,577 @@
+//------------------------------------------------------------------------------------------------------------
+//  UI script for Pure3D Deformer tool
+//  Date: Some time just before October 2001
+//  Author:  Alex Kew
+//           akew@radical.ca
+//
+//
+//  The "If I had time" List:
+//		- rewrite the proc that sets up Name Commands to only set up one name command, but allow it to 
+//        take arguments to change the deformer expression
+//      - write a function that registers hotkeys one at a time, then write a callback that sets up
+//        each hotkey as soon as they are typed in to the deformer window space
+//      - do hotkey storage by storing it in the User Prefs
+//      - change it so that stopping the dragger context first reverts factory hotkey settings, then
+//      - user hotkey preferences
+//
+//------------------------------------------------------------------------------------------------------------
+
+
+
+global float $pressPosition[3];						// Used for dragger context
+global float $dragPosition[3];
+global float $oldDragPosition[3];
+$oldDragPosition = {0, 0, 0};
+
+global string $draggerWindowTitle = "";				// Used to switch the title to the current expression
+
+global string $p3dDeformSelectedExpression;			// Holds name of the hotkey selected deformer expression
+global int $p3dDeformLwrStateKeyIndex = 0;			// Holds the lower shape key index
+global int $p3dDeformUprStateKeyIndex = 1;			// Holds the upper shape key index 
+
+global string $alexSavedHotkeys[];					// Arrays to save the re-assigned hotkey values.  Keep 'em
+global string $alexSavedKeyPressNameCommands[];		// global to keep 'em around, so I can restore their
+global string $alexSavedKeyUpNameCommands[];		// values after the deformer hotkeys are disabled.
+
+global int $p3dDeformLwrStateKeyIndex;				// As expressions could have posekeys in [-1..1], these two
+global int $p3dDeformUprStateKeyIndex;				// vars hold the lower and upper posekey indices for the dragger
+													// context
+
+
+// Set some cleanup code...
+
+	//cleanup if user closes the deformer window
+//	scriptJob -runOnce true -uiDeleted p3dDeformDraggerWindow p3dDeformHotkeyCleanup;
+
+	//cleanup if user exits Maya without unloading the deformer dragger context
+	scriptJob -runOnce true -e "quitApplication" p3dDeformRevertHotKeys;
+
+
+
+
+//------------------------------------------------------------------------------------------------------------
+global proc deformDraggerCtxPress()
+{
+	global float $pressPosition[];
+
+	//Save initial press position
+	$pressPosition = `draggerContext -query -anchorPoint deformDraggerCtx`;
+
+	//debug
+	p3dDeformDebugTrace("Press: " + $pressPosition[0] + " " + $pressPosition[1] + " " + $pressPosition[2] + "\t");
+	//debug
+
+}
+
+
+
+//------------------------------------------------------------------------------------------------------------
+global proc deformDraggerCtxRelease()
+{
+	global string $p3dDeformSelectedExpression; 
+	global float $pressPosition[];
+	float $releasePosition[] = `draggerContext -query -dragPoint deformDraggerCtx`;
+	int $button              = `draggerContext -query -button deformDraggerCtx`;
+
+	// check for keyable situations
+
+
+	if (($button == 2) && (`checkBox -query -value p3dDeformSetupWindowMMStaticKeyChkBox`)) {
+		if ($pressPosition[0] == $releasePosition[0]) {
+			p3dDeformCallbackMgr("KeyExpr", {$p3dDeformSelectedExpression} );
+		}
+
+		else if ($pressPosition[0] != $releasePosition[0]) {
+
+			if (`checkBox -query -value p3dDeformSetupWindowMMDragKeyChkBox`) {
+				p3dDeformCallbackMgr("KeyExpr", {$p3dDeformSelectedExpression} );
+			}
+
+			else if (`checkBox -query -value p3dDeformSetupWindowMMDragKeyChkBox` == 0) {
+				warning "Deformer keying currently not enabled for middle mouse drag keying.\n  Enable MM drag keying on the dragger floating command window or the Deformer setup window.\n";
+			}
+		}
+	}
+
+	else if (($button == 2) && !(`checkBox -query -value p3dDeformSetupWindowMMStaticKeyChkBox`)) {
+		warning "Deformer keying currently not enabled for middle mouse button.\n  Enable MM keying on the dragger floating command window or the Deformer setup window.\n";
+	}
+
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+global proc deformDraggerCtxDrag()
+{
+	global float $oldDragPosition[];
+	global float $dragPosition[];
+	global string $p3dDeformSelectedExpression;
+
+	global int $p3dDeformLwrStateKeyIndex;
+	global int $p3dDeformUprStateKeyIndex;	
+
+	int    $button     = `draggerContext -query -button deformDraggerCtx`;
+	string $modifier   = `draggerContext -query -modifier deformDraggerCtx`;
+	$dragPosition      = `draggerContext -query -dragPoint deformDraggerCtx`;
+	string $deformerExpressionState;
+
+
+	//check to see if we've specified a deformer expression for the dragger with a hotkey
+	if ($p3dDeformSelectedExpression != "") {
+
+		// turn off the error text visibility...
+		if (`window -exists p3dDeformDraggerWindow`) text -edit -visible false draggerErrorText;
+
+		// ---------------------------------
+		// Calculate deformerIncrement based off of dragToleranceIntSliderGrp
+		//	
+
+		float $minDeformIncrement = 0.01;
+		float $maxDeformIncrement = 0.075;
+		float $deformIncrement = ($maxDeformIncrement - $minDeformIncrement)/100.0;
+		float $dragToleranceIntSlider = `getAttr deformerSettings.tolerance`;
+
+		// -------------------------------------------
+		// Factor any modifiers in to $deformIncrement
+		//     CTRL  - half speed
+		//     SHIFT - double speed
+
+		if ($modifier == "ctrl") {
+			$deformIncrement = ($deformIncrement / 4.0);
+		}
+		else if ($modifier == "shift") {
+			$deformIncrement = ($deformIncrement * 4.0);
+		}
+
+		float $curDeformVal = $minDeformIncrement + ($deformIncrement * $dragToleranceIntSlider);	
+		
+
+		// ----------------------------------
+		// Attach drag value to deformer tool
+
+		// grab expression name set up through hotkey from global var:  $p3dDeformSelectedExpression
+		$deformerExpressionState = ($p3dDeformSelectedExpression + ".state");
+		float $deformerSliderVal = `getAttr $deformerExpressionState`;
+
+
+		if ($dragPosition[0] > $oldDragPosition[0]) {
+			//do positive drag case
+			$deformerSliderVal += $curDeformVal;
+			if ($deformerSliderVal > $p3dDeformUprStateKeyIndex) $deformerSliderVal = $p3dDeformUprStateKeyIndex;
+		}
+		
+		else if ($dragPosition[0] < $oldDragPosition[0]) {
+			//do negative drag case
+			$deformerSliderVal -= $curDeformVal; 
+			if ($deformerSliderVal < $p3dDeformLwrStateKeyIndex) $deformerSliderVal = $p3dDeformLwrStateKeyIndex;
+		}
+
+
+
+//		Saved the guts of the old dragger ctx, just in case the bounding fucks it up...
+
+/*		if ($dragPosition[0] > $oldDragPosition[0]) {
+			//do positive drag case
+			$deformerSliderVal += $curDeformVal;
+			if ($deformerSliderVal > 1.0) $deformerSliderVal = 1.0;
+		}
+		
+		else if ($dragPosition[0] < $oldDragPosition[0]) {
+			//do negative drag case
+			$deformerSliderVal -= $curDeformVal; 
+			if ($deformerSliderVal < -1.0) $deformerSliderVal = -1.0;
+		}
+*/
+
+		// Update Deformer Slider
+		setAttr $deformerExpressionState $deformerSliderVal;
+		refresh;
+
+		// Save cur drag position for direction test
+		$oldDragPosition = $dragPosition;
+	} //if
+	else {
+		if (`window -exists p3dDeformDraggerWindow`) text -edit -visible true -l "No deformer expression selected" draggerErrorText;
+	}
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+global proc enableDeformerDraggerCtx()
+{ 
+	global string $p3dDeformSelectedExpression;
+
+	string $p3dDeformGroups[] = `ls -type p3dDeformExpressionGroup`; 
+
+	if (size($p3dDeformGroups) > 0)	{
+
+		if (`window -exists p3dDeformDraggerWindow`) text -edit -visible false draggerErrorText;
+		if (`draggerContext -exists deformDraggerCtx`) deleteUI -toolContext deformDraggerCtx;
+
+		draggerContext
+				-pressCommand   "deformDraggerCtxPress"
+				-dragCommand    "deformDraggerCtxDrag"
+				-releaseCommand "deformDraggerCtxRelease"
+				-cursor         "crossHair"
+			deformDraggerCtx;
+
+		setToolTo deformDraggerCtx;
+
+		p3dDeformAssignHotKeys;					//set up hotkeys
+		$p3dDeformSelectedExpression = "";		//reset current hotkey selection to none
+	}
+
+	else {
+		if (`window -exists p3dDeformDraggerWindow`) text -edit -visible true -l "No deformer groups found" draggerErrorText;
+	}
+
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+global proc disableDeformerDraggerCtx()
+{
+	global string $p3dDeformSelectedExpression;
+
+	if (`draggerContext -exists deformDraggerCtx`) {
+
+		deleteUI -toolContext deformDraggerCtx;
+		setToolTo selectSuperContext;
+
+//		print "Leaving p3dDeformer Drag Context\n";
+		if (`window -exists p3dDeformDraggerWindow`) rowColumnLayout -edit -visible false p3dDefExprSliderStuff;
+		
+		print "starting revertHotKeys...\n";
+		p3dDeformRevertHotKeys;	
+		print "finishing revertHotKeys...\n";
+
+		$p3dDeformSelectedExpression = "";		//reset current hotkey selection to none
+//		print "\t...Hotkeys reverted\n\n";
+
+	}
+}
+
+//------------------------------------------------------------------------------------------------------------
+// Deletes the nameCommand passed in to it.  No error checking, or return value...
+
+global proc alexDeleteNamedCommand (string $nameOfCommandToDelete) {
+
+	int $i, $count = `assignCommand -query -numElements`;
+	string $tempName;
+
+	for ($i=1; $i <= $count; $i++) {
+		$tempName = `assignCommand -query -name $i`;
+	
+		if ($tempName == $nameOfCommandToDelete) {
+			//delete namedCommand
+			assignCommand -edit -delete $i;
+			
+//			print ($nameOfCommandToDelete + " deleted...\n\n");
+			break;
+		}
+	}
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+// Prints all nameCommands to the screen, with their index value.  (See MEL function:  assignCommand)
+global proc alexPrintNameCommands() {
+
+	string $tempName;
+	int $i, $count = `assignCommand -query -numElements`;
+
+	// Print out all namedCommands
+	for ($i=1; $i <= $count; $i++) {
+		$tempName = `assignCommand -query -name $i`;
+		print ($i + "\t" + $tempName + "\n");
+	}
+}
+
+global proc alexPrintVar() 
+{
+	global string $p3dDeformSelectedExpression; 
+	print ("p3dDeformSelectedExpression = \""    + $p3dDeformSelectedExpression +     "\"\n");
+}
+
+
+
+//------------------------------------------------------------------------------------------------------------
+// Sets up the hotkeys specified in the Deformer Tool to change the global variable $p3dDeformSelectedExpression 
+// to the associated deformer expression name.  $p3dDeformSelectedExpression is used in proc deformDraggerCtxDrag
+
+global proc p3dDeformAssignHotKeys() {
+
+	// this proc is called in enableDeformerDraggerCtx, after the draggerCtx is set up.  Hence the check to
+	// see if the dragger context was set up properly...
+
+	if (`draggerContext -exists deformDraggerCtx`) {
+		
+		//------------------------------------------------------------------
+		//Global to hold the name of the hotkey selected deformer expression
+		global string $p3dDeformSelectedExpression;
+
+		//Some vars used in setting up the namedCommand
+		string $nameCommandName;
+		string $nameCommandAnnotation;
+		string $nameCommandString;
+
+		
+		//Some more vars to save existing hotkeys
+		string $state;
+		string $states[] = `ls -type p3dDeformExpressionState`;
+		string $hotkeyName;
+
+
+		//Some vars for checking the state for positive or negative key values
+		string $keyIndicesAttr;
+		float $poseKeys[];
+		float $thePoseKey;
+		int $k, $numPos, $numNeg;
+		int $numPoseKeys;
+
+		//restore any existing hotkey backup first, as it will hopefully contain the original user hotkeys if it exists
+		p3dDeformApplyHotKeyFile("deformerBackup");
+
+		//save the user hotkeys to a backup file:  deformerBackUpUserHotkeys.mel
+		p3dDeformWriteHotKeyFile("deformerBackUp");
+
+		for ($state in $states) {
+
+			//Get the hotkey from the Deformer Setup Window
+			if (catch ($hotkeyName = `p3dDeformGetHotKey $state`) ) {
+				print ("          This usually indicates an unattached deformer expression.  Clean the file!\n");
+			}
+
+			if ($hotkeyName != "") {
+
+				// determine whether this state has only negative, or only positive keys
+				// stored as global var, reinstated from the namedCommand that sets up
+				// the hotkey
+
+				$numPos = 0;		//reset counters
+				$numNeg = 0;
+
+				$keyIndicesAttr = $state + ".keyIndices";
+				$poseKeys = `getAttr $keyIndicesAttr`;
+
+				for ($thePoseKey in $poseKeys) {
+					if ($thePoseKey > $numPos) $numPos = ceil($thePoseKey);
+					else if ($thePoseKey < $numNeg) $numNeg = floor($thePoseKey);
+				}
+
+				// set up a nameCommand for the keypress to set up the deformer slider for keying
+				$draggerWindowTitle = $state;
+				$nameCommandName = ("p3dDeformerHotkey_" + $hotkeyName);
+				$nameCommandAnnotation = ("Select Deformer Hotkey:  " + $state);
+				$nameCommandString = ("p3dDeformNameCommandStuff(\"" + $state + "\", " + $numNeg + ", " + $numPos + ")");
+
+				//Remember to try to delete the namedCommand if it already exists
+				alexDeleteNamedCommand ($nameCommandName);
+
+				//Create the nameCommand
+				nameCommand 
+					-annotation $nameCommandAnnotation 
+					-command $nameCommandString 
+				  $nameCommandName;
+
+				//Assign the nameCommand to a hotkey
+				p3dDeformSetKeyPress($hotkeyName, $nameCommandName);
+			}
+		}
+	} //end if draggerCtx exists
+}
+
+
+
+
+//------------------------------------------------------------------------------------------------------------
+// Gets called by the name command each hotkey is assigned to
+global proc p3dDeformNameCommandStuff(string $deformerExpressionName, int $lwrStateKeyIndex, int $uprStateKeyIndex) {
+
+	global string $p3dDeformSelectedExpression;
+	global int $p3dDeformLwrStateKeyIndex;
+	global int $p3dDeformUprStateKeyIndex;
+
+	$p3dDeformLwrStateKeyIndex = $lwrStateKeyIndex;
+	$p3dDeformUprStateKeyIndex = $uprStateKeyIndex;
+
+	print ("Alex:  in p3dDeformNameCommandStuff, $lwr = " + $p3dDeformLwrStateKeyIndex + ", $upr = " + $p3dDeformUprStateKeyIndex + "\n");
+
+	//update the global variable containing the name of the current deformer expression
+	$p3dDeformSelectedExpression = $deformerExpressionName;
+
+	// hide any error text, 'cuz we know we're in a case that needs no error message print out
+	if (`window -exists p3dDeformDraggerWindow`) text -edit -visible false draggerErrorText;
+
+	// make visible the section of the dragger window that contains a copy of the deformer slider
+	if (`window -exists p3dDeformDraggerWindow`) rowColumnLayout -edit -visible true p3dDefExprSliderStuff;
+
+	// set up the controls within the dragger window to work with the currently selected expression
+	p3dDeformUpdateDraggerWindowControls;
+
+	// change the name of the  slider in the the dragger window to reflect the selected deformer expression
+	if (`window -exists p3dDeformDraggerWindow`) attrFieldSliderGrp -edit -label $p3dDeformSelectedExpression draggerWindowStateSliderCopy;
+
+	// change the name of the title of the dragger window to that of the selected deformer expression
+	if (`window -exists p3dDeformDraggerWindow`) window -edit -title $p3dDeformSelectedExpression p3dDeformDraggerWindow;
+
+	// select the current expression (so the keys show up in the timeline)
+	select -r $p3dDeformSelectedExpression;
+
+}
+
+	
+	
+//------------------------------------------------------------------------------------------------------------
+// Returns hotkeys to the previous configuration, called when disabling hotkeys...
+global proc p3dDeformRevertHotKeys() {
+
+	global string $p3dDeformSelectedExpression;
+
+	string $p3dDeformerExpressionName;
+	string $p3dDeformExpressions[] = `ls -type p3dDeformExpressionState`;
+	string $hotkeyName;
+	string $nameCommandName;
+
+	// remove the nameCommands from the system
+	for ($p3dDeformerExpressionName in $p3dDeformExpressions) {
+
+		//Get the hotkey from the Deformer Setup Window
+		if (catch ($hotkeyName = `p3dDeformGetHotKey $p3dDeformerExpressionName`)) {
+			print ("          This could indicate an unattached deformer expression.  Clean the file!\n");
+		}
+
+		if ($hotkeyName != "") {
+
+			$nameCommandName = ("p3dDeformerHotkey_" + $hotkeyName);
+
+			//Remember to try to delete the namedCommand if it already exists
+			alexDeleteNamedCommand ($nameCommandName);
+		}
+	}
+
+	hotkey -fs;
+	p3dDeformApplyHotKeyFile("deformerBackup");		// adds back user hotkey settings
+
+}
+
+
+/*  -fukup bacup
+
+//------------------------------------------------------------------------------------------------------------
+// Returns hotkeys to the previous configuration, called when disabling hotkeys...
+global proc p3dDeformRevertHotKeys() {
+
+	global string $p3dDeformSelectedExpression;
+
+	string $p3dDeformerExpressionName;
+	string $p3dDeformExpressions[] = `ls -type p3dDeformExpressionState`;
+	string $hotkeyName;
+	string $nameCommandName;
+
+	// remove the nameCommands from the system
+	for ($p3dDeformerExpressionName in $p3dDeformExpressions) {
+
+		//Get the hotkey from the Deformer Setup Window
+		if (catch ($hotkeyName = `p3dDeformGetHotKey $p3dDeformerExpressionName`)) {
+			print ("          This could indicate an unattached deformer expression.  Clean the file!\n");
+		}
+
+		if ($hotkeyName != "") {
+
+			$nameCommandName = ("p3dDeformerHotkey_" + $hotkeyName);
+
+			//Remember to try to delete the namedCommand if it already exists
+			alexDeleteNamedCommand ($nameCommandName);
+		}
+	}
+
+	hotkey -fs;
+	p3dDeformApplyHotKeyFile("deformerBackup");		// adds back user hotkey settings
+
+}
+
+
+*/
+
+
+
+
+//------------------------------------------------------------------------------------------------------------
+// Reset hotkey values to factory defaults -- this does not currently take in to account user hotkeys...
+
+
+global proc p3dDeformResetHotkeys() {
+
+	global string $p3dDeformSelectedExpression;
+
+	string $p3dDeformerExpressionName;
+	string $p3dDeformExpressions[] = `ls -type p3dDeformExpressionState`;
+	string $hotkeyName;
+	string $nameCommandName;
+
+	// remove the nameCommands from the system
+	for ($p3dDeformerExpressionName in $p3dDeformExpressions) {
+
+		//Get the hotkey from the Deformer Setup Window
+		$hotkeyName = `p3dDeformGetHotKey $p3dDeformerExpressionName`;
+
+		if ($hotkeyName != "") {
+
+			$nameCommandName = ("p3dDeformerHotkey_" + $hotkeyName);
+
+			//Remember to try to delete the namedCommand if it already exists
+			alexDeleteNamedCommand ($nameCommandName);
+		}
+	}
+
+	hotkey -fs;
+}
+
+
+
+//------------------------------------------------------------------------------------------------------------
+// Updates the hotkeys to the current values in the Deformer Toolbox
+
+global proc p3dDeformUpdateHotKeys() {
+
+	global string $p3dDeformSelectedExpression;
+
+	p3dDeformRevertHotKeys;
+	p3dDeformAssignHotKeys;
+
+	$p3dDeformSelectedExpression = "";		//reset current hotkey selection
+
+
+//	disableDeformerDraggerCtx;
+//	enableDeformerDraggerCtx;
+
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+// Updates the controls on the dragger window to work off of the selected expression
+
+global proc p3dDeformUpdateDraggerWindowControls() {
+
+	global string $p3dDeformSelectedExpression;
+	
+	string $attr_state = $p3dDeformSelectedExpression + ".state";
+	string $slider_cmd = "p3dDeformCallbackMgr \"UpdateState\" {\"" + $p3dDeformSelectedExpression + "\"}";
+	string $button_cmd = "p3dDeformCallbackMgr \"KeyExpr\" {\"" + $p3dDeformSelectedExpression + "\"}";
+
+	if (`window -exists p3dDeformDraggerWindow`) {
+
+		attrFieldSliderGrp
+			-edit
+			-label $p3dDeformSelectedExpression
+			-at $attr_state
+			-cc $slider_cmd
+		  draggerWindowStateSliderCopy;
+
+		button
+			-edit
+			-command $button_cmd
+		  draggerWindowStateSliderKeyButton;
+	}
+}

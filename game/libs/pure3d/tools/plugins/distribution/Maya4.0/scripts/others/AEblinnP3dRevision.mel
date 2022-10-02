@@ -1,0 +1,78 @@
+// Copyright (C) 1998 Alias|Wavefront,
+// a division of Silicon Graphics Limited.
+//
+// The information in this file is provided for the exclusive use of the
+// licensees of Alias|Wavefront.  Such users have the right to use, modify,
+// and incorporate this code into other products for purposes authorized
+// by the Alias|Wavefront license agreement, without fee.
+//
+// ALIAS|WAVEFRONT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+// INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+// EVENT SHALL ALIAS|WAVEFRONT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+// DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+// TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+//
+//  Alias|Wavefront Script File
+//
+//  Creation Date:	May 7, 1997
+//  Author:		sw
+//
+//  Procedure Name:
+//	AEspotLightRevision
+//
+//  Description:
+//	This file duplicates the content of AEspotLightTemplate.mel,
+//	but adds additional functionality for the Maya Fur plug-in.
+//	It redefines the template for the spotlight attribute editor.
+//
+//  Input Value:
+//	nodeName
+//
+//  Output Value:
+//	None
+//
+
+//--------------------------------------------------------------
+//  Procedure Name:
+//	AElambertTemplate
+//		(with additions for Game Exchange 2.0)
+//
+//
+
+global proc AEblinnTemplate ( string $nodeName )
+{
+    AEswatchDisplay $nodeName; 
+    editorTemplate -beginScrollLayout;
+        AElambertCommon $nodeName;
+
+        editorTemplate -beginLayout "Specular Shading" -collapse 0;
+            editorTemplate -addControl "eccentricity";
+            editorTemplate -addControl "specularRollOff";
+
+            // include/call base class/node attributes
+            AEreflectCommonSpecularShading $nodeName;		
+
+            editorTemplate -addControl "reflectedAlpha";
+        editorTemplate -endLayout;
+
+        // include/call base class/node attributes
+        AEreflectCommon $nodeName;
+
+        editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+            AEhardwareTextureTemplate $nodeName
+                ("color transparency ambientColor incandescence "+
+                 "normalCamera diffuse translucence eccentricity "+
+                 "specularRollOff specularColor reflectivity "+
+                 "reflectedColor");
+         editorTemplate -endLayout;
+
+	    // THIS IS THE NEW PART
+		p3dMatAttr();
+	    // END OF NEW PART
+
+        editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+}

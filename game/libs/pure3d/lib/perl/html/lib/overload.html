@@ -1,0 +1,867 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>overload - Package for overloading perl operations
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME </A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#CAVEAT_SCRIPTOR">CAVEAT SCRIPTOR</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Declaration_of_overloaded_functi">Declaration of overloaded functions</A>
+		<LI><A HREF="#Calling_Conventions_for_Binary_O">Calling Conventions for Binary Operations</A>
+		<LI><A HREF="#Calling_Conventions_for_Unary_Op">Calling Conventions for Unary Operations</A>
+		<LI><A HREF="#Overloadable_Operations">Overloadable Operations</A>
+		<LI><A HREF="#Inheritance_and_overloading">Inheritance and overloading</A>
+	</UL>
+
+	<LI><A HREF="#SPECIAL_SYMBOLS_FOR_C_use_overlo">SPECIAL SYMBOLS FOR <CODE>use overload</CODE></A>
+	<UL>
+
+		<LI><A HREF="#Last_Resort">Last Resort</A>
+		<LI><A HREF="#Fallback">Fallback </A>
+		<LI><A HREF="#Copy_Constructor">Copy Constructor</A>
+	</UL>
+
+	<LI><A HREF="#MAGIC_AUTOGENERATION">MAGIC AUTOGENERATION</A>
+	<LI><A HREF="#WARNING">WARNING</A>
+	<LI><A HREF="#Run_time_Overloading">Run-time Overloading</A>
+	<LI><A HREF="#Public_functions">Public functions</A>
+	<LI><A HREF="#IMPLEMENTATION">IMPLEMENTATION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#DIAGNOSTICS">DIAGNOSTICS</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME 
+
+</A></H1>
+overload - Package for overloading perl operations
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    package SomeThing;
+</PRE>
+
+<P>
+
+<PRE>    use overload 
+        '+' =&gt; \&amp;myadd,
+        '-' =&gt; \&amp;mysub;
+        # etc
+    ...
+</PRE>
+
+<P>
+
+<PRE>    package main;
+    $a = new SomeThing 57;
+    $b=5+$a;
+    ...
+    if (overload::Overloaded $b) {...}
+    ...
+    $strval = overload::StrVal $b;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CAVEAT_SCRIPTOR">CAVEAT SCRIPTOR
+
+</A></H1>
+Overloading of operators is a subject not to be taken lightly. Neither its
+precise implementation, syntax, nor semantics are 100% endorsed by Larry
+Wall. So any of these may be changed at some point in the future.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Declaration_of_overloaded_functi">Declaration of overloaded functions
+
+</A></H2>
+The compilation directive
+
+
+<P>
+
+<PRE>    package Number;
+    use overload
+        &quot;+&quot; =&gt; \&amp;add, 
+        &quot;*=&quot; =&gt; &quot;muas&quot;;
+</PRE>
+
+<P>
+
+declares function Number::add() for addition, and method
+<CODE>muas()</CODE> in the ``class'' <A HREF="#item_Number">Number</A> (or one of its base classes) for the assignment form <CODE>*=</CODE> of multiplication.  
+
+
+<P>
+
+Arguments of this directive come in (key, value) pairs. Legal values are
+values legal inside a <CODE>&{ ... }</CODE> call, so the name of a subroutine, a reference to a subroutine, or an
+anonymous subroutine will all work. Note that values specified as strings
+are interpreted as methods, not subroutines. Legal keys are listed below.
+
+
+<P>
+
+The subroutine <A HREF="#item_add">add</A> will be called to execute <CODE>$a+$b</CODE> if <A HREF="#item__a">$a</A> is a reference to an object blessed into the
+package <A HREF="#item_Number">Number</A>, or if <A HREF="#item__a">$a</A> is not an object from a package with
+defined mathemagic addition, but <A HREF="#item__b">$b</A> is a reference
+to a <A HREF="#item_Number">Number</A>. It can also be called in other situations, like
+<CODE>$a+=7</CODE>, or <A HREF="#item__a_">$a++</A>. See <A HREF="#MAGIC_AUTOGENERATION">MAGIC AUTOGENERATION</A>. (Mathemagical methods refer to methods triggered by an overloaded
+mathematical operator.)
+
+
+<P>
+
+Since overloading respects inheritance via the <CODE>@ISA</CODE> hierarchy,
+the above declaration would also trigger overloading of <CODE>+</CODE> and <CODE>*=</CODE> in all the packages which inherit from <A HREF="#item_Number">Number</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Calling_Conventions_for_Binary_O">Calling Conventions for Binary Operations
+
+</A></H2>
+The functions specified in the <CODE>use overload ...</CODE> directive are called with three (in one particular case with four, see <A HREF="#Last_Resort">Last Resort</A>) arguments. If the corresponding operation is binary, then the first two
+arguments are the two arguments of the operation. However, due to general
+object calling conventions, the first argument should always be an object
+in the package, so in the situation of <CODE>7+$a</CODE>, the order of the arguments is interchanged. It probably does not matter
+when implementing the addition method, but whether the arguments are
+reversed is vital to the subtraction method. The method can query this
+information by examining the third argument, which can take three different
+values:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_FALSE">FALSE
+
+</A></STRONG><DD>
+the order of arguments is as in the current operation.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_TRUE">TRUE
+
+</A></STRONG><DD>
+the arguments are reversed.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_undef">undef
+
+</A></STRONG><DD>
+the current operation is an assignment variant (as in
+<CODE>$a+=7</CODE>), but the usual function is called instead. This additional information
+can be used to generate some optimizations.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Calling_Conventions_for_Unary_Op">Calling Conventions for Unary Operations
+
+</A></H2>
+Unary operation are considered binary operations with the second argument
+being <A HREF="#item_undef">undef</A>. Thus the functions that overloads <CODE>{"++"}</CODE>
+is called with arguments <CODE>($a,undef,'')</CODE> when $a++ is executed.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Overloadable_Operations">Overloadable Operations
+
+</A></H2>
+The following symbols can be specified in <CODE>use overload</CODE>:
+
+
+<P>
+
+<UL>
+<LI><STRONG><A NAME="item_Arithmetic">Arithmetic operations
+
+</A></STRONG>
+<PRE>    &quot;+&quot;, &quot;+=&quot;, &quot;-&quot;, &quot;-=&quot;, &quot;*&quot;, &quot;*=&quot;, &quot;/&quot;, &quot;/=&quot;, &quot;%&quot;, &quot;%=&quot;,
+    &quot;**&quot;, &quot;**=&quot;, &quot;&lt;&lt;&quot;, &quot;&lt;&lt;=&quot;, &quot;&gt;&gt;&quot;, &quot;&gt;&gt;=&quot;, &quot;x&quot;, &quot;x=&quot;, &quot;.&quot;, &quot;.=&quot;,
+</PRE>
+
+<P>
+
+For these operations a substituted non-assignment variant can be called if
+the assignment variant is not available. Methods for operations ``<CODE>+</CODE>'', ``<CODE>-</CODE>'', ``<CODE>+=</CODE>'', and ``<CODE>-=</CODE>'' can be called to automatically generate increment and decrement methods.
+The operation ``<CODE>-</CODE>'' can be used to autogenerate missing methods for unary minus or <A HREF="#item_abs">abs</A>.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Comparison">Comparison operations
+
+</A></STRONG>
+<PRE>    &quot;&lt;&quot;,  &quot;&lt;=&quot;, &quot;&gt;&quot;,  &quot;&gt;=&quot;, &quot;==&quot;, &quot;!=&quot;, &quot;&lt;=&gt;&quot;,
+    &quot;lt&quot;, &quot;le&quot;, &quot;gt&quot;, &quot;ge&quot;, &quot;eq&quot;, &quot;ne&quot;, &quot;cmp&quot;,
+</PRE>
+
+<P>
+
+If the corresponding ``spaceship'' variant is available, it can be used to
+substitute for the missing operation. During <A HREF="#item_sort">sort</A>ing arrays, <A HREF="#item_cmp">cmp</A> is used to compare values subject to <CODE>use overload</CODE>.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Bit">Bit operations
+
+</A></STRONG>
+<PRE>    &quot;&amp;&quot;, &quot;^&quot;, &quot;|&quot;, &quot;neg&quot;, &quot;!&quot;, &quot;~&quot;,
+</PRE>
+
+<P>
+
+``<CODE>neg</CODE>'' stands for unary minus. If the method for <CODE>neg</CODE> is not specified, it can be autogenerated using the method for subtraction.
+If the method for ``<CODE>!</CODE>'' is not specified, it can be autogenerated using the methods for ``<CODE>bool</CODE>'', or ``<CODE>\"\"</CODE>'', or ``<CODE>0+</CODE>''.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Increment">Increment and decrement
+
+</A></STRONG>
+<PRE>    &quot;++&quot;, &quot;--&quot;,
+</PRE>
+
+<P>
+
+If undefined, addition and subtraction methods can be used instead. These
+operations are called both in prefix and postfix form.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Transcendental">Transcendental functions
+
+</A></STRONG>
+<PRE>    &quot;atan2&quot;, &quot;cos&quot;, &quot;sin&quot;, &quot;exp&quot;, &quot;abs&quot;, &quot;log&quot;, &quot;sqrt&quot;,
+</PRE>
+
+<P>
+
+If <A HREF="#item_abs">abs</A> is unavailable, it can be autogenerated using methods for ``&lt;'' or ``&lt;=&gt;`` combined with either unary minus or subtraction.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Boolean">Boolean, string and numeric conversion
+
+</A></STRONG>
+<PRE>    &quot;bool&quot;, &quot;\&quot;\&quot;&quot;, &quot;0+&quot;,
+</PRE>
+
+<P>
+
+If one or two of these operations are unavailable, the remaining ones can
+be used instead.  <CODE>bool</CODE> is used in the flow control operators (like <CODE>while</CODE>) and for the ternary ``<CODE>?:</CODE>'' operation. These functions can return any arbitrary Perl value. If the
+corresponding operation for this value is overloaded too, that operation
+will be called again with this value.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Special">Special
+
+</A></STRONG>
+<PRE>    &quot;nomethod&quot;, &quot;fallback&quot;, &quot;=&quot;,
+</PRE>
+
+<P>
+
+see <A HREF="#SPECIAL_SYMBOLS_FOR_C_use_overlo">SPECIAL SYMBOLS FOR <CODE>use overload</CODE></A>.
+
+
+<P>
+
+</UL>
+See <A HREF="#Fallback">Fallback</A> for an explanation of when a missing method can be autogenerated.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Inheritance_and_overloading">Inheritance and overloading
+
+</A></H2>
+Inheritance interacts with overloading in two ways.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Strings">Strings as values of use overload directive
+
+</A></STRONG><DD>
+If <CODE>value</CODE> in
+
+
+<P>
+
+<PRE>  use overload key =&gt; value;
+</PRE>
+
+<P>
+
+is a string, it is interpreted as a method name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Overloading">Overloading of an operation is inherited by derived classes
+
+</A></STRONG><DD>
+Any class derived from an overloaded class is also overloaded. The set of
+overloaded methods is the union of overloaded methods of all the ancestors.
+If some method is overloaded in several ancestor, then which description
+will be used is decided by the usual inheritance rules:
+
+
+<P>
+
+If <A HREF="#item_A">A</A> inherits from <A HREF="#item_B">B</A> and <A HREF="#item_C">C</A> (in this order), <A HREF="#item_B">B</A> overloads
+<CODE>+</CODE> with <CODE>\&D::plus_sub</CODE>, and <A HREF="#item_C">C</A> overloads <CODE>+</CODE> by <CODE>"plus_meth"</CODE>, then the subroutine <CODE>D::plus_sub</CODE> will be called to implement operation <CODE>+</CODE> for an object in package <A HREF="#item_A">A</A>.
+
+
+<P>
+
+</DL>
+Note that since the value of the <CODE>fallback</CODE> key is not a subroutine, its inheritance is not governed by the above
+rules. In the current implementation, the value of <CODE>fallback</CODE> in the first overloaded ancestor is used, but this is accidental and
+subject to change.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SPECIAL_SYMBOLS_FOR_C_use_overlo">SPECIAL SYMBOLS FOR <CODE>use overload</CODE>
+
+</A></H1>
+Three keys are recognized by Perl that are not covered by the above
+description.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Last_Resort">Last Resort
+
+</A></H2>
+<CODE>"nomethod"</CODE> should be followed by a reference to a function of four parameters. If
+defined, it is called when the overloading mechanism cannot find a method
+for some operation. The first three arguments of this function coincide
+with the arguments for the corresponding method if it were found, the
+fourth argument is the symbol corresponding to the missing method. If
+several methods are tried, the last one is used. Say, <CODE>1-$a</CODE> can be equivalent to
+
+
+<P>
+
+<PRE>        &amp;nomethodMethod($a,1,1,&quot;-&quot;)
+</PRE>
+
+<P>
+
+if the pair <CODE>"nomethod" =&gt; "nomethodMethod"</CODE> was specified in the
+<CODE>use overload</CODE> directive.
+
+
+<P>
+
+If some operation cannot be resolved, and there is no function assigned to <CODE>"nomethod"</CODE>, then an exception will be raised via <CODE>die()--</CODE> unless <CODE>"fallback"</CODE> was specified as a key in <CODE>use overload</CODE> directive.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Fallback">Fallback 
+
+</A></H2>
+The key <CODE>"fallback"</CODE> governs what to do if a method for a particular operation is not found.
+Three different cases are possible depending on the value of <CODE>"fallback"</CODE>:
+
+
+<P>
+
+<UL>
+<LI><STRONG><A NAME="item_undef">undef
+
+</A></STRONG>
+Perl tries to use a substituted method (see <A HREF="#MAGIC_AUTOGENERATION">MAGIC AUTOGENERATION</A>). If this fails, it then tries to calls <CODE>"nomethod"</CODE> value; if missing, an exception will be raised.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_TRUE">TRUE
+
+</A></STRONG>
+The same as for the <A HREF="#item_undef">undef</A> value, but no exception is raised. Instead, it silently reverts to what it
+would have done were there no <CODE>use overload</CODE>
+present.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_defined">defined, but FALSE
+
+</A></STRONG>
+No autogeneration is tried. Perl tries to call
+<CODE>"nomethod"</CODE> value, and if this is missing, raises an exception. 
+
+
+<P>
+
+</UL>
+<STRONG>Note.</STRONG>  <CODE>"fallback"</CODE> inheritance via <CODE>@ISA</CODE> is not carved in stone yet, see <A HREF="#Inheritance_and_overloading">Inheritance and overloading</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Copy_Constructor">Copy Constructor
+
+</A></H2>
+The value for <CODE>"="</CODE> is a reference to a function with three arguments, i.e., it looks like the
+other values in <CODE>use
+overload</CODE>. However, it does not overload the Perl assignment operator. This would go
+against Camel hair.
+
+
+<P>
+
+This operation is called in the situations when a mutator is applied to a
+reference that shares its object with some other reference, such as
+
+
+<P>
+
+<PRE>        $a=$b; 
+        $a++;
+</PRE>
+
+<P>
+
+To make this change <A HREF="#item__a">$a</A> and not change $b, a copy of <A HREF="#item__a">$$a</A> is made, and <A HREF="#item__a">$a</A> is assigned a reference to this new
+object. This operation is done during execution of the <A HREF="#item__a_">$a++</A>, and not during the assignment, (so before the increment <A HREF="#item__a">$$a</A> coincides with <A HREF="#item__b">$$b</A>). This is only done if <CODE>++</CODE> is expressed via a method for <CODE>'++'</CODE> or <CODE>'+='</CODE>. Note that if this operation is expressed via <CODE>'+'</CODE> a nonmutator, i.e., as in
+
+
+<P>
+
+<PRE>        $a=$b; 
+        $a=$a+1;
+</PRE>
+
+<P>
+
+then <A HREF="#item__a">$a</A> does not reference a new copy of <A HREF="#item__a">$$a</A>, since <A HREF="#item__a">$$a</A> does not appear as lvalue when the above
+code is executed.
+
+
+<P>
+
+If the copy constructor is required during the execution of some mutator,
+but a method for <CODE>'='</CODE> was not specified, it can be autogenerated as a string copy if the object
+is a plain scalar.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Example">Example
+
+</A></STRONG><DD>
+The actually executed code for 
+
+
+<P>
+
+<PRE>        $a=$b; 
+        Something else which does not modify $a or $b....
+        ++$a;
+</PRE>
+
+<P>
+
+may be
+
+
+<P>
+
+<PRE>        $a=$b; 
+        Something else which does not modify $a or $b....
+        $a = $a-&gt;clone(undef,&quot;&quot;);
+        $a-&gt;incr(undef,&quot;&quot;);
+</PRE>
+
+<P>
+
+if <A HREF="#item__b">$b</A> was mathemagical, and <CODE>'++'</CODE> was overloaded with <CODE>\&incr</CODE>,
+<CODE>'='</CODE> was overloaded with <CODE>\&clone</CODE>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="MAGIC_AUTOGENERATION">MAGIC AUTOGENERATION
+
+</A></H1>
+If a method for an operation is not found, and the value for  <CODE>"fallback"</CODE> is 
+<FONT SIZE=-1>TRUE</FONT> or undefined, Perl tries to autogenerate a
+substitute method for the missing operation based on the defined
+operations. Autogenerated method substitutions are possible for the
+following operations:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Assignment">Assignment forms of arithmetic operations
+
+</A></STRONG><DD>
+<CODE>$a+=$b</CODE> can use the method for <CODE>"+"</CODE> if the method for <CODE>"+="</CODE>
+is not defined.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Conversion">Conversion operations 
+
+</A></STRONG><DD>
+String, numeric, and boolean conversion are calculated in terms of one
+another if not all of them are defined.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Increment">Increment and decrement
+
+</A></STRONG><DD>
+The <A HREF="#item__a">++$a</A> operation can be expressed in terms of <CODE>$a+=1</CODE> or <CODE>$a+1</CODE>, and <A HREF="#item__a_">$a--</A> in terms of <CODE>$a-=1</CODE> and <CODE>$a-1</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_abs">abs($a)
+
+</A></STRONG><DD>
+can be expressed in terms of <CODE>$a&lt;</CODE> and <A HREF="#item__a">-$a</A> (or <CODE>0-$a</CODE>).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Unary">Unary minus
+
+</A></STRONG><DD>
+can be expressed in terms of subtraction.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Negation">Negation
+
+</A></STRONG><DD>
+<CODE>!</CODE> and <CODE>not</CODE> can be expressed in terms of boolean conversion, or string or numerical
+conversion.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Concatenation">Concatenation
+
+</A></STRONG><DD>
+can be expressed in terms of string conversion.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Comparison">Comparison operations 
+
+</A></STRONG><DD>
+can be expressed in terms of its ``spaceship'' counterpart: either
+<CODE>&lt;=&gt;</CODE> or <A HREF="#item_cmp">cmp</A>:
+
+
+<P>
+
+<PRE>    &lt;, &gt;, &lt;=, &gt;=, ==, !=        in terms of &lt;=&gt;
+    lt, gt, le, ge, eq, ne      in terms of cmp
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Copy">Copy operator
+
+</A></STRONG><DD>
+can be expressed in terms of an assignment to the dereferenced value, if
+this value is a scalar and not a reference.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="WARNING">WARNING
+
+</A></H1>
+The restriction for the comparison operation is that even if, for example,
+`<A HREF="#item_cmp">cmp</A>' should return a blessed reference, the autogenerated `<A HREF="#item_lt">lt</A>' function will produce only a standard logical value based on the
+numerical value of the result of `<A HREF="#item_cmp">cmp</A>'. In particular, a working numeric conversion is needed in this case
+(possibly expressed in terms of other conversions).
+
+
+<P>
+
+Similarly, <CODE>.=</CODE>  and <A HREF="#item_x_">x=</A> operators lose their mathemagical properties if the string conversion
+substitution is applied.
+
+
+<P>
+
+When you <CODE>chop()</CODE> a mathemagical object it is promoted to a
+string and its mathemagical properties are lost. The same can happen with
+other operations as well.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Run_time_Overloading">Run-time Overloading
+
+</A></H1>
+Since all <A HREF="#item_use">use</A> directives are executed at compile-time, the only way to change overloading
+during run-time is to
+
+
+<P>
+
+<PRE>    eval 'use overload &quot;+&quot; =&gt; \&amp;addmethod';
+</PRE>
+
+<P>
+
+You can also use
+
+
+<P>
+
+<PRE>    eval 'no overload &quot;+&quot;, &quot;--&quot;, &quot;&lt;=&quot;';
+</PRE>
+
+<P>
+
+though the use of these constructs during run-time is questionable.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Public_functions">Public functions
+
+</A></H1>
+Package <CODE>overload.pm</CODE> provides the following public functions:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_overload">overload::StrVal(arg)
+
+</A></STRONG><DD>
+Gives string value of <CODE>arg</CODE> as in absence of stringify overloading.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_overload">overload::Overloaded(arg)
+
+</A></STRONG><DD>
+Returns true if <CODE>arg</CODE> is subject to overloading of some operations.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_overload">overload::Method(obj,op)
+
+</A></STRONG><DD>
+Returns <A HREF="#item_undef">undef</A> or a reference to the method that implements <CODE>op</CODE>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="IMPLEMENTATION">IMPLEMENTATION
+
+</A></H1>
+What follows is subject to change 
+<FONT SIZE=-1>RSN.</FONT>
+
+
+<P>
+
+The table of methods for all operations is cached in magic for the symbol
+table hash for the package. The cache is invalidated during processing of <CODE>use overload</CODE>, <CODE>no overload</CODE>, new function definitions, and changes in 
+<FONT SIZE=-1>@ISA.</FONT> However, this invalidation remains unprocessed
+until the next <A HREF="#item_bless">bless</A>ing into the package. Hence if you want to change overloading structure
+dynamically, you'll need an additional (fake) <A HREF="#item_bless">bless</A>ing to update the table.
+
+
+<P>
+
+(Every SVish thing has a magic queue, and magic is an entry in that queue.
+This is how a single variable may participate in multiple forms of magic
+simultaneously. For instance, environment variables regularly have two
+forms at once: their <CODE>%ENV</CODE> magic and their taint magic.
+However, the magic which implements overloading is applied to the stashes,
+which are rarely used directly, thus should not slow down Perl.)
+
+
+<P>
+
+If an object belongs to a package using overload, it carries a special
+flag. Thus the only speed penalty during arithmetic operations without
+overloading is the checking of this flag.
+
+
+<P>
+
+In fact, if <CODE>use overload</CODE> is not present, there is almost no overhead for overloadable operations, so most programs should not suffer measurable performance penalties. 
+<FONT SIZE=-1>A</FONT> considerable effort was made to minimize the overhead when overload is used in some package, but the arguments in question do not belong to packages using overload. When in doubt, test your speed with
+ <CODE>use overload</CODE> and without it. So far there have been no reports of substantial speed
+degradation if Perl is compiled with optimization turned on.
+
+
+<P>
+
+There is no size penalty for data if overload is not used. The only size
+penalty if overload is used in some package is that <EM>all</EM> the packages acquire a magic during the next <A HREF="#item_bless">bless</A>ing into the package. This magic is three-words-long for packages without
+overloading, and carries the cache tabel if the package is overloaded.
+
+
+<P>
+
+Copying (<CODE>$a=$b</CODE>) is shallow; however, a one-level-deep copying is carried out before any
+operation that can imply an assignment to the object <A
+HREF="#item__a">$a</A> (or $b) refers to, like <A HREF="#item__a_">$a++</A>. You can override this behavior by defining your own copy constructor (see <A HREF="#Copy_Constructor">Copy Constructor</A>).
+
+
+<P>
+
+It is expected that arguments to methods that are not explicitly supposed
+to be changed are constant (but this is not enforced).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Ilya Zakharevich &lt;<EM>ilya@math.mps.ohio-state.edu</EM>&gt;.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DIAGNOSTICS">DIAGNOSTICS
+
+</A></H1>
+When Perl is run with the <STRONG>-Do</STRONG> switch or its equivalent, overloading induces diagnostic messages.
+
+
+<P>
+
+Using the <A HREF="#item_m">m</A> command of Perl debugger (see <A HREF="/n|/perl/html/./lib/Pod/perldebug.html#">the perldebug manpage</A>) one can deduce which operations are overloaded (and which ancestor
+triggers this overloading). Say, if <A HREF="#item_eq">eq</A> is overloaded, then the method <A HREF="#item__eq">(eq</A>
+is shown by debugger. The method <CODE>()</CODE> corresponds to the <CODE>fallback</CODE>
+key (in fact a presence of this method shows that this package has
+overloading enabled, and it is what is used by the <CODE>Overloaded</CODE>
+function).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Because it is used for overloading, the per-package hash
+<CODE>%OVERLOAD</CODE> now has a special meaning in Perl. The symbol table
+is filled with names looking like line-noise.
+
+
+<P>
+
+For the purpose of inheritance every overloaded package behaves as if
+<CODE>fallback</CODE> is present (possibly undefined). This may create interesting effects if
+some package is not overloaded, but inherits from two overloaded packages.
+
+
+<P>
+
+This document is confusing.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

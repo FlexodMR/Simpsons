@@ -1,0 +1,129 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Fcntl - load the C Fcntl.h defines
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+	<LI><A HREF="#EXPORTED_SYMBOLS">EXPORTED SYMBOLS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Fcntl - load the 
+<FONT SIZE=-1>C</FONT> Fcntl.h defines
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Fcntl;
+    use Fcntl qw(:DEFAULT :flock);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module is just a translation of the 
+<FONT SIZE=-1>C</FONT> <EM>fnctl.h</EM> file. Unlike the old mechanism of requiring a translated <EM>fnctl.ph</EM>
+file, this uses the <STRONG>h2xs</STRONG> program (see the Perl source distribution) and your native 
+<FONT SIZE=-1>C</FONT> compiler. This means that it has a far more likely
+chance of getting the numbers right.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+Only <CODE>#define</CODE> symbols get translated; you must still correctly pack up your own arguments
+to pass as args for locking functions, etc.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXPORTED_SYMBOLS">EXPORTED SYMBOLS
+
+</A></H1>
+By default your system's 
+<FONT SIZE=-1>F_*</FONT> and 
+<FONT SIZE=-1>O_*</FONT> constants (eg, 
+<FONT SIZE=-1>F_DUPFD</FONT> and 
+<FONT SIZE=-1>O_CREAT)</FONT> and the 
+<FONT SIZE=-1>FD_CLOEXEC</FONT> constant are exported into your namespace.
+
+
+
+<P>
+
+You can request that the <CODE>flock()</CODE> constants 
+<FONT SIZE=-1>(LOCK_SH,</FONT> 
+<FONT SIZE=-1>LOCK_EX,</FONT> 
+<FONT SIZE=-1>LOCK_NB</FONT> and 
+<FONT SIZE=-1>LOCK_UN)</FONT> be provided by using the tag
+ <A HREF="#item__flock">:flock</A>. See <A HREF="/n|/perl/html/./lib/Exporter.html#">the Exporter manpage</A>.
+
+
+<P>
+
+You can request that the old constants 
+<FONT SIZE=-1>(FAPPEND,</FONT> 
+<FONT SIZE=-1>FASYNC,</FONT> 
+<FONT SIZE=-1>FCREAT,</FONT> 
+<FONT SIZE=-1>FDEFER,</FONT> 
+<FONT SIZE=-1>FEXCL,</FONT> 
+<FONT SIZE=-1>FNDELAY,</FONT> 
+<FONT SIZE=-1>FNONBLOCK,</FONT> 
+<FONT SIZE=-1>FSYNC,</FONT> 
+<FONT SIZE=-1>FTRUNC)</FONT> be provided for compatibility reasons by using the tag
+ <CODE>:Fcompat</CODE>. For new applications the newer versions of these constants are suggested 
+<FONT SIZE=-1>(O_APPEND,</FONT> 
+<FONT SIZE=-1>O_ASYNC,</FONT> 
+<FONT SIZE=-1>O_CREAT,</FONT> 
+<FONT SIZE=-1>O_DEFER,</FONT> 
+<FONT SIZE=-1>O_EXCL,</FONT> 
+<FONT SIZE=-1>O_NDELAY,</FONT> 
+<FONT SIZE=-1>O_NONBLOCK,</FONT> 
+<FONT SIZE=-1>O_SYNC,</FONT> 
+<FONT SIZE=-1>O_TRUNC).</FONT>
+
+
+
+<P>
+
+Please refer to your native <CODE>fcntl()</CODE> and <CODE>open()</CODE>
+documentation to see what constants are implemented in your system.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

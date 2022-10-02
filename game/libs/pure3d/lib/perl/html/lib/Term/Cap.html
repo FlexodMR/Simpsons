@@ -1,0 +1,170 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Term::Cap - Perl termcap interface
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Term::Cap - Perl termcap interface
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    require Term::Cap;
+    $terminal = Tgetent Term::Cap { TERM =&gt; undef, OSPEED =&gt; $ospeed };
+    $terminal-&gt;Trequire(qw/ce ku kd/);
+    $terminal-&gt;Tgoto('cm', $col, $row, $FH);
+    $terminal-&gt;Tputs('dl', $count, $FH);
+    $terminal-&gt;Tpad($string, $count, $FH);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+These are low-level functions to extract and use capabilities from a
+terminal capability (termcap) database.
+
+
+<P>
+
+The <STRONG>Tgetent</STRONG> function extracts the entry of the specified terminal type <EM>TERM</EM> (defaults to the environment variable <EM>TERM</EM>) from the database.
+
+
+<P>
+
+It will look in the environment for a <EM>TERMCAP</EM> variable. If found, and the value does not begin with a slash, and the
+terminal type name is the same as the environment string <EM>TERM</EM>, the
+<EM>TERMCAP</EM> string is used instead of reading a termcap file. If it does begin with a
+slash, the string is used as a path name of the termcap file to search. If <EM>TERMCAP</EM> does not begin with a slash and name is different from <EM>TERM</EM>, <STRONG>Tgetent</STRONG> searches the files <EM>$HOME/.termcap</EM>, <EM>/etc/termcap</EM>, and <EM>/usr/share/misc/termcap</EM>, in that order, unless the environment variable <EM>TERMPATH</EM> exists, in which case it specifies a list of file pathnames (separated by
+spaces or colons) to be searched <STRONG>instead</STRONG>. Whenever multiple files are searched and a tc field occurs in the
+requested entry, the entry it names must be found in the same file or one
+of the succeeding files. If there is a <CODE>:tc=...:</CODE> in the <EM>TERMCAP</EM>
+environment variable string it will continue the search in the files as
+above.
+
+
+<P>
+
+<EM>OSPEED</EM> is the terminal output bit rate (often mistakenly called the baud rate).  <EM>OSPEED</EM> can be specified as either a 
+<FONT SIZE=-1>POSIX</FONT> termios/SYSV termio speeds (where 9600 equals
+9600) or an old BSD-style speeds (where 13 equals 9600).
+
+
+<P>
+
+<STRONG>Tgetent</STRONG> returns a blessed object reference which the user can then use to send the
+control strings to the terminal using <STRONG>Tputs</STRONG>
+and <STRONG>Tgoto</STRONG>. It calls <A HREF="#item_croak">croak</A> on failure.
+
+
+<P>
+
+<STRONG>Tgoto</STRONG> decodes a cursor addressing string with the given parameters.
+
+
+<P>
+
+The output strings for <STRONG>Tputs</STRONG> are cached for counts of 1 for performance.
+<STRONG>Tgoto</STRONG> and <STRONG>Tpad</STRONG> do not cache.  <CODE>$self-&gt;{_xx}</CODE> is the raw termcap data and <CODE>$self-&gt;{xx}</CODE> is the cached version.
+
+
+<P>
+
+<PRE>    print $terminal-&gt;Tpad($self-&gt;{_xx}, 1);
+</PRE>
+
+<P>
+
+<STRONG>Tgoto</STRONG>, <STRONG>Tputs</STRONG>, and <STRONG>Tpad</STRONG> return the string and will also output the string to <CODE>$FH</CODE> if
+specified.
+
+
+<P>
+
+The extracted termcap entry is available in the object as <CODE>$self-&gt;{TERMCAP}</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+<PRE>    # Get terminal output speed
+    require POSIX;
+    my $termios = new POSIX::Termios;
+    $termios-&gt;getattr;
+    my $ospeed = $termios-&gt;getospeed;
+</PRE>
+
+<P>
+
+<PRE>    # Old-style ioctl code to get ospeed:
+    #     require 'ioctl.pl';
+    #     ioctl(TTY,$TIOCGETP,$sgtty);
+    #     ($ispeed,$ospeed) = unpack('cc',$sgtty);
+</PRE>
+
+<P>
+
+<PRE>    # allocate and initialize a terminal structure
+    $terminal = Tgetent Term::Cap { TERM =&gt; undef, OSPEED =&gt; $ospeed };
+</PRE>
+
+<P>
+
+<PRE>    # require certain capabilities to be available
+    $terminal-&gt;Trequire(qw/ce ku kd/);
+</PRE>
+
+<P>
+
+<PRE>    # Output Routines, if $FH is undefined these just return the string
+</PRE>
+
+<P>
+
+<PRE>    # Tgoto does the % expansion stuff with the given args
+    $terminal-&gt;Tgoto('cm', $col, $row, $FH);
+</PRE>
+
+<P>
+
+<PRE>    # Tputs doesn't do any % expansion.
+    $terminal-&gt;Tputs('dl', $count = 1, $FH);
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

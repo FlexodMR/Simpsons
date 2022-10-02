@@ -1,0 +1,118 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Win32::Semaphore - allow synchronization with Win32 Semaphore objects.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Win32::Semaphore - allow synchronization with Win32 Semaphore objects.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS_use_Win32_Semaphore_">SYNOPSIS
+	use Win32::Semaphore;
+
+</A></H1>
+<PRE>        Win32::Semaphore::Create($SemObj,0,1,&quot;MySem&quot;);
+        $SemObj-&gt;Wait(INFINITE);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module allows the user to access Win32 semaphores.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_Win32">Win32::Semaphore::Create($SemObject,$Initial,$Max,$Name)
+
+</A></STRONG><DD>
+Creates a semaphore object.
+
+
+<P>
+
+<PRE>    Args:
+        $SemObject      container for the sem objects
+        $Initial        initial count of the semaphore
+        $Max            max count of the semaphore
+        $Name           name (string)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Win32">Win32::Semaphore::Open($SemObject, $Name)
+
+</A></STRONG><DD>
+Open an already created named semaphore.
+
+
+<P>
+
+<PRE>    Args:
+        $SemObject      container for the sem object
+        $Name           name of the semaphore to open
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__SemObj_Release_Count_lastval">$SemObj->Release($Count,$lastval)
+
+</A></STRONG><DD>
+Release ownership of a semphore object.
+
+
+<P>
+
+<PRE>    Args:
+        $Count          amount to increase semaphore count
+        $lastval        previous value of the semaphore count
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__SemObj_Wait_TimeOut_">$SemObj->Wait($TimeOut)		
+
+</A></STRONG><DD>
+Wait for ownership of a semaphore object.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

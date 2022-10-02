@@ -1,0 +1,289 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTTP::Request::Common - Construct common HTTP::Request objects
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTTP::Request::Common - Construct common HTTP::Request objects
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use <A HREF="HTTP::Request::Common">HTTP::Request::Common</A>;
+  $ua = LWP::UserAgent-&gt;new;
+  $ua-&gt;request(GET '<A HREF="http://www.sn.no/">http://www.sn.no/</A>');
+  $ua-&gt;request(POST '<A HREF="http://somewhere/foo">http://somewhere/foo</A>', [foo =&gt; bar, bar =&gt; foo]);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provide functions that return newly created HTTP::Request
+objects. These functions are usually more convenient than the standard
+HTTP::Request constructor for these common requests. The following
+functions are provided.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_GET">GET $url, [Header => Value,...]
+
+</A></STRONG><DD>
+The <CODE>GET()</CODE> function returns a HTTP::Request object initialized with the 
+<FONT SIZE=-1>GET</FONT> method and the specified 
+<FONT SIZE=-1>URL.</FONT> Without additional arguments it is exactly equivalent to the following call
+
+
+
+<P>
+
+<PRE>  <A HREF="HTTP::Request-&gt">HTTP::Request-&gt</A>;new(GET =&gt; $url)
+</PRE>
+
+<P>
+
+but is less clutter. It also reads better when used together with the
+LWP::UserAgent-&gt;request() method:
+
+
+<P>
+
+<PRE>  my $ua = new LWP::UserAgent;
+  my $res = $ua-&gt;request(GET '<A HREF="http://www.sn.no">http://www.sn.no</A>')
+  if ($res-&gt;is_success) { ...
+</PRE>
+
+<P>
+
+You can also initialize the header values in the request by specifying some
+key/value pairs as optional arguments. For instance:
+
+
+<P>
+
+<PRE>  $ua-&gt;request(GET '<A HREF="http://www.sn.no">http://www.sn.no</A>',
+                   If_Match =&gt; 'foo',
+                   From     =&gt; 'gisle@aas.no',
+              );
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> header key called 'Content' is special and when seen
+the value will initialize the content part of the request instead of
+setting a header.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_HEAD">HEAD $url, [Header => Value,...]
+
+</A></STRONG><DD>
+Like <CODE>GET()</CODE> but the method in the request is 
+<FONT SIZE=-1>HEAD.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PUT">PUT $url, [Header => Value,...]
+
+</A></STRONG><DD>
+Like <CODE>GET()</CODE> but the method in the request is 
+<FONT SIZE=-1>PUT.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_POST">POST $url, [$form_ref], [Header => Value,...]
+
+</A></STRONG><DD>
+This works mostly like <CODE>GET()</CODE> with 
+<FONT SIZE=-1>POST</FONT> as method, but this function also takes a second
+optional array reference parameter ($form_ref). This argument can be used
+to pass key/value pairs for the form content. By default we will initialize
+a request using the
+<CODE>application/x-www-form-urlencoded</CODE> content type. This means that you can emulate a 
+<FONT SIZE=-1>HTML</FONT> &lt;form&gt; POSTing like this:
+
+
+<P>
+
+<PRE>  POST '<A HREF="http://www.perl.org/survey.cgi">http://www.perl.org/survey.cgi</A>',
+       [ name  =&gt; 'Gisle',
+         email =&gt; 'gisle@aas.no',
+         gender =&gt; 'm',
+         born   =&gt; '1964',
+         trust  =&gt; '3%',
+        ];
+</PRE>
+
+<P>
+
+This will create a HTTP::Request object that looks like this:
+
+
+<P>
+
+<PRE>  POST <A HREF="http://www.perl.org/survey.cgi">http://www.perl.org/survey.cgi</A>
+  Content-Length: 61
+  Content-Type: application/x-www-form-urlencoded
+</PRE>
+
+<P>
+
+<PRE>  name=Gisle&amp;email=gisle%40aas.no&amp;gender=m&amp;born=1964&amp;trust=3%25
+</PRE>
+
+<P>
+
+The 
+<FONT SIZE=-1>POST</FONT> method also supports the <CODE>multipart/form-data</CODE> content used for <EM>Form-based File Upload</EM> as specified in 
+<FONT SIZE=-1>RFC</FONT> 1867. You trigger this content format by
+specifying a content type of <CODE>'form-data'</CODE>. If one of the values in the <CODE>$form_ref</CODE> is an array reference,
+then it is treated as a file part specification with the following values:
+
+
+<P>
+
+<PRE>  [ $file, $filename, Header =&gt; Value... ]
+</PRE>
+
+<P>
+
+The first value in the array ($file) is the name of a file to open. This
+file will be read an its content placed in the request. The routine will
+croak if the file can't be opened. Use an undef as <CODE>$file</CODE> value
+if you want to specify the content directly. The <CODE>$filename</CODE> is
+the filename to report in the request. If this value is undefined, then the
+basename of the <CODE>$file</CODE> will be used. You can specify an empty
+string as <CODE>$filename</CODE> if you don't want any filename in the
+request.
+
+
+<P>
+
+Sending my <EM>~/.profile</EM> to the survey used as example above can be achieved by this:
+
+
+<P>
+
+<PRE>  POST '<A HREF="http://www.perl.org/survey.cgi">http://www.perl.org/survey.cgi</A>',
+       Content_Type =&gt; 'form-data',
+       Content      =&gt; [ name  =&gt; 'Gisle Aas',
+                         email =&gt; 'gisle@aas.no',
+                         gender =&gt; 'm',
+                         born   =&gt; '1964',
+                         init   =&gt; [&quot;$ENV{HOME}/.profile&quot;],
+                       ]
+</PRE>
+
+<P>
+
+This will create a HTTP::Request object that almost looks this (the
+boundary and the content of your <EM>~/.profile</EM> is likely to be different):
+
+
+<P>
+
+<PRE>  POST <A HREF="http://www.perl.org/survey.cgi">http://www.perl.org/survey.cgi</A>
+  Content-Length: 388
+  Content-Type: multipart/form-data; boundary=&quot;6G+f&quot;
+</PRE>
+
+<P>
+
+<PRE>  --6G+f
+  Content-Disposition: form-data; name=&quot;name&quot;
+  
+  Gisle Aas
+  --6G+f
+  Content-Disposition: form-data; name=&quot;email&quot;
+  
+  gisle@aas.no
+  --6G+f
+  Content-Disposition: form-data; name=&quot;gender&quot;
+  
+  m
+  --6G+f
+  Content-Disposition: form-data; name=&quot;born&quot;
+  
+  1964
+  --6G+f
+  Content-Disposition: form-data; name=&quot;init&quot;; filename=&quot;.profile&quot;
+  Content-Type: text/plain
+  
+  PATH=/local/perl/bin:$PATH
+  export PATH
+</PRE>
+
+<P>
+
+<PRE>  --6G+f--
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/HTTP/Request.html">Request</A>, <A HREF="/n|/perl/html/./lib/site/LWP/UserAgent.html">UserAgent</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1997, Gisle Aas
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

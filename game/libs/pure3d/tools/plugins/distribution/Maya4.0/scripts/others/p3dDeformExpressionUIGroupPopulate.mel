@@ -1,0 +1,44 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformExpressionUIGroupPopulate.mel
+// Author: Senta Kaiser
+//
+// Description: Expression Deformation tool UI (group) populate function
+//
+
+// Callback for creating an expression
+//
+
+
+// Callback for zeroing all expressions in a group
+//
+global proc p3dDeformExpressionUIZeroAllCallback(string $group)
+{
+   p3dDeformExpressionZeroAll $group;
+}
+
+
+// Callback for keying all expressions in a group
+//
+global proc p3dDeformExpressionUIKeyAllCallback(string $group)
+{
+   p3dDeformExpressionKeyAll $group;
+}
+
+// (Re-)Populates the scrollable group list
+// - main entry point
+//
+global proc p3dDeformExpressionUIGroupPopulate()
+{
+
+   if (!(`window -exists p3dDeformer`))
+   {
+      return;
+   }
+
+   p3dDeformUIGroupPopulateStateList("p3dDeformExpressionScrollColumnForm");
+   
+}
+
+
+// End of file.

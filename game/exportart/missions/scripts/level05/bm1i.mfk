@@ -1,0 +1,94 @@
+SelectMission("bm1");
+
+SetMissionResetPlayerOutCar("bm1_Apustart", "bm1_carstart");
+SetDynaLoadData("l5z1.p3d;l5r4.p3d;l5r1.p3d;");
+
+UsePedGroup(0);
+
+//AddStage(0);
+//	SetStageMessageIndex(12);
+//	AddObjective("getin", "neither");
+//		SetObjTargetVehicle("current");
+//	CloseObjective();
+//CloseStage();
+
+//AddStage(3);
+//    SetPresentationBitmap( "art/frontend/dynaload/images/mis05_08.p3d" );
+//	RESET_TO_HERE();
+//	SetMaxTraffic(3);
+//	SetStageMessageIndex(208);
+//	SetHUDIcon( "sitnrota" );
+//	AddStageVehicle("frink_v","bm1_hovercar_carstart","NULL","Missions\level05\BM1dest.con");
+//	AddObjective("goto");
+//		SetDestination("bm1_hovercar_start", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//	SetStageTime(60);
+//	AddCondition("timeout");
+//		//SetHitNRun();
+//	CloseCondition();
+//CloseStage();
+
+AddStage(7);
+	SetStageMessageIndex(127);
+	SetHUDIcon( "frink_v" );
+	AddStageVehicle("frink_v","bm1_hovercar_carstart","target","Missions\level05\BM1dest.con");
+	SetVehicleAIParams( "frink_v", 15, 25 ); //  some shorctuts
+	SetStageAITargetCatchupParams( "frink_v", 50, 100);
+//	ActivateVehicle("frink_v","NULL","target");
+
+	AddStageWaypoint( "bm1_hovercar_newpath_1" );
+	AddStageWaypoint( "bm1_hovercar_newpath_2" );
+	AddStageWaypoint( "bm1_hovercar_newpath_3" );
+	AddStageWaypoint( "bm1_hovercar_newpath_4" );
+	AddStageWaypoint( "bm1_hovercar_newpath_5" );
+	AddStageWaypoint( "bm1_hovercar_newpath_6" );
+	AddStageWaypoint( "bm1_hovercar_newpath_7" );
+	AddStageWaypoint( "bm1_hovercar_newpath_8" );
+
+//	AddStageWaypoint( "bm1_hovercar_path12" );
+//	AddStageWaypoint( "bm1_hovercar_path17" );
+//	AddStageWaypoint( "bm1_hovercar_path18" );
+//	AddStageWaypoint( "bm1_hovercar_path7" );
+//	AddStageWaypoint( "bm1_hovercar_path12" );
+//	AddStageWaypoint( "bm1_hovercar_path17" );
+//	AddStageWaypoint( "bm1_hovercar_path18" );
+	AddObjective("destroy");
+		SetObjTargetVehicle("frink_v");
+	CloseObjective();
+	SetStageTime(180);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(244);
+	SetHUDIcon( "java" );
+	AddObjective( "goto" );
+		SetDestination( "bm_javaserver", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddStageTime(30);
+	AddCondition("timeout");
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(96);
+	SetHUDIcon( "frink" );
+	AddObjective("talkto");
+		//AddNPC("frink", "bm1_frink_sd");
+		SetTalkToTarget("frink", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(final);
+	AddObjective("dialogue");
+		SetDialogueInfo("apu","frink","relief",0);
+		SetCamBestSide( "bm1_bestside" );
+	CloseObjective();
+CloseStage();
+
+CloseMission();

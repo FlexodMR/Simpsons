@@ -1,0 +1,63 @@
+global proc AEpure3dBumpMapShaderTemplate ( string $nodeName )
+{
+    AEswatchDisplay $nodeName;
+    editorTemplate -beginScrollLayout;
+    editorTemplate -callCustom AEshaderTypeNew AEshaderTypeReplace "message";
+
+    editorTemplate -beginLayout "Common Material Attributes" -collapse 0; 
+        editorTemplate -label "Texture" -addControl "color";
+        editorTemplate -label "Transparency" -addControl "transparency";
+        editorTemplate -addControl "ambient";
+        editorTemplate -addControl "diffuse";
+        editorTemplate -addControl "emissive";
+    editorTemplate -endLayout;
+    
+    editorTemplate -beginLayout "Bump Map Attributes" -collapse 0; 
+        editorTemplate -label "BumpMap Texture" -addControl "BumpMap";  //beware case sensitivity
+        editorTemplate -label "BumpMap Transparency" -addControl "BumpMapTransparency";
+        editorTemplate -label "Specular Bump Mapping" -addControl "BumpMapSpecular";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Specular Shading" -collapse 0;
+        editorTemplate -addControl "specular";
+        editorTemplate -addControl "shininess";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Material Attributes" -collapse true;
+        editorTemplate -addControl "shadeMode";
+        editorTemplate -addControl "blendMode";
+        editorTemplate -addControl "dynamicallyLit";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Texture Attributes" -collapse true;
+        editorTemplate -addControl "uvMode";
+        editorTemplate -addControl "filterMode";
+        editorTemplate -addControl "alphaTest";
+        editorTemplate -addControl "alphaCompare";
+        editorTemplate -addControl "proceduralXRes";
+        editorTemplate -addControl "proceduralYRes";
+    editorTemplate -endLayout;
+
+    // supressed attributes
+    editorTemplate -suppress "pointCamera";
+    editorTemplate -suppress "normalCamera";
+    editorTemplate -suppress "rayDirection";
+    editorTemplate -suppress "isLit";
+    editorTemplate -suppress "exportMipmaps";
+    // I assume these are suppressed (since they're not included above)
+    editorTemplate -suppress "mmsharpness";
+    editorTemplate -suppress "mipmapmin";
+    editorTemplate -suppress "mipmapmax";        
+    editorTemplate -suppress "shaderExport";
+    editorTemplate -suppress "vertexShaderName";
+
+    // include/call base class/node attributes
+    AElambertCommonInclude $nodeName;
+
+    editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+        AEhardwareTextureTemplate $nodeName ("color");
+    editorTemplate -endLayout;
+
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+}

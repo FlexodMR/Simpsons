@@ -1,0 +1,3405 @@
+/*===========================================================================
+   p3dexpoptsgui.mel
+   created: Feb. 10, 2000
+   Torre Zuk
+
+   Copyright (c) 2000 Radical Entertainment, Inc.
+   All rights reserved.
+===========================================================================*/
+
+/* SEARCH STRINGS
+
+global proc string P3DGetExportOptions()
+global proc P3DUpdateExportRulesGUI( string
+
+global proc P3DCreateShaderSettingsGUI( string $parent, int $isAE )
+global proc P3DUpdateShaderSettingsGUI( string $parent, int $isAE )
+
+*/
+
+// Declare globals first, then assign.
+// Avoids the "Global variable is already initialized; this occurrence is ignored." spew in Script Editor.
+// Identify globals with "g" prefix.
+global string $gP3dExporterOptions[];
+global int    $gP3dExporterOptionTypes[];
+// global string $gP3dExporterOptionLabels[];
+global string $gP3dExporterOptionValues_AnimationNameStyle[];
+global string $gP3dExporterOptionValues_TextureResolution[];
+global string $gP3dExporterOptionAnimationTypes[];
+global string $gP3dExporterOptionAnimationNames[];
+
+$gP3dExporterOptions =
+    {
+        "exportNISScenegraph",
+        "exportAnimations",
+        "exportVisAnimations",
+        "exportShaderAnimations",
+
+        "exportVertexOffsetAnims",
+
+        "exportAnimReferencesOnly",
+        "referenceStrip",
+// Auto-Generate Bounding Volumes - Removed on 04 Jan 2002
+//        "autoGenBoundingVolumes",
+        "tristripMeshes",
+        "deindexMeshes",
+
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//        "exportMirrorAnimation",
+
+//        "verbose",
+//        "animationMirrorString",
+//        "animationNameStyle",
+//        "animationString",
+
+        "NISScenegraphName",
+        "useScenegraphNameForLightGroup",
+        "lightGroupName",
+
+        "multicontrollerName",
+        "xTextureResolution",
+        "yTextureResolution",
+        "exportedFile",
+        "exporterScript",
+        "viewerScript",
+        "postProcessScript"
+    };
+
+// 0 = special purpose 1 = checkbox, 2 = textField
+$gP3dExporterOptionTypes =
+    {
+        1,
+        1,
+        1,
+        1,      // exportShaderAnimations
+        1,      // exportVertexOffsetAnims (Deformer Expression)
+        1,
+        1,
+// Auto-Generate Bounding Volumes - Removed on 04 Jan 2002
+//        1,
+        1,
+        1,
+// exportMirrorAnimation - Deprecated - 01 Apr 2002 - Exporter v16.14
+//        1,
+
+//        1,    // verbose
+//        2,
+//        0,
+//        2,
+        2,      // NISScenegraphName
+        1,      // useScenegraphNameForLightGroup
+        2,      // lightGroupName
+        2,      // multicontrollerName
+        0,
+        0,
+        0,
+        0,
+        0,
+        0                              
+    };
+
+$gP3dExporterOptionValues_AnimationNameStyle =
+    {
+        "Prefix", "Unchanged", "Postfix", "Replace", "Filename Replace", "Filename Prefix"
+    };
+
+$gP3dExporterOptionValues_TextureResolution =
+    {
+        "8", "16", "32", "64", "128", "256", "512", "1024"
+    };
+
+$gP3dExporterOptionAnimationTypes =
+{
+    "Texture",
+    "Camera",
+    "Light",
+    "Pose",
+    "Pose (Mirrored)",
+    "Pose Visibility",
+    "Scenegraph",
+    "Scenegraph Visibility",
+    "Event",
+    "Billboard",
+    "Deformer Expression",
+    "Effect",
+    "Animated Object",
+    "Vertex Animation",
+    "Shader Animation"
+};
+
+// These should match the FOURCC codes in 
+// namespace Pure3DAnimationTypes.
+$gP3dExporterOptionAnimationNames =
+{
+    "TEX",
+    "CAM",
+    "LITE",
+    "PTRN",
+    "PTRN",
+    "PVIS",
+    "STRN",
+    "SVIS",
+    "EVT",
+    "BQG",
+    "EXP",
+    "EFX",
+    "AOBJ",
+    "VRTX",
+    "SHAD"
+};
+
+proc string getUIPrefix( int $isAE )
+{
+    string $AEprefix;
+    switch ( $isAE )
+    {
+        case 2:
+        // Populating Export Options panel
+        {
+            $AEprefix = "EO";
+            break;
+        }
+        case 1:
+        // Populating Attribute Editor
+        {
+            $AEprefix = "AE";
+            break;
+        }
+        case 0:
+        default:
+        // Populating standalone Exporter Preferences window.
+        {
+            $AEprefix = "";
+            break;
+        }
+    }
+
+    return $AEprefix;
+}
+
+//===========================================================================
+// version
+//===========================================================================
+// Description: Returns the current version for this MEL script.
+//              Used for version control.
+//
+// Constraints: 
+//
+//===========================================================================
+proc float version()
+{
+    return ( 2.0 );
+}
+
+//===========================================================================
+// pluginVersion
+//===========================================================================
+// Description: Returns a float value representing the current version of
+//              the Pure3D Maya Exporter plug-in.  This wrapper call 
+//              prevents errors when attempting to assign a version of
+//              "17.9.1" to a float variable.
+//
+// Constraints: Only the major and first minor components of the version
+//              are returned.  For example, if the true version is "17.9.1"
+//              the ".1" component will be ignored.
+//
+//  Parameters: (none)
+//
+//      Return: (float): The plug-in version (sans any minor/path revision
+//                       extensions).
+//
+//===========================================================================
+proc float pluginVersion()
+{
+    float $version = 0.0;
+    string $exporter = "p3dmayaexp.mll";
+
+    if ( `pluginInfo -q -loaded $exporter` )
+    {
+        string $tokens[];
+        string $versionStr = `pluginInfo -q -version $exporter`;
+        tokenize $versionStr "." $tokens;
+        $versionStr = ( $tokens[0] + "." + $tokens[1] );
+        $version = (float)$versionStr;
+    }
+
+    return $version;
+}
+
+//===========================================================================
+// getShape
+//===========================================================================
+// Description: Returns the shape node, if any, for the specified transform.
+//
+// Constraints: Considers only a single shape.
+//
+//  Parameters: string $xform: The transform node.
+//
+//      Return: (string): The shape node.
+//
+//===========================================================================
+proc string getShape( string $xform )
+{
+    string $shapes[];
+    
+    $shapes[0] = $xform;
+    
+    string $isTransform[] = `ls -transforms $xform`;
+    
+    if ( `size $isTransform` > 0 )
+    // If given node is not a transform, assume it is a shape 
+    // and pass it through
+    {
+        $shapes = `listRelatives -fullPath -shapes $xform`;
+    }
+    
+    return $shapes[0];
+}
+
+//===========================================================================
+// getTransform
+//===========================================================================
+// Description: Returns the transform for the specified shape node.
+//
+//  Parameters: string $shape: The shape node.
+//
+//      Return: (string): The transform node.
+//
+//===========================================================================
+proc string getTransform( string $shape )
+{
+    string $transform = $shape;
+    
+    // Special case for "joint" -- 
+    // a joint is a transform and has no corresponding Shape.
+    if ( `objExists $shape` && ( "transform" != `nodeType $shape` ) && ( "joint" != `nodeType $shape` ) )
+    // If given node is already a transform, just pass on through
+    {
+        string $parents[] = `listRelatives -fullPath -parent $shape`;
+        $transform = $parents[0];
+    }
+
+    return $transform;
+}
+
+//===========================================================================
+// isExporterLoaded
+//===========================================================================
+// Description: Determines if the Pure3D Exporter plug-in is loaded.
+//
+// Constraints: It is not possible to simply call "loadPlugin" here:
+//              See Maya Release Notes: "loadPlugin command restriction."
+//
+// Return:      TRUE if plug-in is loaded; else FALSE.
+//
+//===========================================================================
+proc int isExporterLoaded()
+{
+    int $isValid = false;
+    string $exporter = "p3dmayaexp.mll";
+    
+    $isValid = `pluginInfo -q -loaded $exporter`;
+
+    return $isValid;
+}
+
+//===========================================================================
+// isExporterValid
+//===========================================================================
+// Description: Determines if the Pure3D Exporter plug-in is loaded
+//              AND if it matches the version expected by this script.
+//
+// Constraints: 
+//
+// Return:      TRUE if plug-in is loaded; else FALSE.
+//
+//===========================================================================
+proc int isExporterValid()
+{
+    int $isValid = ( version() == pluginVersion() );
+
+    return $isValid;
+}
+
+//===========================================================================
+// sansExtension
+//===========================================================================
+// Description: Strips the ".ma", ".mb" or ".p3d" extension from the 
+//              end of the specified path/filename.
+//
+// Constraints: Only ".ma", ".mb" and ".p3d" extensions are detected.
+//
+// Parameters:  string $path: The path or filename.  May or may not have
+//                            an extension.
+//
+// Return:      (string): The path or filename, without its extension.
+//
+//===========================================================================
+proc string sansExtension( string $path )
+{
+    $path = `substitute ".m[a,b]$" $path ""`;
+    $path = `substitute ".p3d$" $path ""`;
+    return $path;
+}
+
+//===========================================================================
+// filepart
+//===========================================================================
+// Description: Returns the file portion from a fully qualified filepath.
+//
+// Constraints: 
+//
+// Parameters:  string $path: The fully qualified filepath.
+//
+// Return:      (string): The file portion of the filepath.
+//
+//===========================================================================
+global proc string filepart( string $path )
+{
+    string $filepart =  match( "[^/\\]*$", $path );
+
+    return $filepart;
+}
+
+//===========================================================================
+// pathpart
+//===========================================================================
+// Description: Returns the path portion from a fully qualified filepath.
+//
+// Constraints: Strips the trailing slash from the path.
+//
+// Parameters:  string $path: The fully qualified filepath.
+//
+// Return:      (string): The path portion of the filepath.
+//
+//===========================================================================
+proc string pathpart( string $path )
+{
+    string $dir = match( "^.*/", $path );
+
+    int $sz = size( $dir );
+    // Strip off trailing '/'
+    if ( ( $sz > 1 ) && ( substring( $dir, $sz, $sz ) == "/" ) ) 
+    {
+        $dir = substring( $dir, 1, ($sz - 1) );
+    }
+
+    return $dir;
+}
+
+//===========================================================================
+// ClearMenu
+//===========================================================================
+// Description: Clears the specified optionMenu.
+//
+// Parameters:  string $menu: The optionMenu UI control.
+//
+// Return:      (none)
+//
+//===========================================================================
+proc ClearMenu( string $menu )
+{
+    string $menuItems[];
+
+    $menuItems = `optionMenu -q -ill $menu`;
+
+    for ( $item in $menuItems )
+        deleteUI $item;
+}
+
+//===========================================================================
+// SelectMenuItem
+//===========================================================================
+// Description: Selects an item within an optionMenu.  If the item
+//              cannot be found it is added as an "orphan".
+//
+// Constraints: 
+//
+// Parameters:  string $menu: The UI control for the optionMenu.
+//              string $item: The name of the item to select.
+//
+// Return:      (none)
+//
+//===========================================================================
+proc SelectMenuItem( string $menu, string $item )
+{
+    string  $menuItems[];
+    int         $numItems;
+    int         $counter;
+    int         $success = 0;
+
+    if ( $item == "" )
+        $item = "-- none --";
+
+    if ( `control -q -exists $menu` )
+    {
+        $menuItems  = `optionMenu -query -ils $menu`;
+        $numItems       = size($menuItems);
+
+        for ($counter = 0; $counter < $numItems; $counter++)
+        {
+            if (`menuItem -query -label $menuItems[$counter]` == $item)
+            {
+                optionMenu -edit -select ($counter + 1) $menu;
+                $success = 1;
+                break;
+            }
+        }
+
+        if ( ( ! $success ) && ( $item != "-- none --" ) && ( "*" != `substring $item 1 1` ) )
+        // Object not found.. 
+        // If this is _not_ an orphan, create orphan and select it.
+        {
+            $item = ( "*" + $item );
+            setParent -m $menu;
+            menuItem -label $item;
+            $success = 1;
+        }
+
+        if ( $item == "-- none --" )
+        {
+            setParent -m $menu;
+            menuItem -label $item;
+            $success = 1;
+        }
+
+        if ( ! $success )
+        {
+            warning ( "Could not select \"" + $item + "\" in menu: " + $menu + "\n" );
+        }
+
+    }
+
+    // Force menu to update (ie. if it's empty, it won't unless nudged)
+    // .. but only if the menu is currently enabled
+    if ( `optionMenu -q -enable $menu` )
+    {
+        optionMenu -e -enable false $menu;
+        optionMenu -e -enable true $menu;
+    }
+}
+
+//===========================================================================
+// p3dExportOptionsHelp
+//===========================================================================
+// Description: Provides a Help window with a detailed description about
+//              an Exporter feature.
+//
+// Constraints: 
+//
+// Parameters:  string $mode: A mode identifier string, used to determine
+//                            the Help context.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc p3dExportOptionsHelp( string $mode )
+{
+    string $help, $title;
+    
+    switch ( $mode )
+    {
+        case "localRules":
+        {
+            $title = "Local Rules Help";
+            $help = "The Local Rules are specified in this scene file by the Exporter Options node.  Each scene can have its own Local Rules.";
+            break;
+        }
+        case "globalRules":
+        {
+            $title = "Global Rules Help";
+            $help = "There is one and only one Global Rules file.  It is stored in a user preference and will be the same for all scenes.";
+            break;
+        }
+        case "viewerScript":
+        {
+            $title = "Viewer Script Help";
+            $help = "The Viewer Script is a Pure3D Viewer command script file which is executed after exporting and before viewing.  It is used by the Quick Viewer, and thus is relevent ONLY when using the Quick Viewer.";
+            break;
+        }
+        case "exporterScript":
+        {
+            $title = "Exporter Script Help";
+            $help = "The Exporter Script is a MEL script file which is executed before exporting.  It is executed ONLY when using the Quick Exporter or Quick Viewer.";
+            break;
+        }
+        case "exportedFile":
+        {
+            $title = "Exported File Help";
+            $help = "The Exported File specifies the full path for the Pure3D file when exported by the Quick Exporter.  It is not used when exporting from the File->Export menu.";
+            break;
+        }
+        case "postProcessScript":
+        {
+            $title = "Post Process Help";
+            $help = "The Post Process Command is a command-line executable - typically a DOS batch file - executed on the Pure3D file after the export is complete.  You can use this to automatically apply Pure3D command-line tools to the exported Pure3D file.";
+            break;
+        }
+        default:
+        {
+            $title = ( $mode + " Help?" );
+            $help = "That's strange.. somehow you've requested help for an unknown topic:\n\nPlease contact the author.";
+            break;
+        }
+    }
+
+    if ( `window -exists p3dexpoptsgui_help` )
+        deleteUI -window p3dexpoptsgui_help;
+        
+    window -title $title p3dexpoptsgui_help;
+    string $form = `formLayout`;
+        string $scroll = `scrollField -wordWrap true -editable false -insertText $help`;
+        setParent ..;
+
+    formLayout -e
+        -attachForm $scroll "top" 0
+        -attachForm $scroll "left" 0
+        -attachForm $scroll "right" 0
+        -attachForm $scroll "bottom" 0
+            $form;
+    
+    showWindow p3dexpoptsgui_help;
+}
+
+//===========================================================================
+// P3DGlobalRulesCallback
+//===========================================================================
+// Description: Callback ffrom P3DGlobalRulesBrowser.  Sets the necessary
+//              exporter option to the requested file.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $filename: The selected file.
+//              string $attribute: The exporter option attribute to set.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DGlobalRulesCallback( string $globalRulesUI, string $filename, string $fileType )
+{  
+    optionVar -stringValue p3dGlobalRules $filename;
+    textField -e -text $filename $globalRulesUI;
+    textField -e -editable false $globalRulesUI;
+}
+
+//===========================================================================
+// P3DGlobalRulesBrowser
+//===========================================================================
+// Description: Displays a file dialog to allow the user to select
+//              the file to serve as the Global Rules file.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $globalRulesUI
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DGlobalRulesBrowser( string $globalRulesUI )
+{
+    string $currentSetting = "";
+    
+    if ( `optionVar -exists p3dGlobalRules` )
+    {
+        $currentSetting = `optionVar -q p3dGlobalRules`;
+    }
+    
+    string $startFolder = pathpart( $currentSetting );
+    string $workspaceFolder = `workspace -q -dir`;
+
+    // A little trick to specify the starting folder for
+    // the fileDialog.  Must wrap in catch() in case
+    // the folder doesn't exist.
+    catch ( `workspace -dir $startFolder` );
+
+    fileBrowserDialog -m 0 -fc ( "P3DGlobalRulesCallback " + $globalRulesUI ) -an "Pick Global Rules File" -om "Open";
+
+    // Restore the user's workspace folder.
+    catch( `workspace -dir $workspaceFolder` );
+}
+
+proc string P3DGetExporterOptions()
+{
+    string $options[] = `ls -l -type p3dExporterOptionsShape`;
+
+    // If there's more than one, delete the unused nodes.
+    for ( $i = 1; $i < `size $options`; $i++ )
+    {
+        string $transform = getTransform( $options[$i] );
+        delete $options[$i];
+
+        // If transform is now empty, delete it too
+        string $rel[] = `listRelatives -ad $transform`;
+        if ( `size $rel` == 0 ) delete $transform;
+    }
+
+    return $options[0];
+}
+
+//===========================================================================
+// P3DGetCurrentExporterSetting
+//===========================================================================
+// Description: Returns the name of the p3dExportSettingNode node
+//              that is active on the first p3dExporterOptionsShape node.
+//
+// Constraints: 
+//
+//  Parameters: 
+//
+//      Return: 
+//
+//===========================================================================
+proc string P3DGetCurrentExporterSetting()
+{
+    string $setting = "";
+
+    string $exporterOptions = P3DGetExporterOptions();
+
+    if ( $exporterOptions != "" )
+    {
+        $setting = `getAttr ( $exporterOptions + ".currentSetting" )`;
+
+        if ( !`objExists $setting` )
+        {
+            $setting = "";
+            setAttr -type "string" ( $exporterOptions + ".currentSetting" ) $setting;
+        }
+
+        // If current Exporter Setting is invalid, search for a valid one.
+        if ( $setting == "" )
+        {
+            string $settings[] = `ls -type p3dExportSettingNode`;
+            if ( `size $settings` > 0 )
+            {
+                $setting = $settings[0];
+                P3DSetCurrentExporterSetting( $setting );
+            }
+        }
+    }
+
+    return $setting;
+}
+
+global proc P3DPopupFileAttribute( string $attribute, string $filename )
+{
+    P3DChangeFileAttribute( $filename, $attribute );
+}
+
+//===========================================================================
+// P3DChangeFileAttribute
+//===========================================================================
+// Description: Callback ffrom P3DDisplayFileBrowser.  Sets the necessary
+//              exporter option to the requested file.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $filename: The selected file.
+//              string $attribute: The exporter option attribute to set.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DChangeFileAttribute( string $filename, string $attribute )
+{  
+    string $currentSetting = P3DGetCurrentExporterSetting();
+    if ( $currentSetting == "" )
+    {
+        warning ( "Could not change file attribute - Exporter Setting not available." );
+    }
+
+    // Build a relative path specification
+    if ( $filename != "" )
+    {
+        string $convertedPath = "";
+
+        float $version = pluginVersion();
+        if ( $version >= 16.15 )
+        {
+            string $scenePath = pathpart( `file -q -sn` );
+            int $useRelativePaths = `optionVar -q p3dExporterRelativePaths`;
+            if ( $useRelativePaths )
+            {
+                $convertedPath = `fileAttribQuery -wd $scenePath -spn $filename`;
+            }
+            else
+            {
+                $convertedPath = `fileAttribQuery -wd $scenePath -fpn $filename`;
+            }
+        }
+
+        // If the fileAttribQuery command fails it returns no result;
+        // in such a case, ignore it and use that provided in the arguments.
+        if ( $convertedPath != "" )
+        {
+            $filename = $convertedPath;
+        }
+    }
+
+    int $lock = `getAttr -lock ( $currentSetting + "." + $attribute )`;
+    if ( $lock )
+    {
+        setAttr -lock false ($currentSetting+"."+$attribute);
+    }
+    setAttr -type "string" ($currentSetting+"."+$attribute) $filename;
+    if ( $lock )
+    {
+        setAttr -lock true ($currentSetting+"."+$attribute);
+    }
+}
+
+//===========================================================================
+// P3DDisplayFileBrowser
+//===========================================================================
+// Description: Displays a file dialog to allow the user to select/enter
+//              a filename for an exporter option.
+//
+// Constraints: Callback; must be global.
+//
+// Parameters:  string $command: The callback procedure for the dialog.
+//              string $attribute: The exporter option attribute being edited.
+//              string $operatingMode: Either "OPEN" or "SAVE".. controls
+//                                     the mode for the fileDialog.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DDisplayFileBrowser(string $command, string $attribute, string $operatingMode)
+{
+    string $currentSetting = P3DGetCurrentExporterSetting();
+    if ( $currentSetting == "" ) { warning ( "Please create Exporter Settings first." ); return; }
+
+    string $defaultFile = `getAttr ( $currentSetting + "." + $attribute )`;
+
+    // Build an absolute path specification
+    float $version = pluginVersion();
+    if ( $version >= 16.15 )
+    {
+        string $scenePath = pathpart( `file -q -sn` );
+        $defaultFile = `fileAttribQuery -wd $scenePath -fpn $defaultFile`;
+    }
+
+    string $startFolder = pathpart( $defaultFile );
+    string $workspaceFolder = `workspace -q -dir`;
+
+    // A little trick to specify the starting folder for
+    // the fileDialog.  Must wrap in catch() in case
+    // the folder doesn't exist.
+    catch ( `workspace -dir $startFolder` );
+
+    if (strcmp($operatingMode,"SAVE")==0)
+    {
+        fileBrowserDialog -m 1 -fc $command -ft $attribute -an "Save" -om "SaveAs";
+    }
+    else if (strcmp($operatingMode,"OPEN")==0)
+    {
+        fileBrowserDialog -m 0 -fc $command -ft $attribute -an "Open" -om "Open";
+    }
+
+    // Restore the user's workspace folder.
+    catch( `workspace -dir $workspaceFolder` );
+}
+
+//===========================================================================
+// P3DSwitchRelativePaths
+//===========================================================================
+// Description: Updates the paths displayed in the "Exported File",
+//              "Exporter Script" and "Viewer Script" to reflect the current
+//              state of the "Generate Relative Paths" global option.
+//
+// Constraints: ** Currently not used **  Left for reference **
+
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DSwitchRelativePaths()
+{
+    return;
+
+    string $currentSetting = P3DGetCurrentExporterSetting();
+
+    if ( $currentSetting != "" )
+    {
+        string $file;
+
+        $file = `getAttr ( $currentSetting + ".exportedFile" )`;
+        P3DChangeFileAttribute( $file, "exportedFile" );
+        $file = `getAttr ( $currentSetting + ".exporterScript" )`;
+        P3DChangeFileAttribute( $file, "exporterScript" );
+        $file = `getAttr ( $currentSetting + ".viewerScript" )`;
+        P3DChangeFileAttribute( $file, "viewerScript" );
+    }
+}
+
+//===========================================================================
+// ConvertToRelativePath
+//===========================================================================
+// Description: Converts the path in the specified attribute to a
+//              relative path.  This is typically the ".postProcessCommand"
+//              attribute, but others may follow.
+//
+//              ** Currently not used **  Left for reference **
+//
+// Constraints: 
+//
+//  Parameters: string $attr: The attribute to query and convert.
+//
+//      Return: (void)
+//
+//===========================================================================
+
+//global proc ConvertToRelativePath( string $attr )
+//{
+//    string $currentSetting = `getAttr p3dExporterOptions.currentSetting`;
+//    string $path = getAttr ( $currentSetting + "." + $attr );
+//
+//    $path = filepart( $path );
+//
+//    int $lock = `getAttr -lock ( $currentSetting + "." + $attr )`;
+//    if ( $lock )
+//    {
+//        setAttr -lock false ($currentSetting+"."+$attr);
+//    }
+//    setAttr -type "string" ( $currentSetting + "." + $attr ) $path;
+//    if ( $lock )
+//    {
+//        setAttr -lock true ($currentSetting+"."+$attr);
+//    }
+//}
+
+//===========================================================================
+// P3DReflectExportSettings
+//===========================================================================
+// Description: This is the -changeCallback for the "Current Configuration"
+//              optionMenu control. When the user changes the Configuration
+//              this is called to update the UI with the attributes for
+//              the new Configuration (p3dExportSettings node).
+//  
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control (columnLayout).
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DReflectExportSettings( string $parent, int $isAE )
+{
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $settingsCtrlUI      = $AEprefix + "p3dExportSettingsCtrlUI";
+    string $currentSetting = `optionMenu -q -value $settingsCtrlUI`;
+    
+    P3DSetCurrentExporterSetting( $currentSetting );
+
+    P3DUpdateExportSettingsGUI $parent $isAE;
+}
+
+//===========================================================================
+// P3DUpdateExportSettingsGUI
+//===========================================================================
+// Description: Updates the values for the UI controls in the Export
+//              Options layout (either in Maya's Options panel, or in
+//              a custom window).
+//
+//              It is necessary to determine the current p3dExporterSettings
+//              connection/value to obtain the values from the correct node.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control; a scrollLayout.
+//                              Context #1: Created in P3DExportPrefs().
+//                              Context #2: Created by Maya for Options panel.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DUpdateExportSettingsGUI(string $parent, int $isAE )
+{
+    global string $gP3dExporterOptions[];
+
+    // Creates the p3dExportSettingNode and p3dExporterOptionsShape nodes,
+    // if they don't already exist.
+//    P3DCreateExporterOptions();
+
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $settingsMainUI      = $AEprefix + "p3dExportSettingsMainUI";
+    string $settingsCtrlUI      = $AEprefix + "p3dExportSettingsCtrlUI";
+    string $settingsFrameUI     = $AEprefix + "p3dExportSettingsFrameUI";
+    string $settingsUI          = $AEprefix + "p3dExportSettingsUI";
+    string $settingsRulesUI     = $AEprefix + "p3dExportSettingsRulesUI";
+    string $settingsMiscUI      = $AEprefix + "p3dExportSettingsMiscUI";
+
+    string $animNamesMainUI     = $AEprefix + "p3dAnimNamesMainUI";
+    string $rulesMainUI         = $AEprefix + "p3dRulesMainUI";
+
+    ClearMenu( $settingsCtrlUI );
+
+    string $currentSetting = "";
+    int $isValid = `pluginInfo -q -loaded "p3dmayaexp.mll"`;
+
+    if ( $isValid )
+    {
+        // Create and populate the optionMenu that allows the user to
+        // select the current p3dExporterSetting node.
+        setParent -m $settingsCtrlUI;
+        string $settings[] = `ls -type p3dExportSettingNode`;
+        for ($setting in $settings)
+        {
+            menuItem $setting;
+        }
+
+        $currentSetting = P3DGetCurrentExporterSetting();
+    
+        $isValid = ( $currentSetting != "" );
+    }
+
+    SelectMenuItem( $settingsCtrlUI, $currentSetting );
+
+    string $ctrlName;       // The name for the UI control created for the attribute.
+    string $ctrlEnableName; // The name for the UI control that enables an attribute.
+    int    $option;         // for() loop for options.
+    int    $value;          // for() loop for option values.
+
+    // Add all of the options to the layout, based on the
+    // arrays defined at the top of this file.
+    for ($option = 0; $option < size($gP3dExporterOptions); $option++)
+    {
+        $ctrlName = ( $settingsUI + "_" + $gP3dExporterOptions[$option] );
+        $ctrlEnableName = ( $settingsUI + "_" + $gP3dExporterOptions[$option] + "Enable" );
+        $attrName = ( $currentSetting + "." + $gP3dExporterOptions[$option] );
+        $attrEnableName = ( $currentSetting + "." + $gP3dExporterOptions[$option] + "Enable" );
+
+        connectControl $ctrlName $attrName;                 
+
+        if ( `checkBox -q -exists $ctrlEnableName` )
+        {
+            connectControl $ctrlEnableName $attrEnableName;
+        }
+    }       // for ( $gExporterOptions )
+
+    // Some custom settings
+    string $nisScenegraphUI = ( $settingsUI + "_" +  "exportNISScenegraph" );
+    string $useSGNameUI = ( $settingsUI + "_" + "useScenegraphNameForLightGroup" );
+    string $lightGroupNameUI = ( $settingsUI + "_" + "lightGroupName" );
+
+    if ( `checkBox -q -exists $nisScenegraphUI` )
+    {
+        checkBox -e
+            -cc ( "P3DUpdateExportSettingsGUI " + $parent + " " + $isAE )
+                $nisScenegraphUI;
+
+        if ( `checkBox -q -exists $useSGNameUI` )
+        {
+            checkBox -e
+                -enable ( `checkBox -q -value $nisScenegraphUI` && $isValid )
+                -cc ( "P3DUpdateExportSettingsGUI " + $parent + " " + $isAE )
+                    $useSGNameUI;
+        }
+        if ( `textField -q -exists $lightGroupNameUI` )
+        {
+            textField -e
+                -enable ( ( !( `checkBox -q -value $nisScenegraphUI` && `checkBox -q -value $useSGNameUI` ) ) && $isValid )
+                    $lightGroupNameUI;
+        }
+    }
+
+    // Update the UI controls for Animation Naming.
+    P3DUpdateAnimationNamesGUI( $animNamesMainUI, $isAE );      // false == not Attribute Editor
+    
+    // Update the UI controls for Animation Naming.
+    P3DUpdateShaderSettingsGUI( $animNamesMainUI, $isAE );      // false == not Attribute Editor
+    
+    // Update the UI controls for the Rules
+    P3DUpdateExportRulesGUI( $rulesMainUI, $isAE );
+}
+
+//===========================================================================
+// P3DDefineExporterUITemplates
+//===========================================================================
+// Description: Defines all of the UI Templates used by the Exporter dialogs.
+//
+//              Creates:
+//                  P3DOptionsTemplate
+//
+// Parameters:  (none)
+//
+// Return:      (none)
+//
+//===========================================================================
+proc P3DDefineExporterUITemplates()
+{
+    int $labelWidth = 128;
+    int $fieldWidth = 200;
+    int $sliderFieldWidth = 48;
+    int $sliderWidth = ( $fieldWidth - $sliderFieldWidth );
+    int $buttonWidth = 32;
+    int $checkBoxWidth = 16;
+    int $offset = 4;
+    
+    if (!`uiTemplate -exists P3DOptionsTemplate`) 
+    {
+        uiTemplate P3DOptionsTemplate;
+    }
+    
+    frameLayout -defineTemplate P3DOptionsTemplate
+    
+        -marginWidth 4
+        -marginHeight 4
+        
+        ;
+        
+    rowLayout -defineTemplate P3DOptionsTemplate 
+
+        //  Assume a non-labeled item. It should be aligned with the
+        //  control area.
+        //
+        -columnAlign1  "left"
+        -columnAttach1 "left"       // "both" does _not_ work here!!
+        -columnOffset1 $labelWidth
+        -columnWidth1  $fieldWidth
+//        -adjustableColumn1 1
+
+        //  Assume a labeled item.
+        //
+        -columnAlign2  "right" "left"
+        -columnAttach2 "both" "both"
+        -columnOffset2 $offset 0
+        -columnWidth2  $labelWidth 
+                       $fieldWidth
+
+        //  Assume label, some control, and label/control
+        //  
+        -columnAlign3  "right" "left" "left"
+        -columnAttach3 "both" "both" "both"
+        -columnOffset3 $offset 0 0
+        -columnWidth3  $labelWidth
+                       $fieldWidth
+                       ( $buttonWidth * 2 )
+
+        //  Assume label, 1 field and 2 controls.
+        //
+        -columnAlign4  "right" "left" "left" "left"
+        -columnAttach4 "both" "both" "both" "both"
+        -columnOffset4 $offset 0 0 0
+        -columnWidth4  $labelWidth
+                       $fieldWidth
+                       $buttonWidth
+                       $buttonWidth
+
+        //  Assume label, info button and 2 extra items.
+        //
+        -columnAlign5  "right" "left" "left" "left" "left"
+        -columnAttach5 "both" "both" "both" "both" "both"
+        -columnOffset5 $offset 0 0 0 0
+        -columnWidth5  $labelWidth
+                       ( $fieldWidth - $checkBoxWidth )
+                       $checkBoxWidth
+                       $buttonWidth
+                       $buttonWidth
+
+        //  Assume label, checkBox, label, info button, and 2 extra items.
+        //
+        -columnAlign6  "right" "left" "left" "left" "left" "left"
+        -columnAttach6 "both" "both" "both" "both" "both" "both"
+        -columnOffset6 $offset 0 0 0 0 0
+        -columnWidth6  $labelWidth
+                       $checkBoxWidth
+                       ( $fieldWidth - ( $checkBoxWidth * 2 ) )
+                       $checkBoxWidth
+                       $buttonWidth
+                       $buttonWidth
+                       
+        ;
+        
+    radioButtonGrp -defineTemplate P3DOptionsTemplate
+
+        -columnAlign2  "left" "left"
+        -columnAttach2 "both" "both"
+        -columnOffset2 0 0
+        -columnWidth2  ( $fieldWidth / 3 )
+                       ( $fieldWidth / 3 )
+
+        -columnAlign3  "left" "left" "left"
+        -columnAttach3 "both" "both" "both"
+        -columnOffset3 0 0 0
+        -columnWidth3  ( $fieldWidth / 3 )
+                       ( $fieldWidth / 3 )
+                       ( $fieldWidth / 3 )
+        ;
+
+    checkBoxGrp -defineTemplate P3DOptionsTemplate
+    
+        -label         ""
+
+        -columnAttach2 both both
+        -columnAttach3 both both both 
+        -columnAttach4 both both both both 
+        -columnAttach5 both both both both both 
+
+        -columnOffset2 $offset 1
+        -columnOffset3 $offset 1 1
+        -columnOffset4 $offset 1 1 1
+        -columnOffset5 $offset 1 1 1 1
+
+        -columnAlign2 right left 
+        -columnAlign3 right left left 
+        -columnAlign4 right left left left 
+        -columnAlign5 right left left left left 
+
+        -columnWidth2 $labelWidth $fieldWidth
+        -columnWidth3 $labelWidth ( $fieldWidth / 2 ) ( $fieldWidth / 2 )
+        -columnWidth4 $labelWidth 
+                      ( $fieldWidth / 3 )
+                      ( $fieldWidth / 3 )
+                      ( $fieldWidth / 3 )
+        -columnWidth5 $labelWidth 
+                      ( $fieldWidth / 4 ) 
+                      ( $fieldWidth / 4 )
+                      ( $fieldWidth / 4 )
+                      ( $fieldWidth / 4 )
+        
+        ;
+
+    intSliderGrp -defineTemplate P3DOptionsTemplate
+        -columnWidth3 $labelWidth $sliderFieldWidth $sliderWidth
+        ;
+               
+    button -defineTemplate P3DOptionsTemplate
+        -align "center"
+        ;
+}
+
+//===========================================================================
+// P3DBuildExportSettingsUI
+//===========================================================================
+// Description: This is called in two contexts:
+//
+//              1. User presses the "Export Prefs" shelf button.  This 
+//                 populates the "ExportPrefsPrompt" window created in the
+//                 procedure P3DExportPrefs() in "p3dMayaExporterTools.mel".
+//
+//              2. User displays the Export Options from the File Menu.
+//                 This populates the scrollLayout created for posting the
+//                 the exporter options, called from P3DExpOptsGUI().
+//
+//              To avoid conflicts with multiple instances of the UI
+//              all of the controls are optionally named with a prefix 
+//              string: "AE" for the Attribute Editor, and "EO" for the
+//              Export Options panel.  No prefix is added for the standalone
+//              "Export Prefs" window.  The use of this prefix is determined
+//              by the $isAE 'hint' that is passed to this function,
+//              and propogated through all of the UI building/updating
+//              functions.
+//
+// Constraints: See also "AEp3dExportSettingNodeTemplate.mel".
+//              You must duplicate any changes to the node UI there as well.
+//
+// Parameters:  string $parent: The parent UI control; a scrollLayout.
+//                              Context #1: Created in P3DExportPrefs().
+//                              Context #2: Created by Maya for Options panel.
+//              int $isAE: The 'hint' to indicate where the UI is being built.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DBuildExportSettingsGUI( string $parent, int $isAE )
+{
+    // Define UI templates
+    P3DDefineExporterUITemplates();
+
+    setUITemplate -pushTemplate P3DOptionsTemplate;
+    
+    global string $gP3dExporterOptions[];
+    global int    $gP3dExporterOptionTypes[];
+//    global string $gP3dExporterOptionLabels[];
+    global string $gP3dExporterOptionValues_AnimationNameStyle[];
+    global string $gP3dExporterOptionValues_TextureResolution[];
+
+    // Creates the p3dExportSettingNode and p3dExporterOptionsShape nodes,
+    // if they don't already exist.
+    P3DCreateExporterOptions();
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $settingsMainUI      = $AEprefix + "p3dExportSettingsMainUI";
+    string $settingsCtrlUI      = $AEprefix + "p3dExportSettingsCtrlUI";
+    string $settingsFrameUI     = $AEprefix + "p3dExportSettingsFrameUI";
+    string $settingsUI          = $AEprefix + "p3dExportSettingsUI";
+    string $settingsRulesUI     = $AEprefix + "p3dExportSettingsRulesUI";
+    string $settingsMiscUI      = $AEprefix + "p3dExportSettingsMiscUI";
+
+    setParent $parent;
+
+    columnLayout -adj true $settingsMainUI;
+
+    if ( !isExporterValid() )
+    {
+        string $errorText = ( "Exporter is not loaded or not valid. Expected Exporter v" + version() + "." );
+        text -label $errorText;
+        warning ( $errorText );
+        return;
+    }
+
+        rowLayout -nc 3;
+//        string $optionForm = `formLayout`;
+
+            string $label = `text -label "Current Configuration" -align "right"`;
+
+            optionMenu 
+                -label "" 
+                -cc ( "P3DReflectExportSettings \"" + $settingsMainUI + "\"" + " " + $isAE )
+                    $settingsCtrlUI;
+
+            string $refresh = `symbolButton -width 32 -image "reload.xpm" -c ( "P3DCreateExporterOptions(); P3DUpdateExportSettingsGUI " + $parent + " " + $isAE ) -ann "Refresh"`;
+
+            setParent ..;
+
+//        formLayout -e
+//            -af     $refresh            "right"     0
+//            -af     $label              "top"       4
+//            -af     $label              "left"      0
+//            -ac     $settingsCtrlUI     "left"      4   $label
+//                $optionForm;
+
+        separator -style "in";
+
+        string $ctrlName;       // The name for the UI control created for the attribute.
+        string $enableCtrlName; // The name of the checkbox control that enables an attribute.
+        int    $option;         // for() loop for options.
+        int    $value;          // for() loop for option values.
+
+        separator -style none;
+
+        // Create the frameLayout for the Settings.
+        string $urlSettingsUI[] = p3dFrameLayout( "Settings", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Exporter/exporterPreferences.html#_settings", true, false );
+        
+            columnLayout -adj true $settingsUI;
+
+            separator -style none;            
+
+            // Add all of the options to the layout, based on the
+            // arrays defined at the top of this file.
+            for ($option = 0; $option < size($gP3dExporterOptions); $option++)
+            {
+                $ctrlName = ( $settingsUI + "_" + $gP3dExporterOptions[$option] );
+                $enableCtrlName = ( $settingsUI + "_" + $gP3dExporterOptions[$option] + "Enable" );
+
+                switch ($gP3dExporterOptionTypes[$option])
+                {
+                    // '0' == Special Purpose
+                    case 0:
+                    {
+                        // animationNameStyle
+                        if (strcmp($gP3dExporterOptions[$option],"animationNameStyle")==0)
+                        {
+//                            rowColumnLayout -nc 3 -cw 1 150 -cw 2 200 -cw 3 50 -cs 2 2;
+                            rowLayout -nc 2;
+                                text -l ( interToUI( $gP3dExporterOptions[$option] ) ); // $gP3dExporterOptionLabels[$option];
+                                optionMenu $ctrlName;
+                                for ($value=0; $value < size($gP3dExporterOptionValues_AnimationNameStyle); $value++)
+                                {
+                                    menuItem -data $value $gP3dExporterOptionValues_AnimationNameStyle[$value];
+                                }
+                            setParent ..;
+                         }
+                         
+                         // xTextureResolution
+                         // yTextureResolution
+                        else if ((strcmp($gP3dExporterOptions[$option],"xTextureResolution")==0)||(strcmp($gP3dExporterOptions[$option],"yTextureResolution")==0))
+                        {
+//                            rowColumnLayout -nc 3 -cw 1 150 -cw 2 200 -cw 3 50 -cs 2 2;
+                            rowLayout -nc 2;
+                                text -l ( interToUI( $gP3dExporterOptions[$option] ) ) -align "right"; // $gP3dExporterOptionLabels[$option] -align "right";
+                                optionMenu $ctrlName;
+                                for ($value=0; $value < size($gP3dExporterOptionValues_TextureResolution); $value++)
+                                {
+                                    menuItem -data $value $gP3dExporterOptionValues_TextureResolution[$value];
+                                }
+                                setParent ..;
+                        }
+                        
+                        // viewerScript
+                        // exporterScript
+                        // postProcessScript
+                        else if ( ( $gP3dExporterOptions[$option] == "viewerScript" )||( $gP3dExporterOptions[$option] == "exporterScript" ) || ( $gP3dExporterOptions[$option] == "postProcessScript" ) )
+                        {
+//                            rowColumnLayout -nc 4 -cw 1 96 -cw 2 190 -cw 3 32 -cw 4 32 -cs 2 2;
+                            string $layout = `rowLayout -nc 6 -rowAttach 3 "both" 0 -rowAttach 4 "both" 0 -rowAttach 5 "both" 0`;
+                                text -l ( interToUI( $gP3dExporterOptions[$option] ) ) -align "right";  // $gP3dExporterOptionLabels[$option] -align "right";
+                                checkBox -label "" $enableCtrlName;
+                                textField $ctrlName;
+                                if ( `exists fileFieldPopupMenu` ) fileFieldPopupMenu( $ctrlName, ( "P3DPopupFileAttribute " + $gP3dExporterOptions[$option] ) );
+                                symbolButton -image "info.xpm" -c ( "p3dExportOptionsHelp " + $gP3dExporterOptions[$option] );
+                                symbolButton -image "navButtonBrowse.xpm" -c ("P3DDisplayFileBrowser(\"P3DChangeFileAttribute\",\""+$gP3dExporterOptions[$option]+"\",\"OPEN\")");
+                                symbolButton -image "smallTrash.xpm" -c ("P3DChangeFileAttribute( \"\", \"" + $gP3dExporterOptions[$option] + "\")");
+                            setParent ..;
+                            
+                            switch ( $gP3dExporterOptions[$option] )
+                            {
+                                // viewerScript is executed within p3dQuickViewerCmd (in quickViewer.cpp)
+                                case "viewerScript":
+                                {
+                                    textField -e
+                                        -ann "Pure3D Viewer command script file executed after exporting and before viewing."
+                                            $ctrlName;
+                                    break;        
+                                }
+                                
+                                // exporterScript is executed within p3dQuickViewerCmd (in quickViewer.cpp)
+                                case "exporterScript":
+                                {
+                                    textField -e
+                                        -ann "MEL script file executed before exporting; ONLY when using the Quick Exporter or Quick Viewer."
+                                            $ctrlName;
+                                    break;        
+                                }
+                                
+                                case "postProcessScript":
+                                {
+                                    textField -e
+                                        -ann "Batch file executed on the Pure3D file after the export is complete."
+                                            $ctrlName;
+                                    break;        
+                                }
+                            }
+                        }
+                     
+                        else if (strcmp($gP3dExporterOptions[$option],"exportedFile")==0)
+                        {
+//                            rowColumnLayout -nc 4 -cw 1 96 -cw 2 190 -cw 3 32 -cw 4 32 -cs 2 2;
+                            rowLayout -nc 5 -rowAttach 3 "both" 0 -rowAttach 4 "both" 0 -rowAttach 5 "both" 0;
+                                text -l ( interToUI( $gP3dExporterOptions[$option] ) ) -align "right";  // $gP3dExporterOptionLabels[$option] -align "right";
+                                textField $ctrlName;
+                                if ( `exists fileFieldPopupMenu` ) fileFieldPopupMenu( $ctrlName, ( "P3DPopupFileAttribute " + $gP3dExporterOptions[$option] ) );
+                                symbolButton -image "info.xpm" -c ( "p3dExportOptionsHelp " + $gP3dExporterOptions[$option] );
+                                symbolButton -image "navButtonBrowse.xpm" -c ("P3DDisplayFileBrowser(\"P3DChangeFileAttribute\",\""+$gP3dExporterOptions[$option]+"\",\"SAVE\")");
+                                symbolButton -image "smallTrash.xpm" -c ("P3DChangeFileAttribute( \"\", \"" + $gP3dExporterOptions[$option] + "\")");
+                            setParent ..;
+                            
+                            textField -e
+                                -ann "The Pure3D file which will be created when using the Quick Exporter or Quick Viewer."
+                                    $ctrlName;
+                        }
+
+                        break;
+                    }
+
+                    // '1' == checkBox
+                    case 1:
+                    {
+                        rowLayout -nc 1;
+                            // Special case for "exportVertexOffsetAnims" -> relabel as "Export Vertex Animation"
+                            if ( $gP3dExporterOptions[$option] == "exportVertexOffsetAnims" )
+                            {
+                                checkBox -l "Export Vertex Animations" $ctrlName; // $gP3dExporterOptionLabels[$option] $ctrlName;
+                            }
+                            else
+                            {
+                                checkBox -l ( interToUI( $gP3dExporterOptions[$option] ) ) $ctrlName; // $gP3dExporterOptionLabels[$option] $ctrlName;
+                            }
+                            setParent ..;
+
+                        break;
+                    }
+                    
+                    // '2' == textField
+                    case 2:
+                    {
+//                        rowColumnLayout -nc 2 -cw 1 150 -cw 2 200 -cs 2 2;
+                        rowLayout -nc 2;
+                            text -l ( interToUI( $gP3dExporterOptions[$option] ) ) -align "right";  // $gP3dExporterOptionLabels[$option] -align "right";
+                            textField $ctrlName;
+                        setParent ..;
+
+                      break;
+                    }
+               }        // switch (option type)
+               
+               separator -style none;
+            }       // for ( $gExporterOptions )
+            
+            setParent ..;
+
+        PopP3dFrameLayout( $urlSettingsUI );
+
+        separator -style none;
+
+    setParent ..; // column layout
+
+    setUITemplate -popTemplate;
+    
+    // Create the UI controls for Animation Naming
+    P3DCreateAnimationNamesGUI( $settingsMainUI, $isAE );   // false == not Attribute Editor
+    
+    // Create the UI controls for Shader Naming
+    P3DCreateShaderSettingsGUI( $settingsMainUI, $isAE );   // false == not Attribute Editor
+    
+    // Create the UI controls for the Rules
+    P3DCreateExportRulesGUI( $settingsMainUI, $isAE );
+  
+    // Create the UI controls for the Rules
+    P3DCreateExportGlobalGUI( $settingsMainUI, $isAE );
+  
+    // Update the controls with values and necessary callbacks (using connectControl, mostly)
+    P3DUpdateExportSettingsGUI( $parent, $isAE );
+
+    // Create a scriptJob, parented to this layout,
+    // which will update the display upon 'file -new' and 'file -open'
+    scriptJob -parent $parent -event "SceneOpened" ( "P3DUpdateExportSettingsGUI " + $parent + " " + $isAE );
+}
+
+//===========================================================================
+// P3DCreateAnimationNamesGUI
+//===========================================================================
+// Added by Bryan Ewert on 27 Jun 2002
+// Description: Creates the controls for the "Animation Naming" frame.
+//              These are used to display and edit the array attributes
+//              on the current p3dExporterSetting node that adjust the
+//              naming style for animations.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control: columnLayout.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DCreateAnimationNamesGUI( string $parent, int $isAE )
+{
+    global string $gP3dExporterOptionAnimationTypes[];
+    
+    setUITemplate -pushTemplate P3DOptionsTemplate;
+    
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $animNamesMainUI     = $AEprefix + "p3dAnimNamesMainUI";
+    
+/* ****  AnimRange DISABLED for removal ****
+    string $editAnimRangeUI     = $AEprefix + "p3dEditAnimRangeUI";
+*/
+    string $animationTypeUI     = $AEprefix + "p3dAnimationTypeUI";
+    string $nameTypeUI          = $AEprefix + "p3dNameTypeUI";
+    string $nameFieldUI         = $AEprefix + "p3dNameFieldUI";
+    string $prePostfixUI        = $AEprefix + "p3dPrePostFixUI";
+    string $prePostfixModeUI    = $AEprefix + "p3dPrePostfixModeUI";
+    string $p3dShaderNameCustomUI   = $AEprefix + "p3dPrePostfixFieldUI";
+    string $previewUI           = $AEprefix + "p3dAnimationNamePreviewUI";
+    
+    string $urlNamingUI[] = p3dFrameLayout( "Animation", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Exporter/exporterPreferences.html#_animation", true, true );
+
+    if ( `columnLayout -q -exists $animNamesMainUI` )
+    {
+        deleteUI $animNamesMainUI;
+    }
+
+        columnLayout -adj true $animNamesMainUI;    
+
+        // ×× ANIMATION TYPE ××
+
+/* ****  AnimRange DISABLED for removal ****
+            rowLayout -nc 2;
+                text -label "";
+                button -label "Edit Animation Ranges" -c "animRangePanel" $editAnimRangeUI;
+                setParent ..;
+*/
+
+            frameLayout -labelVisible false -borderStyle "etchedOut";  columnLayout;
+            
+                rowLayout -nc 2;
+
+                    text -label "Animation Type" -height 24;
+                    optionMenu $animationTypeUI;
+
+                    for ( $option in $gP3dExporterOptionAnimationTypes )
+                    {
+                        menuItem -label $option;
+                    }
+
+                    setParent ..;
+
+            // ×× NAME ××
+
+                rowLayout -nc 2;
+
+                    text -label "Base Name";
+                    radioButtonGrp -nrb 3
+                        -label1 "Original"
+                        -label2 "Filename"
+                        -label3 "Custom"
+                        -select 1
+                            $nameTypeUI;
+
+                    setParent ..;
+
+                rowLayout -nc 2;
+
+                    text -label "";
+                        popupMenu -button 3;
+                            menuItem -label "pop" -c ( "textField -e -enable ( !`textField -q -enable " + $nameFieldUI + "` ) " + $nameFieldUI );
+                    textField -text "" $nameFieldUI;
+
+                    setParent ..;
+
+            // ×× PRE- & POST-FIX ××
+
+                rowLayout -nc 3;
+
+                    text -label "Pre- & Post-Fix";
+                    radioButtonGrp -nrb 2
+                        -label1 "Prefix"
+                        -label2 "Postfix"
+                        -select 2
+                            $prePostfixUI;
+
+                    setParent ..;
+
+            // ×× FIX TYPE ××
+
+                rowLayout -nc 2;
+
+                    text -label "";
+                    radioButtonGrp -nrb 2
+                        -label1 "Type"
+                        -label2 "Custom"
+                        -select 1
+                            $prePostfixModeUI;
+
+                    setParent ..;
+
+                rowLayout -nc 2;
+
+                    text -label "";
+                        popupMenu -button 3;
+                            menuItem -label "pop" -c ( "textField -e -enable ( !`textField -q -enable " + $p3dShaderNameCustomUI + "` ) " + $p3dShaderNameCustomUI );
+                    textField -text "" $p3dShaderNameCustomUI;
+
+                    setParent ..;
+
+            // ×× APPLY TO ALL ××
+            
+                rowLayout -nc 2;
+                
+                    text -label "";
+                    string $applyAll = `button -label "Apply To All Types"`;
+                    setParent ..;
+                    
+                setParent ..;  setParent ..;       // frameLayout (grouping naming controls for each Animation Type)
+
+            rowLayout -nc 2;
+
+                text -label "Preview:";
+                text -label "" $previewUI;
+
+            setParent ..;
+            
+        PopP3dFrameLayout( $urlNamingUI );
+
+    // Changing the Animation Type will update the GUI
+    optionMenu -e
+        -cc ( "P3DUpdateAnimationNamesGUI " + $animNamesMainUI + " " + $isAE )
+            $animationTypeUI;
+
+    // Change callback for all controls == Reflect UI to attributes.
+    radioButtonGrp -e -onc ( "P3DReflectAnimationModesGUI " + $animNamesMainUI + " " + $isAE ) $nameTypeUI;
+    radioButtonGrp -e -onc ( "P3DReflectAnimationModesGUI " + $animNamesMainUI + " " + $isAE ) $prePostfixUI;
+    radioButtonGrp -e -onc ( "P3DReflectAnimationModesGUI " + $animNamesMainUI + " " + $isAE ) $prePostfixModeUI;
+
+    textField -e -cc ( "P3DReflectAnimationFieldsGUI " + $animNamesMainUI + " " + $isAE ) $nameFieldUI;
+    textField -e -cc ( "P3DReflectAnimationFieldsGUI " + $animNamesMainUI + " " + $isAE ) $p3dShaderNameCustomUI;
+
+    button -e
+        -c ( "P3DReflectAnimationApplyAll " + $animNamesMainUI + " " + $isAE )
+            $applyAll;
+        
+    setUITemplate -popTemplate;
+    
+    P3DUpdateAnimationNamesGUI $animNamesMainUI $isAE;
+    
+}
+
+//===========================================================================
+// P3DReflectAnimationApplyAll
+//===========================================================================
+// Description: Applies the settings currently displayed in the "Animation
+//              Naming" frame to all Animation Types.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control for the "Animation
+//                              Naming" control group - columnLayout.
+//
+// Return:      
+//
+//===========================================================================
+global proc P3DReflectAnimationApplyAll( string $parent, int $isAE )
+{
+    global string $gP3dExporterOptionAnimationTypes[];
+
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $animationTypeUI     = $AEprefix + "p3dAnimationTypeUI";
+    string $nameTypeUI          = $AEprefix + "p3dNameTypeUI";
+    string $nameFieldUI         = $AEprefix + "p3dNameFieldUI";
+    string $prePostfixUI        = $AEprefix + "p3dPrePostFixUI";
+    string $prePostfixModeUI    = $AEprefix + "p3dPrePostfixModeUI";
+    string $p3dShaderNameCustomUI   = $AEprefix + "p3dPrePostfixFieldUI";
+
+    string $currentSetting = P3DGetCurrentExporterSetting();
+
+    // Get from UI controls.
+    // Note: radioButtonGrp control values converted from 1-based value to 0-based value.
+    int $animationNameMode      = ( `radioButtonGrp -q -select $nameTypeUI` - 1 );
+    int $prePostFix             = ( `radioButtonGrp -q -select $prePostfixUI` - 1 );
+    int $prePostFixMode         = ( `radioButtonGrp -q -select $prePostfixModeUI` - 1 );
+    string $animationName       = `textField -q -text $nameFieldUI`;
+    string $prePostFixName      = `textField -q -text $p3dShaderNameCustomUI`;
+
+    for ( $index = 0; $index < `size $gP3dExporterOptionAnimationTypes`; $index++ )
+    {
+        // Assign to node attributes.
+        setAttr ( $currentSetting + ".animationNameMode[" + $index + "]" ) $animationNameMode;
+        setAttr ( $currentSetting + ".prePostFix[" + $index + "]" ) $prePostFix;
+        setAttr ( $currentSetting + ".prePostFixMode[" + $index + "]" ) $prePostFixMode;
+
+        // Assign to attribute only if radio is set to "Custom"
+        if ( $animationNameMode == 2 )
+        {
+            setAttr -type "string" ( $currentSetting + ".animationNames[" + $index + "]" ) $animationName;
+        }
+        if ( $prePostFixMode == 1 )
+        {
+            setAttr -type "string" ( $currentSetting + ".prePostFixNames[" + $index + "]" ) $prePostFixName;
+        }
+    }
+}
+
+//===========================================================================
+// P3DUpdateAnimationNamesGUI
+//===========================================================================
+// Description: Populates the controls for the "Animation Naming" frame from
+//              the current p3dExporterSetting node.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control for the "Animation
+//                              Naming" control group - columnLayout.  Used to
+//                              (un)ghost the controls when necessary.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DUpdateAnimationNamesGUI( string $parent, int $isAE )
+{
+    global string $gP3dExporterOptionAnimationNames[];
+
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+/* ****  AnimRange DISABLED for removal ****
+    string $editAnimRangeUI     = $AEprefix + "p3dEditAnimRangeUI";
+*/
+    string $animationTypeUI     = $AEprefix + "p3dAnimationTypeUI";
+    string $nameTypeUI          = $AEprefix + "p3dNameTypeUI";
+    string $nameFieldUI         = $AEprefix + "p3dNameFieldUI";
+    string $prePostfixUI        = $AEprefix + "p3dPrePostFixUI";
+    string $prePostfixModeUI    = $AEprefix + "p3dPrePostfixModeUI";
+    string $p3dShaderNameCustomUI   = $AEprefix + "p3dPrePostfixFieldUI";
+    string $previewUI           = $AEprefix + "p3dAnimationNamePreviewUI";
+
+    string $currentSetting = "";
+    string $previewResult = "";
+
+    int $isValid = `pluginInfo -q -loaded "p3dmayaexp.mll"`;
+
+    if ( $isValid )
+    {
+        $currentSetting = P3DGetCurrentExporterSetting();
+
+        $isValid = `objExists $currentSetting`;
+    }
+  
+    // If user has not selected a valid p3dExportSettingNode,
+    // dim all controls and return.
+    columnLayout -e -enable $isValid $parent;
+    if ( !$isValid ) return;
+
+/* ****  AnimRange DISABLED for removal ****
+    button -e -enable ( `exists animRangePanel` ) $editAnimRangeUI;
+*/
+
+    // Note: Convert from 1-based index to 0-based index.
+    int $animationTypeIndex = ( `optionMenu -q -select $animationTypeUI` - 1 );
+
+    int $animationNameMode      = `getAttr ( $currentSetting + ".animationNameMode[" + $animationTypeIndex + "]" )`;
+    int $prePostFix             = `getAttr ( $currentSetting + ".prePostFix[" + $animationTypeIndex + "]" )`;
+    int $prePostFixMode         = `getAttr ( $currentSetting + ".prePostFixMode[" + $animationTypeIndex + "]" )`;
+    
+    string $animationName       = `getAttr ( $currentSetting + ".animationNames[" + $animationTypeIndex + "]" )`;
+    string $previewFilename     = `getAttr ( $currentSetting + ".exportedFile" )`;
+
+    string $prePostFixName      = `getAttr ( $currentSetting + ".prePostFixNames[" + $animationTypeIndex + "]" )`;
+
+    radioButtonGrp -e -select ( $animationNameMode + 1 ) $nameTypeUI;
+    radioButtonGrp -e -select ( $prePostFix + 1 ) $prePostfixUI;
+    radioButtonGrp -e -select ( $prePostFixMode + 1 ) $prePostfixModeUI;
+
+    switch ( $animationNameMode )
+    {
+        case 0:     // Original
+        {
+            $previewResult = "<object>";
+
+            textField -e
+                -text ""
+                -enable false
+                    $nameFieldUI;
+
+            break;
+        }
+        case 1:     // Filename
+        {
+            $previewResult = ( sansExtension( filepart( $previewFilename ) ) );
+
+            string $previewFilename = $previewResult;
+            if ( $previewFilename == "" )
+            {
+                $previewFilename = "<not specified>";
+                $previewResult = "<filename>";
+            }
+
+            textField -e
+                -text ( sansExtension( filepart( $previewFilename ) ) )
+                -enable false
+                    $nameFieldUI;
+
+            break;
+        }
+        case 2:     // Custom
+        {
+            $previewResult = $animationName;
+
+            textField -e
+                -text $animationName
+                -enable true
+                    $nameFieldUI;
+
+            break;
+        }
+        
+    }
+    
+    string $prePostFixType = $gP3dExporterOptionAnimationNames[ $animationTypeIndex ];
+
+    switch ( $prePostFixMode )
+    {
+        case 0:     // Type
+        {
+            if ( $prePostFix == 0 )     // prefix
+            {
+                $prePostFixType = ( $prePostFixType + "_" );
+                $previewResult = ( $prePostFixType + $previewResult );
+            }
+
+            if ( $prePostFix == 1 )     // postfix
+            {
+                $prePostFixType = ( "_" + $prePostFixType );
+                $previewResult = ( $previewResult + $prePostFixType );
+            }
+
+            textField -e
+                -text $prePostFixType
+                -enable false
+                    $p3dShaderNameCustomUI;
+            break;
+        }
+        
+        case 1:     // Custom
+        {
+            if ( $prePostFix == 0 )     // prefix
+            {
+                $previewResult = ( $prePostFixName + $previewResult );
+            }
+
+            if ( $prePostFix == 1 )     // postfix
+            {
+                $previewResult = ( $previewResult + $prePostFixName );
+            }
+
+            textField -e
+                -text $prePostFixName
+                -enable true
+                    $p3dShaderNameCustomUI;
+
+            break;
+        }
+    }
+    
+    text -e
+        -label ( "\"" + $previewResult + "\"" )
+            $previewUI;
+}
+
+//===========================================================================
+// P3DReflectAnimationModesGUI
+//===========================================================================
+// Description: Queries the current state for the radio UI controls in 
+//              the "Animation Naming" frame and assigns their settings into
+//              the attributes for the current exporterSettingNode.
+//
+// Constraints: The textField controls are reflected via 
+//              P3DReflectAnimationFieldsGUI().
+//
+// Parameters:  string $parent: The parent UI control for the "Animation
+//                              Naming" control group - columnLayout.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DReflectAnimationModesGUI( string $parent, int $isAE )
+{
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $animationTypeUI     = $AEprefix + "p3dAnimationTypeUI";
+    string $nameTypeUI          = $AEprefix + "p3dNameTypeUI";
+    string $prePostfixUI        = $AEprefix + "p3dPrePostFixUI";
+    string $prePostfixModeUI    = $AEprefix + "p3dPrePostfixModeUI";
+
+    string $currentSetting = P3DGetCurrentExporterSetting();
+
+    // Note: Convert from 1-based index to 0-based index.
+    int $animationTypeIndex = ( `optionMenu -q -select $animationTypeUI` - 1 );
+
+    // Note: radioButtonGrp control values converted from 1-based value to 0-based value.
+    int $animationNameMode      = ( `radioButtonGrp -q -select $nameTypeUI` - 1 );
+    int $prePostFix             = ( `radioButtonGrp -q -select $prePostfixUI` - 1 );
+    int $prePostFixMode         = ( `radioButtonGrp -q -select $prePostfixModeUI` - 1 );
+    
+    // Assign to node attributes.
+    setAttr ( $currentSetting + ".animationNameMode[" + $animationTypeIndex + "]" ) $animationNameMode;
+    setAttr ( $currentSetting + ".prePostFix[" + $animationTypeIndex + "]" ) $prePostFix;
+    setAttr ( $currentSetting + ".prePostFixMode[" + $animationTypeIndex + "]" ) $prePostFixMode;
+    
+    radioButtonGrp -e -select ( $animationNameMode + 1 ) $nameTypeUI;
+    radioButtonGrp -e -select ( $prePostFix + 1 ) $prePostfixUI;
+    radioButtonGrp -e -select ( $prePostFixMode + 1 ) $prePostfixModeUI;
+    
+    P3DUpdateAnimationNamesGUI $parent $isAE;       // false == not Attribute Editor
+}
+
+//===========================================================================
+// P3DReflectAnimationFieldsGUI
+//===========================================================================
+// Description: Queries the current state for the textField UI controls in 
+//              the "Animation Naming" frame and assigns their settings into
+//              the attributes for the current exporterSettingNode.
+//
+// Constraints: The radio controls are reflected via 
+//              P3DReflectAnimationModesGUI().
+//
+// Parameters:  string $parent: The parent UI control for the Animation
+//                              Names control group - columnLayout.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DReflectAnimationFieldsGUI( string $parent, int $isAE )
+{
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $animationTypeUI     = $AEprefix + "p3dAnimationTypeUI";
+    string $nameTypeUI          = $AEprefix + "p3dNameTypeUI";
+    string $nameFieldUI         = $AEprefix + "p3dNameFieldUI";
+    string $prePostfixModeUI    = $AEprefix + "p3dPrePostfixModeUI";
+    string $p3dShaderNameCustomUI   = $AEprefix + "p3dPrePostfixFieldUI";
+
+    string $currentSetting = P3DGetCurrentExporterSetting();
+
+    // Note: Convert from 1-based index to 0-based index.
+    int $animationTypeIndex = ( `optionMenu -q -select $animationTypeUI` - 1 );
+
+    // Note: radioButtonGrp control values converted from 1-based value to 0-based value.
+    int $animationNameMode      = ( `radioButtonGrp -q -select $nameTypeUI` - 1 );
+    int $prePostFixMode         = ( `radioButtonGrp -q -select $prePostfixModeUI` - 1 );
+
+    // Assign to attribute only if radio is set to "Custom"
+    if ( $animationNameMode == 2 )
+    {
+        string $animationName       = `textField -q -text $nameFieldUI`;
+        setAttr -type "string" ( $currentSetting + ".animationNames[" + $animationTypeIndex + "]" ) $animationName;
+    }
+    if ( $prePostFixMode == 1 )
+    {
+        string $prePostFixName      = `textField -q -text $p3dShaderNameCustomUI`;
+        setAttr -type "string" ( $currentSetting + ".prePostFixNames[" + $animationTypeIndex + "]" ) $prePostFixName;
+    }
+
+    P3DUpdateAnimationNamesGUI $parent $isAE;
+}
+
+
+// --------------------------------------------------------------------
+//
+// -------------------    SHADER NAMING     ---------------------------
+//
+// --------------------------------------------------------------------
+
+
+//===========================================================================
+// P3DCreateShaderSettingsGUI
+//===========================================================================
+// Description: Creates the controls for the "Shader Naming" frame.
+//              These are used to display and edit the array attributes
+//              on the current p3dExporterSetting node that adjust the
+//              naming style for shaders.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control: columnLayout.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DCreateShaderSettingsGUI( string $parent, int $isAE )
+{
+    setUITemplate -pushTemplate P3DOptionsTemplate;
+    
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $animNamesMainUI     = $AEprefix + "p3dShaderNamesMainUI";
+    
+    string $prePostfixUI        = $AEprefix + "p3dShaderPrePostFixUI";
+    string $prePostfixModeUI    = $AEprefix + "p3dShaderPrePostfixModeUI";
+    string $p3dShaderNameCustomUI   = $AEprefix + "p3dShaderNameCustomUI";
+    string $previewUI           = $AEprefix + "p3dShaderNamePreviewUI";
+    
+    string $urlNamingUI[] = p3dFrameLayout( "Shaders", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Exporter/exporterPreferences.html#_shader", true, true );
+
+    if ( `columnLayout -q -exists $animNamesMainUI` )
+    {
+        deleteUI $animNamesMainUI;
+    }
+
+        columnLayout -adj true $animNamesMainUI;    
+
+            // ×× PRE- & POST-FIX ××
+
+                rowLayout -nc 3;
+
+                    text -label "Pre- & Post-Fix";
+                    radioButtonGrp -nrb 3
+                        -label1 "None"
+                        -label2 "Prefix"
+                        -label3 "Postfix"
+                        -select 1
+                            $prePostfixUI;
+
+                    setParent ..;
+
+            // ×× FIX TYPE ××
+
+                rowLayout -nc 2;
+
+                    text -label "";
+                    radioButtonGrp -nrb 2
+                        -label1 "Filename"
+                        -label2 "Custom"
+                        -select 1
+                            $prePostfixModeUI;
+
+                    setParent ..;
+
+                rowLayout -nc 2;
+
+                    text -label "";
+                    textField -text "" $p3dShaderNameCustomUI;
+
+                    setParent ..;
+
+            rowLayout -nc 2;
+
+                text -label "Preview:";
+                text -label "" $previewUI;
+
+            setParent ..;
+            
+        PopP3dFrameLayout( $urlNamingUI );
+
+    // Change callback for all controls == Reflect UI to attributes.
+    radioButtonGrp -e -onc ( "P3DReflectShaderModesGUI " + $animNamesMainUI + " " + $isAE ) $prePostfixUI;
+    radioButtonGrp -e -onc ( "P3DReflectShaderModesGUI " + $animNamesMainUI + " " + $isAE ) $prePostfixModeUI;
+
+    textField -e -cc ( "P3DReflectShaderFieldsGUI " + $animNamesMainUI + " " + $isAE ) $p3dShaderNameCustomUI;
+
+    setUITemplate -popTemplate;
+    
+    P3DUpdateShaderSettingsGUI $animNamesMainUI $isAE;
+    
+}
+
+//===========================================================================
+// P3DUpdateShaderSettingsGUI
+//===========================================================================
+// Description: Populates the controls for the "Shader Naming" frame from
+//              the current p3dExporterSetting node.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control for the "Shader
+//                              Naming" control group - columnLayout.  Used to
+//                              (un)ghost the controls when necessary.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DUpdateShaderSettingsGUI( string $parent, int $isAE )
+{
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $prePostfixUI            = $AEprefix + "p3dShaderPrePostFixUI";
+    string $prePostfixModeUI        = $AEprefix + "p3dShaderPrePostfixModeUI";
+    string $p3dShaderNameCustomUI   = $AEprefix + "p3dShaderNameCustomUI";
+    string $previewUI               = $AEprefix + "p3dShaderShaderNamePreviewUI";
+
+    string $currentSetting = "";
+    string $previewResult = "";
+
+    int $isValid = `pluginInfo -q -loaded "p3dmayaexp.mll"`;
+
+    if ( $isValid )
+    {
+        $currentSetting = P3DGetCurrentExporterSetting();
+
+        $isValid = `objExists $currentSetting`;
+    }
+  
+    // If user has not selected a valid p3dExportSettingNode,
+    // dim all controls and return.
+    columnLayout -e -enable $isValid $parent;
+    if ( !$isValid ) return;
+
+    int $prePostFix             = `getAttr ( $currentSetting + ".shaderPrePostFix" )`;
+    int $prePostFixMode         = `getAttr ( $currentSetting + ".shaderNameMode" )`;
+    string $shaderNameCustom    = `getAttr ( $currentSetting + ".shaderNameCustom" )`;
+
+    string $previewFilename     = `getAttr ( $currentSetting + ".exportedFile" )`;
+
+    radioButtonGrp -e -select ( $prePostFix + 1 ) $prePostfixUI;
+    radioButtonGrp -e 
+        -enable ( $prePostFix > 0 )
+        -select ( $prePostFixMode + 1 ) 
+            $prePostfixModeUI;
+
+    textField -e 
+        -enable ( $prePostFixMode > 0 )
+        -text $shaderNameCustom
+            $p3dShaderNameCustomUI;
+
+//    text -e
+//        -label ( "\"" + $previewResult + "\"" )
+//            $previewUI;
+}
+
+//===========================================================================
+// P3DReflectShaderModesGUI
+//===========================================================================
+// Description: Queries the current state for the radio UI controls in 
+//              the "Shader Naming" frame and assigns their settings into
+//              the attributes for the current exporterSettingNode.
+//
+// Constraints: The textField controls are reflected via 
+//              P3DReflectShaderFieldsGUI().
+//
+// Parameters:  string $parent: The parent UI control for the "Shader
+//                              Naming" control group - columnLayout.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DReflectShaderModesGUI( string $parent, int $isAE )
+{
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $prePostfixUI            = $AEprefix + "p3dShaderPrePostFixUI";
+    string $prePostfixModeUI        = $AEprefix + "p3dShaderPrePostfixModeUI";
+
+    string $currentSetting = P3DGetCurrentExporterSetting();
+
+    // Note: radioButtonGrp control values converted from 1-based value to 0-based value.
+    int $prePostFix             = ( `radioButtonGrp -q -select $prePostfixUI` - 1 );
+    int $prePostFixMode         = ( `radioButtonGrp -q -select $prePostfixModeUI` - 1 );
+    
+    // Assign to node attributes.
+    setAttr ( $currentSetting + ".shaderPrePostFix" ) $prePostFix;
+    setAttr ( $currentSetting + ".shaderNameMode" ) $prePostFixMode;
+    
+    radioButtonGrp -e 
+        -enable ( $prePostFix > 0 )
+            $prePostfixModeUI;
+
+    P3DUpdateShaderSettingsGUI $parent $isAE;       // false == not Attribute Editor
+}
+
+//===========================================================================
+// P3DReflectShaderFieldsGUI
+//===========================================================================
+// Description: Queries the current state for the textField UI controls in 
+//              the "Shader Naming" frame and assigns their settings into
+//              the attributes for the current exporterSettingNode.
+//
+// Constraints: The radio controls are reflected via 
+//              P3DReflectShaderModesGUI().
+//
+// Parameters:  string $parent: The parent UI control for the Shader
+//                              Names control group - columnLayout.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DReflectShaderFieldsGUI( string $parent, int $isAE )
+{
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $prePostfixModeUI        = $AEprefix + "p3dShaderPrePostfixModeUI";
+    string $p3dShaderNameCustomUI   = $AEprefix + "p3dShaderNameCustomUI";
+
+    string $currentSetting = P3DGetCurrentExporterSetting();
+
+    // Note: radioButtonGrp control values converted from 1-based value to 0-based value.
+    int $prePostFixMode         = ( `radioButtonGrp -q -select $prePostfixModeUI` - 1 );
+
+    // Assign to attribute only if radio is set to "Custom"
+    if ( $prePostFixMode == 1 )
+    {
+        string $shaderNameCustom    = `textField -q -text $p3dShaderNameCustomUI`;
+        setAttr -type "string" ( $currentSetting + ".shaderNameCustom" ) $shaderNameCustom;
+    }
+
+    P3DUpdateShaderSettingsGUI $parent $isAE;
+}
+
+
+// --------------------------------------------------------------------
+//
+// -----------------------    RULES     -------------------------------
+//
+// --------------------------------------------------------------------
+
+//===========================================================================
+// P3DCreateExportRulesGUI
+//===========================================================================
+// Description: Creates the frameLayout UI containing the controls
+//              used to edit the Local and Global Rules.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control: columnLayout
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DCreateExportRulesGUI( string $parent, int $isAE )
+{
+    setUITemplate -pushTemplate P3DOptionsTemplate;
+
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $rulesMainUI             = $AEprefix + "p3dRulesMainUI";
+
+    string $localRulesEnableUI      = $AEprefix + "p3dLocalRulesEnableUI";
+    string $localRulesFieldUI       = $AEprefix + "p3dLocalRulesFieldUI";
+    string $localRulesBrowseUI      = $AEprefix + "p3dLocalRulesBrowseUI";
+    string $localRulesTrashUI       = $AEprefix + "p3dLocalRulesTrashUI";
+    string $globalRulesEnableUI     = $AEprefix + "p3dGlobalRulesEnableUI";
+    string $globalRulesFieldUI      = $AEprefix + "p3dGlobalRulesFieldUI";
+    string $globalRulesBrowseUI     = $AEprefix + "p3dGlobalRulesBrowseUI";
+    string $globalRulesTrashUI      = $AEprefix + "p3dGlobalRulesTrashUI";
+    string $rulesWarningThresholdUI = $AEprefix + "p3dRulesWarningThresholdUI";
+    string $rulesErrorThresholdUI   = $AEprefix + "p3dRulesErrorThresholdUI";
+    
+    string $urlRulesUI[] = p3dFrameLayout( "Rules", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Exporter/exporterPreferences.html#_rules", true, true );
+    
+//        string $form = `formLayout $rulesMainUI`;
+        columnLayout -adj true $rulesMainUI;
+
+            rowLayout -nc 6 -rowAttach 4 "both" 0 -rowAttach 5 "both" 0 -rowAttach 6 "both" 0;
+
+                text -label "Local Rules" -align "right";
+                checkBox -label "" $localRulesEnableUI;
+                textField -editable true $localRulesFieldUI;
+                string $localRulesHelp  = `symbolButton -image "info.xpm"`;
+                symbolButton -image "navButtonBrowse.xpm" $localRulesBrowseUI;
+                symbolButton -image "smallTrash.xpm" $localRulesTrashUI;
+                
+                setParent ..;
+
+            rowLayout -nc 6 -rowAttach 4 "both" 0 -rowAttach 5 "both" 0 -rowAttach 6 "both" 0;
+
+                text -label "Global Rules" -align "right";
+                checkBox -label "" $globalRulesEnableUI;
+                textField -editable true $globalRulesFieldUI;
+                string $globalRulesHelp  = `symbolButton -image "info.xpm"`;
+                symbolButton-image "navButtonBrowse.xpm" $globalRulesBrowseUI;
+                symbolButton -image "smallTrash.xpm" $globalRulesTrashUI;
+
+                setParent ..;
+
+            intSliderGrp -label "Warning Threshold" -min 0 -max 256 -field true $rulesWarningThresholdUI;
+            intSliderGrp -label "Error Threshold" -min 0 -max 256 -field true $rulesErrorThresholdUI;
+
+            setParent ..;  
+
+        PopP3dFrameLayout( $urlRulesUI );
+
+/*            
+    formLayout -e
+        -af     $localRulesLabel            "top"       4
+        
+        -af     $localRulesEnableUI         "top"       4
+        -ac     $localRulesEnableUI         "left"      4   $localRulesLabel
+        
+        -af     $localRulesTrash            "top"       0
+        -af     $localRulesTrash            "right"     0
+        
+        -af     $localRulesBrowse           "top"       0
+        -ac     $localRulesBrowse           "right"     2   $localRulesTrash
+        
+        -af     $localRulesHelp             "top"       0
+        -ac     $localRulesHelp             "right"     2   $localRulesBrowse
+        -aoc    $localRulesHelp             "bottom"    0   $localRulesBrowse
+        
+        -af     $localRulesField            "top"       0
+        -ac     $localRulesField            "left"      2   $localRulesEnableUI
+        -ac     $localRulesField            "right"     2   $localRulesHelp
+
+        -ac     $globalRulesLabel            "top"       6  $localRulesField
+
+        -ac     $globalRulesEnableUI         "top"       4  $localRulesField
+        -ac     $globalRulesEnableUI         "left"      4   $globalRulesLabel
+        
+        -ac     $globalRulesTrashUI          "top"       2  $localRulesField
+        -af     $globalRulesTrashUI          "right"     0
+        
+        -ac     $globalRulesBrowseUI         "top"       2  $localRulesField
+        -ac     $globalRulesBrowseUI         "right"     2  $globalRulesTrashUI
+        
+        -ac     $globalRulesHelp             "top"       2  $localRulesField
+        -ac     $globalRulesHelp             "right"     2  $globalRulesBrowseUI
+        -aoc    $globalRulesHelp             "bottom"    0  $globalRulesBrowseUI
+        
+        -ac     $globalRulesField            "top"       2  $localRulesField
+        -ac     $globalRulesField            "left"      2  $globalRulesEnableUI
+        -ac     $globalRulesField            "right"     2  $globalRulesHelp
+            $form;        
+*/
+
+    symbolButton -e
+        -c "p3dExportOptionsHelp \"localRules\""
+            $localRulesHelp;
+
+    symbolButton -e
+        -c "p3dExportOptionsHelp \"globalRules\""
+            $globalRulesHelp;
+            
+    // Set up the callbacks for the Global Rules here, because the 
+    // Global Rules do not change based on scene content.
+    checkBox -e
+        -cc ( "optionVar -intValue p3dGlobalRulesEnable (#1); P3DUpdateExportRulesGUI " + $rulesMainUI + " " + $isAE )
+            $globalRulesEnableUI;
+
+    textField -e
+        -cc ( "optionVar -stringValue p3dGlobalRules \"#1\"" )
+            $globalRulesFieldUI;
+            
+    symbolButton -e
+        -c ( "P3DGlobalRulesBrowser " + $globalRulesFieldUI )
+            $globalRulesBrowseUI;
+
+    symbolButton -e
+        -c ( "optionVar -remove p3dGlobalRules; textField -e -text \"\" " + $globalRulesFieldUI )
+            $globalRulesTrashUI;
+
+    intSliderGrp -e
+        -cc ( "optionVar -intValue p3dRulesWarningThreshold (#1); P3DUpdateExportRulesGUI " + $rulesMainUI + " " + $isAE )
+            $rulesWarningThresholdUI;
+
+    intSliderGrp -e
+        -cc ( "optionVar -intValue p3dRulesErrorThreshold (#1); P3DUpdateExportRulesGUI " + $rulesMainUI + " " + $isAE )
+            $rulesErrorThresholdUI;
+
+    setUITemplate -popTemplate;
+    
+    P3DUpdateExportRulesGUI $rulesMainUI $isAE;
+}
+
+//===========================================================================
+// P3DUpdateExportRulesGUI
+//===========================================================================
+// Description: Updates the UI controls for the Local and Global Rules.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control: formLayout
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DUpdateExportRulesGUI( string $parent, int $isAE )
+{
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $localRulesEnableUI      = $AEprefix + "p3dLocalRulesEnableUI";
+    string $localRulesFieldUI       = $AEprefix + "p3dLocalRulesFieldUI";
+    string $localRulesBrowseUI      = $AEprefix + "p3dLocalRulesBrowseUI";
+    string $localRulesTrashUI       = $AEprefix + "p3dLocalRulesTrashUI";
+    string $globalRulesEnableUI     = $AEprefix + "p3dGlobalRulesEnableUI";
+    string $globalRulesFieldUI      = $AEprefix + "p3dGlobalRulesFieldUI";
+    string $globalRulesBrowseUI     = $AEprefix + "p3dGlobalRulesBrowseUI";
+    string $globalRulesTrashUI      = $AEprefix + "p3dGlobalRulesTrashUI";
+    string $rulesWarningThresholdUI = $AEprefix + "p3dRulesWarningThresholdUI";
+    string $rulesErrorThresholdUI   = $AEprefix + "p3dRulesErrorThresholdUI";
+
+    int $localRulesEnable = false;
+    int $globalRulesEnable = false;
+    string $globalRulesFile = "";
+    int $rulesWarningThreshold = 0;
+    int $rulesErrorThreshold = 0;
+    
+    string $currentSetting = "";
+    int $isValid = `pluginInfo -q -loaded "p3dmayaexp.mll"`;
+
+    if ( $isValid )
+    {
+        $currentSetting = P3DGetCurrentExporterSetting();
+        $isValid = `objExists $currentSetting`;
+    }
+  
+    // If user has not selected a valid p3dExportSettingNode,
+    // dim all controls and return.
+    columnLayout -e -enable $isValid $parent;
+    if ( !$isValid ) return;
+
+    string $attrLocalRules = ( $currentSetting + ".localRules" );
+    string $attrLocalRulesEnable = ( $currentSetting + ".localRulesEnable" );
+
+    $localRulesEnable = `getAttr $attrLocalRulesEnable`;
+
+    if ( `optionVar -exists p3dGlobalRules` )
+    {
+        $globalRulesFile = `optionVar -q p3dGlobalRules`;
+    }
+    if ( `optionVar -exists p3dGlobalRulesEnable` )
+    {
+        $globalRulesEnable = `optionVar -q p3dGlobalRulesEnable`;
+    }
+    if ( `optionVar -exists p3dRulesWarningThreshold` )
+    {
+        $rulesWarningThreshold = `optionVar -q p3dRulesWarningThreshold`;
+    }
+    if ( `optionVar -exists p3dRulesErrorThreshold` )
+    {
+        $rulesErrorThreshold = `optionVar -q p3dRulesErrorThreshold`;
+    }
+
+    // Error threshold must be >= Warning threshold
+    $rulesErrorThreshold = max( $rulesWarningThreshold, $rulesErrorThreshold );
+    optionVar -intValue p3dRulesErrorThreshold $rulesErrorThreshold;
+
+    checkBox -e
+        -value $localRulesEnable
+        -cc ( "setAttr " + $attrLocalRulesEnable + " (#1); P3DUpdateExportRulesGUI " + $parent + " " + $isAE )
+            $localRulesEnableUI;
+
+    textField -e
+        -enable $localRulesEnable
+        -text ( `getAttr $attrLocalRules` )
+        -cc ( "setAttr -type \"string\" " + $attrLocalRules + " \"#1\"; P3DUpdateExportRulesGUI " + $parent + " " + $isAE )
+            $localRulesFieldUI;
+
+//    connectControl $localRulesEnableUI $attrLocalRulesEnable;
+//    connectControl $localRulesFieldUI $attrLocalRules;
+    
+    checkBox -e
+        -value $globalRulesEnable
+            $globalRulesEnableUI;
+
+    textField -e 
+        -text $globalRulesFile
+            $globalRulesFieldUI;
+
+    symbolButton -e
+        -c ("P3DDisplayFileBrowser(\"P3DChangeFileAttribute\",\"localRules\",\"OPEN\"); P3DUpdateExportRulesGUI " + $parent + " " + $isAE )
+        -enable $localRulesEnable
+            $localRulesBrowseUI;
+        
+    symbolButton -e
+        -c ("P3DChangeFileAttribute( \"\", \"localRules\"); P3DUpdateExportRulesGUI " + $parent + " " + $isAE )
+        -enable $localRulesEnable
+            $localRulesTrashUI;
+
+    symbolButton -e
+        -enable $globalRulesEnable
+            $globalRulesBrowseUI;
+
+    symbolButton -e
+        -enable $globalRulesEnable
+            $globalRulesTrashUI;
+
+    intSliderGrp -e
+        -value $rulesWarningThreshold
+            $rulesWarningThresholdUI;
+
+    intSliderGrp -e
+        -value $rulesErrorThreshold
+            $rulesErrorThresholdUI;
+}
+
+//===========================================================================
+// P3DCreateExportGlobalGUI
+//===========================================================================
+// Description: Creates the frameLayout UI containing the controls
+//              used to edit the Miscellaneous Exporter options.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control: columnLayout
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DCreateExportGlobalGUI( string $parent, int $isAE )
+{
+    setUITemplate -pushTemplate P3DOptionsTemplate;
+
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $p3dExporterGlobalMainUI                 = $AEprefix + "p3dExporterGlobalMainUI";
+
+    string $p3dExporterGlobalVerboseUI              = $AEprefix + "p3dExporterGlobalVerboseUI";
+    string $p3dExporterGlobalVerboseLabelUI         = $AEprefix + "p3dExporterGlobalVerboseLabelUI";
+    string $p3dExporterGlobalProgressInWindowUI     = $AEprefix + "p3dExporterGlobalProgressInWindowUI";
+    string $p3dExporterGlobalRelativePathsUI        = $AEprefix + "p3dExporterGlobalRelativePathsUI";
+    string $p3dExporterGlobalUsePeakDetectionUI     = $AEprefix + "p3dExporterGlobalUsePeakDetectionUI";
+    
+    string $urlGlobalUI[] = p3dFrameLayout( "Global", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Exporter/exporterPreferences.html#_global", true, true );
+    
+//        string $form = `formLayout $rulesMainUI`;
+        columnLayout -adj true $p3dExporterGlobalMainUI;
+
+            rowLayout -nc 3 -columnWidth 2 64 -columnWidth 3 128;
+                text -label "Verbosity";
+                intSlider -min 0 -max 4 -value 0 $p3dExporterGlobalVerboseUI;
+                text -label "Quiet!" $p3dExporterGlobalVerboseLabelUI;
+                setParent ..;
+
+            rowLayout -nc 2;
+                text -label "";
+                checkBox -label "Use Window for Progress" $p3dExporterGlobalProgressInWindowUI;
+                setParent ..;
+
+            rowLayout -nc 2;
+                text -label "";
+                checkBox -label "Generate Relative Paths" $p3dExporterGlobalRelativePathsUI;
+                setParent ..;
+
+            rowLayout -nc 2;
+                text -label "";
+                checkBox -label "Use V17 Animation Optimization" $p3dExporterGlobalUsePeakDetectionUI;
+                setParent ..;
+
+            setParent ..;
+
+        PopP3dFrameLayout( $urlGlobalUI );
+
+    // Set up the callbacks for the Global Options here, because the 
+    // Global Options do not change based on scene content.
+    intSlider -e
+        -cc ( "optionVar -intValue p3dExporterVerbose (#1); P3DUpdateExportGlobalGUI " + $p3dExporterGlobalMainUI + " " + $isAE )
+            $p3dExporterGlobalVerboseUI;
+            
+    checkBox -e
+        -cc ( "optionVar -intValue p3dExporterProgressInWindow (#1); P3DUpdateExportGlobalGUI " + $p3dExporterGlobalMainUI + " " + $isAE )
+            $p3dExporterGlobalProgressInWindowUI;
+            
+    checkBox -e
+        -cc ( "optionVar -intValue p3dExporterRelativePaths (#1); P3DSwitchRelativePaths();" )
+            $p3dExporterGlobalRelativePathsUI;
+            
+    checkBox -e
+        -cc ( "optionVar -intValue p3dExporterUsePeakDetection (#1); P3DUpdateExportGlobalGUI " + $p3dExporterGlobalMainUI + " " + $isAE )
+            $p3dExporterGlobalUsePeakDetectionUI;
+            
+    setUITemplate -popTemplate;
+    
+    P3DUpdateExportGlobalGUI $p3dExporterGlobalMainUI $isAE;
+}
+
+//===========================================================================
+// P3DUpdateExportGlobalGUI
+//===========================================================================
+// Description: Updates the UI controls for the Local and Global Global.
+//
+// Constraints: 
+//
+// Parameters:  string $parent: The parent UI control: formLayout
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc P3DUpdateExportGlobalGUI( string $parent, int $isAE )
+{
+    setParent $parent;
+
+    string $AEprefix = getUIPrefix( $isAE );
+
+    string $p3dExporterGlobalVerboseUI              = $AEprefix + "p3dExporterGlobalVerboseUI";
+    string $p3dExporterGlobalVerboseLabelUI         = $AEprefix + "p3dExporterGlobalVerboseLabelUI";
+    string $p3dExporterGlobalProgressInWindowUI     = $AEprefix + "p3dExporterGlobalProgressInWindowUI";
+    string $p3dExporterGlobalRelativePathsUI        = $AEprefix + "p3dExporterGlobalRelativePathsUI";
+    string $p3dExporterGlobalUsePeakDetectionUI     = $AEprefix + "p3dExporterGlobalUsePeakDetectionUI";
+
+    string $verboseLabel[5] = 
+    {
+        "Quiet!",
+        "Errors Only",
+        "Errors & Warnings",
+        "Maximum Spew",
+        "Debug"
+    };
+
+    int $verboseMode        = 2;    // Errors & Warnings
+    int $progressInWindow   = false;
+    int $useRelativePaths   = false;
+    int $usePeakDetection   = true;
+    
+    if ( `optionVar -exists p3dExporterVerbose` )
+    {
+        $verboseMode = `optionVar -q p3dExporterVerbose`;
+    }
+    else optionVar -intValue p3dExporterVerbose $verboseMode;
+
+    if ( `optionVar -exists p3dExporterProgressInWindow` )
+    {
+        $progressInWindow = `optionVar -q p3dExporterProgressInWindow`;
+    }
+    else optionVar -intValue p3dExporterProgressInWindow $progressInWindow;
+
+    if ( `optionVar -exists p3dExporterRelativePaths` )
+    {
+        $useRelativePaths = `optionVar -q p3dExporterRelativePaths`;
+    }
+    else optionVar -intValue p3dExporterRelativePaths $useRelativePaths;
+
+    if ( `optionVar -exists p3dExporterUsePeakDetection` )
+    {
+        $usePeakDetection = `optionVar -q p3dExporterUsePeakDetection`;
+    }
+    else optionVar -intValue p3dExporterUsePeakDetection $usePeakDetection;
+
+    intSlider -e
+        -value $verboseMode
+            $p3dExporterGlobalVerboseUI;
+
+    text -e
+        -label $verboseLabel[$verboseMode]
+            $p3dExporterGlobalVerboseLabelUI;
+
+    checkBox -e
+        -value $progressInWindow
+            $p3dExporterGlobalProgressInWindowUI;
+
+    checkBox -e
+        -value $useRelativePaths
+            $p3dExporterGlobalRelativePathsUI;
+
+    checkBox -e
+        -value $usePeakDetection
+            $p3dExporterGlobalUsePeakDetectionUI;
+}
+
+//*****************************************
+//
+// P3D Get Export Options
+//
+//
+global proc string P3DGetExportOptions()
+{
+    global string $gP3dExporterOptions[];
+    string $optionStr;
+
+    P3DCreateExporterOptions();
+
+    string $currentSetting = P3DGetCurrentExporterSetting();
+    // While it may seem redundant, the call to Set() will  (?? what ??)
+    P3DSetCurrentExporterSetting($currentSetting);
+
+    $optionStr = "exporterSetting=" + $currentSetting + ";";
+    for ($option in $gP3dExporterOptions)
+    {
+        $optionStr = $optionStr + $option + "=" + `getAttr ($currentSetting+"."+$option)` + ";";
+
+        string $optionEnable = ( $option + "Enable" );
+        if ( `attributeQuery -node $currentSetting -exists $optionEnable` )
+        {
+            $optionStr = $optionStr + $optionEnable + "=" + `getAttr ($currentSetting+"."+$optionEnable)` + ";";
+        }
+    }
+   
+    // Rules added as special case:
+    {
+        string $p3dLocalRules = `getAttr ( $currentSetting + ".localRules" )`;
+        int $p3dLocalRulesEnable = `getAttr ( $currentSetting + ".localRulesEnable" )`;
+
+        if ( $p3dLocalRules != "" )
+        {
+           $optionStr = ( $optionStr + "localRules=" + $p3dLocalRules + ";" );
+        }
+        $optionStr = ( $optionStr + "localRulesEnable=" + $p3dLocalRulesEnable + ";" );
+        
+        if ( `optionVar -exists p3dGlobalRules` )
+        {
+            string $p3dGlobalRules = `optionVar -q p3dGlobalRules`;
+            int $p3dGlobalRulesEnable = `optionVar -q p3dGlobalRulesEnable`;
+            
+            if ( $p3dGlobalRules != "" )
+            {
+               $optionStr = ( $optionStr + "globalRules=" + $p3dGlobalRules + ";" );
+            }
+            $optionStr = ( $optionStr + "globalRulesEnable=" + $p3dGlobalRulesEnable + ";" );
+        }
+
+        if ( `optionVar -exists p3dRulesWarningThreshold` )
+        {
+            $optionStr = ( $optionStr + "rulesWarningThreshold=" + `optionVar -q p3dRulesWarningThreshold` + ";" );
+        }
+
+        if ( `optionVar -exists p3dRulesErrorThreshold` )
+        {
+            $optionStr = ( $optionStr + "rulesErrorThreshold=" + `optionVar -q p3dRulesErrorThreshold` + ";" );
+        }
+    }
+
+/* ****  AnimRange DISABLED for removal ****
+    // AnimRanges
+    {
+        int $animRangeDefault = `getAttr ( $currentSetting + ".animRangeDefault" )`;
+        $optionStr = ( $optionStr + "animRangeDefault=" + $animRangeDefault + ";" );
+
+        // Thankfully Maya allows me to retrieve all connections to the array in one query.
+        string $cc[] = `listConnections -connections true ( $currentSetting + ".animRangeNameTime" )`;
+
+        // Results returned in pairs: { sourcePlug, destNode }
+        for ( $c = 0; $c < `size $cc`; $c += 2 )
+        {
+            string $plug = $cc[$c];
+            string $node = $cc[$c+1];
+
+            if ( ( `nodeType $node` == "animCurveTT" ) && ( `keyframe -q -kc $node` > 1 ))
+            {
+                string $tokens[];
+                tokenize $plug "." $tokens;
+
+                string $name = `getAttr ( $tokens[0] + "." + $tokens[1] + ".arn" )`;
+                float $keys[] = `keyframe -q -tc $node`;
+
+                $optionStr = ( $optionStr + "animRange=" + $name + "," + $keys[0] + "," + $keys[1] + ";" );
+            }
+        }
+    }
+*/
+
+    // Global options
+    if ( `optionVar -exists p3dExporterVerbose` )
+    {
+        int $p3dExporterVerbose = `optionVar -q p3dExporterVerbose`;
+        
+        $optionStr = ( $optionStr + "verbose=" + $p3dExporterVerbose+ ";" );
+    }
+    if ( `optionVar -exists p3dExporterProgressInWindow` )
+    {
+        int $p3dExporterProgressInWindow = `optionVar -q p3dExporterProgressInWindow`;
+        
+        $optionStr = ( $optionStr + "progressInWindow=" + $p3dExporterProgressInWindow+ ";" );
+    }
+    if ( `optionVar -exists p3dExporterUsePeakDetection` )
+    {
+        int $p3dExporterUsePeakDetection = `optionVar -q p3dExporterUsePeakDetection`;
+        
+        $optionStr = ( $optionStr + "usePeakDetection=" + $p3dExporterUsePeakDetection + ";" );
+    }
+           
+   return $optionStr;
+}
+
+//****************************************************
+//
+// p3d ExpOptsGUI
+//
+// Description:
+//    This script provides the p3d exporter options.
+//    The optionsString is of the form:
+//       varName1=value1;varName2=value2;...
+//
+// Parameters:
+//    $parent  - the elf parent layout for this options layout. It is
+//             always a scrollLayout.
+//    $action  - the action that is to be performed with this invokation
+//             of this proc. Valid options are:
+//                "query" - construct the options string and pass it
+//                         to the resultCallback.
+//                "post"   - post all the elf controls.
+//    $initialSettings - the current options string in effect at the
+//                   time this script is invoked.
+//    $resultCallback   -
+//          This is the proc to be called with the result string. 
+//          resultCallback ( string $optionsString )
+//
+// Returns:
+//    1 if successfull.
+//    0 otherwise.
+//****************************************************
+global proc int P3DExpOptsGUI(string $parent, string $action,
+                              string $initialSettings, string $resultCallback)
+{
+    // This procedure is called when Maya is populating the 
+    // Exporter Options dialog.
+    int $isAE = 2;
+
+   if ($action == "post")  
+   {
+      P3DBuildExportOptionsGUI( $parent, $isAE );
+      return 1;
+   }
+   if ($action == "query") 
+   {
+      string $options = P3DGetExportOptions();
+      eval($resultCallback + " \"" + $options + "\"");
+      return 1;
+   }
+
+   return 0;                                       
+}
+
+//===========================================================================
+// P3DBuildExportOptionsGUI
+//===========================================================================
+// Description: This is main call for building the Exporter Preferences
+//              UI for the File Export options panel.
+//
+//              Called by P3DExpOptsGUI(), which is configured as the
+//              UI callback from the Pure3D Maya Exporter plug-in.
+//
+//              To avoid conflicts with multiple instances of the UI
+//              all of the controls are optionally named with a prefix 
+//              string: "AE" for the Attribute Editor, and "EO" for the
+//              Export Options panel.  No prefix is added for the standalone
+//              "Export Prefs" window.  The use of this prefix is determined
+//              by the $isAE 'hint' that is passed to this function,
+//              and propogated through all of the UI building/updating
+//              functions.
+//
+// Constraints: 
+//
+//  Parameters: string $parent: The parent UI control for the optionsBoxForm.
+//              int $isAE: The 'hint' to indicate where the UI is being built.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DBuildExportOptionsGUI( string $parent, int $isAE )
+{
+    setParent $parent;
+
+    setUITemplate -pushTemplate DefaultTemplate;    
+
+    formLayout -e -visible true optionsBoxForm;
+
+        P3DCreateExporterOptions();
+        P3DBuildExportSettingsGUI( $parent, $isAE );
+
+        setParent ..;
+
+    setUITemplate -popTemplate;
+}
+
+//***************************************************
+global proc P3DPrintExporterOptions()
+{
+   string $options_str = P3DGetExportOptions();
+   string $options[];
+
+   tokenize($options_str, ";", $options);
+
+   print("----------------------------------------------------------------------\n");
+   for ($option in $options)
+   {
+      print($option);
+      print("\n");
+   }
+   print("----------------------------------------------------------------------\n");
+}
+
+//===========================================================================
+// P3DSetExportPrefsDefaults
+//===========================================================================
+// Description: Generates a series of 'optionVar' entries to store the
+//              Export Prefs profile in the current Exporter Setting node.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DSetExportPrefsDefaults()
+{
+    string $setting = P3DGetCurrentExporterSetting();
+    
+    if ( $setting != "" )
+    {
+        optionVar -iv P3DExportPref_exportNISScenegraph `getAttr ( $setting + ".exportNISScenegraph" )`;
+        optionVar -iv P3DExportPref_exportAnimations `getAttr ( $setting + ".exportAnimations" )`;
+        optionVar -iv P3DExportPref_exportAnimReferencesOnly `getAttr ( $setting + ".exportAnimReferencesOnly" )`;
+        optionVar -iv P3DExportPref_referenceStrip `getAttr ( $setting + ".referenceStrip" )`;
+        optionVar -iv P3DExportPref_exportVisAnimations `getAttr ( $setting + ".exportVisAnimations" )`;
+        optionVar -iv P3DExportPref_exportShaderAnimations `getAttr ( $setting + ".exportShaderAnimations" )`;
+        optionVar -iv P3DExportPref_exportVertexOffsetAnims `getAttr ( $setting + ".exportVertexOffsetAnims" )`;
+        optionVar -iv P3DExportPref_tristripMeshes `getAttr ( $setting + ".tristripMeshes" )`;
+        optionVar -iv P3DExportPref_deindexMeshes `getAttr ( $setting + ".deindexMeshes" )`;
+        optionVar -sv P3DExportPref_multicontrollerName `getAttr ( $setting + ".multicontrollerName" )`;
+        optionVar -sv P3DExportPref_lightGroupName `getAttr ( $setting + ".lightGroupName" )`;
+        optionVar -sv P3DExportPref_NISScenegraphName `getAttr ( $setting + ".NISScenegraphName" )`;
+        optionVar -iv P3DExportPref_useScenegraphNameForLightGroup `getAttr ( $setting + ".useScenegraphNameForLightGroup" )`;
+        optionVar -iv P3DExportPref_xTextureResolution `getAttr ( $setting + ".xTextureResolution" )`;
+        optionVar -iv P3DExportPref_yTextureResolution `getAttr ( $setting + ".yTextureResolution" )`;
+        optionVar -sv P3DExportPref_exportedFile `getAttr ( $setting + ".exportedFile" )`;
+        optionVar -sv P3DExportPref_exporterScript `getAttr ( $setting + ".exporterScript" )`;
+        optionVar -iv P3DExportPref_exporterScriptEnable `getAttr ( $setting + ".exporterScriptEnable" )`;
+        optionVar -sv P3DExportPref_viewerScript `getAttr ( $setting + ".viewerScript" )`;
+        optionVar -iv P3DExportPref_viewerScriptEnable `getAttr ( $setting + ".viewerScriptEnable" )`;
+        optionVar -sv P3DExportPref_postProcessScript `getAttr ( $setting + ".postProcessScript" )`;
+        optionVar -iv P3DExportPref_postProcessScriptEnable `getAttr ( $setting + ".postProcessScriptEnable" )`;
+
+    // ---- Shader ----
+        optionVar -iv P3DExportPref_shaderPrePostFix `getAttr ( $setting = ".shaderPrePostFix" )`;
+        optionVar -iv P3DExportPref_shaderNameMode `getAttr ( $setting = ".shaderNameMode" )`;
+        optionVar -sv P3DExportPref_shaderNameCustom `getAttr ( $setting = ".shaderNameCustom" )`;
+    }    
+}
+
+//===========================================================================
+// P3DRestoreExportPrefsDefaults
+//===========================================================================
+// Description: Applies the saved Exporter Prefs profile to the current
+//              Exporter Settings node.  This profile is saved as a series
+//              of 'optionVar' entries.
+//
+// Constraints: 
+//
+//  Parameters: string $setting: The name of the current Export Prefs
+//                               settings node.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc P3DRestoreExportPrefsDefaults( string $setting )
+{
+    int $exportNISScenegraph = 0;
+    if ( `optionVar -exists P3DExportPref_exportNISScenegraph` )
+    {
+        $exportNISScenegraph = `optionVar -q P3DExportPref_exportNISScenegraph`;
+    }
+    int $exportAnimations = 1;
+    if ( `optionVar -exists P3DExportPref_exportAnimations` )
+    {
+        $exportAnimations = `optionVar -q P3DExportPref_exportAnimations`;
+    }
+    int $exportAnimReferencesOnly = 0;
+    if ( `optionVar -exists P3DExportPref_exportAnimReferencesOnly` )
+    {
+        $exportAnimReferencesOnly = `optionVar -q P3DExportPref_exportAnimReferencesOnly`;
+    }
+    int $referenceStrip = 0;
+    if ( `optionVar -exists P3DExportPref_referenceStrip` )
+    {
+        $referenceStrip = `optionVar -q P3DExportPref_referenceStrip`;
+    }
+    int $exportVisAnimations = 1;
+    if ( `optionVar -exists P3DExportPref_exportVisAnimations` )
+    {
+        $exportVisAnimations = `optionVar -q P3DExportPref_exportVisAnimations`;
+    }
+    int $exportShaderAnimations = off;
+    if ( `optionVar -exists P3DExportPref_exportShaderAnimations` )
+    {
+        $exportShaderAnimations = `optionVar -q P3DExportPref_exportShaderAnimations`;
+    }
+    int $exportVertexOffsetAnims = 1;
+    if ( `optionVar -exists P3DExportPref_exportVertexOffsetAnims` )
+    {
+        $exportVertexOffsetAnims = `optionVar -q P3DExportPref_exportVertexOffsetAnims`;
+    }
+    int $tristripMeshes = 0;
+    if ( `optionVar -exists P3DExportPref_tristripMeshes` )
+    {
+        $tristripMeshes = `optionVar -q P3DExportPref_tristripMeshes`;
+    }
+    int $deindexMeshes = 0;
+    if ( `optionVar -exists P3DExportPref_deindexMeshes` )
+    {
+        $deindexMeshes = `optionVar -q P3DExportPref_deindexMeshes`;
+    }
+    string $multicontrollerName = "MasterController";
+    if ( `optionVar -exists P3DExportPref_multicontrollerName` )
+    {
+        $multicontrollerName = `optionVar -q P3DExportPref_multicontrollerName`;
+    }
+    string $lightGroupName = "LightGroup";
+    if ( `optionVar -exists P3DExportPref_lightGroupName` )
+    {
+        $lightGroupName = `optionVar -q P3DExportPref_lightGroupName`;
+    }
+    string $NISScenegraphName = "Scene";
+    if ( `optionVar -exists P3DExportPref_NISScenegraphName` )
+    {
+        $NISScenegraphName = `optionVar -q P3DExportPref_NISScenegraphName`;
+    }
+    int $useScenegraphNameForLightGroup = 1;
+    if ( `optionVar -exists P3DExportPref_useScenegraphNameForLightGroup` )
+    {
+        $useScenegraphNameForLightGroup = `optionVar -q P3DExportPref_useScenegraphNameForLightGroup`;
+    }
+    int $xTextureResolution = 3;
+    if ( `optionVar -exists P3DExportPref_xTextureResolution` )
+    {
+        $xTextureResolution = `optionVar -q P3DExportPref_xTextureResolution`;
+    }
+    int $yTextureResolution = 3;
+    if ( `optionVar -exists P3DExportPref_yTextureResolution` )
+    {
+        $yTextureResolution = `optionVar -q P3DExportPref_yTextureResolution`;
+    }
+    string $exportedFile = "";
+    if ( `optionVar -exists P3DExportPref_exportedFile` )
+    {
+        $exportedFile = `optionVar -q P3DExportPref_exportedFile`;
+    }
+    string $exporterScript = "";
+    if ( `optionVar -exists P3DExportPref_exporterScript` )
+    {
+        $exporterScript = `optionVar -q P3DExportPref_exporterScript`;
+    }
+    int $exporterScriptEnable = 1;
+    if ( `optionVar -exists P3DExportPref_exporterScriptEnable` )
+    {
+        $exporterScriptEnable = `optionVar -q P3DExportPref_exporterScriptEnable`;
+    }
+    string $viewerScript = "";
+    if ( `optionVar -exists P3DExportPref_viewerScript` )
+    {
+        $viewerScript = `optionVar -q P3DExportPref_viewerScript`;
+    }
+    int $viewerScriptEnable = 1;
+    if ( `optionVar -exists P3DExportPref_viewerScriptEnable` )
+    {
+        $viewerScriptEnable = `optionVar -q P3DExportPref_viewerScriptEnable`;
+    }
+    string $postProcessScript = "";
+    if ( `optionVar -exists P3DExportPref_postProcessScript` )
+    {
+        $postProcessScript = `optionVar -q P3DExportPref_postProcessScript`;
+    }
+    int $postProcessScriptEnable = 1;
+    if ( `optionVar -exists P3DExportPref_postProcessScriptEnable` )
+    {
+        $postProcessScriptEnable = `optionVar -q P3DExportPref_postProcessScriptEnable`;
+    }
+
+// ---- Shader ----
+    int $shaderPrePostFix = 0;  // None
+    if ( `optionVar -exists P3DExportPref_shaderPrePostFix` )
+    {
+        $shaderPrePostFix = `optionVar -q P3DExportPref_shaderPrePostFix`;
+    }
+    int $shaderNameMode = 0;  // Filename
+    if ( `optionVar -exists P3DExportPref_shaderNameMode` )
+    {
+        $shaderNameMode = `optionVar -q P3DExportPref_shaderNameMode`;
+    }
+    string $shaderNameCustom = "";
+    if ( `optionVar -exists P3DExportPref_shaderNameCustom` )
+    {
+        $shaderNameCustom = `optionVar -q P3DExportPref_shaderNameCustom`;
+    }
+
+    setAttr                 ( $setting + ".exportNISScenegraph" ) $exportNISScenegraph;
+    setAttr                 ( $setting + ".exportAnimations" ) $exportAnimations;
+    setAttr                 ( $setting + ".exportAnimReferencesOnly" ) $exportAnimReferencesOnly;
+    setAttr                 ( $setting + ".referenceStrip" ) $referenceStrip;
+    setAttr                 ( $setting + ".exportVisAnimations" ) $exportVisAnimations;
+    setAttr                 ( $setting + ".exportShaderAnimations" ) $exportShaderAnimations;
+    setAttr                 ( $setting + ".exportVertexOffsetAnims" ) $exportVertexOffsetAnims;
+    setAttr                 ( $setting + ".tristripMeshes" ) $tristripMeshes;
+    setAttr                 ( $setting + ".deindexMeshes" ) $deindexMeshes;
+    setAttr -type "string"  ( $setting + ".multicontrollerName" ) $multicontrollerName;
+    setAttr -type "string"  ( $setting + ".lightGroupName" ) $lightGroupName;
+    setAttr -type "string"  ( $setting + ".NISScenegraphName" ) $NISScenegraphName;
+    setAttr                 ( $setting + ".useScenegraphNameForLightGroup" ) $useScenegraphNameForLightGroup;
+    setAttr                 ( $setting + ".xTextureResolution" ) $xTextureResolution;
+    setAttr                 ( $setting + ".yTextureResolution" ) $yTextureResolution;
+    setAttr -lock false     ( $setting + ".exportedFile" );
+    setAttr -type "string"  ( $setting + ".exportedFile" ) $exportedFile;
+    setAttr -lock true      ( $setting + ".exportedFile" );
+    setAttr -lock false     ( $setting + ".exporterScript" );
+    setAttr -type "string"  ( $setting + ".exporterScript" ) $exporterScript;
+    setAttr -lock true      ( $setting + ".exporterScript" );
+    setAttr                 ( $setting + ".exporterScriptEnable" ) $exporterScriptEnable;
+    setAttr -lock false     ( $setting + ".viewerScript" );
+    setAttr -type "string"  ( $setting + ".viewerScript" ) $viewerScript;
+    setAttr -lock true      ( $setting + ".viewerScript" );
+    setAttr                 ( $setting + ".viewerScriptEnable" ) $viewerScriptEnable;
+    setAttr -lock false     ( $setting + ".postProcessScript" );
+    setAttr -type "string"  ( $setting + ".postProcessScript" ) $postProcessScript;
+    setAttr -lock true      ( $setting + ".postProcessScript" );
+    setAttr                 ( $setting + ".postProcessScriptEnable" ) $postProcessScriptEnable;
+
+// ---- Shader ----
+    setAttr                 ( $setting + ".shaderPrePostFix" ) $shaderPrePostFix;
+    setAttr                 ( $setting + ".shaderNameMode" ) $shaderNameMode;
+    setAttr -type "string"  ( $setting + ".shaderNameCustom" ) $shaderNameCustom;
+}
+
+//===========================================================================
+// P3DExportPrefsFactoryDefaults
+//===========================================================================
+// Description: Removes all 'optionVar' entries which store the user's
+//              default Export Prefs Settings profile and calls
+//              P3DRestoreExportPrefsDefaults() for the current Export
+//              Prefs settings node. 
+//
+// Constraints: The 'optionVar' entries will be re-created with 
+//              application-defined default settings.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DExportPrefsFactoryDefaults()
+{
+    optionVar -remove P3DExportPref_exportNISScenegraph;
+    optionVar -remove P3DExportPref_exportAnimations;
+    optionVar -remove P3DExportPref_exportAnimReferencesOnly;
+    optionVar -remove P3DExportPref_referenceStrip;
+    optionVar -remove P3DExportPref_exportVisAnimations;
+    optionVar -remove P3DExportPref_exportShaderAnimations;
+    optionVar -remove P3DExportPref_exportVertexOffsetAnims;
+    optionVar -remove P3DExportPref_tristripMeshes;
+    optionVar -remove P3DExportPref_deindexMeshes;
+    optionVar -remove P3DExportPref_multicontrollerName;
+    optionVar -remove P3DExportPref_lightGroupName;
+    optionVar -remove P3DExportPref_NISScenegraphName;
+    optionVar -remove P3DExportPref_useScenegraphNameForLightGroup;
+    optionVar -remove P3DExportPref_xTextureResolution;
+    optionVar -remove P3DExportPref_yTextureResolution;
+    optionVar -remove P3DExportPref_exportedFile;
+    optionVar -remove P3DExportPref_exporterScript;
+    optionVar -remove P3DExportPref_exporterScriptEnable;
+    optionVar -remove P3DExportPref_viewerScript;
+    optionVar -remove P3DExportPref_viewerScriptEnable;
+    optionVar -remove P3DExportPref_postProcessScript;
+    optionVar -remove P3DExportPref_postProcessScriptEnable;
+
+// ---- Shader ----
+    optionVar -remove P3DExportPref_shaderPrePostFix;
+    optionVar -remove P3DExportPref_shaderNameMode;
+    optionVar -remove P3DExportPref_shaderNameCustom;
+
+    string $setting = P3DGetCurrentExporterSetting();
+    
+    if ( $setting != "" )
+    {
+        P3DRestoreExportPrefsDefaults( $setting );
+    }
+}
+
+//===========================================================================
+// P3DCreateExporterOptions
+//===========================================================================
+// Description: Creates the default Exporter Settings and Exporter Options 
+//              nodes, if either doesn't already exist.
+//
+//              Upon returning from this function 
+//
+//              This function has nothing to do with building UI.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DCreateExporterOptions()
+{   
+    if ( !isExporterValid() ) return;
+
+    string $defaultOptions = "p3dExporterOptionsShape";
+    string $defaultSettings = "p3dDefaultExporterSetting";
+
+    // Added by Bryan Ewert on 01/11/2001
+    // Cache the current selection list
+    string $select[] = `ls -sl`;
+    int $restoreUserSelection = false;
+
+    string $exporterOptions = P3DGetExporterOptions();
+
+    // If no Exporter Options node exists, create it.
+    if ( $exporterOptions == "" )
+    {
+        $exporterOptions = `createNode p3dExporterOptionsShape -n $defaultOptions`;
+
+        //set a traversal stop on the exporter options transform node
+        string $transform = getTransform( $defaultOptions );
+        setAttr ( $transform + ".p3dBooleanAttributes" ) 4; 
+
+        $restoreUserSelection = true;
+    }
+
+    string $currentSetting = P3DGetCurrentExporterSetting();
+
+    if ( $currentSetting == "" )
+    {
+        string $exporterSettings[] = `ls -l -type p3dExportSettingNode`;
+
+        // Create p3dExportSettingNode first, if none is available.
+        if ( size( $exporterSettings ) == 0 )
+        {
+            $currentSetting = `createNode p3dExportSettingNode -n $defaultSettings`;
+
+            setAttr -type "string" ( $currentSetting + ".viewerScript" ) "";
+            setAttr -type "string" ( $currentSetting + ".exporterScript" ) "";
+            setAttr -type "string" ( $currentSetting + ".exportedFile" ) "";
+            setAttr -type "string" ( $currentSetting + ".postProcessScript" ) "";
+
+            P3DRestoreExportPrefsDefaults( $currentSetting );
+
+            P3DSetCurrentExporterSetting( $currentSetting );
+
+            $restoreUserSelection = true;
+        }
+        // Else connect up the first available one.
+        $currentSetting = $exporterSettings[0];
+        P3DSetCurrentExporterSetting( $currentSetting );
+    }
+
+    // These should be locked regardless, so do so outside of the creation.
+    setAttr -lock true ( $currentSetting + ".viewerScript" );
+    setAttr -lock true ( $currentSetting + ".exporterScript" );
+    setAttr -lock true ( $currentSetting + ".exportedFile" );
+
+    // Specifically unlock those settings which should now be editable.
+    setAttr -lock false ( $currentSetting + ".postProcessScript" );
+    setAttr -lock false ( $currentSetting + ".localRules" );
+
+    // Added by Bryan Ewert on 01/11/2001
+    // 'createNode' will alter the selectionList; restore it here.
+    if ( $restoreUserSelection )
+    {
+        select -r $select;
+    }
+}
+
+//***************************************************
+global proc P3DDisplayAddExporterSettingDialog()
+{
+   string $result = `promptDialog -title "Add New Exporter Setting" 
+                                  -message "Enter new exporter setting name:"
+                                  -messageAlign center
+                                  -button "OK" 
+                                  -button "Cancel"
+                                  -defaultButton "OK" 
+                                  -cancelButton "Cancel"
+                                  -dismissString "Cancel"`;
+   if (`strcmp $result "OK"`==0)
+   {
+      $setting = `promptDialog -query -text`;
+      if ($setting!="")
+      {
+         P3DAddExporterSetting($setting);
+      }
+   }
+}
+
+//***************************************************
+global proc P3DAddExporterSetting(string $setting)
+{
+    if ( $setting == "" )
+    {
+        return;
+    }
+
+    string $exportSetting = `createNode p3dExportSettingNode -n $setting`;
+
+    setAttr -type "string" ($exportSetting+".viewerScript") "";
+    setAttr -type "string" ($exportSetting+".exporterScript") "";
+    setAttr -type "string" ($exportSetting+".exportedFile") "";
+
+    P3DRestoreExportPrefsDefaults( $exportSetting );
+
+    setAttr -lock true ($exportSetting+".viewerScript");
+    setAttr -lock true ($exportSetting+".exporterScript");
+    setAttr -lock true ($exportSetting+".exportedFile");
+    //      setAttr -lock true ($exportSetting+".postProcessScript");
+
+
+    string $exporterOptions = P3DGetExporterOptions();
+    if ( $exporterOptions != "" )
+    {
+        connectAttr ( $exporterOptions + ".exporterSettings" ) ($exportSetting+".exporterSettingParent");
+    }
+}
+
+//***************************************************
+global proc P3DDisplayDeleteExporterSettingDialog()
+{
+    if ( `window -q -exists p3dDeleteExporterSettingsWindow` )
+        deleteUI -window p3dDeleteExporterSettingsWindow;
+
+    window -widthHeight 424 70 -minimizeButton false -maximizeButton false -sizeable false -title "Delete Exporter Setting" p3dDeleteExporterSettingsWindow;
+        columnLayout -columnOffset left 10 -columnAlign left;
+            string $settings[] = `ls -type p3dExportSettingNode`;
+            string $ctrl = `optionMenuGrp -label "Exporter Setting"`;
+            for ($setting in $settings)
+            {
+                menuItem $setting;
+            }
+            rowColumnLayout -numberOfColumns 2 -columnWidth 1 197 -columnWidth 2 197;
+            string $command = "string $setting = `optionMenuGrp -query -value " + $ctrl + "`; P3DDeleteExporterSetting($setting); deleteUI -window p3dDeleteExporterSettingsWindow;";
+            button -label "Ok" -command $command;
+            button -label "Cancel" -command "deleteUI -window p3dDeleteExporterSettingsWindow";
+            
+            setParent ..;
+            
+    showWindow p3dDeleteExporterSettingsWindow;
+}
+
+//***************************************************
+global proc P3DSetCurrentExporterSetting(string $setting)
+{
+    string $exporterOptions = P3DGetExporterOptions();
+
+    // If specified Exporter Setting is invalid, search for a valid one.
+    if ( $setting == "" )
+    {
+        $setting = P3DGetCurrentExporterSetting();
+    }
+
+    if ( ( $exporterOptions != "" ) && ( `objExists $setting` ) )
+    {
+        setAttr -type "string" ( $exporterOptions + ".currentSetting" ) $setting;
+    }
+    else
+    {
+        if ( $setting != "" ) confirmDialog -title "WARNING!" -message ("exporter setting "+$setting+" not found!  Resetting to default setting!");
+        P3DCreateExporterOptions();
+    }
+}
+
+//***************************************************
+global proc P3DDeleteExporterSetting(string $setting)
+{
+    if ( `objExists $setting` ) delete $setting;
+
+    // Assign next available Exporter Setting to Options node.
+    P3DSetCurrentExporterSetting( "" );
+}
+
+//***************************************************
+global proc P3DExportPrefs()
+{
+    // This will bomb out (script will exit) if Pure3D Exporter is not loaded.
+    P3DCreateExporterOptions();
+
+    string $P3DExportPrefsDefaultsMenu = "P3DExportPrefsDefaultsMenu";
+    string $P3DExportPrefsFactoryDefaultsMenu = "P3DExportPrefsFactoryDefaultsMenu";
+
+    if (`window -query -exists ExportPrefsPrompt`)
+        deleteUI -window ExportPrefsPrompt;
+
+    string $version = "?";
+    if ( isExporterLoaded() ) $version = `pluginInfo -q -version "p3dmayaexp"`;
+    // Recommended size for window to contain uncollapsed Settings frame
+    // and collapsed Animation Naming and Rules frames: 435 × 556
+    int $uiWidth = 435;
+    int $uiHeight = 556;
+
+    window 
+        -title ( "Export Prefs v" + $version ) 
+        -menuBar true
+        -width $uiWidth 
+        -height $uiHeight 
+        -minimizeButton false 
+        -maximizeButton false 
+        -sizeable true 
+            ExportPrefsPrompt;
+
+    menu -label "Options";
+        menuItem -label "Save Settings As Default" $P3DExportPrefsDefaultsMenu;
+        menuItem -label "Restore Factory Defaults" $P3DExportPrefsFactoryDefaultsMenu;
+
+        scrollLayout;
+            P3DBuildExportSettingsGUI("ExportPrefsPrompt", false);
+            setParent ..;
+
+    // Once window is opened once the prefs override the 
+    // dimensions used on construction.. must edit afterward.
+//    window -e
+//        -width $uiWidth
+//        -height $uiHeight
+//            ExportPrefsPrompt;
+
+    menuItem -e
+        -c "P3DSetExportPrefsDefaults"
+            $P3DExportPrefsDefaultsMenu;
+
+    menuItem -e
+        -c "P3DExportPrefsFactoryDefaults"
+            $P3DExportPrefsFactoryDefaultsMenu;
+
+    showWindow ExportPrefsPrompt;
+}
+
+/*
+source p3dexpoptsgui;
+*/

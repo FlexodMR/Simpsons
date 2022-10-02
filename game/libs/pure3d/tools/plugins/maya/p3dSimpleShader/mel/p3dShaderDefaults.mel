@@ -1,0 +1,1019 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     early 2002
+// Modified:    19 February, 2002
+// Version:     1.0
+//
+// Component:   Pure3D Shaders
+//
+// Description: Allows user-definable defaults for Pure3D Shaders.
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+global proc p3dShaderSetBoolDefault( string $ui, string $var )
+{
+    int $bDefault = `checkBox -q -value $ui`;
+    
+    optionVar -intValue $var $bDefault;
+}
+
+global proc p3dShaderSetFloatDefault( string $ui, string $var )
+{
+    float $fDefault = `floatSliderGrp -q -value $ui`;
+    
+    optionVar -floatValue $var $fDefault;
+}
+
+
+global proc p3dShaderSetColorDefault( string $ui, string $var )
+{
+    float $cDefault[3] = `colorSliderGrp -q -rgb $ui`;
+    
+    optionVar -clearArray $var;
+    
+    optionVar -floatValue $var $cDefault[0];
+    optionVar -floatValueAppend $var $cDefault[1];
+    optionVar -floatValueAppend $var $cDefault[2];
+}
+
+global proc p3dShaderSetEnumDefault( string $ui, string $var )
+{
+    int $nDefault = `optionMenuGrp -q -select $ui`;
+    
+    optionVar -intValue $var ( $nDefault - 1 );     // convert 1-based index to 0-based.
+}
+
+
+proc string addBoolDefault( string $name, string $var, int $bDefault, string $ui )
+{
+    if ( `optionVar -exists $var` )
+        $bDefault = `optionVar -q $var`;
+
+    string $layoutUI = `rowLayout -nc 2`;
+
+        text -label "";
+        checkBox -label $name $ui;
+
+        setParent ..;
+    
+    checkBox -e
+        -value $bDefault
+        -cc ( "p3dShaderSetBoolDefault " + $ui + " " + $var )
+            $ui;
+
+    return $layoutUI;
+}
+
+proc addFloatDefault( string $name, string $var, float $fDefault, float $fMin, float $fMax, string $ui )
+{
+    if ( `optionVar -exists $var` )
+        $fDefault = `optionVar -q $var`;
+        
+    // Note: control _must_ be created with label, or it will never appear!
+    floatSliderGrp -label $name -min $fMin -max $fMax $ui;
+    
+    floatSliderGrp -e
+        -value $fDefault
+        -cc ( "p3dShaderSetFloatDefault " + $ui + " " + $var )
+            $ui;
+}
+
+proc addColorDefault( string $name, string $var, float $cDefault[], string $ui )
+{
+    // Arrays are passed by reference.. must declare local to edit.
+    float $color[3] = $cDefault;
+
+    if ( `optionVar -exists $var` )
+        $color = `optionVar -q $var`;
+
+    // Note: control _must_ be created with label, or it will never appear!
+    colorSliderGrp -label $name $ui;
+    
+    colorSliderGrp -e
+        -rgb $color[0] $color[1] $color[2]
+        -cc ( "p3dShaderSetColorDefault " + $ui + " " + $var )
+            $ui;
+}
+
+proc addEnumDefault( string $name, string $var, string $fields[], int $nDefault, string $ui )
+{
+    if ( `optionVar -exists $var` )
+        $nDefault = `optionVar -q $var`;
+
+    optionMenuGrp -label $name $ui;
+
+    int $field;
+    for ( $field = 0; $field < `size $fields`; $field++ )
+    {
+        menuItem -label $fields[$field] -data $field;
+    }
+
+    optionMenuGrp -e
+        -select ( $nDefault + 1 )       // convert 0-based index to 1-based.
+        -cc ( "p3dShaderSetEnumDefault " + $ui + " " + $var )
+            $ui;
+}
+
+global proc p3dShaderDefaultsReset( string $which )
+{
+    string $allOptions[] = `optionVar -list`;
+
+    for ( $option in $allOptions )
+    {
+        if ( `gmatch $option ( $which + "*" )` )
+        {
+            optionVar -remove $option;
+        }
+    }
+
+    p3dShaderDefaultsUpdateUI();
+}
+
+proc p3dShaderUpdateColor( string $var, float $default[] )
+{
+    $color = $default;
+    if ( `optionVar -exists $var` )
+        $color = `optionVar -q $var`;
+    colorSliderGrp -e -rgb $color[0] $color[1] $color[2] ( $var + "UI" );
+}
+
+proc p3dShaderUpdateFloat( string $var, float $default )
+{
+    if ( `optionVar -exists $var` )
+        $default = `optionVar -q $var`;
+    floatSliderGrp -e -value $default ( $var + "UI" );
+}
+
+proc p3dShaderUpdateBool( string $var, int $default )
+{
+    if ( `optionVar -exists $var` )
+        $default = `optionVar -q $var`;
+    checkBox -e -value $default ( $var + "UI" );
+}
+
+proc p3dShaderUpdateEnum( string $var, int $default )
+{
+    if ( `optionVar -exists $var` )
+        $default = `optionVar -q $var`;
+    optionMenuGrp -e -select ( $default + 1 ) ( $var + "UI" );
+}
+
+global proc p3dShaderDefaultsUpdateUI()
+{
+    float $BLACK[3] = { 0.0, 0.0, 0.0 };
+    float $WHITE[3] = { 1.0, 1.0, 1.0 };
+    float $PURE3D[3] = { 0.0, 0.588240, 0.644 };
+
+    float $color[3];
+
+    p3dShaderUpdateColor( "P3DSimpleShader_color", $PURE3D );
+    p3dShaderUpdateColor( "P3DSimpleShader_transparency", $BLACK );
+    p3dShaderUpdateColor( "P3DSimpleShader_ambient", $WHITE );
+    p3dShaderUpdateColor( "P3DSimpleShader_diffuse", $WHITE );
+    p3dShaderUpdateColor( "P3DSimpleShader_emissive", $BLACK );
+    p3dShaderUpdateColor( "P3DSimpleShader_specular", $BLACK );
+    p3dShaderUpdateFloat( "P3DSimpleShader_shininess", 10.0 );
+    p3dShaderUpdateEnum( "P3DSimpleShader_shadeMode", 1 );
+    p3dShaderUpdateEnum( "P3DSimpleShader_blendMode", 0 );
+
+    p3dShaderUpdateBool( "P3DSimpleShader_dynamicallyLit", true );
+    p3dShaderUpdateEnum( "P3DSimpleShader_prelightMode", 0 );
+    p3dShaderUpdateBool( "P3DSimpleShader_doubleSided", false );
+    p3dShaderUpdateEnum( "P3DSimpleShader_uvMode", 0 );
+    p3dShaderUpdateEnum( "P3DSimpleShader_filterMode", 1 );
+    p3dShaderUpdateBool( "P3DSimpleShader_alphaTest", false );
+    p3dShaderUpdateEnum( "P3DSimpleShader_alphaCompare", 4 );
+    p3dShaderUpdateEnum( "P3DSimpleShader_proceduralXRes", 0 );
+    p3dShaderUpdateEnum( "P3DSimpleShader_proceduralYRes", 0 );
+    p3dShaderUpdateEnum( "P3DSimpleShader_L", 0 );
+    p3dShaderUpdateFloat( "P3DSimpleShader_K", 0.0 );
+    p3dShaderUpdateEnum( "P3DSimpleShader_mipmapmin", 0 );
+    p3dShaderUpdateEnum( "P3DSimpleShader_mipmapmax", 7 );
+
+    p3dShaderUpdateColor( "P3DBumpMapShader_color", $PURE3D );
+    p3dShaderUpdateColor( "P3DBumpMapShader_transparency", $BLACK );
+    p3dShaderUpdateColor( "P3DBumpMapShader_ambient", $WHITE );
+    p3dShaderUpdateColor( "P3DBumpMapShader_diffuse", $WHITE );
+    p3dShaderUpdateColor( "P3DBumpMapShader_emissive", $BLACK );
+    p3dShaderUpdateBool( "P3DBumpMapShader_BumpMapSpecular", true );
+    p3dShaderUpdateBool( "P3DBumpMapShader_BumpMapLightDep", true );
+    p3dShaderUpdateColor( "P3DBumpMapShader_specular", $BLACK );
+    p3dShaderUpdateFloat( "P3DBumpMapShader_shininess", 10.0 );
+    p3dShaderUpdateBool( "P3DBumpMapShader_dynamicallyLit", true );
+    p3dShaderUpdateEnum( "P3DBumpMapShader_shadeMode", 1 );
+    p3dShaderUpdateEnum( "P3DBumpMapShader_blendMode", 0 );
+    p3dShaderUpdateEnum( "P3DBumpMapShader_uvMode", 0 );
+    p3dShaderUpdateEnum( "P3DBumpMapShader_filterMode", 1 );
+    p3dShaderUpdateBool( "P3DBumpMapShader_alphaTest", false );
+    p3dShaderUpdateEnum( "P3DBumpMapShader_alphaCompare", 4 );
+    p3dShaderUpdateEnum( "P3DBumpMapShader_proceduralXRes", 0 );
+    p3dShaderUpdateEnum( "P3DBumpMapShader_proceduralYRes", 0 );
+    p3dShaderUpdateFloat( "P3DBumpMapShader_K", 0.0 );
+
+    p3dShaderUpdateColor( "P3DLayeredShader_ambient", $WHITE );
+    p3dShaderUpdateColor( "P3DLayeredShader_diffuse", $WHITE );
+    p3dShaderUpdateColor( "P3DLayeredShader_emissive", $BLACK );
+    p3dShaderUpdateColor( "P3DLayeredShader_specular", $BLACK );
+    p3dShaderUpdateFloat( "P3DLayeredShader_shininess", 10.0 );
+    p3dShaderUpdateEnum( "P3DLayeredShader_shadeMode", 1 );
+    p3dShaderUpdateEnum( "P3DLayeredShader_blendMode", 0 );
+    p3dShaderUpdateBool( "P3DLayeredShader_dynamicallyLit", true );
+    p3dShaderUpdateEnum( "P3DLayeredShader_prelightMode", 0 );
+    p3dShaderUpdateEnum( "P3DLayeredShader_uvMode", 0 );
+    p3dShaderUpdateEnum( "P3DLayeredShader_texBlendMode", 0 );
+    p3dShaderUpdateEnum( "P3DLayeredShader_filterMode", 1 );
+    p3dShaderUpdateBool( "P3DLayeredShader_alphaTest", false );
+    p3dShaderUpdateEnum( "P3DLayeredShader_alphaCompare", 4 );
+    p3dShaderUpdateEnum( "P3DLayeredShader_proceduralXRes", 0 );
+    p3dShaderUpdateEnum( "P3DLayeredShader_proceduralYRes", 0 );
+    p3dShaderUpdateFloat( "P3DLayeredShader_mmsharpness", 0.5 );
+    p3dShaderUpdateEnum( "P3DLayeredShader_mipmapmin", 0 );
+    p3dShaderUpdateEnum( "P3DLayeredShader_mipmapmax", 7 );
+
+    p3dShaderUpdateColor( "P3DPrelitShader_color", $PURE3D );
+    p3dShaderUpdateColor( "P3DPrelitShader_transparency", $BLACK );
+    p3dShaderUpdateBool( "P3DPrelitShader_doubleSided", false );
+    p3dShaderUpdateBool( "P3DPrelitShader_blendMode", false );
+    p3dShaderUpdateEnum( "P3DPrelitShader_proceduralXRes", 0 );
+    p3dShaderUpdateEnum( "P3DPrelitShader_proceduralYRes", 0 );
+    p3dShaderUpdateEnum( "P3DPrelitShader_L", 0 );
+    p3dShaderUpdateFloat( "P3DPrelitShader_K", 0.0 );
+    p3dShaderUpdateEnum( "P3DPrelitShader_mipmapmin", 0 );
+    p3dShaderUpdateEnum( "P3DPrelitShader_mipmapmax", 7 );
+
+
+
+}
+
+
+proc p3dShaderDefaultsUITemplate()
+{
+    int $labelWidth = 96;
+    int $swatchWidth = 48;
+    int $sliderWidth = 128;
+    
+    if ( `uiTemplate -exists p3dShaderDefaultsUITemplate` )
+        deleteUI -uiTemplate p3dShaderDefaultsUITemplate;
+        
+    uiTemplate p3dShaderDefaultsUITemplate;
+    
+    frameLayout -defineTemplate p3dShaderDefaultsUITemplate
+        -marginWidth 4
+        -marginHeight 4
+        ;
+
+    checkBoxGrp -defineTemplate p3dShaderDefaultsUITemplate
+        -columnAlign2 "right" "left"
+        -columnWidth2 $labelWidth ( $swatchWidth + $sliderWidth )
+        ;
+
+
+    colorSliderGrp -defineTemplate p3dShaderDefaultsUITemplate
+        -adjustableColumn3 3
+        -columnAlign2 "right" "left"
+        -columnAlign3 "right" "left" "left"
+        -columnAttach3 "right" "both" "both"
+        -columnOffset3 2 2 2
+        -columnWidth3 $labelWidth $swatchWidth $sliderWidth
+        ;
+
+    floatSliderGrp -defineTemplate p3dShaderDefaultsUITemplate
+        -field true
+        -adjustableColumn2 2
+        -adjustableColumn3 3
+        -columnAlign2 "right" "left"
+        -columnAlign3 "right" "left" "left"
+        -columnAttach3 "right" "both" "both"
+        -columnOffset2 2 2 
+        -columnOffset3 8 1 2
+        -columnWidth2 $labelWidth ( $swatchWidth + $sliderWidth )
+        -columnWidth3 $labelWidth $swatchWidth $sliderWidth
+        ;
+
+    optionMenuGrp -defineTemplate p3dShaderDefaultsUITemplate
+        -columnAlign2 "right" "left"
+        -columnAlign3 "right" "left" "left"
+        -columnAttach3 "right" "left" "left"
+        -columnOffset2 2 2 
+        -columnOffset3 2 2 2
+        -columnWidth2 ( $labelWidth + 2 ) ( $swatchWidth + $sliderWidth )
+        -columnWidth3 ( $labelWidth + 2 ) $swatchWidth $sliderWidth
+        ;
+
+    rowLayout -defineTemplate p3dShaderDefaultsUITemplate
+//        -columnAlign1 "left"
+        -columnAlign2 "right" "left"
+        -columnAlign3 "right" "left" "left"
+//        -columnAlign4 "right" "left" "left" "left"
+//        -columnAlign5 "right" "left" "left" "left" "left"
+//        -columnAlign6 "right" "left" "left" "left" "left" "left"
+//        -columnAttach1 "left"
+        -columnAttach2 "right" "left"
+        -columnAttach3 "right" "both" "both"
+//        -columnAttach4 "right" "both" "both" "both"
+//        -columnAttach5 "right" "both" "both" "both" "both"
+//        -columnAttach6 "right" "both" "both" "both" "both" "both"
+//        -columnOffset1 2
+        -columnOffset2 2 2 
+        -columnOffset3 2 2 2
+//        -columnOffset4 2 2 2 2
+//        -columnOffset5 2 2 2 2 2
+//        -columnOffset6 2 2 2 2 2 2
+//        -columnWidth1 ( $labelWidth + $swatchWidth + $sliderWidth )
+        -columnWidth2 $labelWidth ( $swatchWidth + $sliderWidth )
+        -columnWidth3 $labelWidth $swatchWidth $sliderWidth
+//        -columnWidth4 $labelWidth $swatchWidth ( $sliderWidth /2 ) ( $sliderWidth /2 )
+//        -columnWidth5 $labelWidth $swatchWidth ( $sliderWidth /3 ) ( $sliderWidth /3 ) ( $sliderWidth /3 )
+//        -columnWidth6 $labelWidth $swatchWidth ( $sliderWidth /4 ) ( $sliderWidth /4 ) ( $sliderWidth /4 ) ( $sliderWidth /4 )
+        ;        
+}
+
+global proc p3dShaderDefaults()
+{
+    float $BLACK[3] = { 0.0, 0.0, 0.0 };
+    float $WHITE[3] = { 1.0, 1.0, 1.0 };
+    float $PURE3D[3] = { 0.0, 0.588240, 0.644 };
+
+    string $form;
+
+    if ( `window -exists p3dShaderDefaultsUI` )
+        deleteUI -window p3dShaderDefaultsUI;
+
+    p3dShaderDefaultsUITemplate();
+    
+    window -title "Pure3D Shader Defaults" p3dShaderDefaultsUI;
+    
+        setUITemplate -pushTemplate p3dShaderDefaultsUITemplate;
+        
+        columnLayout -adjustableColumn true;
+        
+            string $p3dSimpleLayout[] = p3dFrameLayout( "p3dSimpleShader", "http://radnet/teams/atg/MEL%20Scripts/p3dShaderDefaults.html#_p3dSimpleShader", true, false );
+            columnLayout -adj true;
+
+                frameLayout -label "Simple Shader" -collapsable true;
+
+                    // NOTE: UI names must be name of optionVar + "UI".
+                    string $P3DSimpleShader_colorUI = "P3DSimpleShader_colorUI";
+                    string $P3DSimpleShader_transparencyUI = "P3DSimpleShader_transparencyUI";
+                    string $P3DSimpleShader_ambientUI = "P3DSimpleShader_ambientUI";
+                    string $P3DSimpleShader_diffuseUI = "P3DSimpleShader_diffuseUI";
+                    string $P3DSimpleShader_emissiveUI = "P3DSimpleShader_emissiveUI";
+
+                    $form = `formLayout`;
+
+                        addColorDefault( "Texture", "P3DSimpleShader_color", $PURE3D, $P3DSimpleShader_colorUI );
+                        addColorDefault( "Transparency", "P3DSimpleShader_transparency", $BLACK, $P3DSimpleShader_transparencyUI );
+                        addColorDefault( "Ambient", "P3DSimpleShader_ambient", $WHITE, $P3DSimpleShader_ambientUI );
+                        addColorDefault( "Diffuse", "P3DSimpleShader_diffuse", $WHITE, $P3DSimpleShader_diffuseUI );
+                        addColorDefault( "Emissive", "P3DSimpleShader_emissive", $BLACK, $P3DSimpleShader_emissiveUI );
+
+                        setParent ..;
+
+                    formLayout -e
+                        -af     $P3DSimpleShader_colorUI            "top"       2
+                        -af     $P3DSimpleShader_colorUI            "left"      0
+                        -af     $P3DSimpleShader_colorUI            "right"     0
+
+                        -ac     $P3DSimpleShader_transparencyUI     "top"       2   $P3DSimpleShader_colorUI
+                        -af     $P3DSimpleShader_transparencyUI     "left"      0
+                        -af     $P3DSimpleShader_transparencyUI     "right"     0
+
+                        -ac     $P3DSimpleShader_ambientUI          "top"       2   $P3DSimpleShader_transparencyUI
+                        -af     $P3DSimpleShader_ambientUI          "left"      0
+                        -af     $P3DSimpleShader_ambientUI          "right"     0
+
+                        -ac     $P3DSimpleShader_diffuseUI          "top"       2   $P3DSimpleShader_ambientUI
+                        -af     $P3DSimpleShader_diffuseUI          "left"      0
+                        -af     $P3DSimpleShader_diffuseUI          "right"     0
+
+                        -ac     $P3DSimpleShader_emissiveUI         "top"       2   $P3DSimpleShader_diffuseUI
+                        -af     $P3DSimpleShader_emissiveUI         "left"      0
+                        -af     $P3DSimpleShader_emissiveUI         "right"     0
+
+                            $form;
+            
+                    setParent ..;
+
+                frameLayout -label "Specular Shading" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        // NOTE: UI names must be name of optionVar + "UI".
+                        string $P3DSimpleShader_specularUI = "P3DSimpleShader_specularUI";
+                        string $P3DSimpleShader_shininessUI = "P3DSimpleShader_shininessUI";
+
+                        addColorDefault( "Specular", "P3DSimpleShader_specular", $BLACK, $P3DSimpleShader_specularUI );
+                        addFloatDefault( "Shininess", "P3DSimpleShader_shininess", 10.0, 0.0, 100.0, $P3DSimpleShader_shininessUI );
+                    
+                        setParent ..;
+                    
+                    formLayout -e
+                        -af     $P3DSimpleShader_specularUI         "top"       2
+                        -af     $P3DSimpleShader_specularUI         "left"      0
+                        -af     $P3DSimpleShader_specularUI         "right"     0
+
+                        -ac     $P3DSimpleShader_shininessUI        "top"       2   $P3DSimpleShader_specularUI
+                        -af     $P3DSimpleShader_shininessUI        "left"      0
+                        -af     $P3DSimpleShader_shininessUI        "right"     0
+                            $form;
+            
+                    setParent ..;
+
+                frameLayout -label "Pure3D" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        string $kShadeModes[] = { "Flat", "Gouraud" };
+                        string $kBlendModes[] = { "None", "Alpha", "Add", "Subtract", "Modulate" };
+                        string $kprelightModes[] = { "None", "CBV", "Lightmap" };
+                        string $kuvModes[] = { "Tile", "Clamp" };
+                        string $kFilterModes[] = { "None", "Bilinear", "Mipmap", "Mipmap Bilinear", "Mipmap Trilinear" };
+                        string $kAlphaCompare[] = { "None", "Always", "Less", "LessEqual", "Greater", "GreaterEqual", "Equal", "NotEqual" };
+                        string $kProceduralRes[] = { "Global", "8", "16", "32", "64", "128", "256", "512", "1024" };
+                        string $kMipmapL[] = { "0", "1", "2", "3" };
+                        string $kMipmapRes[] = { "8", "16", "32", "64", "128", "256", "512", "1024" };
+
+                        // NOTE: UI names must be name of optionVar + "UI".
+                        string $P3DSimpleShader_shadeModeUI = "P3DSimpleShader_shadeModeUI";        // enum
+                        string $P3DSimpleShader_blendModeUI = "P3DSimpleShader_blendModeUI";        // enum
+                        string $P3DSimpleShader_dynamicallyLitUI = "P3DSimpleShader_dynamicallyLitUI";
+                        string $P3DSimpleShader_prelightModeUI = "P3DSimpleShader_prelightModeUI";    // enum
+                        string $P3DSimpleShader_doubleSidedUI = "P3DSimpleShader_doubleSidedUI";
+
+                        string $P3DSimpleShader_uvModeUI = "P3DSimpleShader_uvModeUI";              // enum
+                        string $P3DSimpleShader_filterModeUI = "P3DSimpleShader_filterModeUI";      // enum
+                        string $P3DSimpleShader_alphaTestUI = "P3DSimpleShader_alphaTestUI";
+                        string $P3DSimpleShader_alphaCompareUI = "P3DSimpleShader_alphaCompareUI";  // enum
+                        string $P3DSimpleShader_proceduralXResUI = "P3DSimpleShader_proceduralXResUI";  // enum
+                        string $P3DSimpleShader_proceduralYResUI = "P3DSimpleShader_proceduralYResUI";  // enum
+
+                        string $P3DSimpleShader_LUI = "P3DSimpleShader_LUI";
+                        string $P3DSimpleShader_KUI = "P3DSimpleShader_KUI";
+                        string $P3DSimpleShader_mipmapminUI = "P3DSimpleShader_mipmapminUI";
+                        string $P3DSimpleShader_mipmapmaxUI = "P3DSimpleShader_mipmapmaxUI";
+
+                        addEnumDefault( "Shade Mode", "P3DSimpleShader_shadeMode", $kShadeModes, 1, $P3DSimpleShader_shadeModeUI );
+                        addEnumDefault( "Blend Mode", "P3DSimpleShader_blendMode", $kBlendModes, 0, $P3DSimpleShader_blendModeUI );
+                        string $dynamicallyLitUI = addBoolDefault( "Dynamically Lit", "P3DSimpleShader_dynamicallyLit", true, $P3DSimpleShader_dynamicallyLitUI );
+                        addEnumDefault( "P3D Prelight Mode", "P3DSimpleShader_prelightMode", $kprelightModes, 0, $P3DSimpleShader_prelightModeUI );
+                        string $doubleSidedUI = addBoolDefault( "Double-Sided", "P3DSimpleShader_doubleSided", false, $P3DSimpleShader_doubleSidedUI );
+
+                        addEnumDefault( "UV Mode", "P3DSimpleShader_uvMode", $kuvModes, 0, $P3DSimpleShader_uvModeUI );
+                        addEnumDefault( "Filter Mode", "P3DSimpleShader_filterMode", $kFilterModes, 1, $P3DSimpleShader_filterModeUI );
+                        string $alphaTestUI = addBoolDefault( "Alpha Test", "P3DSimpleShader_alphaTest", false, $P3DSimpleShader_alphaTestUI );
+                        addEnumDefault( "Alpha Compare", "P3DSimpleShader_alphaCompare", $kAlphaCompare, 4, $P3DSimpleShader_alphaCompareUI );
+                        addEnumDefault( "Procedural X Res", "P3DSimpleShader_proceduralXRes", $kProceduralRes, 0, $P3DSimpleShader_proceduralXResUI );
+                        addEnumDefault( "Procedural Y Res", "P3DSimpleShader_proceduralYRes", $kProceduralRes, 0, $P3DSimpleShader_proceduralYResUI );
+
+                        
+                        addEnumDefault( "Mipmap 'L'", "P3DSimpleShader_L", $kMipmapL, 0, $P3DSimpleShader_LUI );
+                        addFloatDefault( "Mipmap 'K'", "P3DSimpleShader_K", 0.0, -128.0, 128.0, $P3DSimpleShader_KUI );
+                        addEnumDefault( "Mipmap Min Res", "P3DSimpleShader_mipmapmin", $kMipmapRes, 0, $P3DSimpleShader_mipmapminUI );
+                        addEnumDefault( "Mipmap Max Res", "P3DSimpleShader_mipmapmax", $kMipmapRes, 7, $P3DSimpleShader_mipmapmaxUI );
+
+                        setParent ..;
+                    
+                    formLayout -e
+                        -af     $P3DSimpleShader_shadeModeUI            "top"       2
+                        -af     $P3DSimpleShader_shadeModeUI            "left"      0
+                        -af     $P3DSimpleShader_shadeModeUI            "right"     0
+
+                        -ac     $P3DSimpleShader_blendModeUI            "top"       2   $P3DSimpleShader_shadeModeUI
+                        -af     $P3DSimpleShader_blendModeUI            "left"      0
+                        -af     $P3DSimpleShader_blendModeUI            "right"     0
+
+                        -ac     $dynamicallyLitUI            "top"       2   $P3DSimpleShader_blendModeUI
+                        -af     $dynamicallyLitUI            "left"      0
+                        -af     $dynamicallyLitUI            "right"     0
+
+                        -ac     $P3DSimpleShader_prelightModeUI    "top"       2   $dynamicallyLitUI
+                        -af     $P3DSimpleShader_prelightModeUI    "left"      0
+                        -af     $P3DSimpleShader_prelightModeUI    "right"     0
+
+                        -ac     $doubleSidedUI      "top"       2   $P3DSimpleShader_prelightModeUI
+                        -af     $doubleSidedUI      "left"      0
+                        -af     $doubleSidedUI      "right"     0
+
+                        -ac     $P3DSimpleShader_uvModeUI      "top"       2   $doubleSidedUI
+                        -af     $P3DSimpleShader_uvModeUI      "left"      0
+                        -af     $P3DSimpleShader_uvModeUI      "right"     0
+
+                        -ac     $P3DSimpleShader_filterModeUI      "top"       2   $P3DSimpleShader_uvModeUI
+                        -af     $P3DSimpleShader_filterModeUI      "left"      0
+                        -af     $P3DSimpleShader_filterModeUI      "right"     0
+
+                        -ac     $alphaTestUI        "top"       2   $P3DSimpleShader_filterModeUI
+                        -af     $alphaTestUI        "left"      0
+                        -af     $alphaTestUI        "right"     0
+
+                        -ac     $P3DSimpleShader_alphaCompareUI      "top"       2   $alphaTestUI
+                        -af     $P3DSimpleShader_alphaCompareUI      "left"      0
+                        -af     $P3DSimpleShader_alphaCompareUI      "right"     0
+
+                        -ac     $P3DSimpleShader_proceduralXResUI      "top"       2   $P3DSimpleShader_alphaCompareUI
+                        -af     $P3DSimpleShader_proceduralXResUI      "left"      0
+                        -af     $P3DSimpleShader_proceduralXResUI      "right"     0
+
+                        -ac     $P3DSimpleShader_proceduralYResUI      "top"       2   $P3DSimpleShader_proceduralXResUI
+                        -af     $P3DSimpleShader_proceduralYResUI      "left"      0
+                        -af     $P3DSimpleShader_proceduralYResUI      "right"     0
+
+                        -ac     $P3DSimpleShader_LUI           "top"       2   $P3DSimpleShader_proceduralYResUI
+                        -af     $P3DSimpleShader_LUI           "left"      0
+                        -af     $P3DSimpleShader_LUI           "right"     0
+
+                        -ac     $P3DSimpleShader_KUI           "top"       2   $P3DSimpleShader_LUI
+                        -af     $P3DSimpleShader_KUI           "left"      0
+                        -af     $P3DSimpleShader_KUI           "right"     0
+
+                        -ac     $P3DSimpleShader_mipmapminUI           "top"       2   $P3DSimpleShader_KUI
+                        -af     $P3DSimpleShader_mipmapminUI           "left"      0
+                        -af     $P3DSimpleShader_mipmapminUI           "right"     0
+
+                        -ac     $P3DSimpleShader_mipmapmaxUI           "top"       2   $P3DSimpleShader_mipmapminUI
+                        -af     $P3DSimpleShader_mipmapmaxUI           "left"      0
+                        -af     $P3DSimpleShader_mipmapmaxUI           "right"     0
+
+                            $form;
+            
+                    setParent ..;
+
+                button -label "Reset p3dSimpleShader to Defaults" -c "p3dShaderDefaultsReset P3DSimpleShader";
+
+                setParent ..;
+                setParent ..;       // from extra columnLayout
+
+                PopP3dFrameLayout( $p3dSimpleLayout );
+                            
+//            addFrameLayout( "p3dBumpMapShader" );
+
+            string $p3dBumpMapLayout[] = p3dFrameLayout( "p3dBumpMapShader", "http://radnet/teams/atg/MEL%20Scripts/p3dShaderDefaults.html#_p3dBumpMapShader", true, true );
+            columnLayout -adj true;
+
+                frameLayout -label "Bump Map Shader" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        // NOTE: UI names must be name of optionVar + "UI".
+                        string $P3DBumpMapShader_colorUI = "P3DBumpMapShader_colorUI";
+                        string $P3DBumpMapShader_transparencyUI = "P3DBumpMapShader_transparencyUI";
+                        string $P3DBumpMapShader_ambientUI = "P3DBumpMapShader_ambientUI";
+                        string $P3DBumpMapShader_diffuseUI = "P3DBumpMapShader_diffuseUI";
+                        string $P3DBumpMapShader_emissiveUI = "P3DBumpMapShader_emissiveUI";
+                        string $P3DBumpMapShader_BumpMapSpecularUI = "P3DBumpMapShader_BumpMapSpecularUI";
+                        string $P3DBumpMapShader_BumpMapLightDepUI = "P3DBumpMapShader_BumpMapLightDepUI";
+
+                        addColorDefault( "Texture", "P3DBumpMapShader_color", $PURE3D, $P3DBumpMapShader_colorUI );
+                        addColorDefault( "Transparency", "P3DBumpMapShader_transparency", $BLACK, $P3DBumpMapShader_transparencyUI );
+                        addColorDefault( "Ambient", "P3DBumpMapShader_ambient", $WHITE, $P3DBumpMapShader_ambientUI );
+                        addColorDefault( "Diffuse", "P3DBumpMapShader_diffuse", $WHITE, $P3DBumpMapShader_diffuseUI );
+                        addColorDefault( "Emissive", "P3DBumpMapShader_emissive", $BLACK, $P3DBumpMapShader_emissiveUI );
+
+                        string $specularUI = addBoolDefault( "Specular Bump", "P3DBumpMapShader_BumpMapSpecular", true, $P3DBumpMapShader_BumpMapSpecularUI );
+                        string $lightDependentUI = addBoolDefault( "Light Dependent Bump", "P3DBumpMapShader_BumpMapLightDep", true, $P3DBumpMapShader_BumpMapLightDepUI );
+
+                        setParent ..;
+
+                    formLayout -e
+                        -af     $P3DBumpMapShader_colorUI            "top"       2
+                        -af     $P3DBumpMapShader_colorUI            "left"      0
+                        -af     $P3DBumpMapShader_colorUI            "right"     0
+
+                        -ac     $P3DBumpMapShader_transparencyUI          "top"       2   $P3DBumpMapShader_colorUI
+                        -af     $P3DBumpMapShader_transparencyUI          "left"      0
+                        -af     $P3DBumpMapShader_transparencyUI          "right"     0
+
+                        -ac     $P3DBumpMapShader_ambientUI          "top"       2   $P3DBumpMapShader_transparencyUI
+                        -af     $P3DBumpMapShader_ambientUI          "left"      0
+                        -af     $P3DBumpMapShader_ambientUI          "right"     0
+
+                        -ac     $P3DBumpMapShader_diffuseUI          "top"       2   $P3DBumpMapShader_ambientUI
+                        -af     $P3DBumpMapShader_diffuseUI          "left"      0
+                        -af     $P3DBumpMapShader_diffuseUI          "right"     0
+
+                        -ac     $P3DBumpMapShader_emissiveUI         "top"       2   $P3DBumpMapShader_diffuseUI
+                        -af     $P3DBumpMapShader_emissiveUI         "left"      0
+                        -af     $P3DBumpMapShader_emissiveUI         "right"     0
+
+                        -ac     $specularUI         "top"       2   $P3DBumpMapShader_emissiveUI
+                        -af     $specularUI         "left"      0
+                        -af     $specularUI         "right"     0
+
+                        -ac     $lightDependentUI         "top"       2   $specularUI
+                        -af     $lightDependentUI         "left"      0
+                        -af     $lightDependentUI         "right"     0
+                            $form;
+            
+                    setParent ..;
+
+                frameLayout -label "Specular Shading" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        // NOTE: UI names must be name of optionVar + "UI".
+                        string $P3DBumpMapShader_specularUI = "P3DBumpMapShader_specularUI";
+                        string $P3DBumpMapShader_shininessUI = "P3DBumpMapShader_shininessUI";
+
+                        addColorDefault( "Specular", "P3DBumpMapShader_specular", $BLACK, $P3DBumpMapShader_specularUI );
+                        addFloatDefault( "Shininess", "P3DBumpMapShader_shininess", 10.0, 0.0, 100.0, $P3DBumpMapShader_shininessUI );
+                    
+                        setParent ..;
+                    
+                    formLayout -e
+                        -af     $P3DBumpMapShader_specularUI         "top"       2
+                        -af     $P3DBumpMapShader_specularUI         "left"      0
+                        -af     $P3DBumpMapShader_specularUI         "right"     0
+
+                        -ac     $P3DBumpMapShader_shininessUI        "top"       2   $P3DBumpMapShader_specularUI
+                        -af     $P3DBumpMapShader_shininessUI        "left"      0
+                        -af     $P3DBumpMapShader_shininessUI        "right"     0
+                            $form;
+            
+                    setParent ..;
+
+                frameLayout -label "Pure3D" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        // NOTE: UI names must be name of optionVar + "UI".
+                        string $P3DBumpMapShader_KUI = "P3DBumpMapShader_KUI";
+                        string $P3DBumpMapShader_dynamicallyLitUI = "P3DBumpMapShader_dynamicallyLitUI";
+                        string $P3DBumpMapShader_prelightModeUI = "P3DBumpMapShader_prelightModeUI";  // enum
+                        string $P3DBumpMapShader_shadeModeUI = "P3DBumpMapShader_shadeModeUI";        // enum
+                        string $P3DBumpMapShader_blendModeUI = "P3DBumpMapShader_blendModeUI";        // enum
+
+                        string $P3DBumpMapShader_uvModeUI = "P3DBumpMapShader_uvModeUI";              // enum
+                        string $P3DBumpMapShader_filterModeUI = "P3DBumpMapShader_filterModeUI";      // enum
+                        string $P3DBumpMapShader_alphaTestUI = "P3DBumpMapShader_alphaTestUI";
+                        string $P3DBumpMapShader_alphaCompareUI = "P3DBumpMapShader_alphaCompareUI";  // enum
+                        string $P3DBumpMapShader_proceduralXResUI = "P3DBumpMapShader_proceduralXResUI";  // enum
+                        string $P3DBumpMapShader_proceduralYResUI = "P3DBumpMapShader_proceduralYResUI";  // enum
+
+                        addFloatDefault( "Mipmap 'K'", "P3DBumpMapShader_K", 0.0, -128.0, 128.0, $P3DBumpMapShader_KUI );
+
+                        string $dynamicallyLitUI = addBoolDefault( "Dynamically Lit", "P3DBumpMapShader_dynamicallyLit", true, $P3DBumpMapShader_dynamicallyLitUI );
+                        addEnumDefault( "Shade Mode", "P3DBumpMapShader_shadeMode", $kShadeModes, 1, $P3DBumpMapShader_shadeModeUI );
+                        addEnumDefault( "Blend Mode", "P3DBumpMapShader_blendMode", $kBlendModes, 0, $P3DBumpMapShader_blendModeUI );
+
+                        addEnumDefault( "UV Mode", "P3DBumpMapShader_uvMode", $kuvModes, 0, $P3DBumpMapShader_uvModeUI );
+                        addEnumDefault( "Filter Mode", "P3DBumpMapShader_filterMode", $kFilterModes, 1, $P3DBumpMapShader_filterModeUI );
+                        string $alphaTestUI = addBoolDefault( "Alpha Test", "P3DBumpMapShader_alphaTest", false, $P3DBumpMapShader_alphaTestUI );
+                        addEnumDefault( "Alpha Compare", "P3DBumpMapShader_alphaCompare", $kAlphaCompare, 4, $P3DBumpMapShader_alphaCompareUI );
+                        addEnumDefault( "Procedural X Res", "P3DBumpMapShader_proceduralXRes", $kProceduralRes, 0, $P3DBumpMapShader_proceduralXResUI );
+                        addEnumDefault( "Procedural Y Res", "P3DBumpMapShader_proceduralYRes", $kProceduralRes, 0, $P3DBumpMapShader_proceduralYResUI );
+                    
+                        setParent ..;
+                    
+                    formLayout -e
+                        -af     $P3DBumpMapShader_KUI           "top"       2
+                        -af     $P3DBumpMapShader_KUI           "left"      0
+                        -af     $P3DBumpMapShader_KUI           "right"     0
+
+                        -ac     $dynamicallyLitUI            "top"       2   $P3DBumpMapShader_KUI
+                        -af     $dynamicallyLitUI            "left"      0
+                        -af     $dynamicallyLitUI            "right"     0
+
+                        -ac     $P3DBumpMapShader_shadeModeUI            "top"       2   $dynamicallyLitUI
+                        -af     $P3DBumpMapShader_shadeModeUI            "left"      0
+                        -af     $P3DBumpMapShader_shadeModeUI            "right"     0
+
+                        -ac     $P3DBumpMapShader_blendModeUI            "top"       2   $P3DBumpMapShader_shadeModeUI
+                        -af     $P3DBumpMapShader_blendModeUI            "left"      0
+                        -af     $P3DBumpMapShader_blendModeUI            "right"     0
+
+                        -ac     $P3DBumpMapShader_uvModeUI            "top"       2   $P3DBumpMapShader_blendModeUI
+                        -af     $P3DBumpMapShader_uvModeUI            "left"      0
+                        -af     $P3DBumpMapShader_uvModeUI            "right"     0
+
+                        -ac     $P3DBumpMapShader_filterModeUI            "top"       2   $P3DBumpMapShader_uvModeUI
+                        -af     $P3DBumpMapShader_filterModeUI            "left"      0
+                        -af     $P3DBumpMapShader_filterModeUI            "right"     0
+
+                        -ac     $alphaTestUI            "top"       2   $P3DBumpMapShader_filterModeUI
+                        -af     $alphaTestUI            "left"      0
+                        -af     $alphaTestUI            "right"     0
+
+                        -ac     $P3DBumpMapShader_alphaCompareUI            "top"       2   $alphaTestUI
+                        -af     $P3DBumpMapShader_alphaCompareUI            "left"      0
+                        -af     $P3DBumpMapShader_alphaCompareUI            "right"     0
+
+                        -ac     $P3DBumpMapShader_proceduralXResUI            "top"       2   $P3DBumpMapShader_alphaCompareUI
+                        -af     $P3DBumpMapShader_proceduralXResUI            "left"      0
+                        -af     $P3DBumpMapShader_proceduralXResUI            "right"     0
+
+                        -ac     $P3DBumpMapShader_proceduralYResUI            "top"       2   $P3DBumpMapShader_proceduralXResUI
+                        -af     $P3DBumpMapShader_proceduralYResUI            "left"      0
+                        -af     $P3DBumpMapShader_proceduralYResUI            "right"     0
+                            $form;
+            
+                    setParent ..;
+
+                button -label "Reset p3dBumpMap to Defaults" -c "p3dShaderDefaultsReset P3DBumpMapShader";
+
+                setParent ..;
+                setParent ..;       // from extra columnLayout
+
+                PopP3dFrameLayout( $p3dBumpMapLayout );
+
+//            addFrameLayout( "p3dLayeredShader" );
+                
+            string $p3dLayeredLayout[] = p3dFrameLayout( "p3dLayeredShader", "http://radnet/teams/atg/MEL%20Scripts/p3dShaderDefaults.html#_p3dLayeredShader", true, true );
+            columnLayout -adj true;
+
+                frameLayout -label "Layered Shader" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        // NOTE: UI names must be name of optionVar + "UI".
+                        string $P3DLayeredShader_ambientUI = "P3DLayeredShader_ambientUI";
+                        string $P3DLayeredShader_diffuseUI = "P3DLayeredShader_diffuseUI";
+                        string $P3DLayeredShader_emissiveUI = "P3DLayeredShader_emissiveUI";
+
+                        addColorDefault( "Ambient", "P3DLayeredShader_ambient", $WHITE, $P3DLayeredShader_ambientUI );
+                        addColorDefault( "Diffuse", "P3DLayeredShader_diffuse", $WHITE, $P3DLayeredShader_diffuseUI );
+                        addColorDefault( "Emissive", "P3DLayeredShader_emissive", $BLACK, $P3DLayeredShader_emissiveUI );
+
+                        setParent ..;
+
+                    formLayout -e
+                        -af     $P3DLayeredShader_ambientUI          "top"       2 
+                        -af     $P3DLayeredShader_ambientUI          "left"      0
+                        -af     $P3DLayeredShader_ambientUI          "right"     0
+
+                        -ac     $P3DLayeredShader_diffuseUI          "top"       2   $P3DLayeredShader_ambientUI
+                        -af     $P3DLayeredShader_diffuseUI          "left"      0
+                        -af     $P3DLayeredShader_diffuseUI          "right"     0
+
+                        -ac     $P3DLayeredShader_emissiveUI         "top"       2   $P3DLayeredShader_diffuseUI
+                        -af     $P3DLayeredShader_emissiveUI         "left"      0
+                        -af     $P3DLayeredShader_emissiveUI         "right"     0
+                            $form;
+            
+                    setParent ..;
+
+                frameLayout -label "Specular Shading" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        string $P3DLayeredShader_specularUI = "P3DLayeredShader_specularUI";
+                        string $P3DLayeredShader_shininessUI = "P3DLayeredShader_shininessUI";
+
+                        addColorDefault( "Specular", "P3DLayeredShader_specular", $BLACK, $P3DLayeredShader_specularUI );
+                        addFloatDefault( "Shininess", "P3DLayeredShader_shininess", 10.0, 0.0, 100.0, $P3DLayeredShader_shininessUI );
+                    
+                        setParent ..;
+                    
+                    formLayout -e
+                        -af     $P3DLayeredShader_specularUI         "top"       2
+                        -af     $P3DLayeredShader_specularUI         "left"      0
+                        -af     $P3DLayeredShader_specularUI         "right"     0
+
+                        -ac     $P3DLayeredShader_shininessUI        "top"       2   $P3DLayeredShader_specularUI
+                        -af     $P3DLayeredShader_shininessUI        "left"      0
+                        -af     $P3DLayeredShader_shininessUI        "right"     0
+                            $form;
+            
+                    setParent ..;
+
+                frameLayout -label "Pure3D" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        // Arrays for Enums
+                        string $kShadeModes[] = { "Flat", "Gouraud" };
+                        string $kBlendModes[] = { "None", "Alpha", "Add", "Subtract", "Modulate" };
+                        string $kprelightModes[] = { "None", "CBV", "Lightmap" };
+                        string $kuvModes[] = { "Tile", "Clamp" };
+                        string $kTexBlendModes[] = { "None", "Alpha", "Add", "Subtract", "Modulate", "Modulate2", "ModulateAlpha" };
+                        string $kFilterModes[] = { "None", "Bilinear", "Mipmap", "Mipmap Bilinear", "Mipmap Trilinear" };
+                        string $kAlphaCompare[] = { "None", "Always", "Less", "LessEqual", "Greater", "GreaterEqual", "Equal", "NotEqual" };
+                        string $kProceduralRes[] = { "Global", "8", "16", "32", "64", "128", "256", "512", "1024" };
+                        string $kMipmapL[] = { "0", "1", "2", "3" };
+                        string $kMipmapRes[] = { "8", "16", "32", "64", "128", "256", "512", "1024" };
+
+                        // NOTE: UI names must be name of optionVar + "UI".
+                        string $P3DLayeredShader_shadeModeUI = "P3DLayeredShader_shadeModeUI";        // enum
+                        string $P3DLayeredShader_blendModeUI = "P3DLayeredShader_blendModeUI";        // enum
+                        string $P3DLayeredShader_dynamicallyLitUI = "P3DLayeredShader_dynamicallyLitUI";
+                        string $P3DLayeredShader_prelightModeUI = "P3DLayeredShader_prelightModeUI"; // enum
+
+                        string $P3DLayeredShader_uvModeUI = "P3DLayeredShader_uvModeUI";              // enum
+                        string $P3DLayeredShader_texBlendModeUI = "P3DLayeredShader_texBlendModeUI";              // enum
+                        string $P3DLayeredShader_filterModeUI = "P3DLayeredShader_filterModeUI";      // enum
+                        string $P3DLayeredShader_alphaTestUI = "P3DLayeredShader_alphaTestUI";
+                        string $P3DLayeredShader_alphaCompareUI = "P3DLayeredShader_alphaCompareUI";  // enum
+                        string $P3DLayeredShader_proceduralXResUI = "P3DLayeredShader_proceduralXResUI";  // enum
+                        string $P3DLayeredShader_proceduralYResUI = "P3DLayeredShader_proceduralYResUI";  // enum
+
+                        string $P3DLayeredShader_mmsharpnessUI = "P3DLayeredShader_mmsharpnessUI";
+                        string $P3DLayeredShader_mipmapminUI = "P3DLayeredShader_mipmapminUI";
+                        string $P3DLayeredShader_mipmapmaxUI = "P3DLayeredShader_mipmapmaxUI";
+
+                        // Add Controls
+
+                        addEnumDefault( "Shade Mode", "P3DLayeredShader_shadeMode", $kShadeModes, 1, $P3DLayeredShader_shadeModeUI );
+                        addEnumDefault( "Blend Mode", "P3DLayeredShader_blendMode", $kBlendModes, 0, $P3DLayeredShader_blendModeUI );
+                        string $dynamicallyLitUI = addBoolDefault( "Dynamically Lit (will NOT work on PS2)", "P3DLayeredShader_dynamicallyLit", true, $P3DLayeredShader_dynamicallyLitUI );
+                        addEnumDefault( "P3D Prelight Mode", "P3DLayeredShader_prelightMode", $kprelightModes, 0, $P3DLayeredShader_prelightModeUI );
+
+                        addEnumDefault( "UV Mode", "P3DLayeredShader_uvMode", $kuvModes, 0, $P3DLayeredShader_uvModeUI );
+                        addEnumDefault( "Tex Blend Mode", "P3DLayeredShader_texBlendMode", $kTexBlendModes, 0, $P3DLayeredShader_texBlendModeUI );
+                        addEnumDefault( "Filter Mode", "P3DLayeredShader_filterMode", $kFilterModes, 1, $P3DLayeredShader_filterModeUI );
+                        string $alphaTestUI = addBoolDefault( "Alpha Test", "P3DLayeredShader_alphaTest", false, $P3DLayeredShader_alphaTestUI );
+                        addEnumDefault( "Alpha Compare", "P3DLayeredShader_alphaCompare", $kAlphaCompare, 4, $P3DLayeredShader_alphaCompareUI );
+                        addEnumDefault( "Procedural X Res", "P3DLayeredShader_proceduralXRes", $kProceduralRes, 0, $P3DLayeredShader_proceduralXResUI );
+                        addEnumDefault( "Procedural Y Res", "P3DLayeredShader_proceduralYRes", $kProceduralRes, 0, $P3DLayeredShader_proceduralYResUI );
+
+                        addFloatDefault( "Mipmap Sharp", "P3DLayeredShader_mmsharpness", 0.5, 0.0, 1.0, $P3DLayeredShader_mmsharpnessUI );
+                        addEnumDefault( "Mipmap Min Res", "P3DLayeredShader_mipmapmin", $kMipmapRes, 0, $P3DLayeredShader_mipmapminUI );
+                        addEnumDefault( "Mipmap Max Res", "P3DLayeredShader_mipmapmax", $kMipmapRes, 7, $P3DLayeredShader_mipmapmaxUI );
+
+                        setParent ..;
+                    
+                    formLayout -e
+                        -af     $P3DLayeredShader_shadeModeUI            "top"       2 
+                        -af     $P3DLayeredShader_shadeModeUI            "left"      0
+                        -af     $P3DLayeredShader_shadeModeUI            "right"     0
+
+                        -ac     $P3DLayeredShader_blendModeUI           "top"       2       $P3DLayeredShader_shadeModeUI
+                        -af     $P3DLayeredShader_blendModeUI           "left"      0
+                        -af     $P3DLayeredShader_blendModeUI           "right"     0
+
+                        -ac     $dynamicallyLitUI            "top"      2       $P3DLayeredShader_blendModeUI
+                        -af     $dynamicallyLitUI            "left"     0
+                        -af     $dynamicallyLitUI            "right"    0
+
+                        -ac     $P3DLayeredShader_prelightModeUI        "top"       2   $dynamicallyLitUI
+                        -af     $P3DLayeredShader_prelightModeUI        "left"      0
+                        -af     $P3DLayeredShader_prelightModeUI        "right"     0
+
+                        -ac     $P3DLayeredShader_uvModeUI        "top"       2   $P3DLayeredShader_prelightModeUI
+                        -af     $P3DLayeredShader_uvModeUI        "left"      0
+                        -af     $P3DLayeredShader_uvModeUI        "right"     0
+
+                        -ac     $P3DLayeredShader_texBlendModeUI        "top"       2   $P3DLayeredShader_uvModeUI
+                        -af     $P3DLayeredShader_texBlendModeUI        "left"      0
+                        -af     $P3DLayeredShader_texBlendModeUI        "right"     0
+
+                        -ac     $P3DLayeredShader_filterModeUI        "top"       2   $P3DLayeredShader_texBlendModeUI
+                        -af     $P3DLayeredShader_filterModeUI        "left"      0
+                        -af     $P3DLayeredShader_filterModeUI        "right"     0
+
+                        -ac     $alphaTestUI        "top"       2   $P3DLayeredShader_filterModeUI
+                        -af     $alphaTestUI        "left"      0
+                        -af     $alphaTestUI        "right"     0
+
+                        -ac     $P3DLayeredShader_alphaCompareUI        "top"       2   $alphaTestUI
+                        -af     $P3DLayeredShader_alphaCompareUI        "left"      0
+                        -af     $P3DLayeredShader_alphaCompareUI        "right"     0
+
+                        -ac     $P3DLayeredShader_proceduralXResUI        "top"       2   $P3DLayeredShader_alphaCompareUI
+                        -af     $P3DLayeredShader_proceduralXResUI        "left"      0
+                        -af     $P3DLayeredShader_proceduralXResUI        "right"     0
+
+                        -ac     $P3DLayeredShader_proceduralYResUI        "top"       2   $P3DLayeredShader_proceduralXResUI
+                        -af     $P3DLayeredShader_proceduralYResUI        "left"      0
+                        -af     $P3DLayeredShader_proceduralYResUI        "right"     0
+
+                        -ac     $P3DLayeredShader_mmsharpnessUI           "top"       2   $P3DLayeredShader_proceduralYResUI
+                        -af     $P3DLayeredShader_mmsharpnessUI           "left"      0
+                        -af     $P3DLayeredShader_mmsharpnessUI           "right"     0
+
+                        -ac     $P3DLayeredShader_mipmapminUI           "top"       2   $P3DLayeredShader_mmsharpnessUI
+                        -af     $P3DLayeredShader_mipmapminUI           "left"      0
+                        -af     $P3DLayeredShader_mipmapminUI           "right"     0
+
+                        -ac     $P3DLayeredShader_mipmapmaxUI           "top"       2   $P3DLayeredShader_mipmapminUI
+                        -af     $P3DLayeredShader_mipmapmaxUI           "left"      0
+                        -af     $P3DLayeredShader_mipmapmaxUI           "right"     0
+
+                            $form;
+            
+                    setParent ..;
+
+                button -label "Reset p3dLayeredShader to Defaults" -c "p3dShaderDefaultsReset P3DLayeredShader";
+
+                setParent ..;
+                setParent ..;       // from extra columnLayout
+
+                PopP3dFrameLayout( $p3dLayeredLayout );
+
+//            addFrameLayout( "p3dPrelitShader" );
+
+            string $p3dPrelitLayout[] = p3dFrameLayout( "p3dPrelitShader", "http://radnet/teams/atg/MEL%20Scripts/p3dShaderDefaults.html#_p3dPrelitShader", true, true);
+            columnLayout -adj true;
+                
+                frameLayout -label "Prelit Shader" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        // NOTE: UI names must be name of optionVar + "UI".
+                        string $P3DPrelitShader_colorUI = "P3DPrelitShader_colorUI";
+                        string $P3DPrelitShader_transparencyUI = "P3DPrelitShader_transparencyUI";
+
+                        addColorDefault( "Texture", "P3DPrelitShader_color", $PURE3D, $P3DPrelitShader_colorUI );
+                        addColorDefault( "Transparency", "P3DPrelitShader_transparency", $BLACK, $P3DPrelitShader_transparencyUI );
+
+                        setParent ..;
+
+                    formLayout -e
+                        -af     $P3DPrelitShader_colorUI            "top"       2
+                        -af     $P3DPrelitShader_colorUI            "left"      0
+                        -af     $P3DPrelitShader_colorUI            "right"     0
+
+                        -ac     $P3DPrelitShader_transparencyUI          "top"       2   $P3DPrelitShader_colorUI
+                        -af     $P3DPrelitShader_transparencyUI          "left"      0
+                        -af     $P3DPrelitShader_transparencyUI          "right"     0
+
+                            $form;
+            
+                    setParent ..;
+
+                frameLayout -label "Pure3D" -collapsable true;
+
+                    $form = `formLayout`;
+
+                        // NOTE: UI names must be name of optionVar + "UI".
+                        string $P3DPrelitShader_blendModeUI = "P3DPrelitShader_blendModeUI";
+                        string $P3DPrelitShader_doubleSidedUI = "P3DPrelitShader_doubleSidedUI";
+                        string $P3DPrelitShader_proceduralXResUI = "P3DPrelitShader_proceduralXResUI";  // enum
+                        string $P3DPrelitShader_proceduralYResUI = "P3DPrelitShader_proceduralYResUI";  // enum
+
+                        string $P3DPrelitShader_LUI = "P3DPrelitShader_LUI";
+                        string $P3DPrelitShader_KUI = "P3DPrelitShader_KUI";
+                        string $P3DPrelitShader_mipmapminUI = "P3DPrelitShader_mipmapminUI";
+                        string $P3DPrelitShader_mipmapmaxUI = "P3DPrelitShader_mipmapmaxUI";
+
+                        string $alphaBlendUI = addBoolDefault( "Alpha Blend", "P3DPrelitShader_blendMode", false, $P3DPrelitShader_blendModeUI );
+                        string $doubleSidedUI = addBoolDefault( "Double-Sided", "P3DPrelitShader_doubleSided", false, $P3DPrelitShader_doubleSidedUI );
+
+                        addEnumDefault( "Procedural X Res", "P3DPrelitShader_proceduralXRes", $kProceduralRes, 0, $P3DPrelitShader_proceduralXResUI );
+                        addEnumDefault( "Procedural Y Res", "P3DPrelitShader_proceduralYRes", $kProceduralRes, 0, $P3DPrelitShader_proceduralYResUI );
+                    
+                        addEnumDefault( "Mipmap 'L'", "P3DPrelitShader_L", $kMipmapL, 0, $P3DPrelitShader_LUI );
+                        addFloatDefault( "Mipmap 'K'", "P3DPrelitShader_K", 0.0, -128.0, 128.0, $P3DPrelitShader_KUI );
+                        addEnumDefault( "Mipmap Min Res", "P3DPrelitShader_mipmapmin", $kMipmapRes, 0, $P3DPrelitShader_mipmapminUI );
+                        addEnumDefault( "Mipmap Max Res", "P3DPrelitShader_mipmapmax", $kMipmapRes, 7, $P3DPrelitShader_mipmapmaxUI );
+
+                        setParent ..;
+                    
+                    formLayout -e
+                        -af     $alphaBlendUI        "top"       2
+                        -af     $alphaBlendUI        "left"      0
+                        -af     $alphaBlendUI        "right"     0
+
+                        -ac     $doubleSidedUI      "top"       2   $alphaBlendUI
+                        -af     $doubleSidedUI      "left"      0
+                        -af     $doubleSidedUI      "right"     0
+
+                        -ac     $P3DPrelitShader_proceduralXResUI           "top"       2   $doubleSidedUI
+                        -af     $P3DPrelitShader_proceduralXResUI           "left"      0
+                        -af     $P3DPrelitShader_proceduralXResUI           "right"     0
+
+                        -ac     $P3DPrelitShader_proceduralYResUI           "top"       2   $P3DPrelitShader_proceduralXResUI
+                        -af     $P3DPrelitShader_proceduralYResUI           "left"      0
+                        -af     $P3DPrelitShader_proceduralYResUI           "right"     0
+
+                        -ac     $P3DPrelitShader_LUI           "top"       2   $P3DPrelitShader_proceduralYResUI
+                        -af     $P3DPrelitShader_LUI           "left"      0
+                        -af     $P3DPrelitShader_LUI           "right"     0
+
+                        -ac     $P3DPrelitShader_KUI           "top"       2   $P3DPrelitShader_LUI
+                        -af     $P3DPrelitShader_KUI           "left"      0
+                        -af     $P3DPrelitShader_KUI           "right"     0
+
+                        -ac     $P3DPrelitShader_mipmapminUI           "top"       2   $P3DPrelitShader_KUI
+                        -af     $P3DPrelitShader_mipmapminUI           "left"      0
+                        -af     $P3DPrelitShader_mipmapminUI           "right"     0
+
+                        -ac     $P3DPrelitShader_mipmapmaxUI           "top"       2   $P3DPrelitShader_mipmapminUI
+                        -af     $P3DPrelitShader_mipmapmaxUI           "left"      0
+                        -af     $P3DPrelitShader_mipmapmaxUI           "right"     0
+                            $form;
+            
+                    setParent ..;
+
+                button -label "Reset p3dPrelitShader to Defaults" -c "p3dShaderDefaultsReset P3DPrelitShader";
+
+                setParent ..;
+                setParent ..;       // from extra columnLayout
+
+                PopP3dFrameLayout( $p3dPrelitLayout );
+            
+            setParent ..;
+            
+        setParent..;    
+
+        setUITemplate -popTemplate;
+        
+    showWindow;
+}
+
+/*
+source p3dShaderDefaults; p3dShaderDefaults;
+*/

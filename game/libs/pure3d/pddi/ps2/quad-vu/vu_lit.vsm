@@ -1,0 +1,679 @@
+VU_LIT_PROGRAM:
+#if 0
+; DOESNT WORK RIGHT NOW!!! VCL BUSTS MY CODE
+; flowMon::Emit() version 1.3.3 produced this code:
+		.global	vclLit_CodeStart
+		.global	vclLit_CodeEnd
+vclLit_CodeStart:
+TOP_LIT:
+; _LNOPT_w=[ normal ] 51 [50 0] 60   [TOP_LIT]
+         NOP                                                        lq.xyz        VF01,1(VI04)                        
+         mulax         ACC,VF18,VF01x                               fcset         0                                          ;	STALL_LATENCY ?3
+         madday        ACC,VF19,VF01y                               NOP                                               
+         maddz         VF01,VF20,VF01z                              NOP                                               
+         maxx          VF01,VF01,VF00x                              NOP                                                      ;	STALL_LATENCY ?3
+         mulaw         ACC,VF16,VF00w                               NOP                                               
+         maddax        ACC,VF21,VF01x                               iaddiu        VI04,VI04,0x00000003                       ;	STALL_LATENCY ?2
+         madday        ACC,VF22,VF01y                               lq.xyz        VF04,-1(VI04)                       
+         maddaz        ACC,VF23,VF01z                               NOP                                               
+         maddw         VF01,VF24,VF01w                              NOP                                               
+         mulaw         ACC,VF29,VF00w                               NOP                                               
+         maddaz        ACC,VF28,VF04z                               lq.xyz        VF05,1(VI04)                        
+         madday        ACC,VF27,VF04y                               NOP                                               
+         maddx         VF04,VF26,VF04x                              loi           0x437f0000                          
+         minii         VF01,VF01,I                                  NOP                                               
+         mulax         ACC,VF18,VF05x                               NOP                                               
+         madday        ACC,VF19,VF05y                               NOP                                               
+         maddz         VF05,VF20,VF05z                              div           Q,VF00w,VF04w                       
+         ftoi0         VF03,VF01                                    iaddiu        VI04,VI04,0x00000003                
+         mulaw         ACC,VF16,VF00w                               lq            VF01,-6(VI04)                       
+         maxx          VF05,VF05,VF00x                              iaddiu        VI06,VI06,0x00000003                       ;	STALL_LATENCY ?1
+         clipw.xyz     VF04xyz,VF04w                                iaddiu        VI06,VI06,0x00000003                
+         mul.xyz       VF03,VF04,VF30                               sq            VF03,-5(VI06)                       
+         mulq.xyz      VF01,VF01,Q                                  waitq                                             
+         maddax        ACC,VF21,VF05x                               NOP                                               
+         madday        ACC,VF22,VF05y                               lq.xyz        VF04,-1(VI04)                       
+         maddaz        ACC,VF23,VF05z                               NOP                                               
+         maddw         VF05,VF24,VF05w                              NOP                                               
+         mulaw         ACC,VF29,VF00w                               NOP                                               
+         maddaz        ACC,VF28,VF04z                               NOP                                               
+         madday        ACC,VF27,VF04y                               lq.xyz        VF02,1(VI04)                        
+         minii         VF05,VF05,I                                  NOP                                               
+         maddx         VF04,VF26,VF04x                              iaddiu        VI03,VI00,0                         
+         mulq.xyz      VF01,VF03,Q                                  sq            VF01,-6(VI06)                       
+         mulax         ACC,VF18,VF02x                               iaddi         VI05,VI05,-1                        
+         madday        ACC,VF19,VF02y                               iaddi         VI05,VI05,-1                        
+         maddz         VF06,VF20,VF02z                              div           Q,VF00w,VF04w                       
+         mulaw         ACC,VF16,VF00w                               iaddi         VI05,VI05,-1                        
+         ftoi0         VF02,VF05                                    iaddiu        VI04,VI04,0x00000003                
+         clipw.xyz     VF04xyz,VF04w                                lq            VF03,-6(VI04)                       
+         maxx          VF05,VF06,VF00x                              fcand         VI01,262143                         
+         add.xyz       VF01,VF01,VF31                               iadd          VI03,VI03,VI01                      
+         mul.xyz       VF04,VF04,VF30                               iaddiu        VI02,VI01,0x00007fff                
+         mulq.xyz      VF03,VF03,Q                                  iaddiu        VI06,VI06,0x00000003                
+         maddax        ACC,VF21,VF05x                               sq            VF02,-5(VI06)                       
+         madday        ACC,VF22,VF05y                               lq.xyz        VF02,-1(VI04)                       
+         maddaz        ACC,VF23,VF05z                               fcand         VI01,262143                         
+         maddw         VF05,VF24,VF05w                              iadd          VI03,VI03,VI01                      
+         mulaw         ACC,VF29,VF00w                               sq            VF03,-6(VI06)                       
+         maddaz        ACC,VF28,VF02z                               iblez         VI05,EXPL_lit_vcl_LIT_LOOP__EPI0    
+         madday        ACC,VF27,VF02y                               mfir.w        VF03,VI02                           
+EXPL_lit_vcl_LIT_LOOP__MAIN_LOOP:
+; _LPOPT_w=[ normal ] 21 [21 21] 21   [EXPL_lit_vcl_LIT_LOOP__MAIN_LOOP]
+         minii         VF05,VF05,I                                  lq.xyz        VF06,1(VI04)                        
+         maddx         VF02,VF26,VF02x                              iaddiu        VI04,VI04,0x00000003                
+         mulq.xyz      VF04,VF04,Q                                  iaddiu        VI06,VI06,0x00000003                
+         ftoi4.xyz     VF03,VF01                                    NOP                                               
+         mulax         ACC,VF18,VF06x                               NOP                                               
+         madday        ACC,VF19,VF06y                               div           Q,VF00w,VF02w                       
+         maddz         VF01,VF20,VF06z                              NOP                                               
+         mulaw         ACC,VF16,VF00w                               sq            VF03,-10(VI06)                      
+         ftoi0         VF06,VF05                                    lq            VF03,-6(VI04)                       
+         clipw.xyz     VF02xyz,VF02w                                NOP                                               
+         maxx          VF05,VF01,VF00x                              NOP                                               
+         add.xyz       VF01,VF04,VF31                               NOP                                               
+         mulq.xyz      VF03,VF03,Q                                  sq            VF06,-5(VI06)                       
+         mul.xyz       VF04,VF02,VF30                               iaddiu        VI02,VI01,0x00007fff                
+         maddax        ACC,VF21,VF05x                               fcand         VI01,262143                         
+         madday        ACC,VF22,VF05y                               lq.xyz        VF02,-1(VI04)                       
+         maddaz        ACC,VF23,VF05z                               iaddi         VI05,VI05,-1                        
+         maddw         VF05,VF24,VF05w                              iadd          VI03,VI03,VI01                      
+         mulaw         ACC,VF29,VF00w                               sq            VF03,-6(VI06)                       
+         maddaz        ACC,VF28,VF02z                               ibgtz         VI05,EXPL_lit_vcl_LIT_LOOP__MAIN_LOOP
+         madday        ACC,VF27,VF02y                               mfir.w        VF03,VI02                           
+EXPL_lit_vcl_LIT_LOOP__EPI0:
+; _LNOPT_w=[ ] 22 [24 0] 25   [EXPL_lit_vcl_LIT_LOOP__EPI0]
+         maddx         VF26,VF26,VF02x                              NOP                                               
+         clipw.xyz     VF26xyz,VF26w                                div           Q,VF00w,VF26w                              ;	STALL_LATENCY ?3
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         mul.xyz       VF26,VF26,VF30                               NOP                                               
+         ftoi4.xyz     VF03,VF01                                    NOP                                               
+         NOP                                                        NOP                                               
+         mulq.xyz      VF04,VF04,Q                                  lq            VF01,-3(VI04)                       
+         mulq.xyz      VF26,VF26,Q                                  iaddiu        VI04,VI01,0x00007fff                
+         minii         VF05,VF05,I                                  sq            VF03,-7(VI06)                       
+         NOP                                                        mfir.w        VF03,VI04                           
+         add.xyz       VF03,VF04,VF31                               NOP                                               
+         add.xyz       VF31,VF26,VF31                               fcand         VI01,262143                         
+         ftoi0         VF05,VF05                                    iadd          VI03,VI03,VI01                      
+         mulq.xyz      VF01,VF01,Q                                  iaddiu        VI01,VI01,0x00007fff                
+         ftoi4.xyz     VF03,VF03                                    mfir.w        VF31,VI01                           
+         ftoi4.xyz     VF31,VF31                                    NOP                                               
+         NOP                                                        sq            VF05,-2(VI06)                       
+         NOP                                                        sq            VF01,-3(VI06)                       
+         NOP                                                        sq            VF03,-4(VI06)                       
+         NOP                                                        sq            VF31,-1(VI06)                       
+         NOP                                                        NOP                                               
+vclLit_CodeEnd:
+;	iCount=94
+; register stats:
+;   6 VU User integer registers
+;  20 VU User floating point registers
+
+
+#else
+; DUMB VERSION WORKS ==============================
+; flowMon::Emit() version 1.3.3 produced this code:
+		.global	vclLit_CodeStart
+		.global	vclLit_CodeEnd
+vclLit_CodeStart:
+TOP_LIT:
+; _LNOPT_w=[ normal ] 3 [3 0] 3   [TOP_LIT]
+         NOP                                                        fcset         0                                   
+         NOP                                                        iaddiu        VI03,VI00,0                         
+         NOP                                                        loi           0x437f0000                          
+LIT_LOOP:
+; _LNOPT_w=[ dUp ] 28 [30 21] 35   [LIT_LOOP]
+         NOP                                                        lq.xyz        VF01,1(VI04)                        
+         mulax         ACC,VF18,VF01x                               lq.xyz        VF02,2(VI04)                               ;	STALL_LATENCY ?3
+         madday        ACC,VF19,VF01y                               iaddi         VI05,VI05,-1                        
+         maddz         VF01,VF20,VF01z                              NOP                                               
+         mulaw         ACC,VF29,VF00w                               NOP                                               
+         maddaz        ACC,VF28,VF02z                               NOP                                               
+         madday        ACC,VF27,VF02y                               NOP                                               
+         maxx          VF01,VF01,VF00x                              NOP                                               
+         maddx         VF02,VF26,VF02x                              NOP                                               
+         mulaw         ACC,VF16,VF00w                               NOP                                               
+         maddax        ACC,VF21,VF01x                               NOP                                                      ;	STALL_LATENCY ?1
+         clipw.xyz     VF02xyz,VF02w                                div           Q,VF00w,VF02w                       
+         madday        ACC,VF22,VF01y                               NOP                                               
+         mul.xyz       VF03,VF02,VF30                               NOP                                               
+         maddaz        ACC,VF23,VF01z                               NOP                                               
+         maddw         VF02,VF24,VF01w                              lq            VF01,0(VI04)                        
+         NOP                                                        waitq                                                    ;	STALL_LATENCY ?2
+         mulq.xyz      VF03,VF03,Q                                  fcand         VI01,262143                         
+         mulq.xyz      VF01,VF01,Q                                  NOP                                               
+         minii         VF02,VF02,I                                  iaddiu        VI04,VI04,0x00000003                
+         add.xyz       VF03,VF03,VF31                               iadd          VI03,VI03,VI01                             ;	STALL_LATENCY ?1
+         NOP                                                        iaddiu        VI01,VI01,0x00007fff                
+         ftoi0         VF02,VF02                                    sq            VF01,0(VI06)                        
+         NOP                                                        mfir.w        VF01,VI01                           
+         ftoi4.xyz     VF01,VF03                                    iaddiu        VI06,VI06,0x00000003                
+         NOP                                                        sq            VF02,-2(VI06)                              ;	STALL_LATENCY ?1
+         NOP                                                        ibgtz         VI05,LIT_LOOP                       
+         NOP                                                        sq            VF01,-1(VI06)                       
+; _LNOPT_w=[ ] 2 [0 0] 2   [__v_lit_vcl_6]
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+vclLit_CodeEnd:
+;	iCount=33
+; register stats:
+;   5 VU User integer registers
+;  17 VU User floating point registers
+
+#endif
+
+         nop                                                        jr vi15
+         nop                                                        nop
+
+
+
+;-----------------------------------------------------------------------------------------
+; lit, near plane clipping
+;-----------------------------------------------------------------------------------------
+; scratch registers used:
+
+; vi01  clip code
+; vi04  current vertex address
+; vi05  current count
+
+; vf02  input vertex
+; vf03  transformed vertex
+; vf04  input normal
+; vf05  input/transformed uv
+; vf06  lighting dot products, computed lit colour
+
+; i     255.0
+
+; vertex layout (relative to vi04):
+; -  1  T  S
+; -  Nz Ny Nx
+; -  Z  Y  X
+
+; - light colour is premultiplied by diffuse colour
+; - diffuse is 0..255 rather than 0..1
+; - additive is 0..255 rather than 0..1
+; - additive is loaded into accumulator
+; - store 255.0 in I register for clamping
+; - 0x7fff + clip code sets ADC bit)
+
+VU_LIT_TRI:
+   nop                              mtir vi01, _SHININESS  ; branch to specular program if shininess is non-zero
+   nop                              nop
+   nop                              ibne vi01, vi00, VU_LITSPEC_TRI
+   nop                              nop 
+
+LIT_TRI_START:
+   nop                              bal vi15, VU_CHECKSKINNING_LOADPRIMGROUP
+   nop                              nop
+
+   nop                              bal vi15,VU_LIT_PROGRAM
+   nop                              nop
+
+   test_bfc_clip                                                     ; test for bfcing and clipping
+
+   nop                              xgkick _GIFTAG                   ; kick prims and go to sleep
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b LIT_TRI_START
+   nop                              nop
+
+
+;-----------------------------------------------------------------------------------------
+; lit, fogged
+;-----------------------------------------------------------------------------------------
+VU_LITFOG_TRI:
+
+   nop[e]                           nop
+   nop                              nop
+
+
+#if 0
+
+   nop                              mtir vi01, _SHININESS  ; branch to specular program if shininess is non-zero
+   nop                              nop
+   nop                              ibne vi01, vi00, VU_LITSPECFOG_TRI
+   nop                              nop 
+
+LITFOG_TRI_START:
+   nop                              bal vi15, VU_CHECKSKINNING_LOADPRIMGROUP
+   nop                              nop
+
+   nop                              fcset 0
+   nop                              iaddiu vi03,vi00,0
+
+LITFOG_TRI_LOOP:
+   mulaw ACC,  _CTM3, vf00          lq vf02, 2(vi04)                 ; transform vertex, load vertex xyzw
+   maddaz ACC, _CTM2, vf02          lq vf04, 1(vi04)                 ; load normal
+   madday ACC, _CTM1, vf02          iaddiu vi08, vi00, 0x7fff        ; for fog AND mask
+   maddx[i] vf03, _CTM0, vf02       loi 255.0                        ; vf03 = transformed vertex ;for colour clamping
+   mulax ACC,  _LVX, vf04           iaddiu vi08, vi08, 0x1           ; multiply normal by light direction matrix
+   madday ACC, _LVY, vf04           nop                              ;
+   maddz vf06, _LVZ, vf04           nop                              ; vf06 = dot products
+   mulw.w vf07w, vf03w, _FOGSCALE   div q, vf00w, vf03w              ; scale z to fog range, q = 1/w
+   clipw.xyz vf03xyz, vf03w         nop                              ; compute clipping code
+   mul.xyz vf03, vf03, _VPS         nop
+   nop                              nop
+   addw.w vf07, vf07, _FOGOFFSET    nop                              ; add offset to fog z
+   minii.w vf07w, vf07w, i          nop                              ; clamp fog to 255.0 (min fog)
+   maxx.w vf07w, vf07w, vf00x       lq vf05, 0(vi04)                 ; clamp fog to 0 (max fog), load st
+   maxx.xyzw vf06, vf06, vf00x      nop                              ; clamp dot products to 0.0
+   mulaw ACC, _LADDITIVE, vf00w     fcand vi01, 0x3ffff              ; load additive term into acc, compute ADC bit
+   ftoi4.w vf07w, vf07w             iaddiu vi02, vi01, 0x7fff        ; fog to int
+   mulq.xyz vf03, vf03, Q           iand vi02, vi08, vi02            ; project, write ADC (prim kick) bit, FOG
+   maddax ACC,  _LRGB0, vf06        iadd vi03,vi03,vi01              ; additive + color * dot-product , update clipping flag
+   madday ACC, _LRGB1, vf06         nop
+   maddaz ACC, _LRGB2, vf06         mtir vi07, vf07w                 ; xfer fog from vf to vi   
+   maddw vf06, _LRGB3, vf06         nop                              ; vf06 = unclamped lighting colour, load vertex queue lookup table
+   add.xyz vf03, vf03, _VPO         nop                              ; viewport offset, load next normal, get next queue index
+   mulq.xyz vf05, vf05, Q           nop                              ; vf05 = 0 q (s/q) (t/q)st*q
+   nop                              ior vi02, vi02, vi07             ; transform next vertex, OR in fog
+   minii.xyzw vf06, vf06, i         nop                              ; clamp colour to 255.0, xfer fog+ADC to w
+   ftoi4.xyz  vf03, vf03            nop                              ; convert to 12.4 for GS
+   nop                              mfir.w vf03w, vi02               ; store adc + fog
+   nop                              nop                              ;
+   ftoi0 vf06, vf06                 sq vf05, 0(vi06)                 ; convert colour to int
+   nop                              sq vf03, 2(vi06)                 ; vf03, store transformed vertex   
+   nop                              nop                              ; clip test  
+   nop                              sq vf06, 1(vi06)                 ; store colour   
+   nop                              iaddi vi05, vi05, -1             ; decrement vertex count
+   nop                              iaddiu vi04, vi04, 3             ; advance vertex pointer
+   nop                              ibgtz vi05, LITFOG_TRI_LOOP      ; loop
+   nop                              iaddiu vi06,vi06,3
+
+   test_bfc_clip                                                     ; test for bfcing and clipping
+
+LITFOG_TRI_XG:
+   nop                              xgkick _GIFTAG                   ; kick prims and go to sleep
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b LITFOG_TRI_START               ; 
+   nop                              nop
+
+#endif
+
+;-----------------------------------------------------------------------------------------
+; lit, specular
+;-----------------------------------------------------------------------------------------
+; scratch registers used:
+
+; vi01  clip code
+; vi04  current vertex address
+; vi05  current count
+
+; vf02  input vertex
+; vf03  transformed vertex
+; vf04  input normal
+; vf05  input/transformed uv
+; vf06  lighting dot products, computed lit colour
+
+; vf08  view vector
+; vf09  scratch
+; vf10  specular result and r vector
+; vf11  scratch (r vector)
+; vf12  scratch (r vector)
+; vf13  temp view vector
+
+; i     255.0
+
+; vertex layout (relative to vi04):
+; -  1  T  S
+; -  Nz Ny Nx
+; -  Z  Y  X
+VU_LITSPEC_TRI:
+
+LITSPEC_TRI_START:
+   nop                              bal vi15, VU_CHECKSKINNING_LOADPRIMGROUP
+   nop                              nop
+
+   mulaw ACC,  _CTM3, vf00          lq vf02, 2(vi04)                 ; transform vertex, load vertex xyzw
+   sub.xyz vf13, _VIEW, vf02        iaddiu vi03,vi00,0               ; calculate view vector = _VIEW - vertex , clip buffer flag reset
+   maddaz ACC, _CTM2, vf02          lq vf04, 1(vi04)                 ; load normal
+   madday ACC, _CTM1, vf02          nop                              ; 
+   maddx vf03, _CTM0, vf02          nop                              ; vf03 = transformed vertex
+   nop                              erleng p, vf13                   ; normalize view vector
+   mulax ACC,  _LVX, vf04           nop                              ; multiply normal by light direction matrix
+   madday ACC, _LVY, vf04           nop                              ;
+   maddz vf06, _LVZ, vf04           div q, vf00w, vf03w              ; vf06 = dot products(002), q = 1/w (005)
+   clipw.xyz vf03xyz, vf03w         iaddi vi05, vi05, -1             ; compute clipping code (003)
+   mul[I].xyz vf03, vf03, _VPS      loi 2.0                          ; viewport scale (004)
+
+LITSPEC_TRI_LOOP:
+;compute r = 2(n dot l)n - l for all 4 lights
+   muli.xyz vf09, vf04, i           lq vf05, 0(vi04)                 ;scale normal by 2,load st
+   maxx.xyzw vf06, vf06, vf00x      nop                              ;002 clamp dot products to 0.0
+   nop   nop
+   nop   nop
+   nop   nop
+;vf06 contains n dot l for all 4 lights
+;mult scaled normal by n dot l (vf06) into column format 
+   mulx.xyzw vf10, vf06, vf09x      nop
+   muly.xyzw vf11, vf06, vf09y      nop
+   mulz.xyzw vf12, vf06, vf09z      waitp
+   mulq.xyz vf03, vf03, Q           mfp.x vf09x, p                   ;project
+;sub light directions from above to get r in column format
+   sub.xyzw  vf10, vf10, _LVX       iaddiu vi04, vi04, 3             ;007 advance vertex pointer
+   sub.xyzw  vf11, vf11, _LVY       lq vf02, 2(vi04)
+   sub.xyzw  vf12, vf12, _LVZ       lq vf04, 1(vi04)
+   mulx.xyz vf08, vf13, vf09x       iaddiu vi06, vi06, 3             ;finish normalize
+   mulq.xyz vf05, vf05, Q           nop                              ;!!!!!vf05 = 0 q (s/q) (t/q)st*q 
+;compute t = r dot v  (normalized view vector (vf08) dot r's in column format - get 4 t's in reg)
+   sub.xyz vf13, _VIEW, vf02        fcand vi01, 0x3ffff              ;calculate view vector = _VIEW - vertex
+   mulax[I]  ACC, vf10, vf08        loi 255.0
+   madday ACC, vf11, vf08           iadd vi03,vi03,vi01
+   maddz vf08, vf12, vf08           nop                              ;vf08 contains r dot v
+   mulx.xyzw vf11, vf11, vf00x      erleng p, vf13                   ;clear reg to 0,normalize view vec
+   mulaw ACC, _LADDITIVE, vf00w     iaddiu vi01, vi01, 0x7fff        ;004 load additive term into acc, compute ADC bit
+   maddax.xyz ACC,  _LRGB0, vf06    mfir.w vf03w, vi01               ;006 additive + color * dot-product
+;min t reg with 0    (for all 4 components)
+   maxx.xyzw vf08, vf08, vf00x      nop                              ;only use r dot v > 0
+;   miniw.xyzw vf08, vf08, vf00w     nop                             ;!!!!shouldnt be needed if light is normalized
+   addw.xyzw vf11, vf11,_LSHININESS nop                              ;copy shininess (vf25w) over reg
+   madday.xyz ACC, _LRGB1, vf06     nop
+   maddaz.xyz ACC, _LRGB2, vf06     nop                              ;008
+   mulw.xyzw vf10, vf08,_LSHININESS nop                              ;mult shininess (vf25w) over t reg (t*p)
+   sub.xyzw  vf10, vf11, vf10       nop                              ;reg = p - tp + t
+   add.xyzw  vf10, vf10, vf08       nop                              ;reg = tp + t
+   nop                              div q, vf08x, vf10x
+   mulx.xyzw vf11, vf11, vf00x      nop                              ;clear reg to 0
+   addw.xyzw vf11, vf11, vf00w      nop                              ;set reg to 1
+   nop                              waitq
+   nop                              div q, vf08y, vf10y
+   mulq.x vf11, vf11, q             nop
+   nop                              waitq
+   nop                              div q, vf08z, vf10z
+   mulq.y vf11, vf11, q             nop
+   nop                              waitq
+   nop                              div q, vf08w, vf10w
+   mulq.z vf11, vf11, q             nop
+   nop                              waitq
+   mulq.w vf11, vf11, q             nop
+;scale mono material.specular*light.diffuse by above
+   mul.xyzw vf10, _LSPECULAR, vf11  nop
+;   muli.xyzw vf10, vf11, i          nop                             ;to saturate highlight
+;now sum components of vf10 and copy into alpha component of rgba
+   addx.y  vf10y, vf10y, vf10x      nop
+   addy.z  vf10z, vf10z, vf10y      nop
+   addz.w  vf10w, vf10w, vf10z      nop
+;result left in vf10w (alpha)
+   maddw.xyz vf10, _LRGB3, vf06     nop                              ;vf06 = unclamped lighting colour (013)
+   add.xyz vf03, vf03, _VPO         nop                              ;viewport offset (014)
+   nop                              nop                 
+   mulaw ACC, _CTM3, vf00           nop                              ;transform next vertex
+   minii.xyzw vf10, vf10, i         nop                              ;clamp colour to 255.0 (017)
+   ftoi4.xyz  vf03, vf03            nop                              ;convert to 12.4 for GS (018)
+   maddaz ACC, _CTM2, vf02          sq vf05, -3(vi06)                ;store stq
+   madday ACC, _CTM1, vf02          nop                              ;
+   ftoi0 vf10, vf10                 sq vf03, -1(vi06)                ;convert colour to int (021)
+   maddx vf03, _CTM0, vf02          nop                              ;vf03 (022), store transformed vertex
+   mulax ACC,  _LVX, vf04           nop                              ;normal * light direction
+   madday ACC, _LVY, vf04           iaddi vi05, vi05, -1             ;decrement vertex count
+   nop                              sq vf10, -2(vi06)                ;store colour
+   maddz vf06, _LVZ, vf04           div q, vf00w, vf03w              ;vf06 = dot producte (002), q = 1/w (005)
+   clipw.xyz vf03xyz, vf03w         ibgtz vi05, LITSPEC_TRI_LOOP     ;compute clipping code (003), loop
+   mul[I].xyz vf03, vf03, _VPS      loi 2.0                          ;viewport scale (004) delay slot
+
+;last vertex
+   muli.xyz vf09, vf04, i           lq vf05, 0(vi04)                 ;scale normal by 2,load st
+   maxx.xyzw vf06, vf06, vf00x      nop                              ;002 clamp dot products to 0.0
+   mulx.xyzw vf10, vf06, vf09x      nop
+   muly.xyzw vf11, vf06, vf09y      nop
+   mulz.xyzw vf12, vf06, vf09z      waitp
+   mulq.xyz vf03, vf03, Q           mfp.x vf09x, p                   ;project
+   sub.xyzw  vf10, vf10, _LVX       iaddiu vi04, vi04, 3             ;007 advance vertex pointer
+   sub.xyzw  vf11, vf11, _LVY       iaddiu vi06, vi06, 3
+   sub.xyzw  vf12, vf12, _LVZ       nop
+   mulx.xyz vf08, vf13, vf09x       nop                              ;finish normalize
+   mulq.xyz vf05, vf05, Q           fcand vi01, 0x3ffff              ;!!!!!vf05 = 0 q (s/q) (t/q)st*q 
+   mulax[I]  ACC, vf10, vf08        loi 255.0
+   madday ACC, vf11, vf08           iadd vi03,vi03,vi01
+   maddz vf08, vf12, vf08           nop                              ;vf08 contains r dot v
+   mulx.xyzw vf11, vf11, vf00x      nop                             ;clear reg to 0,normalize view vec
+   mulaw ACC, _LADDITIVE, vf00w     iaddiu vi01, vi01, 0x7fff        ;004 load additive term into acc, compute ADC bit
+   maddax.xyz ACC,  _LRGB0, vf06    mfir.w vf03w, vi01               ;006 additive + color * dot-product
+   maxx.xyzw vf08, vf08, vf00x      nop                              ;only use r dot v > 0
+;   miniw.xyzw vf08, vf08, vf00w     nop                             ;!!!!shouldnt be needed if light is normalized
+   addw.xyzw vf11, vf11,_LSHININESS nop                              ;copy shininess (vf25w) over reg
+   madday.xyz ACC, _LRGB1, vf06     nop
+   maddaz.xyz ACC, _LRGB2, vf06     nop                              ;008
+   mulw.xyzw vf10, vf08,_LSHININESS nop                              ;mult shininess (vf25w) over t reg (t*p)
+   sub.xyzw  vf10, vf11, vf10       nop                              ;reg = p - tp + t
+   add.xyzw  vf10, vf10, vf08       nop                              ;reg = tp + t
+   nop                              div q, vf08x, vf10x
+   mulx.xyzw vf11, vf11, vf00x      nop                              ;clear reg to 0
+   addw.xyzw vf11, vf11, vf00w      nop                              ;set reg to 1
+   nop                              waitq
+   nop                              div q, vf08y, vf10y
+   mulq.x vf11, vf11, q             nop
+   nop                              waitq
+   nop                              div q, vf08z, vf10z
+   mulq.y vf11, vf11, q             nop
+   nop                              waitq
+   nop                              div q, vf08w, vf10w
+   mulq.z vf11, vf11, q             nop
+   nop                              waitq
+   mulq.w vf11, vf11, q             nop
+   mul.xyzw vf10, _LSPECULAR, vf11  nop
+   addx.y  vf10y, vf10y, vf10x      nop
+   addy.z  vf10z, vf10z, vf10y      nop
+   addz.w  vf10w, vf10w, vf10z      nop
+   maddw.xyz vf10, _LRGB3, vf06     nop                              ;vf06 = unclamped lighting colour (013)
+   add.xyz vf03, vf03, _VPO         nop                              ;viewport offset (014)
+   minii.xyzw vf10, vf10, i         nop                              ;clamp colour to 255.0 (017)
+   ftoi4.xyz  vf03, vf03            nop                              ;convert to 12.4 for GS (018)
+   nop                              sq vf05, -3(vi06)                ;store stq
+   ftoi0 vf10, vf10                 sq vf03, -1(vi06)                ;convert colour to int (021)
+   nop                              sq vf10, -2(vi06)                ;store colour
+
+   test_bfc_clip                                                     ; test for bfcing and clipping
+
+LITSPEC_TRI_XG:
+   nop                              xgkick _GIFTAG                   ; kick prims and go to sleep
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b LITSPEC_TRI_START              ; 
+   nop                              nop
+
+;-----------------------------------------------------------------------------------------
+; lit, specular, fog
+;-----------------------------------------------------------------------------------------
+; scratch registers used:
+
+; vi01  clip code
+; vi04  current vertex address
+; vi05  current count
+; vi07  fog
+; vi08  AND mask for fog 
+
+; vf02  input vertex
+; vf03  transformed vertex
+; vf04  input normal
+; vf05  input/transformed uv
+; vf06  lighting dot products, computed lit colour
+; vf07  fog
+; vf08  view vector
+; vf09  scratch
+; vf10  specular result and r vector
+; vf11  scratch (r vector)
+; vf12  scratch (r vector)
+; vf13  temp view vector
+
+; i     255.0
+VU_LITSPECFOG_TRI:
+
+   nop[e]                           nop
+   nop                              nop
+
+#if 0
+LITSPECFOG_TRI_START:
+   nop                              bal vi15, VU_CHECSKINNING_LOADPRIMGROUP
+   nop                              nop
+
+   mulaw ACC,  _CTM3, vf00          lq vf02, 2(vi04)                 ; transform vertex, load vertex xyzw
+   sub.xyz vf13, _VIEW, vf02        lq vf04, 1(vi04)                 ; calculate view vector = _VIEW - vertex,load normal
+   maddaz ACC, _CTM2, vf02          iaddiu vi08, vi00, 0x7fff        ; for fog AND mask
+   madday ACC, _CTM1, vf02          iaddiu vi08, vi08, 0x1           ; for fog AND mask                              ; 
+   maddx vf03, _CTM0, vf02          erleng p, vf13                   ; vf03 = transformed vertex, normalize view vector
+   mulax ACC,  _LVX, vf04           iaddiu vi03,vi00,0               ; multiply normal by light direction matrix, clip buffer flag
+   madday ACC, _LVY, vf04           nop                              ;
+   maddz vf06, _LVZ, vf04           div q, vf00w, vf03w              ; vf06 = dot products(002), q = 1/w (005)
+   mulw.w vf07w, vf03w, _FOGSCALE   nop
+   clipw.xyz vf03xyz, vf03w         iaddi vi05, vi05, -1             ; compute clipping code (003)
+   mul[I].xyz vf03, vf03, _VPS      loi 2.0                          ; viewport scale (004)
+
+LITSPECFOG_TRI_LOOP:
+;compute r = 2(n dot l)n - l for all 4 lights
+   muli.xyz vf09, vf04, i           lq vf05, 0(vi04)                 ;scale normal by 2,load st
+   maxx.xyzw vf06, vf06, vf00x      nop                              ;clamp dot products to 0.0
+   addw.w vf07, vf07, _FOGOFFSET    nop                              ;add offset to fog z (005)
+   nop   nop
+   nop   nop
+;vf06 contains n dot l for all 4 lights
+;mult scaled normal by n dot l (vf06) into column format 
+   mulx.xyzw vf10, vf06, vf09x      nop
+   muly.xyzw vf11, vf06, vf09y      nop
+   mulz.xyzw vf12, vf06, vf09z      waitp
+   mulq.xyz vf03, vf03, Q           mfp.x vf09x, p                   ;project
+;sub light directions from above to get r in column format
+   sub.xyzw  vf10, vf10, _LVX       iaddiu vi04, vi04, 3             ;advance vertex pointer
+   sub.xyzw  vf11, vf11, _LVY       lq vf02, 2(vi04)
+   sub.xyzw  vf12, vf12, _LVZ       lq vf04, 1(vi04)
+   mulx.xyz vf08, vf13, vf09x       iaddiu vi06,vi06,3               ;finish normalize
+   mulq.xyz vf05, vf05, Q           nop                              ;!!!!!vf05 = 0 q (s/q) (t/q)st*q 
+;compute t = r dot v  (normalized view vector (vf08) dot r's in column format - get 4 t's in reg)
+   sub.xyz vf13, _VIEW, vf02        fcand vi01, 0x3ffff                        ;calculate view vector = _VIEW - vertex
+   mulax[I]  ACC, vf10, vf08        loi 255.0
+   madday ACC, vf11, vf08           iadd vi03,vi03,vi01
+   maddz vf08, vf12, vf08           nop
+   mulx.xyzw vf11, vf11, vf00x      erleng p, vf13                   ;clear reg to 0,normalize view vec
+   mulaw ACC, _LADDITIVE, vf00w     iaddiu vi01, vi01, 0x7fff        ;load additive term into acc, compute ADC bit
+   maddax.xyz ACC,  _LRGB0, vf06    iand   vi01, vi08, vi01          ;additive + color * dot-product
+;min t reg with 0    (for all 4 components)
+   maxx.xyzw vf08, vf08, vf00x      nop
+;   miniw.xyzw vf08, vf08, vf00w     nop                             ;!!!!shouldnt be needed if light is normalized
+   addw.xyzw vf11, vf11,_LSHININESS nop                              ;copy shininess (vf25w) over reg
+   madday.xyz ACC, _LRGB1, vf06     nop
+   maddaz.xyz ACC, _LRGB2, vf06     nop                              ;
+   mulw.xyzw vf10, vf08,_LSHININESS nop                              ;mult shininess (vf25w) over t reg (t*p)
+   minii.w vf07w, vf07w, i          nop                              ;clamp fog to 255.0 (min fog) (009)
+   sub.xyzw  vf10, vf11, vf10       nop                              ;reg = p - tp + t
+   add.xyzw  vf10, vf10, vf08       nop                              ;reg = tp + t
+   nop                              div q, vf08x, vf10x
+   mulx.xyzw vf11, vf11, vf00x      nop                              ;clear reg to 0
+   addw.xyzw vf11, vf11, vf00w      nop                              ;set reg to 1
+   maxx.w vf07w, vf07w, vf00x       nop                              ;clamp fog to 0 (max fog)
+   nop                              waitq
+   nop                              div q, vf08y, vf10y
+   mulq.x vf11, vf11, q             nop
+   ftoi4.w vf07w, vf07w             nop                              ;013 fog to int (017)
+   nop                              waitq
+   nop                              div q, vf08z, vf10z
+   mulq.y vf11, vf11, q             mtir vi07, vf07w
+   nop                              waitq
+   nop                              div q, vf08w, vf10w
+   mulq.z vf11, vf11, q             ior vi01, vi01, vi07
+   nop                              waitq
+   mulq.w vf11, vf11, q             nop
+;scale mono material.specular*light.diffuse by above
+   mul.xyzw vf10, _LSPECULAR, vf11  nop
+;   muli.xyzw vf10, vf11, i          nop                             ;to saturate highlight
+;now sum components of vf10 and copy into alpha component of rgba
+   addx.y  vf10y, vf10y, vf10x      nop
+   addy.z  vf10z, vf10z, vf10y      nop
+   addz.w  vf10w, vf10w, vf10z      nop
+;result left in vf10w (alpha)
+   maddw.xyz vf10, _LRGB3, vf06     mfir.w vf03w, vi01               ;vf06 = unclamped lighting colour (013)
+   add.xyz vf03, vf03, _VPO         nop                              ;viewport offset (014)
+   nop                              nop                 
+   mulaw ACC, _CTM3, vf00           nop                              ;transform next vertex
+   minii.xyzw vf10, vf10, i         nop                              ;clamp colour to 255.0 (017)
+   ftoi4.xyz  vf03, vf03            nop                              ;convert to 12.4 for GS (018)
+   maddaz ACC, _CTM2, vf02          sq vf05, -3(vi06)                ;store stq
+   madday ACC, _CTM1, vf02          nop                              ;
+   ftoi0 vf10, vf10                 sq vf03, -1(vi06)                ;convert colour to int (021)
+   maddx vf03, _CTM0, vf02          nop                              ;vf03 (022), store transformed vertex
+   mulax ACC,  _LVX, vf04           nop                              ;normal * light direction
+   madday ACC, _LVY, vf04           iaddi vi05, vi05, -1             ;decrement vertex count
+   nop                              sq vf10, -2(vi06)                ;store colour
+   mulw.w vf07w, vf03w, _FOGSCALE   nop
+   maddz vf06, _LVZ, vf04           div q, vf00w, vf03w              ;vf06 = dot producte (002), q = 1/w (005)
+   clipw.xyz vf03xyz, vf03w         ibgtz vi05, LITSPECFOG_TRI_LOOP;compute clipping code (003), loop
+   mul[I].xyz vf03, vf03, _VPS      loi 2.0                          ;viewport scale (004) delay slot
+
+;last vertex
+   muli.xyz vf09, vf04, i           lq vf05, 0(vi04)                 ;scale normal by 2,load st
+   maxx.xyzw vf06, vf06, vf00x      nop                              ;clamp dot products to 0.0
+   addw.w vf07, vf07, _FOGOFFSET    nop                              ;add offset to fog z (005)
+   mulx.xyzw vf10, vf06, vf09x      nop
+   muly.xyzw vf11, vf06, vf09y      nop
+   mulz.xyzw vf12, vf06, vf09z      waitp
+   mulq.xyz vf03, vf03, Q           mfp.x vf09x, p                   ;project
+   sub.xyzw  vf10, vf10, _LVX       iaddiu vi04, vi04, 3             ;advance vertex pointer
+   sub.xyzw  vf11, vf11, _LVY       iaddiu vi06, vi06,3
+   sub.xyzw  vf12, vf12, _LVZ       nop
+   mulx.xyz vf08, vf13, vf09x       nop                              ;finish normalize
+   mulq.xyz vf05, vf05, Q           fcand vi01, 0x3ffff                              ;!!!!!vf05 = 0 q (s/q) (t/q)st*q 
+   mulax[I]  ACC, vf10, vf08        loi 255.0
+   madday ACC, vf11, vf08           iadd vi03,vi03,vi01
+   maddz vf08, vf12, vf08           nop
+   mulx.xyzw vf11, vf11, vf00x      nop                             ;clear reg to 0,normalize view vec
+   mulaw ACC, _LADDITIVE, vf00w     iaddiu vi01, vi01, 0x7fff        ;load additive term into acc, compute ADC bit
+   maddax.xyz ACC,  _LRGB0, vf06    iand   vi01, vi08, vi01          ;additive + color * dot-product
+   maxx.xyzw vf08, vf08, vf00x      nop
+;   miniw.xyzw vf08, vf08, vf00w     nop                             ;!!!!shouldnt be needed if light is normalized
+   addw.xyzw vf11, vf11,_LSHININESS nop                              ;copy shininess (vf25w) over reg
+   madday.xyz ACC, _LRGB1, vf06     nop
+   maddaz.xyz ACC, _LRGB2, vf06     nop                              ;
+   mulw.xyzw vf10, vf08,_LSHININESS nop                              ;mult shininess (vf25w) over t reg (t*p)
+   minii.w vf07w, vf07w, i          nop                              ;clamp fog to 255.0 (min fog) (009)
+   sub.xyzw  vf10, vf11, vf10       nop                              ;reg = p - tp + t
+   add.xyzw  vf10, vf10, vf08       nop                              ;reg = tp + t
+   nop                              div q, vf08x, vf10x
+   mulx.xyzw vf11, vf11, vf00x      nop                              ;clear reg to 0
+   addw.xyzw vf11, vf11, vf00w      nop                              ;set reg to 1
+   maxx.w vf07w, vf07w, vf00x       nop                              ;clamp fog to 0 (max fog)
+   nop                              waitq
+   nop                              div q, vf08y, vf10y
+   mulq.x vf11, vf11, q             nop
+   ftoi4.w vf07w, vf07w             nop                              ;013 fog to int (017)
+   nop                              waitq
+   nop                              div q, vf08z, vf10z
+   mulq.y vf11, vf11, q             mtir vi07, vf07w
+   nop                              waitq
+   nop                              div q, vf08w, vf10w
+   mulq.z vf11, vf11, q             ior vi01, vi01, vi07
+   nop                              waitq
+   mulq.w vf11, vf11, q             nop
+   mul.xyzw vf10, _LSPECULAR, vf11  nop
+   addx.y  vf10y, vf10y, vf10x      nop
+   addy.z  vf10z, vf10z, vf10y      nop
+   addz.w  vf10w, vf10w, vf10z      nop
+   maddw.xyz vf10, _LRGB3, vf06     mfir.w vf03w, vi01               ;vf06 = unclamped lighting colour (013)
+   add.xyz vf03, vf03, _VPO         nop                              ;viewport offset (014)
+   minii.xyzw vf10, vf10, i         nop                              ;clamp colour to 255.0 (017)
+   ftoi4.xyz  vf03, vf03            nop                              ;convert to 12.4 for GS (018)
+   nop                              sq vf05, -3(vi06)                ;store stq
+   ftoi0 vf10, vf10                 sq vf03, -1(vi06)                ;convert colour to int (021)
+   nop                              sq vf10, -2(vi06)                ;store colour
+
+   test_bfc_clip                                                     ; test for bfcing and clipping
+
+   nop                              xgkick _GIFTAG                   ; kick prims and go to sleep
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b LITSPECFOG_TRI_START              ; 
+   nop                              nop
+#endif

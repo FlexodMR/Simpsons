@@ -1,0 +1,55 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformFindInHistory.mel
+// Author: Bryan Brandt
+//
+// Description:  retrieves a node of a particular type from history of obj
+//
+
+
+// Finds first node of particular type in history of passed object
+// - arguments - node_type - node type name to look for
+//             - future - set to 1 if look in future rather than past
+//             - obj - the object whose history is being perused
+//
+global proc string p3dDeformFindInHistory(string $node_type, int $future, string $obj)
+{
+   string $is_type[] = `ls -type $node_type $obj`;
+   int $is_type_count = size($is_type);
+
+   if ($is_type_count)
+   {
+      return $obj;
+   }
+
+   string $hist_cmd;
+   if ($future)
+   {
+      $hist_cmd = "listHistory -f true " + $obj;
+   }
+   else
+   {
+      $hist_cmd = "listHistory " + $obj;
+   }
+
+   string $hist[] = eval($hist_cmd);
+   int $hist_count = size($hist);
+
+   int $i;
+   for ($i = 0; $i < $hist_count; $i++)
+   {
+      $is_type = `ls -l -type $node_type $hist[$i]`;
+      $is_type_count = size($is_type);
+
+      if ($is_type_count)
+      {
+         //return $hist[$i];
+         return $is_type[0];
+      }
+   }
+
+   return "";
+}
+
+
+// End of file.

@@ -1,0 +1,264 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>LWP::SecureSocket - SSL TCP/IP socket interface
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_sock_new_LWP_SecureSocket_">$sock = new LWP::SecureSocket()</A>
+		<LI><A HREF="#_sock_connect_host_port_">$sock->connect($host, $port)</A>
+		<LI><A HREF="#_sock_shutdown_">$sock->shutdown()</A>
+		<LI><A HREF="#_sock_bind_host_port_">$sock->bind($host, $port)</A>
+		<LI><A HREF="#_sock_listen_queuesize_">$sock->listen($queuesize)</A>
+		<LI><A HREF="#_sock_accept_timeout_">$sock->accept($timeout)</A>
+		<LI><A HREF="#_sock_getsockname_">$sock->getsockname()</A>
+		<LI><A HREF="#_sock_read_until_delim_data_">$sock->read_until($delim, $data_ref, $size, $timeout)</A>
+		<LI><A HREF="#_sock_read_bufref_size_ti">$sock->read($bufref, [$size, $timeout])</A>
+		<LI><A HREF="#_sock_pushback_data_">$sock->pushback($data)</A>
+		<LI><A HREF="#_sock_write_data_timeout_">$sock->write($data, [$timeout])</A>
+		<LI><A HREF="#_getaddress_h_p_">_getaddress($h, $p)</A>
+	</UL>
+
+	<LI><A HREF="#SELF_TEST">SELF TEST</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+LWP::SecureSocket - 
+<FONT SIZE=-1>SSL</FONT> 
+<FONT SIZE=-1>TCP/IP</FONT> socket interface
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> $socket = new LWP::SecureSocket;
+ $socket-&gt;connect('localhost', 7); # echo
+ $quote = 'I dunno, I dream in Perl sometimes...';
+ $socket-&gt;write(&quot;$quote\n&quot;);
+ $socket-&gt;read_until(&quot;\n&quot;, \$buffer);
+ $socket-&gt;read(\$buffer);
+ $socket = undef;  # close
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This class implements 
+<FONT SIZE=-1>TCP/IP</FONT> sockets. It groups socket generation, 
+<FONT SIZE=-1>TCP</FONT> address manipulation and buffered reading. Errors are handled by dying (throws exceptions).
+
+
+
+<P>
+
+This class should really not be required, something like this should be
+part of the standard Perl5 library.
+
+
+<P>
+
+Running this module standalone executes a self test which requires
+localhost to serve chargen and echo protocols.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="_sock_new_LWP_SecureSocket_">$sock = new LWP::SecureSocket()
+
+</A></H2>
+Constructs a new socket object.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_connect_host_port_">$sock->connect($host, $port)
+
+</A></H2>
+Connect the socket to given host and port.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_shutdown_">$sock->shutdown()
+
+</A></H2>
+Shuts down the connection.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_bind_host_port_">$sock->bind($host, $port)
+
+</A></H2>
+Binds a name to the socket.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_listen_queuesize_">$sock->listen($queuesize)
+
+</A></H2>
+Set up listen queue for socket.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_accept_timeout_">$sock->accept($timeout)
+
+</A></H2>
+Accepts a new connection. Returns a new LWP::SecureSocket object if
+successful. Timeout not implemented yet. would require modifying new, and
+not necessary for app, so I\'m not bothering to modify. Might work anyways,
+though.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_getsockname_">$sock->getsockname()
+
+</A></H2>
+Returns a 2 element array ($host, $port)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_read_until_delim_data_">$sock->read_until($delim, $data_ref, $size, $timeout)
+
+</A></H2>
+Reads data from the socket, up to a delimiter specified by a regular
+expression. If <CODE>$delim</CODE> is undefined all data is read. If
+<CODE>$size</CODE> is defined, data will be read internally in chunks of
+<CODE>$size</CODE> bytes. This does not mean that we will return the data
+when size bytes are read.
+
+
+<P>
+
+Note that <CODE>$delim</CODE> is discarded from the data returned.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_read_bufref_size_ti">$sock->read($bufref, [$size, $timeout])
+
+</A></H2>
+Reads data of the socket. Not more than <CODE>$size</CODE> bytes. Might
+return less if the data is available. Dies on timeout.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_pushback_data_">$sock->pushback($data)
+
+</A></H2>
+Put data back into the socket. Data will returned next time you
+<CODE>read().</CODE> Can be used if you find out that you have read too
+much.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_sock_write_data_timeout_">$sock->write($data, [$timeout])
+
+</A></H2>
+Write data to socket. The <CODE>$data</CODE> argument might be a scalar or
+code.
+
+
+<P>
+
+If data is a reference to a subroutine, then we will call this routine to
+obtain the data to be written. The routine will be called until it returns
+undef or empty data. Data might be returned from the callback as a scalar
+or as a reference to a scalar.
+
+
+<P>
+
+Write returns the number of bytes written to the socket.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_getaddress_h_p_">_getaddress($h, $p)
+
+</A></H2>
+Given a host and a port, it will return the address (sockaddr_in) suitable
+as the <CODE>name</CODE> argument for <CODE>connect()</CODE> or <CODE>bind().</CODE> Might return several addresses in array context if the hostname is bound to several 
+<FONT SIZE=-1>IP</FONT> addresses.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SELF_TEST">SELF TEST
+
+</A></H1>
+This self test is only executed when this file is run standalone. It tests its functions against some standard 
+<FONT SIZE=-1>TCP</FONT> services implemented by inetd. If you do not have them around the tests will fail.
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

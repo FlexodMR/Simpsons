@@ -1,0 +1,282 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>IO::Select - OO interface to the select system call
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+IO::Select - 
+<FONT SIZE=-1>OO</FONT> interface to the select system call
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use IO::Select;
+</PRE>
+
+<P>
+
+<PRE>    $s = IO::Select-&gt;new();
+</PRE>
+
+<P>
+
+<PRE>    $s-&gt;add(\*STDIN);
+    $s-&gt;add($some_handle);
+</PRE>
+
+<P>
+
+<PRE>    @ready = $s-&gt;can_read($timeout);
+</PRE>
+
+<P>
+
+<PRE>    @ready = IO::Select-&gt;new(@handles)-&gt;read(0);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>IO::Select</CODE> package implements an object approach to the system <A HREF="#item_select">select</A>
+function call. It allows the user to see what 
+<FONT SIZE=-1>IO</FONT> handles, see <A HREF="/n|/perl/html/./lib/IO/Handle.html">Handle</A>, are ready for reading, writing or have an error condition pending.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ( [ HANDLES ] )
+
+</A></STRONG><DD>
+The constructor creates a new object and optionally initialises it with a
+set of handles.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_add">add ( HANDLES )
+
+</A></STRONG><DD>
+Add the list of handles to the <CODE>IO::Select</CODE> object. It is these values that will be returned when an event occurs. <CODE>IO::Select</CODE> keeps these values in a cache which is indexed by the <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_fileno">fileno</A> of the handle, so if more than one handle with the same <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_fileno">fileno</A> is specified then only the last one is cached.
+
+
+<P>
+
+Each handle can be an <CODE>IO::Handle</CODE> object, an integer or an array reference where the first element is a <CODE>IO::Handle</CODE> or an integer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_remove">remove ( HANDLES )
+
+</A></STRONG><DD>
+Remove all the given handles from the object. This method also works by the <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_fileno">fileno</A> of the handles. So the exact handles that were added need not be passed,
+just handles that have an equivalent <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_fileno">fileno</A>
+
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_exists">exists ( HANDLE )
+
+</A></STRONG><DD>
+Returns a true value (actually the handle itself) if it is present. Returns
+undef otherwise.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_handles">handles
+
+</A></STRONG><DD>
+Return an array of all registered handles.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_can_read">can_read ( [ TIMEOUT ] )
+
+</A></STRONG><DD>
+Return an array of handles that are ready for reading. <CODE>TIMEOUT</CODE> is the maximum amount of time to wait before returning an empty list. If
+<CODE>TIMEOUT</CODE> is not given and any handles are registered then the call will block.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_can_write">can_write ( [ TIMEOUT ] )
+
+</A></STRONG><DD>
+Same as <A HREF="#item_can_read">can_read</A> except check for handles that can be written to.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_has_error">has_error ( [ TIMEOUT ] )
+
+</A></STRONG><DD>
+Same as <A HREF="#item_can_read">can_read</A> except check for handles that have an error condition, for example 
+<FONT SIZE=-1>EOF.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_count">count ()
+
+</A></STRONG><DD>
+Returns the number of handles that the object will check for when one of
+the <CODE>can_</CODE> methods is called or the object is passed to the <A HREF="#item_select">select</A> static method.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_bits">bits()
+
+</A></STRONG><DD>
+Return the bit string suitable as argument to the core
+<CODE>select()</CODE> call.
+
+
+<P>
+
+<DT><STRONG>bits()
+
+</A></STRONG><DD>
+Return the bit string suitable as argument to the core
+<CODE>select()</CODE> call.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_select">select ( READ, WRITE, ERROR [, TIMEOUT ] )
+
+</A></STRONG><DD>
+<A HREF="#item_select">select</A> is a static method, that is you call it with the package name like <A HREF="#item_new">new</A>. <CODE>READ</CODE>, <CODE>WRITE</CODE> and <CODE>ERROR</CODE> are either <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_undef">undef</A>
+or <CODE>IO::Select</CODE> objects. <CODE>TIMEOUT</CODE> is optional and has the same effect as for the core select call.
+
+
+<P>
+
+The result will be an array of 3 elements, each a reference to an array
+which will hold the handles that are ready for reading, writing and have
+error conditions respectively. Upon error an empty array is returned.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+Here is a short example which shows how <CODE>IO::Select</CODE> could be used to write a server which communicates with several sockets
+while also listening for more connections on a listen socket
+
+
+<P>
+
+<PRE>    use IO::Select;
+    use IO::Socket;
+</PRE>
+
+<P>
+
+<PRE>    $lsn = new IO::Socket::INET(Listen =&gt; 1, LocalPort =&gt; 8080);
+    $sel = new IO::Select( $lsn );
+    
+    while(@ready = $sel-&gt;can_read) {
+        foreach $fh (@ready) {
+            if($fh == $lsn) {
+                # Create a new socket
+                $new = $lsn-&gt;accept;
+                $sel-&gt;add($new);
+            }
+            else {
+                # Process socket
+</PRE>
+
+<P>
+
+<PRE>                # Maybe we have finished with the socket
+                $sel-&gt;remove($fh);
+                $fh-&gt;close;
+            }
+        }
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr &lt;<EM>Graham.Barr@tiuk.ti.com</EM>&gt;
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995 Graham Barr. All rights reserved. This program is free
+software; you can redistribute it and/or modify it under the same terms as
+Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

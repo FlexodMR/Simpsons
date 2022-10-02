@@ -1,0 +1,238 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::SNPP - Simple Network Pager Protocol Client
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#EXPORTS">EXPORTS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::SNPP - Simple Network Pager Protocol Client
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Net::SNPP;
+    
+    # Constructors
+    $snpp = Net::SNPP-&gt;new('snpphost');
+    $snpp = Net::SNPP-&gt;new('snpphost', Timeout =&gt; 60);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+This module is not complete, yet !
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module implements a client interface to the 
+<FONT SIZE=-1>SNPP</FONT> protocol, enabling a perl5 application to talk to 
+<FONT SIZE=-1>SNPP</FONT> servers. This documentation assumes that you are familiar with the 
+<FONT SIZE=-1>SNPP</FONT> protocol described in 
+<FONT SIZE=-1>RFC1861.</FONT>
+
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> new Net::SNPP object must be created with the <EM>new</EM> method. Once this has been done, all 
+<FONT SIZE=-1>SNPP</FONT> commands are accessed through this object.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+This example will send a pager message in one hour saying ``Your lunch is
+ready''
+
+
+<P>
+
+<PRE>    #!/usr/local/bin/perl -w
+    
+    use Net::SNPP;
+    
+    $snpp = Net::SNPP-&gt;new('snpphost');
+    
+    $snpp-&gt;send( Pager   =&gt; $some_pager_number,
+                 Message =&gt; &quot;Your lunch is ready&quot;,
+                 Alert   =&gt; 1,
+                 Hold    =&gt; time + 3600, # lunch ready in 1 hour :-)
+               ) || die $snpp-&gt;message;
+    
+    $snpp-&gt;quit;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ( [ HOST, ] [ OPTIONS ] )
+
+</A></STRONG><DD>
+This is the constructor for a new Net::SNPP object. <CODE>HOST</CODE> is the name of the remote host to which a 
+<FONT SIZE=-1>SNPP</FONT> connection is required.
+
+
+<P>
+
+If <CODE>HOST</CODE> is not given, then the <CODE>SNPP_Host</CODE> specified in <CODE>Net::Config</CODE>
+will be used.
+
+
+<P>
+
+<A HREF="#item_OPTIONS">OPTIONS</A> are passed in a hash like fashion, using key and value pairs. Possible
+options are:
+
+
+<P>
+
+<STRONG>Timeout</STRONG> - Maximum time, in seconds, to wait for a response from the 
+<FONT SIZE=-1>SNPP</FONT> server (default: 120)
+
+
+<P>
+
+<STRONG>Debug</STRONG> - Enable debugging information
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>    $snpp = Net::SNPP-&gt;new('snpphost',
+                           Debug =&gt; 1,
+                          );
+</PRE>
+
+<P>
+
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+Unless otherwise stated all methods return either a <EM>true</EM> or <EM>false</EM>
+value, with <EM>true</EM> meaning that the operation was a success. When a method states that it
+returns a value, failure will be returned as <EM>undef</EM> or an empty list.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_reset">reset ()
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_help">help ()
+
+</A></STRONG><DD>
+Request help text from the server. Returns the text or undef upon failure
+
+
+<P>
+
+<DT><STRONG><A NAME="item_quit">quit ()
+
+</A></STRONG><DD>
+Send the 
+<FONT SIZE=-1>QUIT</FONT> command to the remote 
+<FONT SIZE=-1>SNPP</FONT> server and close the socket connection.
+
+
+
+<P>
+
+</DL>
+<H1><A NAME="EXPORTS">EXPORTS
+
+</A></H1>
+<CODE>Net::SNPP</CODE> exports all that <CODE>Net::CMD</CODE> exports, plus three more subroutines that can bu used to compare against
+the result of <A HREF="#item_status">status</A>. These are :-
+<CODE>CMD_2WAYERROR</CODE>, <CODE>CMD_2WAYOK</CODE>, and <CODE>CMD_2WAYQUEUED</CODE>.
+
+
+<P>
+
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Net/Cmd.html">Cmd</A>
+
+<FONT SIZE=-1>RFC1861</FONT>
+
+
+<P>
+
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A>
+
+
+<P>
+
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1997 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

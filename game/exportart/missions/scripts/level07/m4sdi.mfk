@@ -1,0 +1,70 @@
+SelectMission("m4sd");
+
+SetMissionResetPlayerOutCar("m4_homer_start", "m4_carstart");
+SetDynaLoadData("l7z3.p3d;l7r2.p3d;l7r3.p3d;l7i00.p3d@", "SpringfieldElementary");
+
+UsePedGroup(3);
+
+SetMissionStartCameraName( "mission2camShape" );
+SetMissionStartMulticontName( "mission2cam" );
+SetAnimatedCameraName( "mission2camShape" );
+SetAnimCamMulticontName( "mission2cam" );
+
+//AddStage(0);
+//	SetMaxTraffic(5);
+//	SetStageMessageIndex(128);
+//	SetHUDIcon( "school" );
+//	AddObjective( "goto" );
+//		SetDestination( "m4_school", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//CloseStage();
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetHUDIcon( "school" );
+	SetStageMessageIndex(1);
+		AddObjective( "interior" );
+		SetDestination("SpringfieldElementary", "school_mission_doorstar");
+	CloseObjective();
+CloseStage();
+
+AddStage(1);
+	RESET_TO_HERE();
+	SetStageMessageIndex(156);
+	SetHUDIcon( "lisa" );
+	AddObjective("talkto", "neither");
+		AddNPC("lisa", "m4_lisa_sd");
+		AddObjectiveNPCWaypoint( "lisa", "m4_lisa_walk1" );
+		SetTalkToTarget("lisa", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis07_04.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_thinking" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		SetDialogueInfo("homer","lisa","buried",0);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

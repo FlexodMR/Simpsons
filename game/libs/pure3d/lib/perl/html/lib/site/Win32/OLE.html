@@ -1,0 +1,460 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Win32::OLE - OLE Automation extensions and Variants
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Functions_Methods">Functions/Methods</A>
+		<LI><A HREF="#Constants">Constants</A>
+		<LI><A HREF="#Variants">Variants</A>
+	</UL>
+
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Win32::OLE - 
+<FONT SIZE=-1>OLE</FONT> Automation extensions and Variants
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        $ex = new Win32::OLE 'Excel.Application' or die &quot;oops\n&quot;;
+        $ex-&gt;Amethod(&quot;arg&quot;)-&gt;Bmethod-&gt;{'Property'} = &quot;foo&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provides an interface to 
+<FONT SIZE=-1>OLE</FONT> Automation from Perl. 
+<FONT SIZE=-1>OLE</FONT> Automation brings VisualBasic like scripting capabilities and offers powerful extensibility and the ability to control many Win32 applications from Perl scripts.
+
+
+
+<P>
+
+OCX's are currently not supported.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Functions_Methods">Functions/Methods
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_new">new Win32::OLE $oleclass
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>OLE</FONT> Automation objects are created using the <CODE>new()</CODE> method, the second argument to which must be the 
+<FONT SIZE=-1>OLE</FONT> class of the application to create. Return value is undef if the attempt to create an 
+<FONT SIZE=-1>OLE</FONT> connection failed for some reason.
+
+
+
+<P>
+
+The object returned by the <CODE>new()</CODE> method can be used to invoke methods or retrieve properties in the same fashion as described in the documentation for the particular 
+<FONT SIZE=-1>OLE</FONT> class (eg. Microsoft Excel documentation describes the object hierarchy along with the properties and methods exposed for 
+<FONT SIZE=-1>OLE</FONT> access).
+
+
+
+<P>
+
+Properties can be retrieved or set using hash syntax, while methods can be
+invoked with the usual perl method call syntax.
+
+
+<P>
+
+If a method or property returns an embedded 
+<FONT SIZE=-1>OLE</FONT> object, method and property access can be chained
+as shown in the examples below.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Variant">Variant(TYPENAME, DATA)
+
+</A></STRONG><DD>
+This function returns a Win32::OLE::Variant object of the specified type that contains the given data. The Win32::OLE::Variant object can be used to specify data types other than 
+<FONT SIZE=-1>IV,</FONT> 
+<FONT SIZE=-1>NV</FONT> or 
+<FONT SIZE=-1>PV</FONT> (which are supported transparently). See
+ <A HREF="#Variants">Variants</A> below for details.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Constants">Constants
+
+</A></H2>
+These constants are exported by default:
+
+
+<P>
+
+<PRE>        VT_UI1
+        VT_I2
+        VT_I4
+        VT_R4
+        VT_R8
+        VT_DATE
+        VT_BSTR
+        VT_CY
+        VT_BOOL
+</PRE>
+
+<P>
+
+Other 
+<FONT SIZE=-1>OLE</FONT> constants are also defined in the Win32::OLE
+package, but they are unsupported at this time, so they are exported only
+on request:
+
+
+<P>
+
+<PRE>        VT_EMPTY
+        VT_NULL
+        VT_DISPATCH
+        VT_ERROR
+        VT_VARIANT
+        VT_UNKNOWN
+        VT_UI2
+        VT_UI4
+        VT_I8
+        VT_UI8
+        VT_INT
+        VT_UINT
+        VT_VOID
+        VT_HRESULT
+        VT_PTR
+        VT_SAFEARRAY
+        VT_CARRAY
+        VT_USERDEFINED
+        VT_LPSTR
+        VT_LPWSTR
+        VT_FILETIME
+        VT_BLOB
+        VT_STREAM
+        VT_STORAGE
+        VT_STREAMED_OBJECT
+        VT_STORED_OBJECT
+        VT_BLOB_OBJECT
+        VT_CF
+        VT_CLSID
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Variants">Variants
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> Variant is a data type that is used to pass data between 
+<FONT SIZE=-1>OLE</FONT> connections.
+
+
+
+<P>
+
+The default behavior is to convert each perl scalar variable into an 
+<FONT SIZE=-1>OLE</FONT> Variant according to the internal perl
+representation. The following type correspondence holds:
+
+
+<P>
+
+<PRE>        C type          Perl type       OLE type
+        ------          ---------       --------
+          int              IV            VT_I4
+        double             NV            VT_R8
+        char *             PV            VT_BSTR
+</PRE>
+
+<P>
+
+Note that 
+<FONT SIZE=-1>VT_BSTR</FONT> is a wide character or Unicode string. This
+presents a problem if you want to pass in binary data as a parameter as
+0x00 is inserted between all the bytes in your data. The <A HREF="#item_Variant">Variant()</A> method provides a solution to this. With Variants the script writer can specify the 
+<FONT SIZE=-1>OLE</FONT> variant type that the parameter should be converted to. Currently supported types are:
+
+
+
+<P>
+
+<PRE>        VT_UI1     unsigned char
+        VT_I2      signed int (2 bytes)
+        VT_I4      signed int (4 bytes)
+        VT_R4      float      (4 bytes)
+        VT_R8      float      (8 bytes)
+        VT_DATE    OLE Date
+        VT_BSTR    OLE String
+        VT_CY      OLE Currency
+        VT_BOOL    OLE Boolean
+</PRE>
+
+<P>
+
+When 
+<FONT SIZE=-1>VT_DATE</FONT> and 
+<FONT SIZE=-1>VT_CY</FONT> objects are created, the input parameter is treated as a Perl string type, which is then converted to 
+<FONT SIZE=-1>VT_BSTR,</FONT> and finally to 
+<FONT SIZE=-1>VT_DATE</FONT> of 
+<FONT SIZE=-1>VT_CY</FONT> using the <CODE>VariantChangeType()</CODE> 
+<FONT SIZE=-1>OLE</FONT> 
+<FONT SIZE=-1>API</FONT> function. See
+ <A HREF="#EXAMPLES">EXAMPLES</A> for how these types can be used.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+Here is a simple Microsoft Excel application.
+
+
+<P>
+
+<PRE>        use Win32::OLE;
+        $ex = new Win32::OLE 'Excel.Application' or die &quot;oops\n&quot;;
+        
+        # open an existing workbook
+        $ex-&gt;Workbooks-&gt;Open( 'test.xls' );
+        
+        # write to a particular cell
+        $ex-&gt;Workbooks(1)-&gt;Worksheets('Sheet1')-&gt;Cells(1,1)-&gt;{Value} = &quot;foo&quot;;
+        
+        # save and exit
+        $ex-&gt;Save;
+        $ex-&gt;Quit;
+</PRE>
+
+<P>
+
+Here is an example of using Variant data types.
+
+
+<P>
+
+<PRE>        use Win32::OLE;
+        $ex = new Win32::OLE 'Excel.Application' or die &quot;oops\n&quot;;
+        $ex-&gt;{Visible} = 1;
+        $ex-&gt;Workbooks-&gt;Add;
+        $ovR8 = Variant(VT_R8, &quot;3 is a good number&quot;);
+        $ex-&gt;Range(&quot;A1&quot;)-&gt;{Value} = $ovR8;
+        $ex-&gt;Range(&quot;A2&quot;)-&gt;{Value} = Variant(VT_DATE, 'Jan 1,1970');
+</PRE>
+
+<P>
+
+The above will put value ``3'' in cell 
+<FONT SIZE=-1>A1</FONT> rather than the string ``3 is a good number''. Cell 
+<FONT SIZE=-1>A2</FONT> will contain the date.
+
+
+
+<P>
+
+Similarly, to invoke a method with some binary data, you can do the
+following:
+
+
+<P>
+
+<PRE>        $obj-&gt;Method( Variant(VT_UI1, &quot;foo\000b\001a\002r&quot;) );
+</PRE>
+
+<P>
+
+Here is a wrapper class that basically delegates everything but
+<CODE>new()</CODE> and <CODE>DESTROY().</CODE> Such a wrapper is needed for
+properly shutting down connections if your application is liable to die
+without proper cleanup.
+
+
+<P>
+
+<PRE>        package Excel;
+        use Win32::OLE;
+        
+        sub new {
+            my $s = {};
+            if ($s-&gt;{Ex} = Win32::OLE-&gt;new('Excel.Application')) {
+                return bless $s, shift;
+            }
+            return undef;
+        }
+        
+        sub DESTROY {
+            my $s = shift;
+            if (exists $s-&gt;{Ex}) {
+                print &quot;# closing connection\n&quot;;
+                $s-&gt;{Ex}-&gt;Quit;
+                return undef;
+            }
+        }
+        
+        sub AUTOLOAD {
+            my $s = shift;
+            $AUTOLOAD =~ s/^.*:://;
+            $s-&gt;{Ex}-&gt;$AUTOLOAD(@_);
+        }
+        
+        1;
+</PRE>
+
+<P>
+
+The above module can be used just like Win32::OLE, except that it takes
+care of closing connections in case of abnormal exits.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTES">NOTES
+
+</A></H1>
+There are some incompatibilities with the version distributed by Activeware
+(as of build 306).
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The package name has changed from 
+<FONT SIZE=-1>``OLE''</FONT> to ``Win32::OLE''.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+All functions of the form ``Win32::OLEFoo'' are now ``Win32::OLE::Foo'',
+though the old names are temporarily accomodated.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+Package ``OLE::Variant'' is now ``Win32::OLE::Variant''.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The Variant function is new, and is exported by default. So are all the 
+<FONT SIZE=-1>VT_XXX</FONT> type constants.
+
+
+<P>
+
+</OL>
+You are responsible for properly closing any open 
+<FONT SIZE=-1>OLE</FONT> servers down. For example, if you open a 
+<FONT SIZE=-1>OLE</FONT> connection to Excel and subsequently just <CODE>die(),</CODE> Excel will not shutdown and you will have a process leak on your hands. You will need to wrap the 
+<FONT SIZE=-1>OLE</FONT> connection in your own object and provide a 
+<FONT SIZE=-1>DESTROY</FONT> method that does proper cleanup to ensure smooth shutdown. Alternatively, you can use a 
+<FONT SIZE=-1>__DIE__</FONT> hook or an 
+<FONT SIZE=-1>END{}</FONT> block to do such cleanup. See
+ <A HREF="#EXAMPLES">EXAMPLES</A> above for an example of using a wrapper object.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+Originally put together by the kind people at Hip and Activeware.
+
+
+<P>
+
+Gurusamy Sarathy <A HREF="MAILTO:<gsar@umich.edu>"><gsar@umich.edu></A> has
+subsequently fixed several major bugs, memory leaks, and reliability
+problems, along with some redesign of the code.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+<PRE>    (c) 1995 Microsoft Corporation. All rights reserved. 
+        Developed by ActiveWare Internet Corp., <A HREF="http://www.ActiveWare.com">http://www.ActiveWare.com</A>
+</PRE>
+
+<P>
+
+<PRE>    Other modifications (c) 1997 by Gurusamy Sarathy &lt;gsar@umich.edu&gt;
+</PRE>
+
+<P>
+
+<PRE>    You may distribute under the terms of either the GNU General Public
+    License or the Artistic License, as specified in the README file.
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

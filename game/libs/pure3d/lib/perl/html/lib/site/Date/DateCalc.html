@@ -1,0 +1,1627 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Date::DateCalc - Gregorian Calendar Date Calculations
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#_">===========</A>
+		<LI><A HREF="#Convention_">Convention:</A>
+		<LI><A HREF="#_">===========</A>
+		<LI><A HREF="#_">====================</A>
+		<LI><A HREF="#C_flag_leap_year_"><CODE>$flag = leap($year);</CODE></A>
+		<LI><A HREF="#_">====================</A>
+		<LI><A HREF="#_">==================================</A>
+		<LI><A HREF="#C_flag_check_date_year_mm_"><CODE>$flag = check_date($year,$mm,$dd);</CODE></A>
+		<LI><A HREF="#_">==================================</A>
+		<LI><A HREF="#_">==============================</A>
+		<LI><A HREF="#C_date_compress_yy_mm_dd_"><CODE>$date = compress($yy,$mm,$dd);</CODE></A>
+		<LI><A HREF="#_">==============================</A>
+		<LI><A HREF="#_">======================================</A>
+		<LI><A HREF="#C_cc_yy_mm_dd_uncompress"><CODE>($cc,$yy,$mm,$dd) = uncompress($date);</CODE></A>
+		<LI><A HREF="#_">======================================</A>
+		<LI><A HREF="#_">================================</A>
+		<LI><A HREF="#C_flag_check_compressed_date"><CODE>$flag = check_compressed($date);</CODE></A>
+		<LI><A HREF="#_">================================</A>
+		<LI><A HREF="#_">======================================</A>
+		<LI><A HREF="#C_datestr_compressed_to_short"><CODE>$datestr = compressed_to_short($date);</CODE></A>
+		<LI><A HREF="#_">======================================</A>
+		<LI><A HREF="#_">=================================</A>
+		<LI><A HREF="#C_days_calc_days_year_mm_d"><CODE>$days = calc_days($year,$mm,$dd);</CODE></A>
+		<LI><A HREF="#_">=================================</A>
+		<LI><A HREF="#_">======================================</A>
+		<LI><A HREF="#C_weekday_day_of_week_year_"><CODE>$weekday = day_of_week($year,$mm,$dd);</CODE></A>
+		<LI><A HREF="#_">======================================</A>
+		<LI><A HREF="#_">============================================================</A>
+		<LI><A HREF="#C_days_dates_difference_year"><CODE>$days = dates_difference($year1,$mm1,$dd1,$year2,$mm2,$dd2);</CODE></A>
+		<LI><A HREF="#_">============================================================</A>
+		<LI><A HREF="#_">=======================================================</A>
+		<LI><A HREF="#C_year_mm_dd_calc_new_dat"><CODE>($year,$mm,$dd) = calc_new_date($year,$mm,$dd,$offset);</CODE></A>
+		<LI><A HREF="#_">=======================================================</A>
+		<LI><A HREF="#_">===========================================</A>
+		<LI><A HREF="#C_days_hh_mm_ss_date_tim"><CODE>($days,$hh,$mm,$ss) = date_time_difference( $year1,$month1,$day1,$hh1,$mm1,$ss1, $year2,$month2,$day2,$hh2,$mm2,$ss2 );</CODE></A>
+		<LI><A HREF="#_">===========================================</A>
+		<LI><A HREF="#_">=====================================================</A>
+		<LI><A HREF="#C_year_month_day_hh_mm_ss"><CODE>($year,$month,$day,$hh,$mm,$ss) = calc_new_date_time( $year,$month,$day,$hh,$mm,$ss, $days_offset,$hh_offset,$mm_offset,$ss_offset );</CODE></A>
+		<LI><A HREF="#_">=====================================================</A>
+		<LI><A HREF="#_">========================================</A>
+		<LI><A HREF="#C_datestr_date_to_short_year"><CODE>$datestr = date_to_short($year,$mm,$dd);</CODE></A>
+		<LI><A HREF="#_">========================================</A>
+		<LI><A HREF="#_">=========================================</A>
+		<LI><A HREF="#C_datestr_date_to_string_yea"><CODE>$datestr = date_to_string($year,$mm,$dd);</CODE></A>
+		<LI><A HREF="#_">=========================================</A>
+		<LI><A HREF="#_">===========================================</A>
+		<LI><A HREF="#C_week_year_week_number_y"><CODE>($week,$year) = week_number($year,$mm,$dd);</CODE></A>
+		<LI><A HREF="#_">===========================================</A>
+		<LI><A HREF="#_">=============================================</A>
+		<LI><A HREF="#C_year_mm_dd_first_in_wee"><CODE>($year,$mm,$dd) = first_in_week($week,$year);</CODE></A>
+		<LI><A HREF="#_">=============================================</A>
+		<LI><A HREF="#_">==============================</A>
+		<LI><A HREF="#C_weeks_weeks_in_year_year_"><CODE>$weeks = weeks_in_year($year);</CODE></A>
+		<LI><A HREF="#_">==============================</A>
+		<LI><A HREF="#_">===================================</A>
+		<LI><A HREF="#C_day_name_day_name_tab_week"><CODE>$day_name = day_name_tab($weekday);</CODE></A>
+		<LI><A HREF="#_">===================================</A>
+		<LI><A HREF="#_">=====================================</A>
+		<LI><A HREF="#C_month_name_month_name_tab_"><CODE>$month_name = month_name_tab($month);</CODE></A>
+		<LI><A HREF="#_">=====================================</A>
+		<LI><A HREF="#_">===============================</A>
+		<LI><A HREF="#C_weekday_decode_day_buffer_"><CODE>$weekday = decode_day($buffer);</CODE></A>
+		<LI><A HREF="#_">===============================</A>
+		<LI><A HREF="#_">===============================</A>
+		<LI><A HREF="#C_month_decode_month_buffer_"><CODE>$month = decode_month($buffer);</CODE></A>
+		<LI><A HREF="#_">===============================</A>
+		<LI><A HREF="#_">=======================================</A>
+		<LI><A HREF="#C_year_mm_dd_decode_date_"><CODE>($year,$mm,$dd) = decode_date($buffer);</CODE></A>
+		<LI><A HREF="#_">=======================================</A>
+		<LI><A HREF="#_">=================================</A>
+		<LI><A HREF="#C_days_days_in_month_year_m"><CODE>$days = days_in_month($year,$mm);</CODE></A>
+		<LI><A HREF="#_">=================================</A>
+		<LI><A HREF="#_">=====================================</A>
+		<LI><A HREF="#C_version_Date_DateCalc_Ver"><CODE>$version = Date::DateCalc::Version();</CODE></A>
+		<LI><A HREF="#_">=====================================</A>
+	</UL>
+
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#VERSION">VERSION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#LICENSE">LICENSE</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Date::DateCalc - Gregorian Calendar Date Calculations
+
+
+<P>
+
+in compliance with 
+<FONT SIZE=-1>ISO/R</FONT> 2015-1971 and 
+<FONT SIZE=-1>DIN</FONT> 1355 standards
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<CODE>use Date::DateCalc;</CODE>
+
+
+
+
+<P>
+
+(in which case you must fully qualify every function with the name of this
+module, for example <CODE>$flag = Date::DateCalc::leap($year)</CODE>)
+
+
+<P>
+
+or
+
+
+<P>
+
+<CODE>use Date::DateCalc</CODE>
+
+<CODE>qw( leap check_date compress uncompress check_compressed</CODE>
+
+<CODE>compressed_to_short calc_days day_of_week dates_difference</CODE>
+
+<CODE>calc_new_date date_time_difference calc_new_date_time</CODE>
+
+<CODE>date_to_short date_to_string week_number first_in_week</CODE>
+
+<CODE>weeks_in_year day_name_tab month_name_tab decode_day</CODE>
+
+<CODE>decode_month decode_date days_in_month );</CODE>
+
+
+
+
+<P>
+
+(or only portions thereof, whatever you need)
+
+
+<P>
+
+or
+
+
+<P>
+
+<CODE>use DateCalc qw(:all);</CODE>
+
+
+
+
+<P>
+
+(which imports everything).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="_">===========
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Convention_">Convention:
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">===========
+
+</A></H2>
+In the following, ``$year'' stands for a ``complete'' year number (like ``1995'', for instance), whereas ``$yy'' may be an abbreviated year number (like ``95'') 
+<FONT SIZE=-1>OR</FONT> a complete year number.
+
+
+
+<P>
+
+Year numbers must be positive integers (greater than zero).
+
+
+<P>
+
+``$mm'' stands for the number of a month (from 1 to 12), and ``$dd'' is the
+number of a day in a month (from 1 to 28,29,30 or 31, depending on the
+month and the year).
+
+
+<P>
+
+Hint: The functions that support abbreviated year numbers are the functions
+whose names contain the word ``compress'' and the function
+``decode_date()''.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">====================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_flag_leap_year_"><CODE>$flag = leap($year);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">====================
+
+</A></H2>
+This function returns a boolean value which is ``true'' (1) if the year
+``$year'' is a leap year, and ``false'' (0) otherwise.
+
+
+<P>
+
+No check is made if the year ``$year'' is in the valid range.
+
+
+<P>
+
+For years less than 1, the result is probably meaningless (it 
+<FONT SIZE=-1>IS</FONT> almost meaningless, anyway, for years before 1582).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">==================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_flag_check_date_year_mm_"><CODE>$flag = check_date($year,$mm,$dd);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">==================================
+
+</A></H2>
+This function returns a boolean value which is ``true'' (1) if the three
+numbers ``$year'', ``$mm'' and ``$dd'' represent a valid date, and
+``false'' (0) otherwise.
+
+
+<P>
+
+When determining validity, leap years are taken into account, i.e., the
+29th of february is rejected in non-leap years.
+
+
+<P>
+
+Year numbers must be greater than zero (negative values will be interpreted as large positive numbers due to their internal 2's complement binary representation). 
+<FONT SIZE=-1>A</FONT> year number of zero is invalid.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">==============================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_date_compress_yy_mm_dd_"><CODE>$date = compress($yy,$mm,$dd);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">==============================
+
+</A></H2>
+This function encodes a date in 16 bits. The encoding scheme is as follows:
+
+
+<P>
+
+<PRE>        Bit-No.:       FEDCBA9 8765 43210
+        Contents:      yyyyyyy mmmm ddddd
+</PRE>
+
+<P>
+
+All bits equal to zero is equivalent to ``&lt;no date&gt;''.
+
+
+<P>
+
+Through this encoding scheme, it is possible to 
+<FONT SIZE=-1>COMPARE</FONT> 
+<FONT SIZE=-1>ENCODED</FONT> 
+<FONT SIZE=-1>DATES</FONT> for equality and 
+<FONT SIZE=-1>ORDER</FONT> (less than/greater than) 
+<FONT SIZE=-1>WITHOUT</FONT> any previous 
+<FONT SIZE=-1>DECODING!!</FONT>
+
+
+
+<P>
+
+Note however that contiguous dates 
+<FONT SIZE=-1>DO</FONT> 
+<FONT SIZE=-1>NOT</FONT> 
+<FONT SIZE=-1>NECESSARILY</FONT> have contiguous compressed representations!
+
+
+
+<P>
+
+I.e., incrementing the compressed representation of a date may or 
+<FONT SIZE=-1>MAY</FONT> 
+<FONT SIZE=-1>NOT</FONT> yield a valid new date!
+
+
+
+<P>
+
+Note also that this function can only handle dates within one century.
+
+
+<P>
+
+This century can be biased at will by choosing a base century and year (also called an ``epoch''). In this module, the base century is set to 1900 and the base year to 70 (standard on 
+<FONT SIZE=-1>UNIX</FONT> systems).
+
+
+
+<P>
+
+This allows the function to handle dates from 1970 up to 2069.
+
+
+<P>
+
+If the year ``$yy'' is equal to, say, 95, it is automatically assumed that 1995 is meant. However, if you specify a year number which is 
+<FONT SIZE=-1>SMALLER</FONT> than 70, like 64, for instance, it is assumed that you meant 2064.
+
+
+
+<P>
+
+You are not confined to abbreviated year numbers (smaller than 100),
+however. The function also accepts complete year numbers, provided that
+they are in the supported range (that is, from 1970 to 2069).
+
+
+<P>
+
+If no valid date is specified, zero is returned.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">======================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_cc_yy_mm_dd_uncompress"><CODE>($cc,$yy,$mm,$dd) = uncompress($date);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">======================================
+
+</A></H2>
+This function decodes dates that were encoded by ``compress()''. It returns
+the century, year, month and day of the date encoded in ``$date'' in the
+variables ``$cc'', ``$yy'', ``$mm'' and ``$dd'', respectively.
+
+
+<P>
+
+The expression ``$cc + $yy'' yields the complete year number (for example,
+1900 + 95 = 1995).
+
+
+<P>
+
+If ``$date'' is zero or does not contain the compressed representation of a
+valid date, an empty list is returned.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_flag_check_compressed_date"><CODE>$flag = check_compressed($date);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">================================
+
+</A></H2>
+This function returns a boolean value which is ``true'' (1) if ``$date''
+contains a valid encoded date, and ``false'' (0) otherwise.
+
+
+<P>
+
+When determining validity, leap years are taken into account, i.e., the
+29th of february is rejected in non-leap years.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">======================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_datestr_compressed_to_short"><CODE>$datestr = compressed_to_short($date);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">======================================
+
+</A></H2>
+This function converts the encoded date in ``$date'' to a string of the
+format ``dd-mmm-yy'', which is returned.
+
+
+<P>
+
+(``mmm'' is the 3-letter abbreviation (in English) of the month's name.)
+
+
+<P>
+
+If the date in ``$date'' is invalid, the string ``&lt;no date&gt;'' is
+returned.
+
+
+<P>
+
+Note that the string which is returned by this function is always exactly 9
+characters long.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">=================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_days_calc_days_year_mm_d"><CODE>$days = calc_days($year,$mm,$dd);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">=================================
+
+</A></H2>
+This function returns the (theoretical) number of days between the first of
+january of the year one and the given date <CODE>*plus</CODE> one*.
+
+
+<P>
+
+I.e., the value returned for the first of january of the year one is 1, the
+value returned for the second of january of the year one is 2, and so on.
+
+
+<P>
+
+This is because there is no year zero; the christian calendar starts with
+the year one. Consequently, there is also no day zero; the calendar starts
+with the first day, i.e., day one.
+
+
+<P>
+
+The function doesn't take into account the change from the Julian to the
+Gregorian calendar (used today) in 1582 (or later, for some countries), it
+simply extrapolates the gregorian calendar backwards.
+
+
+<P>
+
+This function is used internally to calculate the difference in days
+between two dates and to calculate the day of week.
+
+
+<P>
+
+Use this function to compare dates for ``less than'' and ``greater than'',
+or to compare dates for equality more easily.
+
+
+<P>
+
+Zero is returned if no valid date is specified.
+
+
+<P>
+
+(This is another reason why ``<CODE>calc_days(1,1,1)</CODE>'' is equal to one and not to zero!)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">======================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_weekday_day_of_week_year_"><CODE>$weekday = day_of_week($year,$mm,$dd);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">======================================
+
+</A></H2>
+This function calculates the day of week for the given date (which must be
+a valid date).
+
+
+<P>
+
+The return values have the following meaning:
+
+
+<P>
+
+<PRE>                0       =       Error
+                1       =       Monday
+                2       =       Tuesday
+                3       =       Wednesday
+                4       =       Thursday
+                5       =       Friday
+                6       =       Saturday
+                7       =       Sunday
+</PRE>
+
+<P>
+
+The value zero is returned if the date is not valid.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">============================================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_days_dates_difference_year"><CODE>$days = dates_difference($year1,$mm1,$dd1,$year2,$mm2,$dd2);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">============================================================
+
+</A></H2>
+This function calculates the difference in days between the two given
+dates.
+
+
+<P>
+
+The function calculates the difference ``date 2'' - ``date 1'', i.e., you
+normally specify the two dates in chronological order.
+
+
+<P>
+
+If date 1 is later than date 2, the result will be negative, which allows
+you to use this function to compare dates.
+
+
+<P>
+
+If one of the two dates is invalid, the result will degrade to the value of
+the function ``calc_days()'' for the other date (possibly negative). If
+both dates are invalid, the result is zero.
+
+
+<P>
+
+It is the user's responsibility to make sure that both dates are valid (use
+``check_date()'' for this)!
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">=======================================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_year_mm_dd_calc_new_dat"><CODE>($year,$mm,$dd) = calc_new_date($year,$mm,$dd,$offset);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">=======================================================
+
+</A></H2>
+Starting from the given date, a new date can be calculated with this
+function which is ``$offset'' days away from the original date. ``$offset''
+may be positive (for a date later than the original date) or negative (for
+a date earlier than the given date).
+
+
+<P>
+
+If the given date is invalid or the new date cannot be calculated (for
+instance, if the new date would be before the year one), an empty list is
+returned.
+
+
+<P>
+
+To calculate a new date with a year, month and day offset, see the function
+``year_month_day_offset()'' in the ``Date::DateCalcLib'' module.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">===========================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_days_hh_mm_ss_date_tim"><CODE>($days,$hh,$mm,$ss) = date_time_difference( $year1,$month1,$day1,$hh1,$mm1,$ss1, $year2,$month2,$day2,$hh2,$mm2,$ss2 );</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">===========================================
+
+</A></H2>
+This function calculates the difference in days, hours, minutes and seconds
+between the two given dates.
+
+
+<P>
+
+The function calculates the difference ``date 2'' - ``date 1'', i.e., you
+normally specify the two dates in chronological order.
+
+
+<P>
+
+If date 1 is later than date 2, the result will be negative in every of the
+four return values, which allows you to use this function to compare dates
+and to feed its output into the function explained next in this text,
+``calc_new_date_time()''.
+
+
+<P>
+
+If one (or both) of the two date/time pairs is invalid, an empty list is
+returned.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> date/time pair is invalid either when the date is
+invalid or when the values for hour, minute and second are outside the
+range of 0..23, 0..59 and 0..59, respectively.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">=====================================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_year_month_day_hh_mm_ss"><CODE>($year,$month,$day,$hh,$mm,$ss) = calc_new_date_time( $year,$month,$day,$hh,$mm,$ss, $days_offset,$hh_offset,$mm_offset,$ss_offset );</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">=====================================================
+
+</A></H2>
+Starting from the given date and time, a new date and time can be
+calculated with this function.
+
+
+<P>
+
+The new date will be ``$days_offset'' days and ``$hh_offset'' hours,
+``$mm_offset'' minutes and ``$ss_offset'' seconds away from the original
+date. The values of these four offsets may be positive or negative,
+independently from each other. This means that you can add, for instance, 9
+hours and subtract 5 minutes at the same time.
+
+
+<P>
+
+If the new date and time cannot be calculated (for instance, if the given
+date is invalid or the new date would be before the year one, or the values
+for hour, minute and second are outside the range of 0..23, 0..59 and
+0..59, respectively), an empty list is returned.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">========================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_datestr_date_to_short_year"><CODE>$datestr = date_to_short($year,$mm,$dd);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">========================================
+
+</A></H2>
+This function converts the given date to a string of the format ``www
+dd-mmm-yyyy'', which is returned.
+
+
+<P>
+
+``www'' is a (3-letter) abbreviation of the day of week, and ``mmm'' is a
+(3-letter) abbreviation of the month (both in English).
+
+
+<P>
+
+If the given date is invalid, the string ``&lt;no date&gt;'' is returned.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">=========================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_datestr_date_to_string_yea"><CODE>$datestr = date_to_string($year,$mm,$dd);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">=========================================
+
+</A></H2>
+This function converts the given date to a string of the format
+``wwwwwwwww, dd mmmmmmmmm yyyy'', which is returned.
+
+
+<P>
+
+``wwwwwwwww'' is the day of week and ``mmmmmmmmm'' the name of the month
+(both in English).
+
+
+<P>
+
+If the given date is invalid, the string ``&lt;no date&gt;'' is returned.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">===========================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_week_year_week_number_y"><CODE>($week,$year) = week_number($year,$mm,$dd);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">===========================================
+
+</A></H2>
+This function calculates the number of the week in which the given date
+lies.
+
+
+<P>
+
+This can occasionally be the last week of the previous year or the first
+week of the next year.
+
+
+<P>
+
+If the given date is invalid, an empty list is returned.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">=============================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_year_mm_dd_first_in_wee"><CODE>($year,$mm,$dd) = first_in_week($week,$year);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">=============================================
+
+</A></H2>
+This function calculates the date of the first day (the Monday) of the
+given week in the given year.
+
+
+<P>
+
+The return value ``$year'' is adjusted accordingly if the first day of the
+given week lies in the previous year.
+
+
+<P>
+
+If the week number is invalid (less than one or greater than the number of
+weeks of the given year, as returned by the function ``weeks_in_year()''),
+or if the year is invalid or the date cannot be calculated (for example, if
+the calculated date would be before the year one), an empty list is
+returned.
+
+
+<P>
+
+With help of the expression
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = first_in_week(week_number($year,$mm,$dd));
+</PRE>
+
+<P>
+
+it is possible to easily calculate the date of the Monday belonging to the
+week in which the given date lies.
+
+
+<P>
+
+(However, a fatal Perl error will occur if the given date is invalid!)
+
+
+<P>
+
+Alternatively, the expression
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) =
+    calc_new_date($year,$mm,$dd,-day_of_week($year,$mm,$dd)+1);
+</PRE>
+
+<P>
+
+can be used to achieve the same effect.
+
+
+<P>
+
+(An empty list is returned if the given date is invalid.)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">==============================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_weeks_weeks_in_year_year_"><CODE>$weeks = weeks_in_year($year);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">==============================
+
+</A></H2>
+This function returns the number of weeks of the given year (52 or 53
+weeks).
+
+
+<P>
+
+No check is made if the year ``$year'' is in the valid range.
+
+
+<P>
+
+For years less than 1, the result is probably meaningless.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">===================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_day_name_day_name_tab_week"><CODE>$day_name = day_name_tab($weekday);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">===================================
+
+</A></H2>
+This function accesses the internal table of the days of week.
+
+
+<P>
+
+It returns the corresponding string for each numeric value of a day of week
+(as returned by the function ``day_of_week()'').
+
+
+<P>
+
+The value of ``$weekday'' is taken modulo 8 (!) internally to prevent
+out-of-range access to the internal array.
+
+
+<P>
+
+The strings which are returned are the following:
+
+
+<P>
+
+<PRE>                0       =&gt;      Error
+                1       =&gt;      Monday
+                2       =&gt;      Tuesday
+                3       =&gt;      Wednesday
+                4       =&gt;      Thursday
+                5       =&gt;      Friday
+                6       =&gt;      Saturday
+                7       =&gt;      Sunday
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">=====================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_month_name_month_name_tab_"><CODE>$month_name = month_name_tab($month);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">=====================================
+
+</A></H2>
+This function accesses the internal table of the months' names.
+
+
+<P>
+
+It returns the corresponding string for each numeric value of a month.
+
+
+<P>
+
+The value of ``$month'' is taken modulo 13 (!) internally to prevent
+out-of-range access to the internal array.
+
+
+<P>
+
+The strings which are returned are the following:
+
+
+<P>
+
+<PRE>                 0       =&gt;      Error
+                 1       =&gt;      January
+                 2       =&gt;      February
+                 3       =&gt;      March
+                 4       =&gt;      April
+                 5       =&gt;      May
+                 6       =&gt;      June
+                 7       =&gt;      July
+                 8       =&gt;      August
+                 9       =&gt;      September
+                10       =&gt;      October
+                11       =&gt;      November
+                12       =&gt;      December
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">===============================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_weekday_decode_day_buffer_"><CODE>$weekday = decode_day($buffer);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">===============================
+
+</A></H2>
+This function provides the inverse of the function ``day_name_tab()''.
+
+
+<P>
+
+Whereas ``day_name_tab()'' takes a number as its argument and returns a
+string, ``decode_day()'' takes a string (of any length) and tries to match
+it with the table of the names of days (``Monday'', ``Tuesday'', and so on)
+and returns the corresponding number (1..7).
+
+
+<P>
+
+Only the first 3 characters are checked (in case-insensitive manner) for a
+unique match. If it uniquely identifies the day, you may also provide only
+one or two characters:
+
+
+<P>
+
+<PRE>    Name of the day:     Uniquely identified by:     Value returned:
+</PRE>
+
+<P>
+
+<PRE>           Monday        M, Mo, Mon, ... Monday            1
+           Tuesday          Tu, Tue, ... Tuesday           2
+           Wednesday     W, We, Wed, ... Wednesday         3
+           Thursday         Th, Thu, ... Thursday          4
+           Friday        F, Fr, Fri, ... Friday            5
+           Saturday         Sa, Sat, ... Saturday          6
+           Sunday           Su, Sun, ... Sunday            7
+</PRE>
+
+<P>
+
+If there is no match, zero is returned.
+
+
+<P>
+
+This function is roughly equivalent to an associative array:
+
+
+<P>
+
+<PRE>    %day_tab = ( 'Mon' =&gt; 1, 'Tue' =&gt; 2, 'Wed' =&gt; 3, 'Thu' =&gt; 4,
+                 'Fri' =&gt; 5, 'Sat' =&gt; 6, 'Sun' =&gt; 7);
+    $weekday = $day_tab{$buffer};
+</PRE>
+
+<P>
+
+except for the capability of recognizing abbreviations and to be
+case-independent.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">===============================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_month_decode_month_buffer_"><CODE>$month = decode_month($buffer);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">===============================
+
+</A></H2>
+This function provides the inverse of the function ``month_name_tab()''.
+
+
+<P>
+
+Whereas ``month_name_tab'' takes a number as its argument and returns a
+string, ``decode_month'' takes a string (of any length) and tries to match
+it with the table of the names of months (``January'', ``February'', and so
+on) and returns the corresponding number (1..12).
+
+
+<P>
+
+Only the first 3 characters are checked (in case-insensitive manner) for a
+unique match. If it uniquely identifies the month, you may also provide
+only one or two characters:
+
+
+<P>
+
+<PRE>    Name of the month:     Uniquely identified by:     Value returned:
+</PRE>
+
+<P>
+
+<PRE>             January          Ja, Jan, ... January           1
+             February      F, Fe, Feb, ... February          2
+             March                Mar, ... March             3
+             April            Ap, Apr, ... April             4
+             May                  May, ... May               5
+             June                 Jun, ... June              6
+             July                 Jul, ... July              7
+             August           Au, Aug, ... August            8
+             September     S, Se, Sep, ... September         9
+             October       O, Oc, Oct, ... October          10
+             November      N, No, Nov, ... November         11
+             December      D, De, Dec, ... December         12
+</PRE>
+
+<P>
+
+If there is no match, zero is returned.
+
+
+<P>
+
+This function is roughly equivalent to an associative array:
+
+
+<P>
+
+<PRE>    %month_tab = ( 'Jan' =&gt; 1, 'Feb' =&gt; 2, 'Mar' =&gt; 3, 'Apr' =&gt; 4,
+                   'May' =&gt; 5, 'Jun' =&gt; 6, 'Jul' =&gt; 7, 'Aug' =&gt; 8,
+                   'Sep' =&gt; 9, 'Oct' =&gt; 10, 'Nov' =&gt; 11, 'Dec' =&gt; 12);
+    $month = $month_tab{$buffer};
+</PRE>
+
+<P>
+
+except for the capability of recognizing abbreviations and to be
+case-independent.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">=======================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_year_mm_dd_decode_date_"><CODE>($year,$mm,$dd) = decode_date($buffer);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">=======================================
+
+</A></H2>
+Using this function, it is possible to parse dates in almost any format,
+provided the date is given as ``day - month - year''.
+
+
+<P>
+
+(To decode dates in 
+<FONT SIZE=-1>U.S.</FONT> american format, i.e., dates given as ``month -
+day - year'', see the function ``decode_date_us()'' in the
+``Date::DateCalcLib'' module.)
+
+
+<P>
+
+The day and the year must be given as numbers, the month may be specified
+either by a number or an abbreviation (up to 3 characters long) of the
+month's name in English (case is ignored).
+
+
+<P>
+
+If they uniquely identify the month, one or two letters are sufficient
+(e.g. ``s'' for september or ``ja'' for january).
+
+
+<P>
+
+The year may be abbreviated as well, for instance ``95'' instead of
+``1995''. (Year numbers below 100 are incremented by 1900.)
+
+
+<P>
+
+Any number of non-digits (i.e., all characters 
+<FONT SIZE=-1>NOT</FONT> in [0-9]) may precede the number of the day and
+follow the number of the year.
+
+
+<P>
+
+Any number of non-alphanumeric characters (i.e., all characters 
+<FONT SIZE=-1>NOT</FONT> in [A-Za-z0-9]) may separate the number of the day
+and the month and the month and the number of the year.
+
+
+<P>
+
+If after removing the preceding and trailing non-digit characters the
+string consists only of digits, it is automatically mapped to the day,
+month and year depending on its length, as intuitively as possible, as
+follows:
+
+
+<P>
+
+<PRE>                Length:        Mapping:
+                  3              dmy
+                  4              dmyy
+                  5              dmmyy
+                  6              ddmmyy
+                  7              dmmyyyy
+                  8              ddmmyyyy
+</PRE>
+
+<P>
+
+Example:
+
+
+<P>
+
+All the following strings will be recognized as ``January 3rd 1964'':
+
+
+<P>
+
+<PRE>                          3.1.64
+                          3 1 64
+                         03.01.64
+                         03/01/64
+                        3. Jan 1964
+                        3. Jan '64
+                         03-Jan-64
+                         3.Jan1964
+                          3Jan64
+                           3ja64
+                           3164
+</PRE>
+
+<P>
+
+If the function is unable to extract a valid date from its input, it
+returns an empty list.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">=================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_days_days_in_month_year_m"><CODE>$days = days_in_month($year,$mm);</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">=================================
+
+</A></H2>
+This function accesses the internal table of the months' lengths and
+returns the length in days of the given month ``$mm'' in the given year
+``$year''.
+
+
+<P>
+
+It is necessary to specify the year ``$year'' since the length of the month
+february is 29 instead of 28 in leap years.
+
+
+<P>
+
+This function is useful, for example, to calculate the last day of a month
+or the last working-day (payday!) of a month.
+
+
+<P>
+
+Last working-day of the month (legal holidays not taken into account):
+
+
+<P>
+
+<PRE>    $dd = days_in_month($year,$mm);
+    $dw = day_of_week($year,$mm,$dd) - 1;
+    if ($dw &gt; 4)
+    {
+        ($year,$mm,$dd) = calc_new_date($year,$mm,$dd,4-$dw);
+    }
+</PRE>
+
+<P>
+
+Last working-day of the month (legal holidays taken into account):
+
+
+<P>
+
+(assuming that the array <CODE>$holiday[$year][$mm][$dd] = 1;</CODE> contains all legal holidays)
+
+
+<P>
+
+<PRE>    $dd = days_in_month($year,$mm);
+    while (1)
+    {
+        while ($holiday[$year][$mm][$dd])
+        {
+            ($year,$mm,$dd) = calc_new_date($year,$mm,$dd,-1);
+        }
+        $dw = day_of_week($year,$mm,$dd) - 1;
+        if ($dw &gt; 4)
+        {
+            ($year,$mm,$dd) = calc_new_date($year,$mm,$dd,4-$dw);
+        }
+        else { last; }
+    }
+</PRE>
+
+<P>
+
+The value of ``$mm'' is taken modulo 13 (!) internally to prevent
+out-of-range access to the internal array.
+
+
+<P>
+
+The values the internal array contains are the following:
+
+
+<P>
+
+<PRE>        normal             leap
+         month             year              year
+</PRE>
+
+<P>
+
+<PRE>           0                 0                 0
+           1                31                31
+           2                28                29
+           3                31                31
+           4                30                30
+           5                31                31
+           6                30                30
+           7                31                31
+           8                31                31
+           9                30                30
+          10                31                31
+          11                30                30
+          12                31                31
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_">=====================================
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="C_version_Date_DateCalc_Ver"><CODE>$version = Date::DateCalc::Version();</CODE>
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_">=====================================
+
+</A></H2>
+This function returns a string with the (numeric) version number of the
+``DateCalc'' extension package.
+
+
+<P>
+
+Since this function is not exported, you always have to qualify it
+explicitly (i.e., ``<CODE>Date::DateCalc::Version()</CODE>'').
+
+
+<P>
+
+This is to avoid possible conflicts with version functions from other
+packages.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+<PRE>    #!perl -w
+</PRE>
+
+<P>
+
+<PRE>    use strict;
+    no strict &quot;vars&quot;;
+</PRE>
+
+<P>
+
+<PRE>    use Date::DateCalc qw(decode_date date_to_short dates_difference);
+</PRE>
+
+<P>
+
+<PRE>    print &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    $ok = 0;
+    while (! $ok)
+    {
+        print &quot;Please enter the date of your birthday (day-month-year): &quot;;
+        $date = &lt;STDIN&gt;;
+        print &quot;\n&quot;;
+        if (($yy1,$mm1,$dd1) = decode_date($date))
+        {
+            $datestr = date_to_short($yy1,$mm1,$dd1);
+            print &quot;Your date is: $datestr\n&quot;;
+            print &quot;\n&quot;;
+            print &quot;Is that correct? (Yes/No) &quot;;
+            $response = &lt;STDIN&gt;;
+            print &quot;\n&quot;;
+            $ok = ($response =~ /^Y/i);
+        }
+    }
+    print &quot;Your birthday is: $datestr\n&quot;;
+    print &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    $ok = 0;
+    while (! $ok)
+    {
+        print &quot;Please enter today's date (day-month-year): &quot;;
+        $date = &lt;STDIN&gt;;
+        print &quot;\n&quot;;
+        if (($yy2,$mm2,$dd2) = decode_date($date))
+        {
+            $datestr = date_to_short($yy2,$mm2,$dd2);
+            print &quot;Your date is: $datestr\n&quot;;
+            print &quot;\n&quot;;
+            print &quot;Is that correct? (Yes/No) &quot;;
+            $response = &lt;STDIN&gt;;
+            print &quot;\n&quot;;
+            $ok = ($response =~ /^Y/i);
+        }
+    }
+    print &quot;Today's date is: $datestr\n&quot;;
+    print &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    $days = dates_difference($yy1,$mm1,$dd1,$yy2,$mm2,$dd2);
+    print &quot;You are $days days old.\n&quot;;
+    print &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    __END__
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Date::DateCalcLib(3), <CODE>perl(1),</CODE> <CODE>perlsub(1),</CODE>
+<CODE>perlmod(1),</CODE> <CODE>perlxs(1),</CODE> <CODE>perlxstut(1),</CODE>
+<CODE>perlguts(1).</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VERSION">VERSION
+
+</A></H1>
+This man page documents ``Date::DateCalc'' version 3.2.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Steffen Beyer <A HREF="MAILTO:<sb@sdm.de>."><sb@sdm.de>.</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995, 1996, 1997 by Steffen Beyer. All rights reserved.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="LICENSE">LICENSE
+
+</A></H1>
+This package is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

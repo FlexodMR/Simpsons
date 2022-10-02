@@ -1,0 +1,217 @@
+   
+;*****************************************************************************************
+; MULTITEXTURE
+;*****************************************************************************************
+; assumes vertices formatted like:
+; ST0
+; ST1
+; ARGB
+; XYZ
+
+;==================================================================================
+VU_UNLIT_TRI_MT:
+
+   nop                              ilw.x  vi01, GS_STATE_PACKET(vi00)x
+   nop                              xgkick vi01
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b VU_UNLIT_TRI_MT                        ; start a new batch of vertices
+   nop                              nop
+
+#if 0
+   
+   nop                              bal vi15, VU_LOADPRIMGROUP
+   nop                              nop
+
+
+#if 1
+
+   nop                              fcset 0
+   nop                              iaddiu vi03,vi00,0
+
+_UNLIT_TRI_NC_LOOP_MT:
+
+   mulaw ACC,  _CTM3, vf00          lq vf02, 3(vi04)                 ; transform v1, load v1
+   maddaz ACC, _CTM2, vf02          lq vf01, 0(vi04)                 ;
+   madday ACC, _CTM1, vf02          nop
+   maddx vf03, _CTM0, vf02          nop                              ; 
+   clipw.xyz vf03,vf03              div q, vf00w, vf03w              ; q = 1/w v1 (007)
+   mul.xyz vf03, vf03, _VPS         iaddi vi05,vi05,-1
+   nop                              lq vf02, 2(vi04)                 ; load colour
+   nop                              iaddiu vi04,vi04,4
+   nop                              fcand vi01,0x3ffff
+   nop                              iadd  vi03,vi03,vi01
+   nop                              iaddiu vi01, vi01, 0x7fff
+   mulq.xyz vf01,vf01,q             mfir.w vf03w, vi01
+   mulq.xyz vf03,vf03,q             nop
+   add.xyz vf03, vf03, _VPO         sq vf02,1(vi06)
+   ftoi4.xyz vf03, vf03             sq vf01,0(vi06)
+   nop                              iaddiu vi06,vi06,3
+   nop                              ibgtz vi05, _UNLIT_TRI_NC_LOOP_MT 
+   nop                              sq vf03,-1(vi06)
+#else
+; [2,29) size=23 nU=15 nL=23 ic=38 [lin=23 lp=0] cycles?=27
+         mulaw         ACC,VF29,VF00w                               lq.xyz        VF01,3(VI04)                        
+         maddaz        ACC,VF28,VF01z                               lq            VF02,2(VI04)                               ;	STALL_LATENCY ?3
+         madday        ACC,VF27,VF01y                               fcset         0x00000000                          
+         maddx         VF01,VF26,VF01x                              iaddiu        VI03,VI00,0                         
+         NOP                                                        iaddiu        VI04,VI04,0x00000004                
+         NOP                                                        lq.xyz        VF04,3(VI04)                        
+         NOP                                                        div           Q,VF00w,VF01w                              ;	STALL_LATENCY ?1
+         NOP                                                        iaddi         VI05,VI05,0xffffffff                
+         mulaw         ACC,VF29,VF00w                               lq            VF03,2(VI04)                        
+         mul.xyz       VF02,VF01,VF30                               sq            VF02,1(VI06)                        
+         maddaz        ACC,VF28,VF04z                               iaddiu        VI06,VI06,0x00000003                
+         clipw.xyz     VF01xyz,VF01w                                iaddi         VI05,VI05,0xffffffff                
+         madday        ACC,VF27,VF04y                               sq            VF03,1(VI06)                        
+         mulq.xyz      VF01,VF02,Q                                  lq            VF02,-4(VI04)                       
+         maddx         VF04,VF26,VF04x                              iaddiu        VI06,VI06,0x00000003                
+         NOP                                                        fcand         VI01,0x0003ffff                     
+         NOP                                                        iadd          VI03,VI03,VI01                      
+         mulq.xyz      VF02,VF02,Q                                  iaddiu        VI01,VI01,0x00007fff                
+         clipw.xyz     VF04xyz,VF04w                                div           Q,VF00w,VF04w                       
+         NOP                                                        mfir.w        VF01,VI01                           
+         add.xyz       VF01,VF01,VF31                               iaddiu        VI04,VI04,0x00000004                
+         mul.xyz       VF02,VF04,VF30                               sq            VF02,-6(VI06)                       
+         NOP                                                        fcand         VI01,0x0003ffff                     
+EXPL_test_vcl__UNLIT_TRI_NC_LOOP_MT__MAIN_LOOP:
+; [0,15) size=15 nU=10 nL=15 ic=25 [lin=15 lp=15] cycles?=15
+         NOP                                                        lq.xyz        VF05,3(VI04)                        
+         ftoi4.xyz     VF01,VF01                                    lq            VF03,2(VI04)                        
+         mulq.xyz      VF04,VF02,Q                                  iaddi         VI05,VI05,0xffffffff                
+         mulaw         ACC,VF29,VF00w                               lq            VF02,-4(VI04)                       
+         maddaz        ACC,VF28,VF05z                               iadd          VI03,VI03,VI01                      
+         madday        ACC,VF27,VF05y                               iaddiu        VI01,VI01,0x00007fff                
+         maddx         VF05,VF26,VF05x                              sq            VF01,-4(VI06)                       
+         mulq.xyz      VF02,VF02,Q                                  mfir.w        VF01,VI01                           
+         add.xyz       VF01,VF04,VF31                               sq            VF03,1(VI06)                        
+         NOP                                                        iaddiu        VI06,VI06,0x00000003                
+         clipw.xyz     VF05xyz,VF05w                                div           Q,VF00w,VF05w                       
+         mul.xyz       VF02,VF05,VF30                               sq            VF02,-6(VI06)                       
+         NOP                                                        iaddiu        VI04,VI04,0x00000004                
+         NOP                                                        ibgtz         VI05,EXPL_test_vcl__UNLIT_TRI_NC_LOOP_MT__MAIN_LOOP
+         NOP                                                        fcand         VI01,0x0003ffff                     
+; [0,17) size=10 nU=5 nL=8 ic=13 [lin=13 lp=0] cycles?=17
+         NOP                                                        waitq                                                    ;	STALL_LATENCY ?2
+         mulq.xyz      VF03,VF02,Q                                  lq            VF02,-4(VI04)                       
+         ftoi4.xyz     VF01,VF01                                    iadd          VI03,VI03,VI01                      
+         add.xyz       VF01,VF03,VF31                               sq            VF01,-4(VI06)                              ;	STALL_LATENCY ?3
+         NOP                                                        iaddiu        VI01,VI01,0x00007fff                
+         mulq.xyz      VF02,VF02,Q                                  mfir.w        VF01,VI01                           
+         ftoi4.xyz     VF01,VF01                                    NOP                                                      ;	STALL_LATENCY ?1
+         NOP                                                        sq            VF02,-3(VI06)                              ;	STALL_LATENCY ?1
+         NOP                                                        sq            VF01,-1(VI06)                              ;	STALL_LATENCY ?1
+         NOP                                                        NOP                                               
+#endif
+
+
+   nop                              isw.w vi03, GS_STATE_PACKET(vi00)w ; vi03 gets corrupted
+
+   ; todo - add bfcing
+   ; check to see if we need to clip 
+   nop                              ibeq vi03,vi00,UNLIT_TRI_XGKICK_ST0
+   nop                              nop
+
+   ; check clip flag
+   nop                              iaddiu vi01, vi00, 1
+   nop                              iand   vi01,_CLIPPER,vi01
+   nop                              nop
+
+   nop                              ibeq vi01,vi00,UNLIT_TRI_XGKICK_ST0      ; clip flag not set
+   nop                              nop
+
+   ; yeah gotta clip!
+   nop                              bal vi15, CLIPBUFFER_4_0
+   nop                              nop
+
+
+UNLIT_TRI_XGKICK_ST0:
+
+   nop                              xgkick _GIFTAG                   ; kick prims to GIF
+   nop                              nop
+
+   ; *************** DO SECOND PASS *****************************
+
+   nop                              bal vi15, VU_LOADPRIMGROUP
+   nop                              nop
+
+
+   ; should move this to after the loop?!?!?!
+   nop                              ilw.y vi01, GS_STATE_PACKET(vi00)y
+   nop                              xgkick vi01                      ; wait for first pass to finish and setup pass 2
+   nop                              nop
+
+  ; dont need to do this if im clipping!!! FIXME!
+_UNLIT_TRI_NC_LOOP_MT_PASS2:                                         ; todo - unroll this loop for 2 verts / iteration
+   nop                              lq vf02, 0(vi06)                 ; load transformed st0
+   nop                              lq vf01, 1(vi04)                 ; load st1
+   nop                              iaddi vi05,vi05,-1
+   nop                              iaddiu vi04,vi04,4
+   mulz.xyz vf01,vf01,vf02z         iaddiu vi06,vi06,3               ; perspective correct st1 (vf02z = vertex 1/w)
+   nop                              ibgtz vi05, _UNLIT_TRI_NC_LOOP_MT_PASS2
+   nop                              sq vf01,-3(vi06)                 ; store st1
+
+   ; todo - add bfcing
+   ; check to see if we need to clip
+   nop                              ilw.w vi03, GS_STATE_PACKET(vi00)w
+   nop                              nop
+
+   nop                              ibeq vi03,vi00,UNLIT_TRI_XGKICK_ST1
+   nop                              nop
+
+   ; check clip flag
+   nop                              iaddiu vi01, vi00, 1
+   nop                              iand   vi01,_CLIPPER,vi01
+   nop                              nop
+
+   nop                              ibeq vi01,vi00,UNLIT_TRI_XGKICK_ST1      ; clip flag not set
+   nop                              nop
+
+   ; yeah gotta clip!
+   nop                              bal vi15, CLIPBUFFER_4_1
+   nop                              nop
+
+UNLIT_TRI_XGKICK_ST1:
+   nop                              xgkick _GIFTAG                   ; kick prims to GIF
+   nop                              nop
+
+   ; do we need to fog?
+   nop                              ilw.z vi01, GS_STATE_PACKET(vi00)z
+   nop                              nop
+
+   nop                              ibeq vi01,vi00,UNLIT_TRI_NC_DONE_MT
+   nop                              nop
+
+   nop                              xgkick vi01   ; send fog state to hardware
+   nop                              nop
+
+   nop                              bal vi15,VU_FOG_MT
+   nop                              nop
+
+   ; check if we need to clip the fog
+   nop                              ilw.w vi03, GS_STATE_PACKET(vi00)w
+   nop                              nop
+
+   nop                              ibeq vi03,vi00,UNLIT_TRI_NC_DONE_MT
+   nop                              nop
+
+   nop                              iaddiu vi01, vi00, 1
+   nop                              iand   vi01,_CLIPPER,vi01
+   nop                              nop
+
+   nop                              ibeq vi01,vi00,UNLIT_TRI_NC_DONE_MT      ; clip flag not set
+   nop                              nop
+ 
+   nop                              bal vi15, CLIPBUFFER_4_0
+   nop                              nop
+
+UNLIT_TRI_NC_DONE_MT:
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b VU_UNLIT_TRI_MT                        ; start a new batch of vertices
+   nop                              nop
+#endif   

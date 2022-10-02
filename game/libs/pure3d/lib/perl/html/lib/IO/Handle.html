@@ -1,0 +1,355 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>IO::Handle - supply object methods for I/O handles
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#HISTORY">HISTORY</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+IO::Handle - supply object methods for 
+<FONT SIZE=-1>I/O</FONT> handles
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use IO::Handle;
+</PRE>
+
+<P>
+
+<PRE>    $fh = new IO::Handle;
+    if ($fh-&gt;fdopen(fileno(STDIN),&quot;r&quot;)) {
+        print $fh-&gt;getline;
+        $fh-&gt;close;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $fh = new IO::Handle;
+    if ($fh-&gt;fdopen(fileno(STDOUT),&quot;w&quot;)) {
+        $fh-&gt;print(&quot;Some text\n&quot;);
+    }
+</PRE>
+
+<P>
+
+<PRE>    use IO::Handle '_IOLBF';
+    $fh-&gt;setvbuf($buffer_var, _IOLBF, 1024);
+</PRE>
+
+<P>
+
+<PRE>    undef $fh;       # automatically closes the file if it's open
+</PRE>
+
+<P>
+
+<PRE>    autoflush STDOUT 1;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>IO::Handle</CODE> is the base class for all other 
+<FONT SIZE=-1>IO</FONT> handle classes. It is not intended that objects of <CODE>IO::Handle</CODE> would be created directly, but instead <CODE>IO::Handle</CODE> is inherited from by several other classes in the 
+<FONT SIZE=-1>IO</FONT> hierarchy.
+
+
+<P>
+
+If you are reading this documentation, looking for a replacement for the <CODE>FileHandle</CODE> package, then 
+<FONT SIZE=-1>I</FONT> suggest you read the documentation for <CODE>IO::File</CODE>
+
+
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> <CODE>IO::Handle</CODE> object is a reference to a symbol (see the <CODE>Symbol</CODE> package)
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ()
+
+</A></STRONG><DD>
+Creates a new <CODE>IO::Handle</CODE> object.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_new_from_fd">new_from_fd ( FD, MODE )
+
+</A></STRONG><DD>
+Creates a <CODE>IO::Handle</CODE> like <A HREF="#item_new">new</A> does. It requires two parameters, which are passed to the method <CODE>fdopen</CODE>; if the fdopen fails, the object is destroyed. Otherwise, it is returned
+to the caller.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A> for complete descriptions of each of the following supported <CODE>IO::Handle</CODE> methods, which are just front ends for the corresponding built-in
+functions:
+
+
+<P>
+
+<PRE>    close
+    fileno
+    getc
+    eof
+    read
+    truncate
+    stat
+    print
+    printf
+    sysread
+    syswrite
+</PRE>
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#">the perlvar manpage</A> for complete descriptions of each of the following supported <CODE>IO::Handle</CODE> methods:
+
+
+<P>
+
+<PRE>    autoflush
+    output_field_separator
+    output_record_separator
+    input_record_separator
+    input_line_number
+    format_page_number
+    format_lines_per_page
+    format_lines_left
+    format_name
+    format_top_name
+    format_line_break_characters
+    format_formfeed
+    format_write
+</PRE>
+
+<P>
+
+Furthermore, for doing normal 
+<FONT SIZE=-1>I/O</FONT> you might need these:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__fh_fdopen">$fh->fdopen ( FD, MODE )
+
+</A></STRONG><DD>
+<CODE>fdopen</CODE> is like an ordinary <A HREF="#item_open">open</A> except that its first parameter is not a filename but rather a file handle
+name, a IO::Handle object, or a file descriptor number.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_opened">$fh->opened
+
+</A></STRONG><DD>
+Returns true if the object is currently a valid file descriptor.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_getline">$fh->getline
+
+</A></STRONG><DD>
+This works like &lt;$fh&gt; described in <A HREF="/n|/perl/html/./lib/Pod/perlop.html#I_O_Operators">I/O Operators</A>
+except that it's more readable and can be safely called in an array context
+but still returns just one line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_getlines">$fh->getlines
+
+</A></STRONG><DD>
+This works like &lt;$fh&gt; when called in an array context to read all the
+remaining lines in a file, except that it's more readable. It will also
+<CODE>croak()</CODE> if accidentally called in a scalar context.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_ungetc">$fh->ungetc ( ORD )
+
+</A></STRONG><DD>
+Pushes a character with the given ordinal value back onto the given
+handle's input stream.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_write">$fh->write ( BUF, LEN [, OFFSET }\] )
+
+</A></STRONG><DD>
+This <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_write">write</A> is like <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_write">write</A> found in 
+<FONT SIZE=-1>C,</FONT> that is it is the opposite of read. The wrapper for
+the perl <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_write">write</A> function is called <CODE>format_write</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_flush">$fh->flush
+
+</A></STRONG><DD>
+Flush the given handle's buffer.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_error">$fh->error
+
+</A></STRONG><DD>
+Returns a true value if the given handle has experienced any errors since
+it was opened or since the last call to <CODE>clearerr</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__fh_clearerr">$fh->clearerr
+
+</A></STRONG><DD>
+Clear the given handle's error indicator.
+
+
+<P>
+
+</DL>
+If the 
+<FONT SIZE=-1>C</FONT> functions <CODE>setbuf()</CODE> and/or
+<CODE>setvbuf()</CODE> are available, then
+<CODE>IO::Handle::setbuf</CODE> and <CODE>IO::Handle::setvbuf</CODE> set the buffering policy for an IO::Handle. The calling sequences for the Perl functions are the same as their 
+<FONT SIZE=-1>C</FONT> counterparts--including the constants
+ <CODE>_IOFBF</CODE>,
+<CODE>_IOLBF</CODE>, and <CODE>_IONBF</CODE> for <CODE>setvbuf()--except</CODE> that the buffer parameter specifies a scalar variable to use as a buffer. 
+<FONT SIZE=-1>WARNING:</FONT> 
+<FONT SIZE=-1>A</FONT> variable used as a buffer by
+ <CODE>setbuf</CODE> or <CODE>setvbuf</CODE> must not be modified in any way until the IO::Handle is closed or <CODE>setbuf</CODE> or <CODE>setvbuf</CODE> is called again, or memory corruption may result! Note that you need to
+import the constants <CODE>_IOFBF</CODE>, <CODE>_IOLBF</CODE>, and <CODE>_IONBF</CODE> explicitly.
+
+
+<P>
+
+Lastly, there is a special method for working under <STRONG>-T</STRONG> and setuid/gid scripts:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__fh_untaint">$fh->untaint
+
+</A></STRONG><DD>
+Marks the object as taint-clean, and as such data read from it will also be
+considered taint-clean. Note that this is a very trusting action to take,
+and appropriate consideration for the data source and potential
+vulnerability should be kept in mind.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> <CODE>IO::Handle</CODE> object is a 
+<FONT SIZE=-1>GLOB</FONT> reference. Some modules that inherit from <CODE>IO::Handle</CODE> may want to keep object related variables in the hash table part of the 
+<FONT SIZE=-1>GLOB.</FONT> In an attempt to prevent modules trampling on each other 
+<FONT SIZE=-1>I</FONT> propose the that any such module should prefix its variables with its own name separated by _'s. For example the IO::Socket module keeps a
+ <CODE>timeout</CODE> variable in 'io_socket_timeout'.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>, 
+<A HREF="/n|/perl/html/./lib/Pod/perlop.html#I_O_Operators">I/O Operators</A>,
+<A HREF="/n|/perl/html/./lib/IO/File.html">File</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Due to backwards compatibility, all filehandles resemble objects of class <CODE>IO::Handle</CODE>, or actually classes derived from that class. They actually aren't. Which
+means you can't derive your own class from <CODE>IO::Handle</CODE> and inherit those methods.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="HISTORY">HISTORY
+
+</A></H1>
+Derived from FileHandle.pm by Graham Barr &lt;<EM>bodg@tiuk.ti.com</EM>&gt;
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,195 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>IO::File - supply object methods for filehandles
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#HISTORY">HISTORY</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+IO::File - supply object methods for filehandles
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use IO::File;
+</PRE>
+
+<P>
+
+<PRE>    $fh = new IO::File;
+    if ($fh-&gt;open(&quot;&lt; file&quot;)) {
+        print &lt;$fh&gt;;
+        $fh-&gt;close;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $fh = new IO::File &quot;&gt; file&quot;;
+    if (defined $fh) {
+        print $fh &quot;bar\n&quot;;
+        $fh-&gt;close;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $fh = new IO::File &quot;file&quot;, &quot;r&quot;;
+    if (defined $fh) {
+        print &lt;$fh&gt;;
+        undef $fh;       # automatically closes the file
+    }
+</PRE>
+
+<P>
+
+<PRE>    $fh = new IO::File &quot;file&quot;, O_WRONLY|O_APPEND;
+    if (defined $fh) {
+        print $fh &quot;corge\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>        $pos = $fh-&gt;getpos;
+        $fh-&gt;setpos($pos);
+</PRE>
+
+<P>
+
+<PRE>        undef $fh;       # automatically closes the file
+    }
+</PRE>
+
+<P>
+
+<PRE>    autoflush STDOUT 1;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>IO::File</CODE> inherits from <CODE>IO::Handle</CODE> and <CODE>IO::Seekable</CODE>. It extends these classes with methods that are specific to file handles.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ([ ARGS ] )
+
+</A></STRONG><DD>
+Creates a <CODE>IO::File</CODE>. If it receives any parameters, they are passed to the method <A HREF="#item_open">open</A>; if the open fails, the object is destroyed. Otherwise, it is returned to
+the caller.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_new_tmpfile">new_tmpfile
+
+</A></STRONG><DD>
+Creates an <CODE>IO::File</CODE> opened for read/write on a newly created temporary file. On systems where
+this is possible, the temporary file is anonymous (i.e. it is unlinked
+after creation, but held open). If the temporary file cannot be created or
+opened, the <CODE>IO::File</CODE> object is destroyed. Otherwise, it is returned to the caller.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_open">open( FILENAME [,MODE [,PERMS]] )
+
+</A></STRONG><DD>
+<A HREF="#item_open">open</A> accepts one, two or three parameters. With one parameter, it is just a
+front end for the built-in <A HREF="#item_open">open</A> function. With two parameters, the first parameter is a filename that may
+include whitespace or other special characters, and the second parameter is
+the open mode, optionally followed by a file permission value.
+
+
+<P>
+
+If <CODE>IO::File::open</CODE> receives a Perl mode string (``&gt;'', ``+&lt;'', etc.) or a 
+<FONT SIZE=-1>POSIX</FONT> <CODE>fopen()</CODE> mode string (``w'', ``r+'',
+etc.), it uses the basic Perl <A HREF="#item_open">open</A> operator.
+
+
+<P>
+
+If <CODE>IO::File::open</CODE> is given a numeric mode, it passes that mode and the optional permissions
+value to the Perl <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_sysopen">sysopen</A> operator. For convenience, <CODE>IO::File::import</CODE> tries to import the 
+<FONT SIZE=-1>O_XXX</FONT> constants from the Fcntl module. If dynamic
+loading is not available, this may fail, but the rest of IO::File will
+still work.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>, 
+<A HREF="/n|/perl/html/./lib/Pod/perlop.html#I_O_Operators">I/O Operators</A>,
+<A HREF="/n|/perl/html/./lib/IO/Handle.html">Handle</A>
+
+<A HREF="/n|/perl/html/./lib/IO/Seekable.html">Seekable</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="HISTORY">HISTORY
+
+</A></H1>
+Derived from FileHandle.pm by Graham Barr &lt;<EM>bodg@tiuk.ti.com</EM>&gt;.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

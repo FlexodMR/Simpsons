@@ -1,0 +1,584 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Curses - terminal screen handling and optimization
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Unified_Functions">Unified Functions</A>
+		<LI><A HREF="#Objects">Objects</A>
+	</UL>
+
+	<LI><A HREF="#COMPATIBILITY">COMPATIBILITY</A>
+	<UL>
+
+		<LI><A HREF="#Perl_4_X_C_cursperl_Compatibili">Perl 4.X <CODE>cursperl</CODE> Compatibility</A>
+		<LI><A HREF="#Incompatibilities_with_previous_">Incompatibilities with previous versions of <CODE>Curses</CODE></A>
+		<LI><A HREF="#Incompatibilities_with_other_Per">Incompatibilities with other Perl programs</A>
+	</UL>
+
+	<LI><A HREF="#DIAGNOSTICS">DIAGNOSTICS</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#SYNOPSIS_OF_PERL_CURSES_SUPPORT">SYNOPSIS OF PERL CURSES SUPPORT</A>
+	<UL>
+
+		<LI><A HREF="#Supported_Functions">Supported Functions</A>
+		<LI><A HREF="#Supported_Variables">Supported Variables</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Curses - terminal screen handling and optimization
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Curses;
+</PRE>
+
+<P>
+
+<PRE>    initscr;
+    ...
+    endwin;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>Curses</CODE> is the interface between Perl and your system's <CODE>curses(3)</CODE>
+library. For descriptions on the usage of a given function, variable, or
+constant, consult your system's documentation, as such information
+invariably varies (:-) between different <CODE>curses(3)</CODE> libraries
+and operating systems. This document describes the interface itself, and
+assumes that you already know how your system's <CODE>curses(3)</CODE>
+library works.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Unified_Functions">Unified Functions
+
+</A></H2>
+Many <CODE>curses(3)</CODE> functions have variants starting with the
+prefixes
+<EM>w-</EM>, <EM>mv-</EM>, and/or <EM>wmv-</EM>. These variants differ only in the explicit addition of a window, or by
+the addition of two coordinates that are used to move the cursor first. For
+example, <CODE>addch()</CODE> has three other variants: <CODE>waddch()</CODE>, <CODE>mvaddch()</CODE>, and <CODE>mvwaddch()</CODE>. The variants aren't very interesting; in fact, we could roll all of the
+variants into original function by allowing a variable number of arguments
+and analyzing the argument list for which variant the user wanted to call.
+
+
+<P>
+
+Unfortunately, <CODE>curses(3)</CODE> predates <CODE>varargs(3),</CODE> so in 
+<FONT SIZE=-1>C</FONT> we were stuck with all the variants. However,
+ <CODE>Curses</CODE> is a Perl interface, so we are free to ``unify'' these variants into one
+function. The section
+<A HREF="#Supported_Functions">Supported Functions</A> below lists all <CODE>curses(3)</CODE> function supported by <CODE>Curses</CODE>, along with a column listing if it is <EM>unified</EM>. If so, it takes a varying number of arguments as follows:
+
+
+<P>
+
+<CODE>function( [win], [y, x], args );</CODE>
+
+
+
+
+<P>
+
+<EM>win</EM> is an optional window argument, defaulting to <CODE>stdscr</CODE> if not specified.
+
+
+<P>
+
+<EM>y, x</EM> is an optional coordinate pair used to move the cursor, defaulting to no
+move if not specified.
+
+
+<P>
+
+<EM>args</EM> are the required arguments of the function. These are the arguments you
+would specify if you were just calling the base function and not any of the
+variants.
+
+
+<P>
+
+
+This makes the variants obsolete, since their functionality has been merged
+into a single function, so <CODE>Curses</CODE> does not define them by default. You can still get them if you want, by
+setting the variable <CODE>$Curses::OldCurses</CODE> to a non-zero value before using the
+<CODE>Curses</CODE> package. See <A HREF="#Perl_4_X_C_cursperl_Compatibili">Perl 4.X <CODE>cursperl</CODE> Compatibility</A>
+for an example of this.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Objects">Objects
+
+</A></H2>
+Objects are supported. Example:
+
+
+<P>
+
+<PRE>    $win = new Curses;
+    $win-&gt;addstr(10, 10, 'foo');
+    $win-&gt;refresh;
+    ...
+</PRE>
+
+<P>
+
+Any function that has been marked as <EM>unified</EM> (see
+<A HREF="#Supported_Functions">Supported Functions</A> below and <A HREF="#Unified_Functions">Unified Functions</A> above) can be called as a method for a Curses object. 
+
+
+<P>
+
+Do not use <CODE>initscr()</CODE> if using objects, as the first call to get a <CODE>new Curses</CODE> will do it for you.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COMPATIBILITY">COMPATIBILITY
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Perl_4_X_C_cursperl_Compatibili">Perl 4.X <CODE>cursperl</CODE> Compatibility
+
+</A></H2>
+<CODE>Curses</CODE> has been written to take advantage of the new features of Perl. 
+<FONT SIZE=-1>I</FONT> felt it better to provide an improved curses
+programming environment rather than to be 100% compatible. However, many
+old
+<CODE>curseperl</CODE> applications will probably still work by starting the script with:
+
+
+<P>
+
+<PRE>    BEGIN { $Curses::OldCurses = 1; }
+    use Curses;
+</PRE>
+
+<P>
+
+Any old application that still does not work should print an understandable
+error message explaining the problem.
+
+
+<P>
+
+Some functions and variables are not supported by <CODE>Curses</CODE>, even with the <A HREF="#item_BEGIN">BEGIN</A> line. They are listed under
+<A HREF="#curses_3_items_not_supported_by">curses(3) items not supported by Curses</A>.
+
+
+<P>
+
+The variables <CODE>$stdscr</CODE> and <CODE>$curscr</CODE> are also available as functions <CODE>stdscr</CODE> and <CODE>curscr</CODE>. This is because of a Perl bug. See the <A HREF="#BUGS">BUGS</A> section for details.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Incompatibilities_with_previous_">Incompatibilities with previous versions of <CODE>Curses</CODE>
+
+</A></H2>
+In previous versions of this software, some Perl functions took a different set of parameters than their 
+<FONT SIZE=-1>C</FONT> counterparts. This is no longer true. You should now use
+ <CODE>getstr($str)</CODE> and <CODE>getyx($y, $x)</CODE>
+instead of <CODE>$str = getstr()</CODE> and <CODE>($y, $x) = getyx()</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Incompatibilities_with_other_Per">Incompatibilities with other Perl programs
+
+</A></H2>
+<PRE>    menu.pl, v3.0 and v3.1
+        There were various interaction problems between these two
+        releases and Curses.  Please upgrade to the latest version
+        (v3.3 as of 3/16/96).
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DIAGNOSTICS">DIAGNOSTICS
+
+</A></H1>
+<UL>
+<LI><STRONG><A NAME="item_Curses">Curses function '%s' called with too %s arguments at ...
+
+</A></STRONG>
+You have called a <CODE>Curses</CODE> function with a wrong number of arguments.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_argument">argument %d to Curses function '%s' is not a Curses window at ...
+=item * argument is not a Curses window at ...
+
+</A></STRONG>
+The window argument you gave to the function wasn't really a window.
+
+
+<P>
+
+This probably means that you didn't give the right arguments to a
+<EM>unified</EM> function. See the 
+<FONT SIZE=-1>DESCRIPTION</FONT> section on <A HREF="#Unified_Functions">Unified Functions</A> for more information.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Curses">Curses function '%s' is not defined by your vendor at ...
+
+</A></STRONG>
+You have a <CODE>Curses</CODE> function in your code that your system's <CODE>curses(3)</CODE> library
+doesn't define.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Curses">Curses constant '%s' is not defined by your vendor at ...
+
+</A></STRONG>
+You have a <CODE>Curses</CODE> constant in your code that your system's <CODE>curses(3)</CODE> library
+doesn't define.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Curses">Curses does not support the curses function '%s', used at ...
+
+</A></STRONG>
+You have a <CODE>curses(3)</CODE> function in your code that the <CODE>Curses</CODE> module doesn't support.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Curses">Curses does not support the curses variable '%s', used at ...
+
+</A></STRONG>
+You have a <CODE>curses(3)</CODE> variable in your code that the <CODE>Curses</CODE> module doesn't support.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Curses">Curses does not support the curses constant '%s', used at ...
+
+</A></STRONG>
+You have a bareword in your code that is trying to be interpreted as a <CODE>Curses</CODE> constant, but <CODE>Curses</CODE> doesn't know anything about it.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Curses">Curses::Vars::FETCH called with bad index at ...
+=item * Curses::Vars::STORE called with bad index at ...
+
+</A></STRONG>
+You've been playing with the <A HREF="#item_tie">tie</A> interface to the <CODE>Curses</CODE>
+variables. Don't do that. :-)
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Anything">Anything else
+
+</A></STRONG>
+Check out the <EM>perldiag</EM> man page to see if the error is in there.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+If you use the variables <CODE>$stdscr</CODE> and <CODE>$curscr</CODE> instead of their functional counterparts (<CODE>stdscr</CODE> and <CODE>curscr</CODE>), you might run into a bug in Perl where the ``magic'' isn't called early
+enough. This is manifested by the <CODE>Curses</CODE> package telling you <CODE>$stdscr</CODE> isn't a window. One workaround is to put a line like <CODE>$stdscr = $stdscr</CODE>
+near the front of your program.
+
+
+<P>
+
+Probably many more.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+William Setzer <A
+HREF="MAILTO:<William_Setzer@ncsu.edu>"><William_Setzer@ncsu.edu></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS_OF_PERL_CURSES_SUPPORT">SYNOPSIS OF PERL CURSES SUPPORT
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Supported_Functions">Supported Functions
+
+</A></H2>
+<PRE>        Supported     Unified?          Supported via $OldCurses[*]
+        ---------     --------          ------------------------
+        addch           Yes             waddch mvaddch mvwaddch
+        addchnstr       Yes             waddchnstr mvaddchnstr mvwaddchnstr
+        addchstr        Yes             waddchstr mvaddchstr mvwaddchstr
+        addnstr         Yes             waddnstr mvaddnstr mvwaddnstr
+        addstr          Yes             waddstr mvaddstr mvwaddstr
+        attroff         Yes             wattroff
+        attron          Yes             wattron
+        attrset         Yes             wattrset
+        baudrate        No
+        beep            No
+        bkgd            Yes             wbkgd
+        bkgdset         Yes             wbkgdset
+        border          Yes             wborder
+        box             Yes
+        can_change_color No
+        cbreak          No
+        clear           Yes             wclear
+        clearok         Yes
+        clrtobot        Yes             wclrtobot
+        clrtoeol        Yes             wclrtoeol
+        color_content   No
+        COLOR_PAIR      No
+        copywin         No
+        delch           Yes             wdelch mvdelch mvwdelch
+        deleteln        Yes             wdeleteln
+        delwin          Yes
+        derwin          Yes
+        doupdate        No
+        echo            No
+        echochar        Yes             wechochar
+        endwin          No
+        erase           Yes             werase
+        erasechar       No
+        flash           No
+        flushinp        No
+        flusok          Yes
+        getattrs        Yes
+        getbegyx        Yes
+        getbkgd         Yes
+        getcap          No
+        getch           Yes             wgetch mvgetch mvwgetch
+        getmaxyx        Yes
+        getnstr         Yes             wgetnstr mvgetnstr mvwgetnstr
+        getparyx        Yes
+        getstr          Yes             wgetstr mvgetstr mvwgetstr
+        gettmode        No
+        getyx           Yes
+        halfdelay       No
+        has_colors      No
+        has_ic          No
+        has_il          No
+        hline           Yes             whline
+        idcok           Yes
+        idlok           Yes
+        immedok         Yes
+        inch            Yes             winch mvinch mvwinch
+        inchnstr        Yes             winchnstr mvinchnstr mvwinchnstr
+        inchstr         Yes             winchstr mvinchstr mvwinchstr
+        init_color      No
+        init_pair       No
+        initscr         No
+        innstr          Yes             winnstr mvinnstr mvwinnstr
+        insch           Yes             winsch mvinsch mvwinsch
+        insdelln        Yes             winsdelln
+        insertln        Yes             winsertln
+        insnstr         Yes             winsnstr mvinsnstr mvwinsnstr
+        insstr          Yes             winsstr mvinsstr mvwinsstr
+        instr           Yes             winstr mvinstr mvwinstr
+        intrflush       Yes
+        is_linetouched  Yes
+        is_wintouched   Yes
+        isendwin        No
+        keyname         No
+        keypad          Yes
+        killchar        No
+        leaveok         Yes
+        longname        No
+        meta            Yes
+        move            Yes             wmove
+        mvcur           No
+        mvwin           Yes
+        newpad          No
+        newwin          No
+        nl              No
+        nocbreak        No
+        nodelay         Yes
+        noecho          No
+        nonl            No
+        noqiflush       No
+        noraw           No
+        notimeout       Yes
+        noutrefresh     Yes             wnoutrefresh
+        overlay         No
+        overwrite       No
+        pair_content    No
+        PAIR_NUMBER     No
+        pechochar       No
+        pnoutrefresh    No
+        prefresh        No
+        qiflush         No
+        raw             No
+        refresh         Yes             wrefresh
+        resetty         No
+        savetty         No
+        scrl            Yes             wscrl
+        scroll          Yes
+        scrollok        Yes
+        setscrreg       Yes             wsetscrreg
+        setterm         No
+        slk_clear       No
+        slk_init        No
+        slk_label       No
+        slk_noutrefresh No
+        slk_refresh     No
+        slk_restore     No
+        slk_set         No
+        slk_touch       No
+        standend        Yes             wstandend
+        standout        Yes             wstandout
+        start_color     No
+        subpad          No
+        subwin          Yes
+        syncok          Yes
+        timeout         Yes             wtimeout
+        touchline       Yes
+        touchln         Yes             wtouchln
+        touchoverlap    No
+        touchwin        Yes
+        typeahead       No
+        unctrl          No
+        ungetch         No
+        vline           Yes             wvline
+        
+[*] To use any functions in this column, the variable
+C&lt;$Curses::OldCurses&gt; must be set to a non-zero value before using the
+C&lt;Curses&gt; package.  See L&lt;&quot;Perl 4.X cursperl Compatibility&quot;&gt; for an
+example of this.
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Supported_Variables_LINES_COLS_s">Supported Variables
+	
+	LINES		COLS		stdscr[*]	curscr[*]
+	
+=head2 Supported Constants
+	
+	OK		ERR
+	
+	ACS_BLOCK	ACS_BOARD	ACS_BTEE	ACS_BULLET
+	ACS_CKBOARD	ACS_DARROW	ACS_DEGREE	ACS_DIAMOND
+	ACS_HLINE	ACS_LANTERN	ACS_LARROW	ACS_LLCORNER
+	ACS_LRCORNER	ACS_LTEE	ACS_PLMINUS	ACS_PLUS
+	ACS_RARROW	ACS_RTEE	ACS_S1		ACS_S9
+	ACS_TTEE	ACS_UARROW	ACS_ULCORNER	ACS_URCORNER
+	ACS_VLINE
+	
+	A_ALTCHARSET	A_ATTRIBUTES	A_BLINK		A_BOLD
+	A_CHARTEXT	A_COLOR		A_DIM		A_INVIS
+	A_NORMAL	A_PROTECT	A_REVERSE	A_STANDOUT
+	A_UNDERLINE
+	
+	COLOR_BLACK	COLOR_BLUE	COLOR_CYAN	COLOR_GREEN
+	COLOR_MAGENTA	COLOR_RED	COLOR_WHITE	COLOR_YELLOW
+	
+	KEY_A1		KEY_A3		KEY_B2		KEY_BACKSPACE
+	KEY_BEG		KEY_BREAK	KEY_BTAB	KEY_C1
+	KEY_C3		KEY_CANCEL	KEY_CATAB	KEY_CLEAR
+	KEY_CLOSE	KEY_COMMAND	KEY_COPY	KEY_CREATE
+	KEY_CTAB	KEY_DC		KEY_DL		KEY_DOWN
+	KEY_EIC		KEY_END		KEY_ENTER	KEY_EOL
+	KEY_EOS		KEY_EXIT	KEY_F0		KEY_FIND
+	KEY_HELP	KEY_HOME	KEY_IC		KEY_IL
+	KEY_LEFT	KEY_LL		KEY_MARK	KEY_MAX
+	KEY_MESSAGE	KEY_MIN		KEY_MOVE	KEY_NEXT
+	KEY_NPAGE	KEY_OPEN	KEY_OPTIONS	KEY_PPAGE
+	KEY_PREVIOUS	KEY_PRINT	KEY_REDO	KEY_REFERENCE
+	KEY_REFRESH	KEY_REPLACE	KEY_RESET	KEY_RESTART
+	KEY_RESUME	KEY_RIGHT	KEY_SAVE	KEY_SBEG
+	KEY_SCANCEL	KEY_SCOMMAND	KEY_SCOPY	KEY_SCREATE
+	KEY_SDC		KEY_SDL		KEY_SELECT	KEY_SEND
+	KEY_SEOL	KEY_SEXIT	KEY_SF		KEY_SFIND
+	KEY_SHELP	KEY_SHOME	KEY_SIC		KEY_SLEFT
+	KEY_SMESSAGE	KEY_SMOVE	KEY_SNEXT	KEY_SOPTIONS
+	KEY_SPREVIOUS	KEY_SPRINT	KEY_SR		KEY_SREDO
+	KEY_SREPLACE	KEY_SRESET	KEY_SRIGHT	KEY_SRSUME
+	KEY_SSAVE	KEY_SSUSPEND	KEY_STAB	KEY_SUNDO
+	KEY_SUSPEND	KEY_UNDO	KEY_UP
+	
+=head2 curses(3) items not supported by <CODE>Curses</CODE>
+	
+	Functions
+	---------
+	tstp printw wprintw mvprintw mvwprintw scanw wscanw mvscanw mvwscanw
+	_putchar fullname
+	
+	Variables
+	---------
+	ttytype Def_term My_term
+ 
+[*] stdscr and curscr are also available via the Perl functions <CODE>stdscr</CODE>
+and <CODE>curscr</CODE>.  See <A HREF="#Perl_4_X_cursperl_Compatibility">Perl 4.X cursperl Compatibility</A> for more
+information.
+</A></H2>
+</DL>
+    </BODY>
+
+    </HTML>

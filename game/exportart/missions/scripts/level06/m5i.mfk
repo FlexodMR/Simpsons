@@ -1,0 +1,42 @@
+SelectMission("m5");
+
+SetMissionResetPlayerInCar("m5_carstart");
+SetDynaLoadData("l6z4.p3d;l6r3.p3d;l6r4.p3d;");
+
+UsePedGroup(5);
+AddStage(0, "final");
+	RESET_TO_HERE();
+	SetStageMessageIndex(92);
+	SetHUDIcon( "skinn_v" );
+
+	StartCountdown(count);
+	AddToCountdownSequence( "3", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "2", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "1", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "GO", 400 ); // duration time in milliseconds
+	
+	//AddStageWaypoint( "m5_skinner_path1" );
+	//AddStageWaypoint( "m5_skinner_path2" );
+	AddStageWaypoint( "m5_skinner_path5" );
+	AddStageWaypoint( "m5_skinner_path4" );
+	AddStageWaypoint( "m5_skinner_path3" );
+	AddStageWaypoint( "m5_skinner_path2" );
+	AddStageWaypoint( "m5_skinner_path1" );
+	AddObjective("dump");
+		AddNPC("skinner", "m5_skinner_hide");
+		AddStageCharacter("bart", "", "", "current", "m5_carstart" );
+		AddStageVehicle("skinn_v","m5_skinner_carstart","target","Missions\level06\M5dest.con", "skinner");
+		SetStageAITargetCatchupParams( "skinn_v", 50, 100);
+//		SetVehicleAIParams( "skinn_v", -10, -9 ); //  no shortcuts
+		SetObjTargetVehicle("skinn_v");
+		AddCollectible("m5_lasergun_1","lasergun");
+	CloseObjective();
+	SetStageTime(210);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	AddStageMusicChange();
+	SetCompletionDialog("proof");
+CloseStage();
+
+CloseMission();

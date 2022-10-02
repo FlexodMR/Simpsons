@@ -1,0 +1,134 @@
+REVERB SETTINGS
+===============
+
+August 19, 2002
+===============
+
+XBOX
+====
+
+(Sample values can be found DSound.h e.g. DSI3DL2_ENVIRONMENT_PRESET_CAVE.)
+
+* Room
+
+Intensity level and low-pass filter for room effect (wet signal)
+(-10000mB...1000mB)
+
+* Room HF
+Attenuation at high frequencies relative to intensity at low frequencies
+(-10000mB...0mB)
+
+* Room Rolloff Factor
+Rolloff effect intensity vs. distance (0.0...10.0)
+
+* Decay Time
+Decay time at low frequencies (0.1...20.0 seconds)
+
+* Decay HF Ratio
+Ratio of high-frequency decay time to low frequency decay time
+(0.1...2.0)
+
+* Reflections
+Intensity level of early reflections relative to 'Room' value
+(-10000mB...1000mB)
+
+* Reflections Delay
+Delay time of first reflection relative to direct path
+(0.0...0.3seconds
+
+* Reverb
+Intensity of late reverberations relative to 'Room' value
+(-10000mB...2000mB)
+
+* Reverb Delay
+Time limit between the early reflections and the late reverberation, 
+relative to the time of the first reflection (0.0...0.4seconds)
+
+* Diffusion
+Echo density in late reverberation decay (0.0%...100.0%)
+Proportional to # echoes per second
+
+* Density
+Modal density in late reverberation decay (0.0%...100.0%)
+Proportional to # resonances per Hertz
+
+* HF Reference
+Reference high frequency value (20.0Hz...20000.0Hz)
+
+
+PS2
+===
+
+* Gain (0.0 ... 1.0)
+
+* Mode (0 ... 9)
+Preset effects supported by the sound hardware
+
+	Off      = 0
+	Room     = 1
+	StudioA  = 2
+	StudioB  = 3
+	StudioC  = 4
+	Hall     = 5
+	Space    = 6
+	Echo     = 7
+	Delay    = 8
+	Pipe     = 9
+
+* Delay (0.0 ... 1.0)
+Delay time.  Only active for Echo and Delay modes. 
+
+* Feedback (0.0 ... 1.0)
+Feedback level.  Only active for Echo and Delay modes.
+
+
+GCN
+===
+
+* PreDelay (0 ... 100 milliseconds)
+* ReverbTime (100 ... 10 000 milliseconds)
+* Coloration (0.0 ... 1.0
+* Damping (0.0 ... 1.0)
+
+
+
+XBOX SAMPLE VALUES
+==================
+
+These values come from the file dsound.h, which is part of the Microsoft XDK.  
+I'd recommend having a look at this file, since the values might get out of date.  
+I'm providing these just to give you an idea of where to begin.
+
+                                              Room, RoomHF, RoomRolloffFactor, DecayTime, DecayHFRatio, Reflections, ReflectionsDelay, Reverb, ReverbDelay, Diffusion, Density, HFReference
+
+DSI3DL2_ENVIRONMENT_PRESET_DEFAULT           -1000,   -100,              0.0f,     1.49f,        0.83f,       -2602,           0.007f,    200,      0.011f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_DEFAULT2         -10000,      0,              0.0f,     1.00f,        0.50f,      -10000,           0.020f, -10000,      0.040f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_GENERIC           -1000,   -100,              0.0f,     1.49f,        0.83f,       -2602,           0.007f,    200,      0.011f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_PADDEDCELL        -1000,  -6000,              0.0f,     0.17f,        0.10f,       -1204,           0.001f,    207,      0.002f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_ROOM              -1000,   -454,              0.0f,     0.40f,        0.83f,       -1646,           0.002f,     53,      0.003f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_BATHROOM          -1000,  -1200,              0.0f,     1.49f,        0.54f,        -370,           0.007f,   1030,      0.011f,    100.0f,   60.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_LIVINGROOM        -1000,  -6000,              0.0f,     0.50f,        0.10f,       -1376,           0.003f,  -1104,      0.004f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_STONEROOM         -1000,   -300,              0.0f,     2.31f,        0.64f,        -711,           0.012f,     83,      0.017f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_AUDITORIUM        -1000,   -476,              0.0f,     4.32f,        0.59f,        -789,           0.020f,   -289,      0.030f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_CONCERTHALL       -1000,   -500,              0.0f,     3.92f,        0.70f,       -1230,           0.020f,     -2,      0.029f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_CAVE              -1000,      0,              0.0f,     2.91f,        1.30f,        -602,           0.015f,   -302,      0.022f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_ARENA             -1000,   -698,              0.0f,     7.24f,        0.33f,       -1166,           0.020f,     16,      0.030f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_HANGAR            -1000,  -1000,              0.0f,    10.05f,        0.23f,        -602,           0.020f,    198,      0.030f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_CARPETEDHALLWAY   -1000,  -4000,              0.0f,     0.30f,        0.10f,       -1831,           0.002f,  -1630,      0.030f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_HALLWAY           -1000,   -300,              0.0f,     1.49f,        0.59f,       -1219,           0.007f,    441,      0.011f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_STONECORRIDOR     -1000,   -237,              0.0f,     2.70f,        0.79f,       -1214,           0.013f,    395,      0.020f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_ALLEY             -1000,   -270,              0.0f,     1.49f,        0.86f,       -1204,           0.007f,     -4,      0.011f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_FOREST            -1000,  -3300,              0.0f,     1.49f,        0.54f,       -2560,           0.162f,   -613,      0.088f,     79.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_CITY              -1000,   -800,              0.0f,     1.49f,        0.67f,       -2273,           0.007f,  -2217,      0.011f,     50.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_MOUNTAINS         -1000,  -2500,              0.0f,     1.49f,        0.21f,       -2780,           0.300f,  -2014,      0.100f,     27.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_QUARRY            -1000,  -1000,              0.0f,     1.49f,        0.83f,      -10000,           0.061f,    500,      0.025f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_PLAIN             -1000,  -2000,              0.0f,     1.49f,        0.50f,       -2466,           0.179f,  -2514,      0.100f,     21.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_PARKINGLOT        -1000,      0,              0.0f,     1.65f,        1.50f,       -1363,           0.008f,  -1153,      0.012f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_SEWERPIPE         -1000,  -1000,              0.0f,     2.81f,        0.14f,         429,           0.014f,    648,      0.021f,     80.0f,   60.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_UNDERWATER        -1000,  -4000,              0.0f,     1.49f,        0.10f,        -449,           0.007f,   1700,      0.011f,    100.0f,  100.0f,     5000.0f
+DSI3DL2_ENVIRONMENT_PRESET_NOREVERB         -10000, -10000,              0.0f,     1.00f,        1.00f,      -10000,           0.000f, -10000,      0.000f,      0.0f,    0.0f,     5000.0f
+                                                                                                                                                                                    
+    
+    
+    
+    

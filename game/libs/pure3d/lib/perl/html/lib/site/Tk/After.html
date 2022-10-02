@@ -1,0 +1,86 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::After - support class for Tk::Widget::after
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::After - support class for Tk::Widget::after
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  $id = $widget-&gt;after(time,callback);
+  $id = $widget-&gt;afterIdle(callback);
+  $widget-&gt;afterCancel($id);
+</PRE>
+
+<P>
+
+<PRE>  $id = $widget-&gt;repeat(period,callback);
+</PRE>
+
+<P>
+
+Internally this class is used to implement above.
+
+
+<P>
+
+<PRE>  $id = Tk::After-&gt;new($widget,$time,'method',callback);
+  $id-&gt;cancel;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This class is a wrapper used by Tk::Widget::after to auto-cancel after
+calls when a widget is destroyed.
+
+
+<P>
+
+<EM>callback</EM> is a normal perl/Tk callback. Method is either <EM>'once'</EM> 
+or <EM>'repeat'</EM>
+
+
+
+
+<P>
+
+This is first attempt at the code and interface is likely to change. So for
+the time being at least use $widget-&gt;after(...) interface.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

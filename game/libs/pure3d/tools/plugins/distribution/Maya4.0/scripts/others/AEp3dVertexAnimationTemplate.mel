@@ -1,0 +1,300 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     03 May, 2002
+//
+// Component:   AEp3dVertexAnimationTemplate.mel
+//
+// Description: Maya Attribute Editor template for mesh Vertex Animation.
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+//===========================================================================
+// AEp3dVertexAnimationTemplate
+//===========================================================================
+// Description: Maya Attribute Editor template for mesh Vertex Animation.
+//
+//              The associated attributes are added care of 'p3dMeshTags()'
+//              in "p3dTags.mel".
+//
+//===========================================================================
+global proc AEp3dVertexAnimationTemplate( string $node )
+{
+    // Don't use editorTemplate for layout .. use p3dFrameLayout instead.
+//    editorTemplate -beginLayout "Pure3D Vertex Animation" -collapse 0;
+
+        editorTemplate -callCustom 
+            "AEp3dVertexAnimationNew"
+            "AEp3dVertexAnimationReplace"
+                "";
+
+        editorTemplate -suppress "hasVertexAnimation";
+
+        editorTemplate -suppress "hasVertexPositionAnimation";
+        editorTemplate -suppress "vertexPositionThreshold";
+        editorTemplate -suppress "vertexPositionInterpolate";
+        editorTemplate -suppress "hasVertexNormalAnimation";
+        editorTemplate -suppress "vertexNormalThreshold";
+        editorTemplate -suppress "vertexNormalAnimationType";
+        editorTemplate -suppress "vertexNormalInterpolate";
+        editorTemplate -suppress "hasVertexColourAnimation";
+        editorTemplate -suppress "vertexColourThreshold";
+        editorTemplate -suppress "vertexColourAnimationType";
+        editorTemplate -suppress "vertexColourInterpolate";
+        editorTemplate -suppress "hasVertexUVAnimation";
+        editorTemplate -suppress "vertexUVThreshold";
+        editorTemplate -suppress "vertexUV0Interpolate";
+        editorTemplate -suppress "vertexUV1Interpolate";
+        editorTemplate -suppress "vertexUV2Interpolate";
+        editorTemplate -suppress "vertexUV3Interpolate";
+
+//        editorTemplate -endLayout;
+    
+}
+
+global proc AEp3dVertexAnimationNew( string $node )
+{
+    string $vertexAnimationFrameUI = "vertexAnimationFrameUI";
+    string $vertexAnimationHideUI = "vertexAnimationHideUI";
+
+    string $hasVertexAnimationUI = "hasVertexAnimationUI";
+
+    string $vertexAnimationEnableUI = "vertexAnimationEnableUI";
+
+    string $vertexPositionUI = "vertexPositionUI";
+    string $vertexPositionInterpolateUI = "vertexPositionInterpolateUI";
+    string $vertexPositionThresholdUI = "vertexPositionThresholdUI";
+
+    string $vertexNormalUI = "vertexNormalUI";
+    string $vertexNormalThresholdUI = "vertexNormalThresholdUI";
+    string $vertexNormalInterpolateUI = "vertexNormalInterpolateUI";
+    string $vertexNormalVertexUI = "vertexNormalVertexUI";
+    string $vertexNormalVertexFaceUI = "vertexNormalVertexFaceUI";
+
+    string $vertexColourUI = "vertexColourUI";
+    string $vertexColourThresholdUI = "vertexColourThresholdUI";
+    string $vertexColourInterpolateUI = "vertexColourInterpolateUI";
+    string $vertexColourVertexUI = "vertexColourVertexUI";
+    string $vertexColourVertexFaceUI = "vertexColourVertexFaceUI";
+
+    string $vertexUvUI = "vertexUvUI";
+    string $vertexUvThresholdUI = "vertexUvThresholdUI";
+    string $vertexUv0InterpolateUI = "vertexUv0InterpolateUI";
+    string $vertexUv1InterpolateUI = "vertexUv1InterpolateUI";
+    string $vertexUv2InterpolateUI = "vertexUv2InterpolateUI";
+    string $vertexUv3InterpolateUI = "vertexUv3InterpolateUI";
+
+    int $width2 = 20;
+    int $width3 = 72;
+    int $width4x4 = 86;
+
+    string $url[] = p3dFrameLayout( "Pure3D Vertex Animation", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Exporter/vertexAnimation.html", true, true );
+
+    columnLayout -adj true $vertexAnimationHideUI;
+
+    checkBoxGrp -label "" -label1 "Eligible For Vertex Animation" $hasVertexAnimationUI;
+
+    separator -height 8;
+
+    columnLayout $vertexAnimationEnableUI;
+
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "Position" -align "right";
+            checkBox -label "" $vertexPositionUI;
+            text -label "Threshold" -align "right";
+            floatField $vertexPositionThresholdUI;
+            setParent ..;
+
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "";
+            text -label "";
+            text -label "Interpolate";
+            checkBox -label "" $vertexPositionInterpolateUI;
+            setParent ..;
+
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "Normal" -align "right";
+            checkBox -label "" $vertexNormalUI;
+            text -label "Threshold" -align "right";
+            floatField $vertexNormalThresholdUI;
+            setParent ..;
+
+        radioCollection;
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "";
+            text -label "";
+            text -label "Normals from";
+            radioButton -label "Vertex" -align "left" -select $vertexNormalVertexUI;
+            setParent ..;
+
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "";
+            text -label "";
+            text -label "";
+            radioButton -label "Vertex Face" -align "left" $vertexNormalVertexFaceUI;
+            setParent ..;
+
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "";
+            text -label "";
+            text -label "Interpolate";
+            checkBox -label "" $vertexNormalInterpolateUI;
+            setParent ..;
+
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "Colour" -align "right";
+            checkBox -label "" $vertexColourUI;
+            text -label "Threshold" -align "right";
+            floatField $vertexColourThresholdUI;
+            setParent ..;
+
+        radioCollection;
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "";
+            text -label "";
+            text -label "Colours from";
+            radioButton -label "Vertex" -align "left" -select $vertexColourVertexUI;
+            setParent ..;
+
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "";
+            text -label "";
+            text -label "";
+            radioButton -label "Vertex Face" -align "left" $vertexColourVertexFaceUI;
+            setParent ..;
+
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "";
+            text -label "";
+            text -label "Interpolate";
+            checkBox -label "" $vertexColourInterpolateUI;
+            setParent ..;
+
+        rowLayout -nc 4 -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 -columnAlign 3 "right" -columnOffset4 2 2 4 4;
+            text -label "UV" -align "right";
+            checkBox -label "" $vertexUvUI;
+            text -label "Threshold" -align "right";
+            floatField $vertexUvThresholdUI;
+            setParent ..;
+
+        rowLayout -nc 4 
+                  -columnWidth 2 $width2 -columnWidth 3 $width3 -columnWidth 4 $width4x4 
+                  -columnAlign 3 "right" 
+                  -columnOffset4 2 2 4 4
+                  -rowAttach 3 "bottom" 48; // attachment moves label to align with UV0 checkbox
+            text -label "";
+            text -label "";
+            text -label "Interpolate";
+            columnLayout;
+                checkBox -label "UV0" $vertexUv0InterpolateUI;
+                checkBox -label "UV1" $vertexUv1InterpolateUI;
+                checkBox -label "UV2" $vertexUv2InterpolateUI;
+                checkBox -label "UV3" $vertexUv3InterpolateUI;
+                setParent ..;
+            setParent ..;
+
+        setParent ..;
+
+    setParent ..;
+
+    PopP3dFrameLayout( $url );
+
+    AEp3dVertexAnimationReplace $node;
+}
+
+global proc AEp3dVertexAnimationReplace( string $node )
+{
+    string $hasVertexAnimationUI = "hasVertexAnimationUI";
+    string $vertexAnimationHideUI = "vertexAnimationHideUI";
+
+    string $vertexAnimationEnableUI = "vertexAnimationEnableUI";
+
+    string $vertexPositionUI = "vertexPositionUI";
+    string $vertexPositionInterpolateUI = "vertexPositionInterpolateUI";
+    string $vertexPositionThresholdUI = "vertexPositionThresholdUI";
+
+    string $vertexNormalUI = "vertexNormalUI";
+    string $vertexNormalThresholdUI = "vertexNormalThresholdUI";
+    string $vertexNormalInterpolateUI = "vertexNormalInterpolateUI";
+    string $vertexNormalVertexUI = "vertexNormalVertexUI";
+    string $vertexNormalVertexFaceUI = "vertexNormalVertexFaceUI";
+
+    string $vertexColourUI = "vertexColourUI";
+    string $vertexColourThresholdUI = "vertexColourThresholdUI";
+    string $vertexColourInterpolateUI = "vertexColourInterpolateUI";
+    string $vertexColourVertexUI = "vertexColourVertexUI";
+    string $vertexColourVertexFaceUI = "vertexColourVertexFaceUI";
+
+    string $vertexUvUI = "vertexUvUI";
+    string $vertexUvThresholdUI = "vertexUvThresholdUI";
+    string $vertexUv0InterpolateUI = "vertexUv0InterpolateUI";
+    string $vertexUv1InterpolateUI = "vertexUv1InterpolateUI";
+    string $vertexUv2InterpolateUI = "vertexUv2InterpolateUI";
+    string $vertexUv3InterpolateUI = "vertexUv3InterpolateUI";
+
+    string $rootNode = `match "[^\.]*" $node`;
+    int $vaExists = `attributeQuery -node $rootNode -exists "hasVertexAnimation"`;
+
+    columnLayout -e
+        -visible $vaExists
+        -manage $vaExists
+            $vertexAnimationHideUI;
+
+    if ( $vaExists )
+    {
+        connectControl -index 2 $hasVertexAnimationUI ( $node + "hasVertexAnimation" );
+        checkBoxGrp -e
+            -cc ( "columnLayout -e -enable (#1) " + $vertexAnimationEnableUI )
+                $hasVertexAnimationUI;
+
+    // ---------  Position  -------------------
+
+        connectControl $vertexPositionUI ( $node + "hasVertexPositionAnimation" );
+        connectControl $vertexPositionThresholdUI ( $node + "vertexPositionThreshold" );
+        connectControl $vertexPositionInterpolateUI ( $node + "vertexPositionInterpolate" );
+
+    // ---------  Normal  -------------------
+
+        connectControl $vertexNormalUI ( $node + "hasVertexNormalAnimation" );
+        connectControl $vertexNormalThresholdUI ( $node + "vertexNormalThreshold" );
+        connectControl $vertexNormalInterpolateUI ( $node + "vertexNormalInterpolate" );
+
+        int $vertexNormalAnimationType = `getAttr ( $node + "vertexNormalAnimationType" )`;
+        if ( $vertexNormalAnimationType ) radioButton -e -select $vertexNormalVertexFaceUI;
+        else radioButton -e -select $vertexNormalVertexUI;
+
+        radioButton -e
+            -cc ( "setAttr " + $node + "vertexNormalAnimationType (#1)" )
+                $vertexNormalVertexFaceUI;
+
+    // ---------  Colour  -------------------
+
+        connectControl $vertexColourUI ( $node + "hasVertexColourAnimation" );
+        connectControl $vertexColourThresholdUI ( $node + "vertexColourThreshold" );
+        connectControl $vertexColourInterpolateUI ( $node + "vertexColourInterpolate" );
+
+        int $vertexColourAnimationType = `getAttr ( $node + "vertexColourAnimationType" )`;
+        if ( $vertexColourAnimationType ) radioButton -e -select $vertexColourVertexFaceUI;
+        else radioButton -e -select $vertexColourVertexUI;
+
+        radioButton -e
+            -cc ( "setAttr " + $node + "vertexColourAnimationType (#1)" )
+                $vertexColourVertexFaceUI;
+
+    // ---------  UV  -------------------
+
+        connectControl $vertexUvUI ( $node + "hasVertexUVAnimation" );
+        connectControl $vertexUvThresholdUI ( $node + "vertexUVThreshold" );
+        connectControl $vertexUv0InterpolateUI ( $node + "vertexUV0Interpolate" );
+        connectControl $vertexUv1InterpolateUI ( $node + "vertexUV1Interpolate" );
+        connectControl $vertexUv2InterpolateUI ( $node + "vertexUV2Interpolate" );
+        connectControl $vertexUv3InterpolateUI ( $node + "vertexUV3Interpolate" );
+
+        int $enable = `getAttr ( $node + "hasVertexAnimation" )`;
+        columnLayout -e -enable $enable $vertexAnimationEnableUI;
+    }
+}

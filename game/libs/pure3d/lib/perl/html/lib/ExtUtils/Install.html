@@ -1,0 +1,138 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>ExtUtils::Install - install files from here to there
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+ExtUtils::Install - install files from here to there
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<STRONG>use ExtUtils::Install;</STRONG>
+
+
+
+
+<P>
+
+<STRONG>install($hashref,$verbose,$nonono);</STRONG>
+
+
+
+
+<P>
+
+<STRONG>uninstall($packlistfile,$verbose,$nonono);</STRONG>
+
+
+
+
+<P>
+
+<STRONG>pm_to_blib($hashref);</STRONG>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Both <CODE>install()</CODE> and <CODE>uninstall()</CODE> are specific to
+the way ExtUtils::MakeMaker handles the installation and deinstallation of
+perl modules. They are not designed as general purpose tools.
+
+
+<P>
+
+<CODE>install()</CODE> takes three arguments. 
+<FONT SIZE=-1>A</FONT> reference to a hash, a verbose switch and a
+don't-really-do-it switch. The hash ref contains a mapping of directories:
+each key/value pair is a combination of directories to be copied. Key is a
+directory to copy from, value is a directory to copy to. The whole tree
+below the ``from'' directory will be copied preserving timestamps and
+permissions.
+
+
+<P>
+
+There are two keys with a special meaning in the hash: ``read'' and
+``write''. After the copying is done, install will write the list of target
+files to the file named by <CODE>$hashref-&gt;{write}</CODE>. If there is another file named by <CODE>$hashref-&gt;{read}</CODE>, the contents of this file will be merged into the written file. The read and the written file may be identical, but on 
+<FONT SIZE=-1>AFS</FONT> it is quite likely, people are installing to a different directory than the one where the files later appear.
+
+
+
+<P>
+
+<CODE>install_default()</CODE> takes one or less arguments. If no arguments are specified, it takes 
+<FONT SIZE=-1>$ARGV[0]</FONT> as if it was specified as an argument. The argument is the value of MakeMaker's
+ <CODE>FULLEXT</CODE> key, like <EM>Tk/Canvas</EM>. This function calls <CODE>install()</CODE> with the same arguments as the
+defaults the MakeMaker would use.
+
+
+<P>
+
+The argumement-less form is convenient for install scripts like
+
+
+<P>
+
+<PRE>  perl -MExtUtils::Install -e install_default Tk/Canvas
+</PRE>
+
+<P>
+
+Assuming this command is executed in a directory with populated <EM>blib</EM> 
+directory, it will proceed as if the <EM>blib</EM> was build by MakeMaker on this machine. This is useful for binary
+distributions.
+
+
+<P>
+
+<CODE>uninstall()</CODE> takes as first argument a file containing
+filenames to be unlinked. The second argument is a verbose switch, the
+third is a no-don't-really-do-it-now switch.
+
+
+<P>
+
+<CODE>pm_to_blib()</CODE> takes a hashref as the first argument and copies
+all keys of the hash to the corresponding values efficiently. Filenames
+with the extension pm are autosplit. Second argument is the autosplit
+directory.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

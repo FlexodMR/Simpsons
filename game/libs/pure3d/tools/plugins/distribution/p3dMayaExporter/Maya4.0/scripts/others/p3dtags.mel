@@ -1,0 +1,378 @@
+/*===========================================================================
+   p3dtags.mel
+   created: Feb. 22, 2000
+   Torre Zuk
+
+   Copyright (c) 2000 Radical Entertainment, Inc.
+   All rights reserved.
+===========================================================================*/
+
+proc p3dtagall()
+{
+    string $meshes[] = `ls -type "mesh"`;
+    string $shapes[] = `ls -dag -leaf`;
+    string $materials[] = `ls -materials`;
+    string $transforms[] = `ls -transforms`;
+    string $lights[] = `ls -lights`;
+
+    for ( $mesh in $meshes ) p3dMeshTags( $mesh );
+    for ( $shape in $shapes ) p3dShapeTags( $shape );
+    for ( $material in $materials ) p3dMaterialTags( $material );
+    for ( $transform in $transforms ) p3dTransformTags( $transform );
+    for ( $light in $lights ) p3dLightTags( $light );
+}
+
+global proc p3dtags( string $dag )
+{
+   string $cmd;
+
+    // p3dtags should be called with an empty argument ONLY ONCE
+    // when a plug-in is first loaded. This is to ensure
+    // any existing data is properly tagged, as without the 
+    // Exporter loaded there is no callback to add the attributes 
+    // on demand.
+    // Invoked by: p3dmayaexp.mll, p3dBoundingVolume.mll
+    if ( $dag == "" ) 
+    {
+        p3dtagall();
+        return;
+    }
+    
+    if ( !`objExists $dag` ) return;
+
+    string $nodeType = `nodeType $dag`;
+
+    p3dMeshTags( $dag );
+    p3dShapeTags( $dag );
+    p3dMaterialTags( $dag );
+    p3dTransformTags( $dag );
+    p3dLightTags( $dag );
+}
+
+proc int isBitSet( int $value, int $bit )
+{
+    int $isBitSet = false;
+    
+    for ( $i = 8; $i >= 0; $i-- )
+    {
+        int $bitpow = `pow 2 $i`;
+        
+        if ( $value < $bitpow )
+            continue;
+            
+        if ( $i == $bit )
+        {
+            $isBitSet = true;
+            break;
+        }
+        
+        $value -= $bitpow;
+    }
+    
+    return $isBitSet;
+}
+
+proc int IsSkeletonRoot( string $node )
+{
+    int $isSkeletonRoot = false;
+
+    if ( `attributeQuery -node $node -exists "p3dBooleanAttributes"` )
+    {
+        if ( isBitSet( `getAttr ( $node + ".p3dBooleanAttributes" )`, 1 ) )
+        {
+            $isSkeletonRoot = true;
+        }
+    }
+
+    return $isSkeletonRoot;
+}
+
+proc int isTransform( string $object )
+{
+    int $isTransform = false;
+    if ( $object != "" && ( ( `nodeType $object` == "transform" ) || ( `nodeType $object` == "joint" ) ) )
+    {
+        $isTransform = true;
+    }
+    return $isTransform;
+}
+
+proc int isLight( string $object )
+{
+    if ( $object == "" ) return false;
+    string $classA[] = getClassification( `nodeType $object` );
+    return ( $classA[0] == "light" );
+}
+
+proc int isAmbientLight( string $object )
+{
+    if ( $object == "" ) return false;
+    return ( nodeType( $object ) == "ambientLight" );
+}
+
+proc int isShader( string $object )
+{
+    if ( $object == "" ) return false;
+    string $classA[] = getClassification( `nodeType $object` );
+    return ( ( $classA[0] == "shader/surface" ) || ( $classA[0] == "shader/surface/utility" ) );
+}
+
+global proc p3dMeshTags( string $dag )
+{
+    if ( ( $dag == "" ) || ( !`objExists $dag` ) || ( `nodeType $dag` != "mesh" ) ) return;
+
+    if ( !`attributeQuery -node $dag -exists "hasVertexAnimation"` )
+    {
+        addAttr -at "bool" -sn "vanm" -ln "hasVertexAnimation" -defaultValue false $dag;
+    }
+
+    if ( !`attributeQuery -node $dag -exists "hasVertexPositionAnimation"` )
+    {
+        addAttr -at "bool" -sn "panm" -ln "hasVertexPositionAnimation" -defaultValue true $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexPositionThreshold"` )
+    {
+        addAttr -at "float" -sn "vpth" -ln "vertexPositionThreshold" -defaultValue 0.01 $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexPositionInterpolate"` )
+    {
+        addAttr -at "bool" -sn "vpin" -ln "vertexPositionInterpolate" -defaultValue true $dag;
+    }
+
+    if ( !`attributeQuery -node $dag -exists "hasVertexNormalAnimation"` )
+    {
+        addAttr -at "bool" -sn "nanm" -ln "hasVertexNormalAnimation" -defaultValue true $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexNormalThreshold"` )
+    {
+        addAttr -at "float" -sn "vnth" -ln "vertexNormalThreshold" -defaultValue 0.025 $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexNormalInterpolate"` )
+    {
+        addAttr -at "bool" -sn "vnin" -ln "vertexNormalInterpolate" -defaultValue true $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexNormalAnimationType"` )
+    {
+        addAttr -at "enum" -sn "vnat" -ln "vertexNormalAnimationType" -enumName "vertex:vertexFace" -defaultValue 0 $dag;
+    }
+
+    if ( !`attributeQuery -node $dag -exists "hasVertexColourAnimation"` )
+    {
+        addAttr -at "bool" -sn "canm" -ln "hasVertexColourAnimation" -defaultValue false $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexColourThreshold"` )
+    {
+        addAttr -at "float" -sn "vcth" -ln "vertexColourThreshold" -defaultValue 0.01 $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexColourInterpolate"` )
+    {
+        addAttr -at "bool" -sn "vcin" -ln "vertexColourInterpolate" -defaultValue true $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexColourAnimationType"` )
+    {
+        addAttr -at "enum" -sn "vcat" -ln "vertexColourAnimationType" -enumName "vertex:vertexFace" -defaultValue 0 $dag;
+    }
+
+    if ( !`attributeQuery -node $dag -exists "hasVertexUVAnimation"` )
+    {
+        addAttr -at "bool" -sn "uanm" -ln "hasVertexUVAnimation" -defaultValue false $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexUVThreshold"` )
+    {
+        addAttr -at "float" -sn "vuth" -ln "vertexUVThreshold" -defaultValue 0.001 $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexUV0Interpolate"` )
+    {
+        addAttr -at "bool" -sn "vu0i" -ln "vertexUV0Interpolate" -defaultValue true $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexUV1Interpolate"` )
+    {
+        addAttr -at "bool" -sn "vu1i" -ln "vertexUV1Interpolate" -defaultValue true $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexUV2Interpolate"` )
+    {
+        addAttr -at "bool" -sn "vu2i" -ln "vertexUV2Interpolate" -defaultValue true $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "vertexUV3Interpolate"` )
+    {
+        addAttr -at "bool" -sn "vu3i" -ln "vertexUV3Interpolate" -defaultValue true $dag;
+    }
+
+}
+
+proc p3dAnimOptimizationTags( string $dag )
+{
+    // --- Animation Optimization (see AEp3dAnimationOptimizationTemplate.mel)
+
+    if ( !`attributeQuery -node $dag -exists "p3dUseCustomAnimOptimization"` )
+    {
+        addAttr -at "bool" -sn "auco" -ln "p3dUseCustomAnimOptimization" -defaultValue false $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "p3dAnimOptThresholdColour"` )
+    {
+        addAttr -at "float" -sn "aotc" -ln "p3dAnimOptThresholdColour" -min 0.0 -defaultValue 0.05 -keyable false $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "p3dAnimOptThresholdFloat"` )
+    {
+        addAttr -at "float" -sn "aotf" -ln "p3dAnimOptThresholdFloat" -min 0.0 -defaultValue 0.01 -keyable false $dag;
+    }
+
+    if ( !isLight( $dag ) && !isShader( $dag ) )
+    {
+        if ( !`attributeQuery -node $dag -exists "p3dAnimOptThresholdVector"` )
+        {
+            addAttr -at "float" -sn "aotv" -ln "p3dAnimOptThresholdVector" -min 0.0 -defaultValue 0.001 -keyable false $dag;
+        }
+    }
+}
+
+global proc p3dShapeTags( string $dag )
+{
+    if ( ( $dag == "" ) || ( !`objExists $dag` ) ) return;
+
+    if ( isTransform( $dag ) && !IsSkeletonRoot( $dag ) ) return;
+
+    // To prevent tagging of shader nodes. Mesh/NURBS types have NULL classification.
+    string $class[] = getClassification( `nodeType $dag` );
+    if ( $class[0] == "" )
+    {
+        if ( !isLight( $dag ) )
+        {
+            if ( !`attributeQuery -node $dag -exists "p3dDrawOrder"` )
+            {
+                addAttr -at "float" -sn "pdo" -ln "p3dDrawOrder" -min 0.0 -max 1.0 -defaultValue 0.5 $dag;
+            }
+        }
+
+        p3dAnimOptimizationTags( $dag );
+    }
+}
+
+global proc string p3dSetMaterialTags( string $shader )
+{
+   int      $i;
+   int      $foundAttr = false;
+
+   source   p3dMatAttr;
+
+   string   $domainAttrs[] = p3dGetAllAttrs();
+   string   $types[] = p3dGetAllAttrTypes();
+   string   $cmd;
+   string   $retString = "";
+
+   string   $dynAttrs[] = `listAttr -ud $shader`;
+
+   for ( $i = 0; $i < size($domainAttrs); $i++ )
+   {
+      for ( $attr in $dynAttrs )
+      {
+         if ( $attr == $domainAttrs[$i] )
+         {
+            $foundAttr = true;
+            break;
+         }
+      }
+
+      if ( true != $foundAttr )
+      {
+         $cmd = "addAttr ";
+         
+         $cmd += $types[$i] + " -ln " + $domainAttrs[$i] + " " + $shader;
+
+         eval $cmd;
+
+         // Turn off keyable
+         $cmd = "setAttr -k false " + $shader + "." + $domainAttrs[$i];
+         eval $cmd;
+
+         // Could also initialize to a default value. This would require another
+         // array in p3dMatAttr...
+
+         if ( "" == $retString )
+         {
+            $retString = `nodeType $shader`;
+         }
+      }
+   }
+
+    p3dAnimOptimizationTags( $shader );
+
+   return $retString;
+}
+
+global proc p3dMaterialTags( string $node )
+{
+    if ( isShader( $node ) )
+    {
+        p3dSetMaterialTags( $node );
+    }
+}  
+
+global proc p3dTransformTags( string $dag )
+{
+//   addAttr -ln "ScenegraphAttachPoint" -at bool -dv 1;
+    if ( ( $dag == "" ) || 
+         ( !`objExists $dag` ) || 
+         (
+             ( `nodeType $dag` != "transform" ) &&
+             ( `nodeType $dag` != "joint" )
+         )
+       ) return;
+
+    if ( !`attributeQuery -node $dag -exists "p3dDrawOrder"` )
+    {
+        addAttr -at "float" -sn "pdo" -ln "p3dDrawOrder" -min 0.0 -max 1.0 -defaultValue 0.5 $dag;
+    }
+
+    // --- Animation Optimization (see AEp3dAnimationOptimizationTemplate.mel)
+
+    if ( !`attributeQuery -node $dag -exists "p3dUseCustomAnimOptimization"` )
+    {
+        addAttr -at "bool" -sn "auco" -ln "p3dUseCustomAnimOptimization" -defaultValue false $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "p3dAnimOptThresholdPos"` )
+    {
+        addAttr -at "float" -sn "aotp" -ln "p3dAnimOptThresholdPos" -min 0.0 -defaultValue 0.01 -keyable false $dag;
+    }
+    if ( !`attributeQuery -node $dag -exists "p3dAnimOptThresholdRot"` )
+    {
+        addAttr -at "float" -sn "aotr" -ln "p3dAnimOptThresholdRot" -min 0.0 -defaultValue 0.000875 -keyable false $dag;
+    }
+}
+
+global proc p3dLightTags( string $light )
+{
+    if ( ( $light == "" ) || ( !`objExists $light` ) ) return;
+
+    if ( !isLight( $light ) ) return;
+
+    // --- Maya light customization (see AEp3dLightsTemplate.mel)
+    
+    // These attributes only apply to non-ambient.
+    if( !isAmbientLight( $light ) )
+    {
+        if ( !`attributeQuery -node $light -exists "p3dLightIlluminates"` )
+        {
+            addAttr -at "bool" -sn "lnil" -ln "p3dLightIlluminates" -defaultValue true $light;
+        }
+    }
+}
+
+global proc p3dAddAttachButton()
+{
+   int $Exists;
+   $Exists = `layout -exists "P3DTools"`;
+   if (!$Exists)
+   {
+      addNewShelfTab "P3DTools";
+//      shelfButton -c   "p3dTransformTags" 
+//                  -p   "P3DTools"
+//                  -i1  "attachpoint.bmp" 
+//                  -l   "AttachPoint"
+//                  AttachPoint;
+   }
+}
+
+/* 
+source p3dtags; 
+*/

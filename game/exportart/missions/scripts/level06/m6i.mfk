@@ -1,0 +1,127 @@
+SelectMission("m6");
+
+SetMissionResetPlayerInCar("m6_carstart");
+SetDynaLoadData("l6z4.p3d;l6r3.p3d;l6r4.p3d;");
+SetNumValidFailureHints( 5 );
+UsePedGroup(6);
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(209);
+	SetHUDIcon("krustylu");
+	AddObjective( "goto" );
+		AddNPC("krusty", "m6_krusty_sd");
+		SetDestination( "m6_krustylu", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+CloseStage();
+
+AddStage(0); // destroy the laser stands
+	RESET_TO_HERE();
+	SetStageMessageIndex(93);
+	SetHUDIcon( "lasersta" );
+	AddObjective("delivery", "neither");
+		AddCollectible("m7_lasers1","lasrstnd");
+		AddCollectible("m7_lasers2","lasrstnd");
+		AddCollectible("m7_lasers3","lasrstnd");
+		AddCollectible("m7_lasers4","lasrstnd");
+		AddCollectible("m7_lasers5","lasrstnd");
+		AddCollectible("m7_lasers6","lasrstnd");
+		AddCollectible("m7_lasers7","lasrstnd");
+		AddCollectible("m7_lasers8","lasrstnd");
+		AddCollectible("m7_lasers9","lasrstnd");
+		AddCollectible("m7_lasers10","lasrstnd");
+		AddCollectible("m7_lasers11","lasrstnd");
+		AddCollectible("m7_lasers12","lasrstnd");
+		AddCollectible("m7_lasers13","lasrstnd");
+		AddCollectible("m7_lasers14","lasrstnd");
+		AddCollectible("m7_lasers15","lasrstnd");
+		AddCollectible("m7_lasers16","lasrstnd");
+		AddCollectible("m7_lasers17","lasrstnd");
+		AddCollectible("m7_lasers18","lasrstnd");
+		AddCollectible("m7_lasers19","lasrstnd");
+		AddCollectible("m7_lasers20","lasrstnd");
+		AddCollectible("m7_lasers21","lasrstnd");
+		AddCollectible("m7_lasers22","lasrstnd");
+		AddCollectible("m7_lasers23","lasrstnd");
+		AddCollectible("m7_lasers24","lasrstnd");
+		AddCollectible("m7_lasers25","lasrstnd");
+		SetCollectibleEffect("lsrexpld");
+	CloseObjective();
+	SetStageTime(100);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+//	SetCompletionDialog("showgirl","krusty");
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(209);
+	SetHUDIcon("krustylu");
+	AddObjective( "goto" );
+		AddNPC("krusty", "m6_krusty_sd");
+		SetDestination( "m6_krustylu", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(50);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+		AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "current" );
+	CloseCondition();
+CloseStage();
+
+AddStage(5);
+	SetStageMessageIndex(191);
+	SetHUDIcon("krusty");
+	AddObjective("talkto");
+		AddNPC("krusty", "m6_krusty_sd");
+		AddObjectiveNPCWaypoint( "krusty", "m6_krusty_walk1" );
+		SetTalkToTarget("krusty", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+		SetCamBestSide( "m6_bestside" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_near" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		SetDialogueInfo("bart","krusty","showgirl",0);
+		SetDialoguePositions("m6_bart_krustytalk","m6_krusty_sd","m6_carstart",1);
+		CloseObjective();
+CloseStage();
+
+CloseMission();
+
+

@@ -1,0 +1,63 @@
+SelectMission("m2");
+
+SetMissionResetPlayerInCar("m2_carstart");
+SetDynaLoadData("l4z7.p3d;l4r6.p3d;l4r7.p3d;");
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetMaxTraffic(3); 
+	SetStageMessageIndex(24);
+	SetHUDIcon( "cletus_v" );
+	AddStageVehicle("cletu_v","m2_cletustruck_sd","NULL","Missions\level04\M2chase.con","cletus");
+	AddStageCharacter("marge", "", "", "current", "m2_carstart" );
+	AddStageWaypoint( "m2_waypoint1" );
+	AddStageWaypoint( "m2_waypoint1b" );
+	AddStageWaypoint( "m2_waypoint2" );
+	AddStageWaypoint( "m2_waypoint3" );
+	AddStageWaypoint( "m2_waypoint4" );
+	AddStageWaypoint( "m2_waypoint5" );
+	AddStageWaypoint( "m2_waypoint6" );
+	StartCountdown("count");
+		AddToCountdownSequence( "3", 1000 ); // duration time in milliseconds
+		AddToCountdownSequence( "2", 1000 ); // duration time in milliseconds
+		AddToCountdownSequence( "1", 1000 ); // duration time in milliseconds
+		AddToCountdownSequence( "GO", 1000 ); // duration time in milliseconds
+	AddObjective("dump", "neither");
+		ActivateVehicle("cletu_v","m2_cletustruck_sd","evade");
+		SetVehicleAIParams( "cletu_v", 10, 20 );   // random shortcuts
+		AddNPC("cletus","cletus_hide");
+		SetObjTargetVehicle("cletu_v");
+		AddCollectible("m2_stuff1","cola");
+		AddCollectible("m2_stuff1b","tomat");
+		AddCollectible("m2_stuff2","donut");
+		AddCollectible("m2_stuff3","wplanks");
+		AddCollectible("m2_stuff4","lwnchair");
+		AddCollectible("m2_stuff5","cola");
+		AddCollectible("m2_stuff6","donut");
+		BindCollectibleTo(0, 0);
+		BindCollectibleTo(1, 1);
+		BindCollectibleTo(2, 2);
+		BindCollectibleTo(3, 3);
+		BindCollectibleTo(4, 4);
+		BindCollectibleTo(5, 5);
+		BindCollectibleTo(6, 6);
+	CloseObjective();
+	AddCondition("followdistance");
+		SetFollowDistances(0,200);
+		SetCondTargetVehicle("cletu_v");
+	CloseCondition();
+	SetIrisWipe( 0.1 );
+CloseStage();
+
+
+AddStage("final"); // gets Marge out of the Cra ready for dialogue in M3
+	AddObjective("timer");
+		AddStageCharacter("marge", "m2_marge_2", "", "current", "m2_marge_car2" );
+		AddNPC("cletus","m2_cletus_2");
+		AddStageVehicle("cletu_v","m2_cletustruck_2","NULL","Missions\level04\M2chase.con");
+		SetDurationTime(1);
+	CloseObjective();
+CloseStage();
+
+
+CloseMission();

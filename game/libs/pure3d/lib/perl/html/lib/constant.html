@@ -1,0 +1,239 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>constant - Perl pragma to declare constants
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#TECHNICAL_NOTE">TECHNICAL NOTE</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+constant - Perl pragma to declare constants
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use constant BUFFER_SIZE    =&gt; 4096;
+    use constant ONE_YEAR       =&gt; 365.2425 * 24 * 60 * 60;
+    use constant PI             =&gt; 4 * atan2 1, 1;
+    use constant DEBUGGING      =&gt; 0;
+    use constant ORACLE         =&gt; 'oracle@cs.indiana.edu';
+    use constant USERNAME       =&gt; scalar getpwuid($&lt;);
+    use constant USERINFO       =&gt; getpwuid($&lt;);
+</PRE>
+
+<P>
+
+<PRE>    sub deg2rad { PI * $_[0] / 180 }
+</PRE>
+
+<P>
+
+<PRE>    print &quot;This line does nothing&quot;              unless DEBUGGING;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This will declare a symbol to be a constant with the given scalar or list
+value.
+
+
+<P>
+
+When you declare a constant such as <CODE>PI</CODE> using the method shown above, each machine your script runs upon can have
+as many digits of accuracy as it can use. Also, your program will be easier
+to read, more likely to be maintained (and maintained correctly), and far
+less likely to send a space probe to the wrong planet because nobody
+noticed the one equation in which you wrote <CODE>3.14195</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTES">NOTES
+
+</A></H1>
+The value or values are evaluated in a list context. You may override this
+with <A HREF="#item_scalar">scalar</A> as shown above.
+
+
+<P>
+
+These constants do not directly interpolate into double-quotish strings,
+although you may do so indirectly. (See <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A> for details about how this works.)
+
+
+<P>
+
+<PRE>    print &quot;The value of PI is @{[ PI ]}.\n&quot;;
+</PRE>
+
+<P>
+
+List constants are returned as lists, not as arrays.
+
+
+<P>
+
+<PRE>    $homedir = USERINFO[7];             # WRONG
+    $homedir = (USERINFO)[7];           # Right
+</PRE>
+
+<P>
+
+The use of all caps for constant names is merely a convention, although it
+is recommended in order to make constants stand out and to help avoid
+collisions with other barewords, keywords, and subroutine names. Constant
+names must begin with a letter.
+
+
+<P>
+
+Constant symbols are package scoped (rather than block scoped, as
+<CODE>use strict</CODE> is). That is, you can refer to a constant from package Other as <CODE>Other::CONST</CODE>.
+
+
+<P>
+
+As with all <A HREF="#item_use">use</A> directives, defining a constant happens at compile time. Thus, it's
+probably not correct to put a constant declaration inside of a conditional
+statement (like <CODE>if ($foo)
+{ use constant ... }</CODE>).
+
+
+<P>
+
+Omitting the value for a symbol gives it the value of <A HREF="#item_undef">undef</A> in a scalar context or the empty list, <CODE>()</CODE>, in a list context. This isn't so nice as it may sound, though, because in
+this case you must either quote the symbol name, or use a big arrow, (<A HREF="#item__gt_">=&gt;</A>), with nothing to point to. It is probably best to declare these
+explicitly.
+
+
+<P>
+
+<PRE>    use constant UNICORNS       =&gt; ();
+    use constant LOGFILE        =&gt; undef;
+</PRE>
+
+<P>
+
+The result from evaluating a list constant in a scalar context is not
+documented, and is <STRONG>not</STRONG> guaranteed to be any particular value in the future. In particular, you
+should not rely upon it being the number of elements in the list,
+especially since it is not
+<STRONG>necessarily</STRONG> that value in the current implementation.
+
+
+<P>
+
+Magical values, tied values, and references can be made into constants at
+compile time, allowing for way cool stuff like this. (These error numbers
+aren't totally portable, alas.)
+
+
+<P>
+
+<PRE>    use constant E2BIG =&gt; ($! = 7);
+    print   E2BIG, &quot;\n&quot;;        # something like &quot;Arg list too long&quot;
+    print 0+E2BIG, &quot;\n&quot;;        # &quot;7&quot;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="TECHNICAL_NOTE">TECHNICAL NOTE
+
+</A></H1>
+In the current implementation, scalar constants are actually inlinable
+subroutines. As of version 5.004 of Perl, the appropriate scalar constant
+is inserted directly in place of some subroutine calls, thereby saving the
+overhead of a subroutine call. See
+<A HREF="/n|/perl/html/./lib/Pod/perlsub.html#Constant_Functions">Constant Functions</A> for details about how and when this happens.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+In the current version of Perl, list constants are not inlined and some
+symbols may be redefined without generating a warning.
+
+
+<P>
+
+It is not possible to have a subroutine or keyword with the same name as a
+constant. This is probably a Good Thing.
+
+
+<P>
+
+Unlike constants in some languages, these cannot be overridden on the
+command line or via environment variables.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Phoenix, &lt;<EM>rootbeer@teleport.com</EM>&gt;, with help from many other folks.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 
+<FONT SIZE=-1>(C)</FONT> 1997, Tom Phoenix
+
+
+<P>
+
+This module is free software; you can redistribute it or modify it under
+the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

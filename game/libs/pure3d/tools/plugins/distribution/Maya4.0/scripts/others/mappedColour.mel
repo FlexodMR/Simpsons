@@ -1,0 +1,154 @@
+/*===========================================================================
+   File:    mappedColour.mel
+   Created: April 11, 2002
+   Author:  Harold Westlund
+
+   Copyright (c) 2002 Radical Entertainment, Inc.
+   All rights reserved.
+
+=============================================================================
+
+    This procedure remap from a specified RGB vertex colour to
+    another RGB vertex colour.  The parameters to this function are
+    seven float arrays: source red, source green, source blue, destination
+    red, destination green, destination blue, and tolerance.  The
+    indexed values of the first three arrays are sets of source colours, the
+    next three are sets of destination colours, and the last array is the
+    delta about source colours which allow for a range of acceptable colours.
+
+    return value:
+    bool = success of this procedure.
+
+===========================================================================*/
+
+global proc int mappedColour ( 
+    float $map_srcRed[],
+    float $map_srcGreen[],
+    float $map_srcBlue[],
+    float $map_dstRed[],
+    float $map_dstGreen[],
+    float $map_dstBlue[],
+    float $map_tolerance[] )
+    
+{
+    print "Remapping vertex colours.\n";
+    
+    int $NUM_MAPS = size( $map_srcRed );
+    if( size( $map_srcGreen ) != $NUM_MAPS  ||
+        size( $map_srcBlue )  != $NUM_MAPS  ||
+        size( $map_dstRed )   != $NUM_MAPS  ||
+        size( $map_dstGreen ) != $NUM_MAPS  ||
+        size( $map_dstBlue )  != $NUM_MAPS  ||
+        $NUM_MAPS == 0 )
+    {
+        return false;
+    }
+
+    string $selection[] = `ls -selection`;
+
+    string $mesh[] = `filterExpand -sm 12 -ex true`;
+
+    float $low_srcRed[];
+    float $low_srcGreen[];
+    float $low_srcBlue[];
+    float $high_srcRed[];
+    float $high_srcGreen[];
+    float $high_srcBlue[];
+
+    // Initialize sample range variables
+    int $idx;
+    for ( $idx = 0; $idx < $NUM_MAPS; $idx++ )
+    {
+        $low_srcRed[$idx]    = $map_srcRed[$idx]   - $map_tolerance[$idx];
+        $low_srcGreen[$idx]  = $map_srcGreen[$idx] - $map_tolerance[$idx];
+        $low_srcBlue[$idx]   = $map_srcBlue[$idx]  - $map_tolerance[$idx];
+        $high_srcRed[$idx]   = $map_srcRed[$idx]   + $map_tolerance[$idx];
+        $high_srcGreen[$idx] = $map_srcGreen[$idx] + $map_tolerance[$idx];
+        $high_srcBlue[$idx]  = $map_srcBlue[$idx]  + $map_tolerance[$idx];
+    }
+
+    // Step through all selected meshes
+    for( $i = 0; $i < size($mesh); $i++ )
+    {
+        int $verticesA[] = `polyEvaluate -v ( $mesh[$i] )`;
+        int $numVerts    = $verticesA[0];
+        clear $verticesA;
+          
+        int $vfIdx = 0;
+        int $viList[];
+        int $fiList[];
+        float $redList[];
+        float $greenList[];
+        float $blueList[];
+        
+        // Step through the vertices in the mesh
+        for( $j = 0; $j < $numVerts; $j++ )
+        {
+            // Find the faces which use the current vertex.
+            string $command = " " + $mesh[$i] + ".vtx["+$j+"]";
+            string $s[] = `polyInfo -vf $command`;
+            string $t[];
+            int $tokCount = `tokenize $s[0] $t`;
+            clear $s;
+            
+            // Step through the vertexFaces for this vertex
+            for( $k = 2; $k < $tokCount; $k++ )
+            {
+                string $vf = " " + $mesh[$i] + ".vtxFace["+$j+"]["+$t[$k]+"]";
+                float $rgb[] = `polyColorPerVertex -q -r -g -b $vf`;
+                float $red   = $rgb[0];
+                float $green = $rgb[1];
+                float $blue  = $rgb[2];
+                clear $rgb;
+
+                // Apply the appropriate color maps.
+                int $mIdx;
+                for ( $mIdx = 0; $mIdx < $NUM_MAPS; $mIdx++ )
+                {
+                    if ( ( $red   >= $low_srcRed[$mIdx] )   &&
+                         ( $red   <= $high_srcRed[$mIdx] )  &&
+                         ( $green >= $low_srcGreen[$mIdx] ) &&
+                         ( $green <= $high_srcGreen[$mIdx] )&&
+                         ( $blue  >= $low_srcBlue[$mIdx] )  &&
+                         ( $blue  <= $high_srcBlue[$mIdx] ) )
+                    {
+                        // Colour is within specified range
+                        $red   = $map_dstRed[$mIdx];
+                        $green = $map_dstGreen[$mIdx];
+                        $blue  = $map_dstBlue[$mIdx];
+
+                        // Write color back to vertexFace
+//                        polyColorPerVertex -e -rgb $red $green $blue $vf;
+                        break;
+                    }
+                }
+                $viList[$vfIdx]    = $j;
+                $fiList[$vfIdx]    = $t[$k];
+                $redList[$vfIdx]   = $red;
+                $greenList[$vfIdx] = $green;
+                $blueList[$vfIdx]  = $blue;
+
+                $vfIdx++;
+                
+            }
+            clear $t;
+
+        }
+        // Use the collected information to colour the mesh.
+        polyColorPerVertexArray( $viList, $fiList, $redList,
+                                     $greenList, $blueList, $mesh[$i] );
+        clear $viList;
+        clear $fiList;
+        clear $redList;
+        clear $greenList;
+        clear $blueList;
+    }
+    clear $mesh;
+
+    select $selection;
+    
+    print "Finished remapping.\n";
+
+    return true;
+}
+

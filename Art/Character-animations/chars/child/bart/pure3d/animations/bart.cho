@@ -1,0 +1,639 @@
+//---------------------------------------------------------------------------
+// Bart
+//---------------------------------------------------------------------------
+
+// skeleton rig
+rig "bart"
+{
+    skeleton "bart";
+
+    // roots
+    jointIndex_AIRoot 0;
+    jointIndex_OrientationRoot 0;
+    joint_MotionRoot "Motion_Root";
+    joint_BalanceRoot "Balance_Root";
+    joint_CharacterRoot "Character_Root";
+
+    // balance root
+    maxBalanceRootCompress 0.25;
+
+    // legs
+    leg "left"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 1;
+
+        joint_FKMin "Hip_L";
+        joint_FKMax "Ball_L";
+
+        joint_Thigh "Hip_L";
+        joint_Knee "Knee_L";
+        joint_Ankle "Ankle_L";
+
+        //joint_Effector "Left_Foot";
+        //joint_PoleVector "Left_Knee";
+        //joint_OrientOffset "L_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+
+    leg "right"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 0;
+
+        joint_FKMin "Hip_R";
+        joint_FKMax "Ball_R";
+
+        joint_Thigh "Hip_R";
+        joint_Knee "Knee_R";
+        joint_Ankle "Ankle_R";
+
+        //joint_Effector "Right_Foot";
+        //joint_PoleVector "Right_Knee";
+        //joint_OrientOffset "R_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+};
+
+// bank
+bank "bart"
+{
+    // reference to skeleton configuration
+    rig "bart";
+
+    default animation.blendOutTime 0.1;
+    default animation.blendInTime 0.1;
+    
+// IDLE ANIMATIONS FOR REGULAR SKIN BART
+
+    animation "bart_idle0"
+    {
+	    animation "brt_idle_hands_on_hips";
+    };
+
+    animation "bart_idle1"
+    {
+	    animation "brt_idle_handstand";
+    };
+
+    animation "bart_idle2"
+    {
+	    animation "brt_idle_backflip";
+    };
+
+// IDLE ANIMATIONS FOR MILITARY SKIN BART
+
+    animation "b_military_idle0"
+    {
+	    animation "brt_idle_salute";
+    };
+
+    animation "b_military_idle1"
+    {
+	    animation "brt_idle_handstand";
+    };
+
+    animation "b_military_idle2"
+    {
+	    animation "brt_idle_backflip";
+    };
+
+// IDLE ANIMATIONS FOR FOOTBALL SKIN BART
+
+    animation "b_football_idle0"
+    {
+	    animation "brt_idle_football";
+    };
+
+    animation "b_football_idle1"
+    {
+	    animation "brt_idle_handstand";
+    };
+
+    animation "b_football_idle2"
+    {
+	    animation "brt_idle_backflip";
+    };
+
+// IDLE ANIMATIONS FOR NINJA SKIN BART
+
+    animation "b_ninja_idle0"
+    {
+	    animation "brt_idle_ninja";
+    };
+
+    animation "b_ninja_idle1"
+    {
+	    animation "brt_idle_handstand";
+    };
+
+    animation "b_ninja_idle2"
+    {
+	    animation "brt_idle_backflip";
+    };
+
+// IDLE ANIMATIONS FOR BARTMAN SKIN BART
+
+    animation "b_man_idle0"
+    {
+	    animation "brt_idle_bartman";
+    };
+
+    animation "b_man_idle1"
+    {
+	    animation "brt_idle_handstand";
+    };
+
+    animation "b_man_idle2"
+    {
+	    animation "brt_idle_backflip";
+    };
+
+// IDLE ANIMATIONS FOR HUGO SKIN BART
+
+    animation "b_hugo_idle0"
+    {
+	    animation "brt_idle_hugo";
+    };
+
+    animation "b_hugo_idle1"
+    {
+	    animation "brt_idle_handstand";
+    };
+
+    animation "b_hugo_idle2"
+    {
+	    animation "brt_idle_backflip";
+    };
+
+// IDLE ANIMATIONS FOR TALL SKIN BART
+
+    animation "b_tall_idle0"
+    {
+	    animation "brt_idle_pee_wee_dance";
+    };
+
+    animation "b_tall_idle1"
+    {
+	    animation "brt_idle_handstand";
+    };
+
+    animation "b_tall_idle2"
+    {
+	    animation "brt_idle_backflip";
+    };
+
+// SURF ANIMATIONS
+
+    animation "surf_in"
+    {
+	    animation "brt_surf_in";
+    };
+
+    animation "surf_cycle"
+    {
+	    animation "brt_surf_cycle";
+    };
+
+    animation "surf_out"
+    {
+	    animation "brt_surf_out";
+    };
+
+    animation "victory_large"
+    {
+	    animation "brt_victory_large";
+    };
+
+    animation "victory_small"
+    {
+	    animation "brt_victory_small";
+    };
+
+    animation "get_into_car"
+    {
+	    animation "brt_get_into_car";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_open_door"
+    {
+	    animation "brt_get_into_car_open_door";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_close_door"
+    {
+	    animation "brt_get_into_car_close_door";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car"
+    {
+	    animation "brt_get_out_of_car";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_open_door"
+    {
+	    animation "brt_get_out_of_car_open_door";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_close_door"
+    {
+	    animation "brt_get_out_of_car_close_door";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_close_door_high"
+    {
+	    animation "brt_get_into_car_close_door_high";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_open_door_high"
+    {
+	    animation "brt_get_into_car_open_door_high";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_high"
+    {
+	    animation "brt_get_into_car_high";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_close_door_high"
+    {
+	    animation "brt_get_out_of_car_close_door_high";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_open_door_high"
+    {
+	    animation "brt_get_out_of_car_open_door_high";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_high"
+    {
+	    animation "brt_get_out_of_car_high_driver";
+	blendInTime 0.01;
+    };
+    animation "jump_idle_launch"
+    {
+	    animation "brt_jump_idle_take_off";
+    };
+    animation "jump_idle"
+    {
+	    animation "brt_jump_idle_in_air";
+    };
+    animation "jump_idle_land"
+    {
+	    animation "brt_jump_idle_land";
+    };
+    
+    animation "dash"
+    {
+	    animation "brt_loco_dash";
+    };
+    
+    animation "hit_switch"
+    {
+    	animation "brt_hit_switch";
+    };
+    animation "hit_switch_quick"
+    {
+    	animation "brt_hit_switch";
+    	blendInTime 0.01;
+    };
+   
+    animation "jump_dash_in_air"
+    {
+    	animation "brt_jump_dash_in_air";
+	blendInTime 0.01;
+    };
+    
+   
+    animation "break"
+    {
+    	animation "brt_break";
+    };
+    animation "break_quick"
+    {
+	animation "brt_break";
+	blendInTime 0.01;
+    };
+
+    animation "get_into_car_driver"
+    {
+	    animation "brt_get_into_car_driver";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_open_door_driver"
+    {
+	    animation "brt_get_into_car_open_door_driver";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_close_door_driver"
+    {
+	    animation "brt_get_into_car_close_door_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_driver"
+    {
+	    animation "brt_get_out_of_car_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_open_door_driver"
+    {
+	    animation "brt_get_out_of_car_open_door_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_close_door_driver"
+    {
+	    animation "brt_get_out_of_car_close_door_driver";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_close_door_high_driver"
+    {
+	    animation "brt_get_into_car_close_door_high_driver";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_open_door_high_driver"
+    {
+	    animation "brt_get_into_car_open_door_high_driver";
+	blendInTime 0.01;
+    };
+    animation "get_into_car_high_driver"
+    {
+	    animation "brt_get_into_car_high_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_close_door_high_driver"
+    {
+	    animation "brt_get_out_of_car_close_door_high_driver";
+	blendInTime 0.01;
+    };
+    animation "get_out_of_car_open_door_high_driver"
+    {
+	    animation "brt_get_out_of_car_open_door_high_driver";
+	blendInTime 0.01;
+    }
+;
+    animation "get_out_of_car_high_driver"
+    {
+	    animation "brt_get_out_of_car_high";
+	blendInTime 0.01;
+    };
+
+    animation "stomp_antic"
+    {
+	    animation "brt_stomp_antic";
+    };
+
+    animation "stomp_in_air"
+    {
+	    animation "brt_stomp_in_air";
+    };
+
+    animation "stomp_land"
+    {
+	    animation "brt_stomp_land";
+    };
+
+    animation "jump_kick"
+    {
+	    animation "brt_jump_kick";
+    };
+
+//  THIS IS WHERE THE DIALOGUE ANIMATIONS BEGIN   
+
+    animation "dialogue_thinking"
+    {
+	    animation "brt_dialogue_thinking";
+    };
+
+    animation "dialogue_hands_on_hips"
+    {
+	    animation "brt_dialogue_hands_on_hips";
+    };
+
+    animation "dialogue_hands_in_air"
+    {
+	    animation "brt_dialogue_hands_in_air";
+    };
+
+    animation "dialogue_shaking_fist"
+    {
+	    animation "brt_dialogue_shaking_fist";
+    };
+
+    animation "dialogue_scratch_head"
+    {
+	    animation "brt_dialogue_scratch_head";
+    };
+
+    animation "dialogue_yes"
+    {
+	    animation "brt_dialogue_yes";
+    };
+
+    animation "dialogue_no"
+    {
+	    animation "brt_dialogue_no";
+    };
+
+    animation "dialogue_cross_arms"
+    {
+	    animation "brt_dialogue_cross_arms";
+    };
+
+    animation "dialogue_open_arm_hand_gesture"
+    {
+	    animation "brt_dialogue_open_arm_hand_gesture";
+    };
+
+    animation "dialogue_shake_hand_in_air"
+    {
+	    animation "brt_dialogue_shake_hand_in_air";
+    };
+
+    animation "dodge"
+    {
+        animation "npd_dodge";
+    };
+
+    animation "flail"
+    {
+        animation "brt_flail";
+    };
+
+    animation "get_up"
+    {
+        animation "brt_get_up";
+    };
+
+
+    // in car animations borrowed from ndr and nps anim sets
+
+    animation "in_car_idle_driver"
+    {
+        animation "ndr_in_car_idle";
+        blendInTime 0;
+        blendOutTime 0;
+    };
+
+    animation "in_car_idle"
+    {
+        animation "npd_in_car_idle";
+        blendInTime 0;
+        blendOutTime 0;
+    };
+
+    animation "turn_left_driver"
+    {
+        animation "ndr_turn_left";
+    };
+
+    animation "turn_right_driver"
+    {
+        animation "ndr_turn_right";
+    };
+
+    animation "accelerate_driver"
+    {
+	    animation "ndr_accelerate";
+    };
+
+    animation "crash_driver"
+    {
+	    animation "ndr_crash";
+    };
+
+    animation "decelerate_driver"
+    {
+	    animation "ndr_decelerate";
+    };
+
+    animation "look_back_driver"
+    {
+	    animation "ndr_look_back";
+    };
+
+    animation "sway_left_driver"
+    {
+	    animation "ndr_sway_left";
+    };
+
+    animation "sway_right_driver"
+    {
+	    animation "ndr_sway_right";
+    };
+
+    animation "wave_driver"
+    {
+	    animation "ndr_wave";
+    };
+
+     animation "wave_goodbye_driver"
+    {
+	    animation "ndr_wave_goodbye";
+    };
+
+	animation "point_left"
+	{
+		animation "nps_point_left";
+	};
+
+	animation "point_right"
+	{
+		animation "nps_point_right";
+	};
+
+	animation "point_straight_ahead"
+	{
+		animation "nps_point_straight_ahead";
+	};
+
+	animation "look_back"
+	{
+		animation "nps_look_back";
+	};
+
+	animation "look_left"
+	{
+		animation "nps_look_left";
+	};
+
+	animation "look_right"
+	{
+		animation "nps_look_right";
+	};
+
+	animation "sway_right"
+	{
+		animation "nps_sway_right";
+	};
+
+	animation "sway_left"
+	{
+		animation "nps_sway_left";
+	};
+
+    animation "in_car_victory_large_driver"
+    {
+	    animation "ndr_in_car_victory_large";
+    };
+  
+    animation "in_car_victory_small_driver"
+    {
+	    animation "ndr_in_car_victory_small";
+    };
+     
+    animation "in_car_victory_large"
+    {
+	    animation "nps_victory_large";
+    };
+  
+    animation "in_car_victory_small"
+    {
+	    animation "nps_victory_small";
+    };
+
+    animation "seatmove"
+    {
+        animation "npd_seatmove";
+        blendInTime 0;
+        blendOutTime 0;
+    };
+
+    locomotion4 "walkerLoco"
+    {
+        idle "brt_loco_idle_rest";
+
+        blendInTime 0.1;
+        blendOutTime 0.1;
+
+        priority 1;
+
+        //acceleration 50;
+        //turningAcceleration 1440;
+        //turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        animation "n" 0 "brt_loco_walk";
+        animation "w" 0 "brt_loco_walk";
+        animation "s" 0 "brt_loco_walk";
+        animation "e" 0 "brt_loco_walk";
+
+        animation "n" 1 "brt_loco_run";
+        animation "w" 1 "brt_loco_run";
+        animation "s" 1 "brt_loco_run";
+        animation "e" 1 "brt_loco_run";
+
+        animation "n" 2 "brt_loco_dash";
+        animation "w" 2 "brt_loco_dash";
+        animation "s" 2 "brt_loco_dash";
+        animation "e" 2 "brt_loco_dash";
+    };
+   
+};
+
+
+
+
+// End of file.

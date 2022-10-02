@@ -1,0 +1,453 @@
+//here we get the contents of the P3D_GameAttr string and put it into the tempArray
+//then we append on the new attribute name
+//and write it back to the P3D_GameAttr 
+//P3D_GameAttr has been changed from a string array to just a string separated with '~'
+//this is because you can't use the 'getAttr' method on string arrays, which is necessary below
+
+global proc AppendP3DString(string $attrName)          
+{
+   global string $curObj;
+   int $numAtt = 0;
+   string $objName = $curObj + ".P3D_GameAttr";
+   string $attrString = `getAttr ($objName)`;    
+   string $attrArr[];
+   
+   if ($attrString != "")
+      $numAtt = `tokenize ($attrString) "~" ($attrArr)`;   
+   
+   
+   string $attListing = $attrName;      //attListing: the new list of attributes
+   
+   int $i;                              //now append all the old attribute names onto the array
+   for ($i=0; $i < $numAtt; $i++)
+   {
+      $attListing+= "~" + $attrArr[$i];
+   }
+
+   $numAtt++;
+   evalEcho ("setAttr " + $objName + " -type \"string\"" + " \"" + ($attListing) + "\";");
+
+}
+
+//this function adds the selected attribute to 'curObj', the currently selected node
+global proc p3dAddNewAttribute()
+{
+   global string $curObj;
+   //get selected attribute from scroll list
+   string $attName[] = `textScrollList -query -si attNameScrollList`;   
+                                                                        
+   global string $attributeArray[];                         
+   if ($attName[0] != "")
+   {
+      //see if custom attribute is already there
+      string $testStrArr[] = `listAttr -st $attName[0] $curObj`;     
+      if ($testStrArr[0] != "")
+      {
+         warning "That attribute already exists in the selected object";
+      }
+      else
+      {
+         string $attIter;                 
+         int $i=0;
+         
+         while ($attributeArray[$i] != "")      
+         {
+            $attIter = $attributeArray[$i];
+            if ($attIter == $attName[0])
+            {
+               $attrType = $attributeArray[$i+1];
+               //add the new attribute
+               evalEcho( "addAttr -ln " + $attName[0] + " " + $attrType + " " + $curObj + ";" );   
+               //add the attribute name to our P3D_GameAttr string
+               AppendP3DString($attName[0]); 
+            }
+            $i+=2;
+         }
+      }
+   }
+   
+   deleteUI -window AddCustomAttributeWindow;   //kill the 'add attribute' window
+}
+
+
+//display a window listing all the defined custom attributes in a list box
+//selecting one adds that attribute to the selected object and appends the attribute name to the P3D_GameAttr string
+global proc P3DAddCustomAttribute()
+{
+   global string $attributeArray[];
+   $attributeArray = `p3dParseAttributeArray`;
+   global string $curObj;                    //this is the exportable object we're dealing with while the script is running
+  
+   string $selList[] = `ls -sl`;             //get the list of all things currently selected
+   if ($selList[0] == "")
+   {
+      warning "You need to select an object";
+      
+   }
+   else
+   {
+      string $selName = $selList[0];            //take the first one
+      
+   
+      /*if (nodeType($selName) == "transform")    //we don't want to be adding attributes to transform nodes
+      {                                         //because they won't be exported
+                                                         
+         string $curObjArr[] = `listRelatives -c $selName`;    //find related shape node
+      
+         for ($testStr in $curObjArr)                          //need to iterate through $curObjArr looking for deepest non-transform node
+         {
+            if (nodeType($testStr) != "transform")
+               $curObj = $testStr;
+                           
+         }
+   
+      }
+      else $curObj = $selName;                  //we're good- it's not a transform node
+      */ 
+      $curObj = $selName;
+      //so now we have the name of the object we want to add the custom attr. to
+   
+   
+      //check if it already has the string attribute
+      string $tempList[] = `listAttr -st P3D_GameAttr $curObj`;
+      if ($tempList[0] == "")    
+      {
+         addAttr -ln P3D_GameAttr -dt "string" -hidden true ($curObj);      //no, so add it
+      }
+
+   
+      //now display the 'add custom' scroll box
+      string $NameString = "Add Custom Attribute to " + $curObj;
+      if (`window -exists AddCustomAttributeWindow`)
+         deleteUI -window AddCustomAttributeWindow;
+      window -widthHeight 300 150 -minimizeButton false -maximizeButton false -sizeable true
+             -title $NameString AddCustomAttributeWindow;
+   
+      string $curForm = `formLayout`;
+   
+      //construct a textScrollList named attNameScrollList
+      textScrollList -numberOfRows 8 -allowMultiSelection false 
+    	   -dcc ( "p3dAddNewAttribute " )
+    	   -showIndexedItem 1 
+         attNameScrollList;
+   
+      formLayout butForm;
+         string $okbtn = `button -label "OK" -command ( "p3dAddNewAttribute" ) -width 80`;      //call attr loader
+         string $cancelbtn = `button -label "Cancel" -command ("deleteUI -window AddCustomAttributeWindow") -width 80`;
+   
+
+      formLayout -edit
+         -af $okbtn left 5
+         -af $okbtn top 5
+         -af $okbtn bottom 5
+         -ac $okbtn right 5 $cancelbtn
+         -af $cancelbtn top 5
+         -af $cancelbtn right 5
+         -af $cancelbtn bottom 5
+         -an $cancelbtn left
+         butForm;
+      
+      //append all custom attributes to list box
+      int $i = 0;
+      while ($attributeArray[$i] != "")
+      {
+         textScrollList -edit -append $attributeArray[$i] attNameScrollList;
+         $i+=2;
+      }
+
+   
+      formLayout -edit
+         -af attNameScrollList top 5
+         -af attNameScrollList left 5
+         -af attNameScrollList right 5
+         -ac attNameScrollList bottom 5 butForm
+         -af butForm left 5
+         -af butForm bottom 5
+         -an butForm top
+         -an butForm right
+         
+         $curForm;
+   
+       showWindow;
+   }   
+   
+
+
+}
+
+//load up the attribute table file and extract all the defined attributes from it
+global proc string[] p3dParseAttributeArray()
+{
+   string $curAttr[];
+   int $i = 0;
+   string $fileLoc = `internalVar -userScriptDir`;  
+   $fileLoc+="p3dAddCustomAttributeTable.mel";
+   $fileId = `fopen $fileLoc "r"`;
+   
+   if ($fileId == 0)
+   {
+      $fileId = `fopen $fileLoc "w"`;     //couldn't open for reading-try to create it
+      
+      if ($fileId == 0)//error opening file
+      {
+         error ("Error opening " + $fileLoc);
+         return $curAttr;
+      }
+   }
+   
+   string $nextWord = `fgetword $fileId`;
+   while (size ($nextWord ) > 0) 
+   {
+      if ((fmod($i,2) ) ==0)
+      {
+         $curAttr[$i] = $nextWord;         
+      }
+      else
+      {
+         $nextWord+=" " + `fgetword $fileId`;
+         $curAttr[$i] = $nextWord;
+      }
+
+      $i++;
+      $nextWord = `fgetword $fileId`;
+   }
+   fclose $fileId;
+   return $curAttr; 
+}
+
+//This is part of the 'define new attr' code- it defines a new attribute based on the selected type and name
+global proc p3dSetNewAttr(string $textField, string $radCollection)
+{
+   string $attName = `textFieldGrp -query -tx $textField`;
+   if ($attName == "")
+   {
+      confirmDialog -message "Please enter an attribute name" -button "OK"
+    	-defaultButton "OK"
+    	-dismissString "OK";
+      return;
+   }
+
+
+   string $whichradBtn = `radioCollection -query -sl $radCollection`;
+   string $radBtn = `radioButton -query -label $whichradBtn`;
+   if ($radBtn == "")
+   {
+      confirmDialog -message "Please enter an attribute type" -button "OK"
+    	-defaultButton "OK"
+    	-dismissString "OK";
+      return;
+   }
+
+   string $dataType;
+   //now: make sure attName doesn't already exist
+   //    then append it to the file
+   switch ($radBtn)
+   {
+      case "Integer":
+         $dataType = "-at long";
+         break;
+      case "Float":
+         $dataType = "-at \"float\"";
+         break;
+      case "Vector":
+         $dataType = "-dt float3";
+         break;
+      case "Matrix":
+         $dataType = "-dt \"matrix\"";
+         break;
+   };
+   
+   string $curAtt[] = `p3dParseAttributeArray`;
+   if (size($curAtt) != 0)
+   {
+      string $iter;
+      for ($iter in $curAtt)
+      {
+         if ($iter == $attName)
+         {
+            confirmDialog -message "There\'s already an attribute with that name" -button "OK"
+    	                     -defaultButton "OK"
+    	                     -dismissString "OK";
+            return;
+         }
+
+      }
+
+      
+      
+   }
+   p3dWriteNewAttribute($attName, $dataType);
+   deleteUI DefineCustomAttributeWindow;
+   if (`window -exists AddCustomAttributeWindow`)
+      P3DAddCustomAttribute;
+   P3DDefineCustomAttribute;
+   
+}
+
+
+global proc p3dWriteNewAttribute(string $attName, string $dataType)
+{
+   string $fileLoc = `internalVar -userScriptDir`;  
+   $fileLoc+="p3dAddCustomAttributeTable.mel";
+   $fileId = `fopen $fileLoc "a"`;
+   fprint $fileId ("\n" + $attName);
+   fprint $fileId (" " + $dataType);
+   fclose $fileId;
+}
+
+
+
+global proc p3dDefineNewAttr()
+{
+   if (`window -exists DefineCustomAttributeWindow`)
+      deleteUI -window DefineCustomAttributeWindow;
+   
+   window   -widthHeight 300 400
+            -minimizeButton false -maximizeButton false 
+            -sizeable true
+            -title "Define Custom Attributes"
+            DefineCustomAttributeWindow;
+   
+   string $curForm = `formLayout`;
+   $colLayout = `columnLayout`;
+   string $textField = `textFieldGrp -label "Attribute Name" -ct2 left left -cw2 100 100 -co2 5 5`;
+   setParent ..;
+   $radButFrame = `frameLayout -label "Data Type"`;
+    	columnLayout;
+    	string $collection1 = `radioCollection`;
+      string $longTypeRB = `radioButton -label "Integer"`;
+      string $floatTypeRB = `radioButton -label "Float"`;
+      string $vectorTypeRB = `radioButton -label "Vector"`;
+      string $matrixTypeRB = `radioButton -label "Matrix"`;
+    	setParent ..; setParent ..; setParent ..;
+
+   
+   
+   string $okbtn = `button -label "OK" -command ("p3dSetNewAttr " + $textField + " " + $collection1)`;
+   string $cancelbtn = `button -label "Cancel" -command "deleteUI -window DefineCustomAttributeWindow"`;
+   
+   //select the integer type by default
+   radioCollection -edit -select $longTypeRB $collection1;
+      
+   formLayout -edit
+               -af $colLayout top 5
+               -af $colLayout left 5
+               -an $colLayout right
+               -ac $colLayout bottom 5 $radButFrame
+               -af $radButFrame left 5
+               -an $radButFrame top
+               -an $radButFrame right
+               -ac $radButFrame bottom 10 $okbtn
+
+               -af $okbtn bottom 5
+               -af $okbtn left 5
+               -an $okbtn top
+               -an $okbtn right
+               -af $cancelbtn bottom 5
+               -ac $cancelbtn left 5 $okbtn 
+               -an $cancelbtn right
+               -an $cancelbtn top
+               $curForm;
+
+   
+   showWindow;
+}
+
+
+
+
+global proc p3dDeleteAttr(string $textListBox)
+{
+   string $attName;
+   string $attNameArr[] = `textScrollList -query -selectItem $textListBox`;
+   
+   if ($attNameArr[0] == "")
+      return;
+   tokenize $attNameArr[0] $attNameArr;
+   $attName = $attNameArr[0];
+   
+   string $curAtt[] = `p3dParseAttributeArray`;
+   if (size($curAtt) != 0)
+   {
+      string $tmp;
+      int $i=0;
+      while ($curAtt[$i] != "")
+      {
+         if ($curAtt[$i] == $attName)
+         {
+            $curAtt[$i] = "";
+            $curAtt[$i+1] = "";
+         }
+      
+         $i+=2;
+      }
+      sort ($curAtt);
+   
+      p3dWriteAllAtt($curAtt);
+   }
+
+   
+   if (`window -exists AddCustomAttributeWindow`)
+      P3DAddCustomAttribute;  
+   P3DDefineCustomAttribute;   //redisplay windows
+}
+
+global proc p3dWriteAllAtt(string $curAtt[])
+{
+   string $fileLoc = `internalVar -userScriptDir`;  
+   $fileLoc+="p3dAddCustomAttributeTable.mel";
+   $fileId = `fopen $fileLoc "w"`;
+   int $i = 0;
+   
+   
+   for ($i=0; $i < size($curAtt); $i+=2)
+   {
+      if ($curAtt[$i] == "")
+         continue;
+      fprint $fileId ("\n" + $curAtt[$i]);
+      fprint $fileId (" " + $curAtt[$i+1]);
+   }
+   
+   fclose $fileId; 
+   
+}
+
+
+global proc P3DDefineCustomAttribute()
+{
+   if (`window -exists ListCustomAttributeWindow`)
+      deleteUI -window ListCustomAttributeWindow;
+   
+   window -widthHeight 300 300
+            -minimizeButton false -maximizeButton false 
+            -sizeable true
+             -title "Custom Attributes List"
+             ListCustomAttributeWindow;
+   columnLayout;
+   textScrollList -numberOfRows 8 -allowMultiSelection false 
+    	   -showIndexedItem 1 
+         defineAttScrollList;
+   button -label "Define New Attr." -command ("p3dDefineNewAttr") -width 100;
+   button -label "Delete Attr." -command ("p3dDeleteAttr defineAttScrollList") -width 100;
+   button -label "Cancel" -command ("deleteUI -window ListCustomAttributeWindow") -width 100;
+   
+   
+  string $curAttr[] = `p3dParseAttributeArray`;
+  
+   int $i = 0;
+   
+   while ($curAttr[$i] != "")
+   {
+      string $tmpStr = $curAttr[$i];
+      $tmpStr+=" " + $curAttr[$i+1];
+      
+      textScrollList -edit -append $tmpStr defineAttScrollList;   //fill in scroll list with current defined custom attributes and their types
+      $i+=2;
+   }
+
+   
+      
+
+   showWindow;
+}
+

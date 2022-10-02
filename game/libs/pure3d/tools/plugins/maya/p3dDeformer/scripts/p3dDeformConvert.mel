@@ -1,0 +1,66 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformConvert.mel
+// Author: 
+//
+// Description: Callback function for the "Convert" Shelf button 
+// Converts old art to new art.
+//
+
+//this script will convert old deformer art to new deformer art.
+//it does this by copying the contents of the vertexOffset array into the 0th position of the vertexOffsetArray attribute
+//ditto for the indices
+//and it sets the 0th key to be '1'.
+
+
+global proc p3dDeformConvert()
+{
+   waitCursor -state on;
+
+   string $state_list[] = `ls -type p3dDeformExpressionState`;
+   string $curState;
+   for ($curState in $state_list)
+   {
+      string $curStateOffsets = $curState + ".vertexOffsets";
+      string $curStateIndices = $curState + ".vertexIndices";
+      int $offsetSize = `getAttr -size $curStateOffsets`;
+      print("\noffsetSize is " + $offsetSize);
+      if ($offsetSize > 0) //it's old art!  arrggh!
+      {
+         int $i;
+         string $oldOffsets = "";
+         for ($i =0; $i < $offsetSize; $i++)
+         {
+            float $oldOffset[] = eval("getAttr " + $curStateOffsets + "[" + $i + "]");
+            $oldOffsets+= $oldOffset[0];
+            $oldOffsets+= " ";
+            $oldOffsets+= $oldOffset[1];
+            $oldOffsets+= " ";
+            $oldOffsets+= $oldOffset[2];
+            $oldOffsets+= " ";
+         }
+
+         string $oldIndices = "";
+         for ($i =0; $i < $offsetSize; $i++)
+         {
+            int $oldIndex = eval("getAttr " + $curStateIndices + "[" + $i + "]");
+            $oldIndices+= $oldIndex;
+            $oldIndices+= " ";
+            
+         }
+
+
+         string $curStateOffsetArray = $curState + ".vertexOffsetsArray[0]";
+         evalEcho("setAttr " + $curStateOffsetArray + " -type vectorArray " + $offsetSize + " " + $oldOffsets);
+         string $curStateIndexArray = $curState + ".vertexIndicesArray[0]";
+         evalEcho("setAttr " + $curStateIndexArray + " -type Int32Array " + $offsetSize + " " + $oldIndices);
+         string $curStateKeyArray = $curState + ".keyIndices[0]";
+         evalEcho(" setAttr " + $curStateKeyArray + " " + 1);
+
+      }
+
+   }
+
+   waitCursor -state off;
+
+}

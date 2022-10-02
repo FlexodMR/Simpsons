@@ -1,0 +1,124 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tie::RefHash - use references as hash keys
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#VERSION">VERSION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tie::RefHash - use references as hash keys
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    require 5.004;
+    use Tie::RefHash;
+    tie HASHVARIABLE, 'Tie::RefHash', LIST;
+</PRE>
+
+<P>
+
+<PRE>    untie HASHVARIABLE;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provides the ability to use references as hash keys if you
+first <A HREF="#item_tie">tie</A> the hash variable to this module.
+
+
+<P>
+
+It is implemented using the standard perl 
+<FONT SIZE=-1>TIEHASH</FONT> interface. Please see the <A HREF="#item_tie">tie</A> entry in <CODE>perlfunc(1)</CODE> and <CODE>perltie(1)</CODE> for more
+information.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+<PRE>    use Tie::RefHash;
+    tie %h, 'Tie::RefHash';
+    $a = [];
+    $b = {};
+    $c = \*main;
+    $d = \&quot;gunk&quot;;
+    $e = sub { 'foo' };
+    %h = ($a =&gt; 1, $b =&gt; 2, $c =&gt; 3, $d =&gt; 4, $e =&gt; 5);
+    $a-&gt;[0] = 'foo';
+    $b-&gt;{foo} = 'bar';
+    for (keys %h) {
+       print ref($_), &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gurusamy Sarathy <A HREF="MAILTO:gsar@umich.edu">gsar@umich.edu</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VERSION">VERSION
+
+</A></H1>
+Version 1.2 15 Dec 1996
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<CODE>perl(1),</CODE> <CODE>perlfunc(1),</CODE> <CODE>perltie(1)</CODE>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,135 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformPruneExpression.mel
+// Author: 
+//
+// Description: Procedures for the Prune Vertices window
+
+global proc p3dDeformPruneExpressionWindow()
+{
+    string $toleranceLabelUI = "p3dDeformPruneToleranceLabel";
+    string $toleranceUI = "p3dDeformPruneToleranceField";
+    string $tslUI = "p3dDeformPruneStateList";
+    string $goUI = "p3dDeformPruneActiveButton";
+    string $refreshUI = "p3dDeformPruneRefreshButton";
+
+    if (`window -exists p3dDeformPruneWindow`)
+        deleteUI -window p3dDeformPruneWindow;
+
+    window -t "Prune Vertices"
+        -s true
+        -wh 239 231
+            p3dDeformPruneWindow;
+
+    string $form = `formLayout`;
+
+        text -label "Tolerance" $toleranceLabelUI;
+        floatField -ann "remove if sqrt(x*x + y*y + z*z) is less" -v 0.00001 -pre 8 -width 80 $toleranceUI;
+        textScrollList -ams true -nr 10 $tslUI;
+
+        setParent ..;
+
+    button -label "Go" -width 80 -c "p3dDeformCallbackMgr \"PruneVerticesGo\" {}" $goUI;
+    button -label "Refresh State List" -c "p3dDeformCallbackMgr \"RefreshPruneWin\" {}" $refreshUI;
+
+    formLayout -e
+        -af     $toleranceUI        "top"       4
+        -af     $toleranceUI        "right"     4
+
+        -af     $toleranceLabelUI   "top"       8
+        -ac     $toleranceLabelUI   "right"     2   $toleranceUI
+
+        -af     $refreshUI          "left"      4
+        -ap     $refreshUI          "right"     2   50
+        -af     $refreshUI          "bottom"    4
+
+        -ap     $goUI               "left"      2   50
+        -af     $goUI               "right"     4
+        -af     $goUI               "bottom"    4
+
+        -ac     $tslUI              "top"       4   $toleranceUI
+        -af     $tslUI              "left"      4
+        -af     $tslUI              "right"     4
+        -ac     $tslUI              "bottom"    4   $goUI
+            $form;
+
+    p3dDeformPruneExpressionRefreshWindowCallback;
+
+    showWindow;
+}
+
+global proc p3dDeformPruneExpressionCallback()
+{
+    if (`window -exists p3dDeformPruneWindow`)
+    {
+        float $tol = `floatField -q -v p3dDeformPruneToleranceField`;
+        string $selStates[] = `textScrollList -q -si p3dDeformPruneStateList`;
+        if (size($selStates) == 0)
+        {
+            confirmDialog -title "Error" -m "Nothing selected." -button "OK" -defaultButton "OK";
+            return;
+        }
+
+        int $numVert = 0;
+        for ($s=0; $s<size($selStates);$s++)
+        {
+            string $state = $selStates[$s];
+            int $result = catch($numVert+= p3dDeformPruneExpression($state,$tol));
+            if ($result == 1)
+            {
+                string $errorString = "State " + $state + " has no keys set.";
+                confirmDialog -title "Error" -m $errorString -button "OK" -defaultButton "OK";
+                return;
+            }
+        }
+
+        if ( $numVert > 0 )
+        {
+            string $message = $numVert + " vertices would be removed.  Go ahead?";
+            string $ret = `confirmDialog 
+            -title "Prune Expression?" 
+            -m $message 
+            -button "OK" 
+            -button "Cancel"
+            -defaultButton "Cancel"
+            -cancelButton "Cancel"
+            -dismissString "Cancel"`;
+            if ($ret != "Cancel")
+            {
+                for($s=0;$s<size($selStates);$s++)
+                {
+                    string $state = $selStates[$s];
+                    float $allKeys[] = getAttr($state + ".keyIndices");
+                    int $i;
+                    for ($i=0;$i<size($allKeys);$i++)
+                    {
+                        if ($allKeys[$i] != -1)
+                        {
+                            catch(`p3dDeformUpdateExpression $state $allKeys[$i] 0`);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            print( "No vertices weighted lower than specified tolerance. No vertices have been removed.\n" );
+        }
+
+        deleteUI -window p3dDeformPruneWindow;
+    }
+
+}
+
+global proc p3dDeformPruneExpressionRefreshWindowCallback()
+{
+   if (!`textScrollList -exists p3dDeformPruneStateList`)
+      return;
+   textScrollList -edit -removeAll p3dDeformPruneStateList;
+   string $all_states[] = `ls -type p3dDeformExpressionState`;
+   for ($s in $all_states)
+   {
+      textScrollList -edit -append $s p3dDeformPruneStateList;
+      textScrollList -edit -si $s p3dDeformPruneStateList;
+   }
+}

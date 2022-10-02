@@ -1,0 +1,53 @@
+##########################################################################
+#
+#  Files specific: This files specified location of the generated library/
+#		   executable file and where to gather source & header files  
+#		   for compilation.
+##########################################################################
+
+#========================
+# General defines
+#========================
+ROOTDIR	      = ../../..
+LIBRARYDIR    = ../../lib
+SOURCEDIR     = ../../Src
+INCLUDEDIR    = ../../inc \
+		$(ROOTDIR)/radcore/inc \
+		$(ROOTDIR)/radsound/inc \
+		$(ROOTDIR)/radmusic/inc \
+		$(ROOTDIR)/radmusic/src/pch \
+		$(ROOTDIR)/radmusic/src \
+		$(ROOTDIR)/radcontent\inc \
+		$(ROOTDIR)/../code
+
+
+TARGET        = $(LIBRARYDIR)/radmusic
+
+TARGETTYPE    = LIBRARY
+
+#####################################
+# source files included in project
+#####################################
+SOURCEFILES = \
+    radmusic/framework/framework \
+    radmusic/music/music_composition \
+    radmusic/music/music_engine \
+    radmusic/music/music_engine_state_fade \
+    radmusic/music/music_engine_state_steady \
+    radmusic/music/music_engine_state_stitch \
+    radmusic/music/music_engine_state_stopped \
+    radmusic/music/music_performance \
+    radmusic/schema/schema_util \
+    radmusic/sequence/sequence_player \
+    radmusic/sequence/sequence_region \
+    radmusic/sequence/sequence_stream_graph \
+    radmusic/resource/resource_manager \
+    memory/memory \
+    ods/ods \
+    ods/ods_codegen \
+    ods/ods_memory \
+    ods/ods_util \
+    ods/ods_parser
+	
+
+	

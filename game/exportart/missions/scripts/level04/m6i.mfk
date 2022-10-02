@@ -1,0 +1,57 @@
+SelectMission("m6");
+
+//SetMissionResetPlayerInCar("level4_carstart");
+//SetDynaLoadData("l4z1.p3d;l4r1.p3d;l4r7.p3d;");
+SetNumValidFailureHints( 3 );
+SetMissionResetPlayerOutCar("m6_marge_restart","level4_carstart");
+SetDynaLoadData("l4z1.p3d;l4r1.p3d;l4r7.p3d;");
+
+UsePedGroup(0);
+
+AddStage("final"); // destroy the cans of cola
+	RESET_TO_HERE();
+	SetStageMessageIndex(101);
+	SetHUDIcon( "buzzcola" );
+	AddObjective("delivery", "neither");
+		AddCollectible("m6_cola_crate1","i_soda");
+		AddCollectible("m6_cola_crate2","i_soda");
+		AddCollectible("m6_cola_crate3","i_soda");
+		AddCollectible("m6_cola_crate5","i_soda");
+		AddCollectible("m6_cola_crate4","i_soda");
+		AddCollectible("m6_cola_crate7","i_soda");
+		AddCollectible("m6_cola_crate6","i_soda");
+		AddCollectible("m6_cola_crate8","i_soda");
+		AddCollectible("m6_cola_crate9","i_soda");
+		AddCollectible("m6_cola_crate10","i_soda");
+		AddCollectible("m6_cola_crate11","i_soda");
+		AddCollectible("m6_cola_crate12","i_soda");
+		AddCollectible("m6_cola_crate13","i_soda");
+		AddCollectible("m6_cola_crate14","i_soda");
+		AddCollectible("m6_cola_crate15","i_soda");
+		AddCollectible("m6_cola_crate16","i_soda");
+		AddCollectible("m6_cola_crate17","i_soda");
+		AddCollectible("m6_cola_crate18","i_soda");
+		AddCollectible("m6_cola_crate19","i_soda");
+		AddCollectible("m6_cola_crate20","i_soda");
+		AddCollectible("m6_cola_crate21","i_soda");
+		AddCollectible("m6_cola_crate22","i_soda");
+		AddCollectible("m6_cola_crate23","i_soda");
+		AddCollectible("m6_cola_crate24","i_soda");
+		AddCollectible("m6_cola_crate25","i_soda");
+		AddCollectible("m6_cola_crate26","i_soda");
+		AddCollectible("m6_cola_crate27","i_soda");
+		AddCollectible("m6_cola_crate28","i_soda");
+		AddCollectible("m6_cola_crate29","i_soda");
+		AddCollectible("m6_cola_crate30","i_soda");
+	//	SetCollectibleEffect("bonestorm_explosion");
+	CloseObjective();
+	SetStageTime(150);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	StageStartMusicEvent("M6_start");
+	SetStageMusicAlwaysOn();
+	SetCompletionDialog("selling");
+CloseStage();
+
+CloseMission();

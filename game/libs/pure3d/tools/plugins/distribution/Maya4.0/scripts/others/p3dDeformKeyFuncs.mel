@@ -1,0 +1,115 @@
+global proc int p3dDeformGetNextKeyIndex(string $key_index_array, float $keyVal)
+{
+   int $size = `getAttr -size $key_index_array`;
+   int $i;
+   for ($i =0; $i < $size; $i++)
+   {
+      float $curKey = eval("getAttr " + $key_index_array + "[" + $i + "]");
+      if ($curKey == -1)   //we mark empty slots in the offsets array with a -1 key
+         return $i;
+   }
+
+   return $size;
+
+
+}
+
+global proc int p3dDeformFindKeyIndex(string $key_index_array, float $keyVal)
+{
+   int $size = `getAttr -size $key_index_array`;
+   int $i;
+   int $index;
+   float $curKey;
+   for ($i=0; $i < $size; $i++)
+   {
+      $curKey = eval("getAttr " + $key_index_array + "[" + $i + "]");
+      
+      if (abs($curKey - $keyVal) < 0.001)
+      {
+         $index = $i;
+         break;
+      }
+      else $index = -1;
+
+   }
+   if ($index == -1)
+   {
+      for ($i=0; $i < $size; $i++)
+      {
+         $curKey = eval("getAttr " + $key_index_array + "[" + $i + "]");
+      
+         if ((abs($curKey-0.001 - $keyVal) < 0.001) || (abs($curKey+0.001 - $keyVal) < 0.001))
+         {
+            $index = $i;
+            break;
+         }
+      }
+
+      
+   }
+   if ($index == -1)
+      print("\nDidn\'t find the key.");
+   return $index;  
+
+}
+
+
+global proc int p3dDeformSetPoseKeyFunc(string $state, float $keyVal)
+{
+   p3dDeformExpressionStateSetKey $state $keyVal;
+   p3dDeformExpressionStateAddExtraKeys $state $keyVal;
+   
+   return 1;
+}
+
+global proc p3dDeformRemovePoseKeyFunc(string $state, float $keyValues[])
+{
+   int $keyValSize = `size $keyValues`;
+   int $i;
+   float $minusOne = -1;
+   string $stateKeyIndices = $state + ".keyIndices";
+   string $stateVtxOffsets = $state + ".vertexOffsetsArray";
+   string $stateVtxIndices = $state + ".vertexIndicesArray";
+   
+   for ($i =0 ; $i < $keyValSize; $i++)
+   {
+      if ($keyValues[$i] == 0.0)
+         continue;
+      int $keyIndex = `p3dDeformFindKeyIndex $stateKeyIndices $keyValues[$i]`;
+      if ($keyIndex == -1)
+      {
+         error "Error finding key.";
+         return;
+      }
+
+      eval("setAttr " + $stateKeyIndices + "[" + $keyIndex + "] " + $minusOne);
+      eval("setAttr -type Int32Array " + $stateVtxIndices + "[" + $keyIndex + "]" + " " + 0);
+      eval("setAttr -type vectorArray " + $stateVtxOffsets + "[" + $keyIndex + "]" + " " + 0);
+   }
+
+}
+
+global proc p3dDeformChangePoseKeyFunc(string $state, float $newVal, float $oldVal)
+{
+   string $state_keyIndices = $state + ".keyIndices";
+   float $keyVals[];
+   int $numKeys = `getAttr -size $state_keyIndices`;
+   int $i;
+   for ($i = 0; $i < $numKeys; $i++)
+   {
+      $keyVals[$i] = eval("getAttr " + $state_keyIndices + "[" + $i + "]");
+   }
+
+   int $keyPos;
+   float $curKey;
+   for ($i = 0; $i < $numKeys; $i++)
+   {
+      
+      if (abs($oldVal - $keyVals[$i]) < 0.001)
+      {
+         eval("setAttr " + $state_keyIndices + "[" + $i + "] " + $newVal);
+      }
+
+   }
+
+}

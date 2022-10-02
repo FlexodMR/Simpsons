@@ -1,0 +1,57 @@
+SelectMission("m6sd");
+
+SetMissionResetPlayerOutCar("m2_homer_start", "m2_carstart");
+SetDynaLoadData("l7z3.p3d;l7r2.p3d;l7r3.p3d;");
+
+SetMissionStartCameraName( "mission2camShape" );
+SetMissionStartMulticontName( "mission2cam" );
+SetAnimatedCameraName( "mission2camShape" );
+SetAnimCamMulticontName( "mission2cam" );
+
+AddStage(5);
+	//SetMaxTraffic(5);
+	SetStageMessageIndex(60);
+	SetHUDIcon("snake");
+	AddObjective("talkto");
+		AddNPC("snake", "m2_cbg_sd");
+		AddStageVehicle("snake_v","m6_snake_carstart","NULL","HardRace\AI_2nd.con");
+		AddObjectiveNPCWaypoint( "snake", "m2_cbg_walk1" );
+		AddObjectiveNPCWaypoint( "snake", "m2_cbg_walk2" );
+		AddObjectiveNPCWaypoint( "snake", "m2_cbg_walk3" );
+		SetTalkToTarget("snake", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+	    SetPresentationBitmap( "art/frontend/dynaload/images/mis07_06.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_cross_arms" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shaking_fist" );
+		AddAmbientPcAnimation( "none" );
+		SetDialogueInfo("homer","snake","carjack",0);
+		SetCamBestSide( "m2_bestside" );
+		SetDialoguePositions("m2_homer_start","m2_cbg_walk1","m2_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

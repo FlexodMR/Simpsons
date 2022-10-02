@@ -1,0 +1,208 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTTP::Message - Class encapsulating HTTP messages
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_mess_new_HTTP_Message_">$mess = new HTTP::Message;</A>
+		<LI><A HREF="#_mess_clone_">$mess->clone()</A>
+		<LI><A HREF="#_mess_protocol_proto_">$mess->protocol([$proto])</A>
+		<LI><A HREF="#_mess_content_content_">$mess->content([$content])</A>
+		<LI><A HREF="#_mess_add_content_data_">$mess->add_content($data)</A>
+		<LI><A HREF="#_mess_content_ref">$mess->content_ref</A>
+	</UL>
+
+	<LI><A HREF="#HEADER_METHODS">HEADER METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_mess_headers_as_string_endl_">$mess->headers_as_string([$endl])</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTTP::Message - Class encapsulating 
+<FONT SIZE=-1>HTTP</FONT> messages
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> package <A HREF="HTTP::Request">HTTP::Request</A>;  # or <A HREF="HTTP::Response">HTTP::Response</A>
+ require <A HREF="HTTP::Message">HTTP::Message</A>;
+ @ISA=qw(<A HREF="HTTP::Message">HTTP::Message</A>);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> <CODE>HTTP::Message</CODE> object contains some headers and a content (body). The class is abstract,
+i.e. it only used as a base class for
+<CODE>HTTP::Request</CODE> and <CODE>HTTP::Response</CODE> and should never instantiated as itself.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="_mess_new_HTTP_Message_">$mess = new HTTP::Message;
+
+</A></H2>
+This is the object constructor. It should only be called internally by this
+library. External code should construct <CODE>HTTP::Request</CODE> or
+<CODE>HTTP::Response</CODE> objects.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_mess_clone_">$mess->clone()
+
+</A></H2>
+Returns a copy of the object.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_mess_protocol_proto_">$mess->protocol([$proto])
+
+</A></H2>
+Sets the 
+<FONT SIZE=-1>HTTP</FONT> protocol used for the message. The <CODE>protocol()</CODE> is a string like 
+<FONT SIZE=-1>``HTTP/1.0''</FONT> or 
+<FONT SIZE=-1>``HTTP/1.1''.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_mess_content_content_">$mess->content([$content])
+
+</A></H2>
+The <CODE>content()</CODE> method sets the content if an argument is given.
+If no argument is given the content is not touched. In either case the
+previous content is returned.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_mess_add_content_data_">$mess->add_content($data)
+
+</A></H2>
+The <CODE>add_content()</CODE> methods appends more data to the end of the
+previous content.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_mess_content_ref">$mess->content_ref
+
+</A></H2>
+The <CODE>content_ref()</CODE> method will return a reference to content
+string. It can be more efficient to access the content this way if the
+content is huge, and it can be used for direct manipulation of the content,
+for instance:
+
+
+<P>
+
+<PRE>  ${$res-&gt;content_ref} =~ s/\bfoo\b/bar/g;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="HEADER_METHODS">HEADER METHODS
+
+</A></H1>
+All unknown <CODE>HTTP::Message</CODE> methods are delegated to the
+<CODE>HTTP::Headers</CODE> object that is part of every message. This allows convenient access to
+these methods. Refer to <A HREF="/n|/perl/html/./lib/site/HTTP/Headers.html">Headers</A> for details of these methods:
+
+
+<P>
+
+<PRE>  $mess-&gt;header($field =&gt; $val);
+  $mess-&gt;scan(&amp;doit);
+  $mess-&gt;push_header($field =&gt; $val);
+  $mess-&gt;remove_header($field);
+</PRE>
+
+<P>
+
+<PRE>  $mess-&gt;date;
+  $mess-&gt;expires;
+  $mess-&gt;if_modified_since;
+  $mess-&gt;last_modified;
+  $mess-&gt;content_type;
+  $mess-&gt;content_encoding;
+  $mess-&gt;content_length;
+  $mess-&gt;title;
+  $mess-&gt;user_agent;
+  $mess-&gt;server;
+  $mess-&gt;from;
+  $mess-&gt;referer;
+  $mess-&gt;www_authenticate;
+  $mess-&gt;authorization;
+  $mess-&gt;authorization_basic;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_mess_headers_as_string_endl_">$mess->headers_as_string([$endl])
+
+</A></H2>
+Call the HTTP::Headers-&gt;as_string() method for the headers in the
+message.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

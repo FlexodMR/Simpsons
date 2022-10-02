@@ -1,0 +1,118 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>User::pwent - by-name interface to Perl's built-in getpw*() functions
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+User::pwent - by-name interface to Perl's built-in getpw*() functions
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use User::pwent;
+ $pw = getpwnam('daemon') or die &quot;No daemon user&quot;;
+ if ( $pw-&gt;uid == 1 &amp;&amp; $pw-&gt;dir =~ m#^/(bin|tmp)?$# ) {
+     print &quot;gid 1 on root dir&quot;;
+ } 
+</PRE>
+
+<P>
+
+<PRE> use User::pwent qw(:FIELDS);
+ getpwnam('daemon') or die &quot;No daemon user&quot;;
+ if ( $pw_uid == 1 &amp;&amp; $pw_dir =~ m#^/(bin|tmp)?$# ) {
+     print &quot;gid 1 on root dir&quot;;
+ } 
+</PRE>
+
+<P>
+
+<PRE> $pw = getpw($whoever);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module's default exports override the core <CODE>getpwent(),</CODE>
+<CODE>getpwuid(),</CODE> and <CODE>getpwnam()</CODE> functions, replacing
+them with versions that return ``User::pwent'' objects. This object has
+methods that return the similarly named structure field name from the C's
+passwd structure from <EM>pwd.h</EM>; namely name, passwd, uid, gid, quota, comment, gecos, dir, and shell.
+
+
+<P>
+
+You may also import all the structure fields directly into your namespace as regular variables using the 
+<FONT SIZE=-1>:FIELDS</FONT> import tag. (Note that this still overrides your core functions.) Access these fields as variables named with a preceding
+ <CODE>pw_</CODE> in front their method names. Thus, <CODE>$passwd_obj-&gt;shell()</CODE> corresponds to <CODE>$pw_shell</CODE> if you import the fields.
+
+
+<P>
+
+The <CODE>getpw()</CODE> funtion is a simple front-end that forwards a
+numeric argument to <CODE>getpwuid()</CODE> and the rest to
+<CODE>getpwnam().</CODE>
+
+
+<P>
+
+To access this functionality without the core overrides, pass the <A HREF="#item_use">use</A> an empty import list, and then access function functions with their full
+qualified names. On the other hand, the built-ins are still available via
+the <CODE>CORE::</CODE> pseudo-package.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+While this class is currently implemented using the Class::Struct module to
+build a struct-like class, you shouldn't rely upon this.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Christiansen
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

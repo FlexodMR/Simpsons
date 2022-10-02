@@ -1,0 +1,112 @@
+;--------------------------------------------------------
+; backface culling
+; vf01 = trashed
+; vi02 = thrashed!
+; vi04 = input verts (screen space)
+; vi05 = vert count
+; vf01-vf07 = thrashed!
+;--------------------------------------------------------
+
+BACKFACE_CULL:
+   ; caller should ensure that BFC flag is set    
+   
+   nop                              iaddiu vi01,vi00,+6           ; test for BFC mode
+   nop                              iand   vi01,vi01,_CLIPPER
+   nop                              iaddi  vi01,vi01,-2
+   nop[i]                           loi -1.0
+   nop                              ibgtz vi01,BACKFACE_CULL_START
+   subw.z vf01z,vf00z,vf00w         nop   ; vf01z = -1 
+   addw.z vf01z,vf00z,vf00w         nop   ; vf01z = +1   
+
+   BACKFACE_CULL_START:
+
+   nop                              ibgtz _TRISTRIP,BACKFACE_TRISTRIP
+   nop                              iaddiu vi02,vi00,32 ; mask for z-sign in MAC flag
+
+   nop                              lq vf02, 2(vi04)
+   nop                              lq vf03, 5(vi04)
+   nop                              lq vf04, 8(vi04)
+   itof4.xyz vf02, vf02             nop
+   itof4.xyz vf03, vf03             nop
+   itof4.xyz vf04, vf04             iaddiu vi04,vi04,9   ; incr by 3 verts
+   
+   ; stallorama!         
+   ;----------------------------------------------------------------------------   
+   ; triangles backface culling
+   BACKFACE_TRI_LOOP:
+   
+   sub.xyz vf02,vf02,vf04           nop
+   sub.xyz vf03,vf03,vf04           iaddi vi05,vi05,-3
+   nop                              nop
+   nop                              nop   
+   opmula.xyz ACC,vf02,vf03         nop
+   opmsub.xyz vf04,vf03,vf02        nop
+   ; vf16z = signed triangle area
+   mulz.z vf04z,vf04z,vf01z         nop
+   nop                              lq vf02,2(vi04)
+   nop                              lq vf03,5(vi04)
+   nop                              lq vf04,8(vi04)
+   itof4.xyz vf02,vf02              fmand vi01,vi02    ; ???result is in by now?!
+   itof4.xyz vf03,vf03              ibeq  vi01,vi00,FRONT_FACE_TRI
+   itof4.xyz vf04,vf04              iaddiu vi01,vi00,0x7fff
+   nop                              iaddiu vi01,vi01,1
+
+   ; this tri needs to be culled 
+;   nop                              ilw.w vi02,-1(vi04)w
+;   nop                              ior   vi02,vi02,vi01
+;   nop                              isw.w vi02,-1(vi04)w
+
+   nop                              isw.w vi01,-1(vi04)w
+   nop                              isw.w vi01,-4(vi04)w
+   nop                              isw.w vi01,-7(vi04)w
+   
+   FRONT_FACE_TRI:
+
+   nop                              ibgtz vi05, BACKFACE_TRI_LOOP
+   nop                              iaddiu vi04,vi04,+9   ; incr by 3 verts
+
+   nop                              jr vi15
+   nop                              nop
+
+   ;----------------------------------------------------------------------------   
+   ; triangle strips backface culling
+   BACKFACE_TRISTRIP:   
+
+   ; prefetch first triangle   
+   nop                              lq vf02, 2(vi04)
+   nop                              lq vf03, 5(vi04)
+   nop                              lq vf04, 8(vi04)
+   nop                              nop
+   itof4.xyz vf02, vf02             nop
+   itof4.xyz vf03, vf03             nop
+   itof4.xyz vf04, vf04             iaddi vi05,vi05,-2   
+
+   BACKFACE_TRISTRIP_LOOP:
+
+   sub.xyz vf02,vf02,vf04           iaddiu vi04,vi04,3   ; incr by 3 verts
+   sub.xyz vf03,vf03,vf04           iaddi vi05,vi05,-1
+   opmula.xyz ACC,vf02,vf03         nop
+   opmsub.xyz vf04,vf03,vf02        nop         
+
+   ; vf16z = signed triangle area
+   mulz.z vf04z,vf04z,vf01z         lq vf02,2(vi04)
+   nop                              lq vf03,5(vi04)
+   nop                              lq vf04,8(vi04)
+   nop                              nop
+   itof4.xyz vf02,vf02              fmand vi01,vi02
+   itof4.xyz vf03,vf03              ibeq vi01,vi00,FRONT_FACE_TRISTRIP
+   itof4.xyz vf04,vf04              iaddiu vi01,vi00,0x7fff
+
+   ; this tri needs to be culled
+   nop                              iaddiu vi01,vi01,1    ; vi01 = 0x8000 ADC bit is set
+   nop                              isw.w vi01,+5(vi04)w
+
+   FRONT_FACE_TRISTRIP:
+   ; flip sign for next triangle
+   muli.z vf01z,vf01z,i             ibgtz vi05, BACKFACE_TRISTRIP_LOOP
+   nop                              nop
+
+   nop                              jr vi15
+   nop                              nop
+;----------------------------------------------------------------------------------------------------
+

@@ -1,0 +1,143 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::TextUndo - perl/tk text widget with bindings to undo changes.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Bindings">Bindings</A>
+		<LI><A HREF="#Methods">Methods</A>
+	</UL>
+
+	<LI><A HREF="#KEYS">KEYS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::TextUndo - perl/tk text widget with bindings to undo changes.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Tk::TextUndo;
+    ...
+    $testundo = $parent-&gt;TextUndo(?option =&gt; value, ...?);
+    ...
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This 
+<FONT SIZE=-1>IS-A</FONT> text widget with an unlimited 'undo' history but
+without a re'undo' capability.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Bindings">Bindings
+
+</A></H2>
+The <CODE>TextUndo</CODE> widget has the same bindings as the <A HREF="/n|/perl/html/./lib/Pod/Text.html#">the Text manpage</A> widget. Additionally to the <A HREF="/n|/perl/html/./lib/Pod/Text.html#">the Text manpage</A> widget there are the following bindings:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Event">Event <L4>
+
+</A></STRONG><DD>
+undo the last change. Pressing 
+<FONT SIZE=-1>&lt;L4&gt;</FONT> several times undo step by step the changes
+made to the text widget.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Methods">Methods
+
+</A></H2>
+The <CODE>TextUndo</CODE> widget has the same methods as <A HREF="#item_Text">Text</A> widget. Additional method for the <CODE>TextUndo</CODE> widget are:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__text_Load_filename_">$text->Load($filename);
+
+</A></STRONG><DD>
+Loads the contents of the <CODE>$filename</CODE> into the text widget.
+<CODE>Load()</CODE> delete the previous contents of the text widget as well
+as it's undo history of the previous file.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__text_Save_otherfilename_">$text->Save(?$otherfilename?)
+
+</A></STRONG><DD>
+Save contents of the text widget to a file. If the
+<CODE>$otherfilename</CODE> is not specified, the text widget contents
+writes the file of <CODE>$filename</CODE> used in the last
+<CODE>Load()</CODE> call. If no file was previously <CODE>Load()'ed</CODE>
+an error message pops up. The default filename of the last
+<CODE>Load()</CODE> call is not overwriten by $otherfilename.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="KEYS">KEYS
+
+</A></H1>
+widget, text, undo
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Tk::Text(3), Tk::ROText(3)
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

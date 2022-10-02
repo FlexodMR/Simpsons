@@ -1,0 +1,379 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::SMTP - Simple Mail Transfer Protocol Client
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::SMTP - Simple Mail Transfer Protocol Client
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Net::SMTP;
+    
+    # Constructors
+    $smtp = Net::SMTP-&gt;new('mailhost');
+    $smtp = Net::SMTP-&gt;new('mailhost', Timeout =&gt; 60);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module implements a client interface to the 
+<FONT SIZE=-1>SMTP</FONT> and 
+<FONT SIZE=-1>ESMTP</FONT> protocol, enabling a perl5 application to talk to 
+<FONT SIZE=-1>SMTP</FONT> servers. This documentation assumes that you are familiar with the concepts of the 
+<FONT SIZE=-1>SMTP</FONT> protocol described in 
+<FONT SIZE=-1>RFC821.</FONT>
+
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> new Net::SMTP object must be created with the <EM>new</EM> method. Once this has been done, all 
+<FONT SIZE=-1>SMTP</FONT> commands are accessed through this object.
+
+
+<P>
+
+The Net::SMTP class is a subclass of Net::Cmd and IO::Socket::INET.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+This example prints the mail domain name of the 
+<FONT SIZE=-1>SMTP</FONT> server known as mailhost:
+
+
+<P>
+
+<PRE>    #!/usr/local/bin/perl -w
+    
+    use Net::SMTP;
+    
+    $smtp = Net::SMTP-&gt;new('mailhost');
+    print $smtp-&gt;domain,&quot;\n&quot;;
+    $smtp-&gt;quit;
+</PRE>
+
+<P>
+
+This example sends a small message to the postmaster at the 
+<FONT SIZE=-1>SMTP</FONT> server known as mailhost:
+
+
+<P>
+
+<PRE>    #!/usr/local/bin/perl -w
+    
+    use Net::SMTP;
+    
+    $smtp = Net::SMTP-&gt;new('mailhost');
+    
+    $smtp-&gt;mail($ENV{USER});
+    $smtp-&gt;to('postmaster');
+    
+    $smtp-&gt;data();
+    $smtp-&gt;datasend(&quot;To: postmaster\n&quot;);
+    $smtp-&gt;datasend(&quot;\n&quot;);
+    $smtp-&gt;datasend(&quot;A simple test message\n&quot;);
+    $smtp-&gt;dataend();
+    
+    $smtp-&gt;quit;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new Net::SMTP [ HOST, ] [ OPTIONS ]
+
+</A></STRONG><DD>
+This is the constructor for a new Net::SMTP object. <CODE>HOST</CODE> is the name of the remote host to which a 
+<FONT SIZE=-1>SMTP</FONT> connection is required.
+
+
+<P>
+
+If <CODE>HOST</CODE> is not given, then the <CODE>SMTP_Host</CODE> specified in <CODE>Net::Config</CODE>
+will be used.
+
+
+<P>
+
+<A HREF="#item_OPTIONS">OPTIONS</A> are passed in a hash like fashion, using key and value pairs. Possible
+options are:
+
+
+<P>
+
+<STRONG>Hello</STRONG> - 
+<FONT SIZE=-1>SMTP</FONT> requires that you identify yourself. This option
+specifies a string to pass as your mail domain. If not given a guess will
+be taken.
+
+
+<P>
+
+<STRONG>Timeout</STRONG> - Maximum time, in seconds, to wait for a response from the 
+<FONT SIZE=-1>SMTP</FONT> server (default: 120)
+
+
+<P>
+
+<STRONG>Debug</STRONG> - Enable debugging information
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>    $smtp = Net::SMTP-&gt;new('mailhost',
+                           Hello =&gt; 'my.mail.domain'
+                           Timeout =&gt; 30,
+                           Debug   =&gt; 1,
+                          );
+</PRE>
+
+<P>
+
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+Unless otherwise stated all methods return either a <EM>true</EM> or <EM>false</EM>
+value, with <EM>true</EM> meaning that the operation was a success. When a method states that it
+returns a value, failure will be returned as <EM>undef</EM> or an empty list.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_domain">domain ()
+
+</A></STRONG><DD>
+Returns the domain that the remote 
+<FONT SIZE=-1>SMTP</FONT> server identified itself as during connection.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_hello">hello ( DOMAIN )
+
+</A></STRONG><DD>
+Tell the remote server the mail domain which you are in using the 
+<FONT SIZE=-1>EHLO</FONT> command (or 
+<FONT SIZE=-1>HELO</FONT> if 
+<FONT SIZE=-1>EHLO</FONT> fails). Since this method is invoked automatically when the Net::SMTP object is constructed the user should normally not have to call it manually.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_mail">mail ( ADDRESS [, OPTIONS] )
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_send">send ( ADDRESS )
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_send_or_mail">send_or_mail ( ADDRESS )
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_send_and_mail">send_and_mail ( ADDRESS )
+
+</A></STRONG><DD>
+Send the appropriate command to the server 
+<FONT SIZE=-1>MAIL,</FONT> 
+<FONT SIZE=-1>SEND,</FONT> 
+<FONT SIZE=-1>SOML</FONT> or 
+<FONT SIZE=-1>SAML.</FONT>
+ <CODE>ADDRESS</CODE>
+is the address of the sender. This initiates the sending of a message. The
+method <A HREF="#item_recipient">recipient</A> should be called for each address that the message is to be sent to.
+
+
+<P>
+
+The <A HREF="#item_mail">mail</A> method can some additional 
+<FONT SIZE=-1>ESMTP</FONT> 
+<FONT SIZE=-1>OPTIONS</FONT> which is passed in hash like fashion, using key and value pairs. Possible options are:
+
+
+
+<P>
+
+<PRE> Size        =&gt; &lt;bytes&gt;
+ Return      =&gt; &lt;???&gt;
+ Bits        =&gt; &quot;7&quot; | &quot;8&quot;
+ Transaction =&gt; &lt;ADDRESS&gt;
+ Envelope    =&gt; &lt;ENVID&gt;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_reset">reset ()
+
+</A></STRONG><DD>
+Reset the status of the server. This may be called after a message has been
+initiated, but before any data has been sent, to cancel the sending of the
+message.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_recipient">recipient ( ADDRESS [, ADDRESS [ ...]] )
+
+</A></STRONG><DD>
+Notify the server that the current message should be sent to all of the
+addresses given. Each address is sent as a separate command to the server.
+Should the sending of any address result in a failure then the process is
+aborted and a <EM>false</EM> value is returned. It is up to the user to call <A HREF="#item_reset">reset</A> if they so desire.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_to">to ( ADDRESS [, ADDRESS [...]] )
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> synonym for <A HREF="#item_recipient">recipient</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_data">data ( [ DATA ] )
+
+</A></STRONG><DD>
+Initiate the sending of the data from the current message. 
+
+
+<P>
+
+<CODE>DATA</CODE> may be a reference to a list or a list. If specified the contents of <CODE>DATA</CODE> and a termination string <CODE>".\r\n"</CODE> is sent to the server. And the result will be true if the data was
+accepted.
+
+
+<P>
+
+If <CODE>DATA</CODE> is not specified then the result will indicate that the server wishes the
+data to be sent. The data must then be sent using the <A HREF="#item_datasend">datasend</A>
+and <A HREF="#item_dataend">dataend</A> methods described in <A HREF="/n|/perl/html/./lib/Net/Cmd.html">Cmd</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_expand">expand ( ADDRESS )
+
+</A></STRONG><DD>
+Request the server to expand the given address Returns a reference to an
+array which contains the text read from the server.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_verify">verify ( ADDRESS )
+
+</A></STRONG><DD>
+Verify that <CODE>ADDRESS</CODE> is a legitimate mailing address.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_help">help ( [ $subject ] )
+
+</A></STRONG><DD>
+Request help text from the server. Returns the text or undef upon failure
+
+
+<P>
+
+<DT><STRONG><A NAME="item_quit">quit ()
+
+</A></STRONG><DD>
+Send the 
+<FONT SIZE=-1>QUIT</FONT> command to the remote 
+<FONT SIZE=-1>SMTP</FONT> server and close the socket connection.
+
+
+
+<P>
+
+</DL>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Net/Cmd.html">Cmd</A>
+
+
+
+
+<P>
+
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A>
+
+
+<P>
+
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1997 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

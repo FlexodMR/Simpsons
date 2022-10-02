@@ -1,0 +1,142 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     01 August, 2002
+// Modified:    01 August, 2002
+// Version:     
+//
+// Component:   
+//
+// Description: 
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+global proc p3dDecayRangeInstall()
+{
+    // ---- Constants ----
+
+    string $theShelf = "P3DDecayRange";
+
+    string $P3DDecayRangeDirButton = "P3DDecayRangeDirButton";
+    string $P3DDecayRangePointButton = "P3DDecayRangePointButton";
+    string $P3DDecayRangeSpotButton = "P3DDecayRangeSpotButton";
+    string $P3DDecayRangeAmbButton = "P3DDecayRangeAmbButton";
+    string $P3DDecayRangeAddButton = "P3DDecayRangeAddButton";
+    string $P3DDecayRangeDupeButton = "P3DDecayRangeDupeButton";
+
+    source p3dDecayRangeTools;
+
+    // BUG FIX: Do NOT create Shelf if Shelf UI is hidden!
+    //          The Shelf may already exist in Maya's Preferences
+    //          but be deferred until the Shelf UI is visible,
+    //          and a clash will result if a duplicate is made.
+   // BUG FIX: Do NOT attempt if without UI.
+    if ( !`about -batch` && isUIComponentVisible( "Shelf" ) )
+    {
+        if (`shelfLayout -exists $theShelf`==0)
+        {
+            addNewShelfTab $theShelf;
+        }
+
+        string $buttons[] = `shelfLayout -q -ca $theShelf`;
+
+        int $create_dir_range_exists = 0;
+        int $create_spot_range_exists = 0;
+        int $create_point_range_exists = 0;
+        int $create_amb_range_exists = 0;
+        int $add_range_exists = 0;
+        int $dupe_range_exists = 0;
+
+        int $i;
+        for ($i = 0; $i < `size $buttons`; $i++)
+        {
+            string $command = `shelfButton -q -c $buttons[$i]`;
+            string $label = `shelfButton -q -l $buttons[$i]`;
+
+            //determine if new shelf buttons already exist
+            if ( $label == $P3DDecayRangeDirButton ) // ($command == "p3dDecayRange_CreateDir")
+            {
+                $create_dir_range_exists = 1;
+            }
+            else if ($label == $P3DDecayRangeSpotButton )
+            {
+                $create_spot_range_exists = 1;
+            }
+            else if ($label == $P3DDecayRangePointButton )
+            {
+                $create_point_range_exists = 1;
+            }
+            else if ($label == $P3DDecayRangeAmbButton )
+            {
+                $create_amb_range_exists = 1;
+            }
+            else if ($label == $P3DDecayRangeAddButton )
+            {
+                $add_range_exists = 1;
+            }
+            else if ($label == $P3DDecayRangeDupeButton )
+            {
+                $dupe_range_exists = 1;
+            }
+
+        }
+
+       if (!$create_dir_range_exists)
+       {
+          shelfButton -c   "if ( `pluginInfo -q -loaded \"p3dDecayRange.mll\"` ) p3dDecayRange_CreateDir" 
+                      -p   $theShelf
+                      -i1  "p3dDecayRange_dir.bmp" 
+                      -ann "Create a Directional Light with a Pure3D Decay Range"
+                      -l   $P3DDecayRangeDirButton;
+       }
+
+       if (!$create_spot_range_exists)
+       {
+          shelfButton -c   "if ( `pluginInfo -q -loaded \"p3dDecayRange.mll\"` ) p3dDecayRange_CreateSpot" 
+                      -p   $theShelf
+                      -i1  "p3dDecayRange_spot.bmp" 
+                      -ann "Create a Spot Light with a Pure3D Decay Range"
+                      -l   $P3DDecayRangeSpotButton;
+       }
+
+       if (!$create_point_range_exists)
+       {
+          shelfButton -c   "if ( `pluginInfo -q -loaded \"p3dDecayRange.mll\"` ) p3dDecayRange_CreatePoint" 
+                      -p   $theShelf
+                      -i1  "p3dDecayRange_point.bmp" 
+                      -ann "Create a Point Light with a Pure3D Decay Range"
+                      -l   $P3DDecayRangePointButton;
+       }
+
+       if (!$create_amb_range_exists)
+       {
+          shelfButton -c   "if ( `pluginInfo -q -loaded \"p3dDecayRange.mll\"` ) p3dDecayRange_CreateAmb" 
+                      -p   $theShelf
+                      -i1  "p3dDecayRange_amb.bmp" 
+                      -ann "Create an Ambient Light with a Pure3D Decay Range"
+                      -l   $P3DDecayRangeAmbButton;
+       }
+
+       if (!$add_range_exists)
+       {
+          shelfButton -c   "if ( `pluginInfo -q -loaded \"p3dDecayRange.mll\"` ) p3dDecayRange_Add"
+                      -p   $theShelf
+                      -i1  "volumeSphere.xpm" 
+                      -ann "Create a Pure3D Decay Range for selected lights"
+                      -l   $P3DDecayRangeAddButton;
+       }
+
+       if (!$dupe_range_exists)
+       {
+          shelfButton -c   "if ( `pluginInfo -q -loaded \"p3dDecayRange.mll\"` ) p3dDecayRange_Duplicate"
+                      -p   $theShelf
+                      -i1  "p3dDecayRange_dupe.bmp" 
+                      -ann "Duplicates a light with its Pure3D Decay Range information"
+                      -l   $P3DDecayRangeDupeButton;
+       }
+    }
+}

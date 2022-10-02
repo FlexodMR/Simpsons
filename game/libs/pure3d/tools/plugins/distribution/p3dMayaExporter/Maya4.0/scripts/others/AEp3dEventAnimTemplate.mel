@@ -1,0 +1,553 @@
+//===========================================================================
+// Copyright ©2001 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     12 Nov 2001
+//
+// Component:   p3dEventAnim node
+//
+// Creator:     Bryan Ewert
+//
+// Version:     0.1 (pre-alpha)
+//
+//===========================================================================
+
+// ////////////////////////////////////////////////////////////////
+//  rootNode
+//
+// Description: Strips the dot-suffix of the specified string.
+//  e.g. "object.attribute" is returned as "object"
+proc string rootNode( string $object )
+{
+    string $buffer[];
+    tokenize $object "." $buffer;
+    return $buffer[0];
+}
+
+// ////////////////////////////////////////////////////////////////
+//  precision
+//
+//   Rounds a float value to the specified number of decimal places.
+proc float precision( float $value, int $dec )
+{
+    float $bump = 0.5;
+    if ($value < 0.0)
+        $bump = -0.5;
+        
+    $value = trunc( $value * ( pow ( 10, $dec ) ) + $bump) / ( pow ( 10, $dec ) );
+    return $value;
+}
+
+//===========================================================================
+// getKeyDataIndices
+//===========================================================================
+// Description: Returns the "active" array attribute indices for the 
+//                   .keyTimeTypeData attribute on the specified node.
+//
+//                   See < http://www.ewertb.com/maya/mel/mel_a75.html >
+//
+// Constraints: 
+//
+// Parameters:  string $node: The p3dEventAnim node to query.
+//
+// Return:      (int[]): Array of active indices on the array attribute.
+//
+//===========================================================================
+proc int[] getKeyDataIndices( string $node )
+{
+    int $indices[];
+
+    // Determine how many _actual_ entries in this array.
+    // (see http://www.ewertb.com/maya/mel/mel_a75.html)
+    
+    string $multi[] = `listAttr -multi ( $node + ".kttd" )`;
+    
+    for ( $attr in $multi )
+    {
+        if ( `gmatch $attr "*.keyData"` )
+        {
+            // Extract the index for the connection.
+            string $tokens[];
+            tokenize $attr "[]" $tokens;
+            
+            $indices[`size $indices`] = $tokens[1];
+        }
+    }
+
+    return $indices;    
+}
+
+//===========================================================================
+// FirstAvailableKeyDataIndex
+//===========================================================================
+// Description: Returns the index for the first available/unused index on the
+//                   .keyTimeTypeData array attribute for the specified node.
+//
+// Constraints: Uses getKeyDataIndices().
+//
+// Parameters:  string $node: The p3dEventAnim node to query.
+//
+// Return:      (int): The first available/unused array index.
+//
+//===========================================================================
+proc int FirstAvailableKeyDataIndex( string $node )
+{
+    int $nextIndex = 0;
+    int $useThisIndex = false;
+    
+    int $indices[] = getKeyDataIndices( $node );
+    
+    while ( !$useThisIndex )
+    {
+        $useThisIndex = true;
+        
+        for ( $index in $indices )
+        {
+            if ( $index == $nextIndex )
+            {
+                $useThisIndex = false;
+                $nextIndex++;
+                break;
+            }
+        }
+    }
+    
+    return $nextIndex;
+}
+
+//===========================================================================
+// p3dEventAnimRebuildTable         (global)
+//===========================================================================
+// Description: Rebuilds the scriptTable.  The re-population of the table
+//                   is implicit since the '-clearTable' flag invokes the 
+//                   scriptTable's '-getCellCmd' callback.
+//
+// Constraints: 
+//
+// Parameters:  string $node: The p3dEventAnim node for which the data
+//                                 is currently displayed.
+//
+// Return:      (void)
+//
+//===========================================================================
+global proc p3dEventAnimRebuildTable( string $node, string $ui )
+{
+    int $indices[] = getKeyDataIndices( $node );
+
+    scriptTable -e -rows ( `size $indices` ) -clearTable $ui;
+}
+
+//===========================================================================
+// p3dEventAnimEditTable            (global)
+//===========================================================================
+// Description: This is a callback invoked via the scriptTable's -cellChangedCmd.
+//                   It is responsible for interpreting the current cell being edited,
+//                   and responding appropriately by setting attributes on the
+//                   p3dEventAnim node being edited.
+//
+// Constraints: 
+//
+// Parameters:  string $node: The p3dEventAnim node being edited.
+//                   string $ui: The scriptTable UI being edited.
+//                   int $row: 1-based index for the row being edited.
+//                   int $column: 1-based index for the column being edited.
+//                   string $edit: The new contents requested for the cell.
+//
+// Return:      (int): TRUE if edit is accepted; else FALSE.
+//
+//===========================================================================
+global proc int p3dEventAnimEditTable( string $node, string $ui, int $row, int $column, string $edit )
+{
+    int $acceptEdit = false;
+    
+    int $indices[] = getKeyDataIndices( $node );
+
+    $row--;     // Row is 1-based index; decrement for zero-based index.
+    string $rootAttr = ( $node + ".kttd[" + $indices[$row] + "]" );
+
+    switch( $column )
+    {
+        case 1:     // Time
+        {
+            int $timeValue = $edit;
+            setAttr ( $rootAttr + ".keyTime" ) $timeValue;
+            $acceptEdit = true;
+            break;
+        }
+        
+        // The user may enter a 0-based index for the data's type
+        // (e.g. 0 (zero) through 4)
+        // or a string matching the data's type
+        // (e.g. "bool" or "boolean", "int", "float", "vector", and "string")
+        case 2:     // Type
+        {
+            if ( ( $edit == "boolean" ) || ( $edit == "bool" ) || ( $edit == "0") )
+            {
+                setAttr( $rootAttr + ".keyType" ) 0;
+                $acceptEdit = true;
+            }
+
+            else if ( ( $edit == "int" ) || ( $edit == "1") )
+            {
+                setAttr( $rootAttr + ".keyType" ) 1;
+                $acceptEdit = true;
+            }
+
+            else if ( ( $edit == "float" ) || ( $edit == "2") )
+            {
+                setAttr( $rootAttr + ".keyType" ) 2;
+                $acceptEdit = true;
+            }
+
+            else if ( ( $edit == "vector" ) || ( $edit == "3") )
+            {
+                setAttr( $rootAttr + ".keyType" ) 3;
+                $acceptEdit = true;
+            }
+
+            else if ( ( $edit == "string" ) || ( $edit == "4") )
+            {
+                setAttr( $rootAttr + ".keyType" ) 4;
+                $acceptEdit = true;
+            }
+
+            break;
+        }
+        
+        case 3:
+        {
+            setAttr -type "string" ( $rootAttr + ".keyData" ) $edit;
+            $acceptEdit = true;
+            break;
+        }
+
+        // NOTE: The table does have a 4th column (partly because Maya 
+        // wouldn't let me resize the 3rd column via MEL without it).
+        // This 4th column is currently used to display the logical index
+        // used within the attribute array to store the displayed data.
+        // This column may not be edited by the user.
+        
+    }
+    
+    if ( $acceptEdit )
+    {
+        p3dEventAnimRebuildTable( $node, $ui );
+    }
+    
+    return $acceptEdit;
+}
+
+//===========================================================================
+// p3dEventAnimPopulateTable            (global)
+//===========================================================================
+// Description: This is the -getCellCmd callback for the scriptTable.
+//
+// Constraints: 
+//
+// Parameters:  string $node: The current p3dEventAnim node.
+//                   string $ui: The scriptTable UI control that is being populated.
+//                   int $row: 1-based index for the row of the cell being requested.
+//                   int $column: 1-based index for the column of the cell being requested.
+//
+// Return:      (string): The content Maya will display in the requested cell.
+//
+//===========================================================================
+global proc string p3dEventAnimPopulateTable( string $node, string $ui, int $row, int $column )
+{
+    string $cell = "";
+    
+    string $keyTypes[] = 
+    {
+        "boolean",
+        "int",
+        "float",
+        "vector",
+        "string"
+    };
+
+    int $indices[] = getKeyDataIndices( $node );
+    
+    $row--;     // Note: Row is 1-based index!  Decrement for zero-based index.
+    
+    if ( $row < `size $indices` )
+    {
+        string $rootAttr = ( $node + ".kttd[" + $indices[$row] + "]" );
+        int $type = `getAttr ( $rootAttr + ".keyType" )`;
+
+        switch( $column )       // Note: Column is 1-based index!
+        {
+            case 1:     // Time     
+            {
+                // Get Time
+                float $time = `getAttr ( $rootAttr + ".keyTime" )`;
+                $cell = $time;
+                break;
+            }
+
+            case 2:     // Type
+            {
+                // Get Type
+                $cell = $keyTypes[$type];
+                break;
+            }
+
+            case 3:     // Data
+            {
+                string $stringValue;
+                
+                // Get the raw string
+                switch( $type )
+                {
+                    case 0:
+                    {
+                        int $boolValue = `getAttr ( $rootAttr + ".keyDataBool" )`;
+                        $stringValue = ( $boolValue ? "true" : "false" );
+                        break;
+                    }
+                    
+                    case 1:
+                    {
+                        $stringValue = `getAttr ( $rootAttr + ".keyDataInt" )`;
+                        break;
+                    }
+                    
+                    case 2:
+                    {
+                        float $fValue;
+                        $fValue = `getAttr ( $rootAttr + ".keyDataFloat" )`;
+                        $stringValue = ( precision( $fValue, 4 ) );
+                        break;
+                    }
+                    
+                    case 3:
+                    {
+                        float $fValue[3];
+                        $fValue = `getAttr ( $rootAttr + ".keyDataVector" )`;
+                        $stringValue = ( precision( $fValue[0], 4 ) + " " + precision( $fValue[1], 4 ) + " " + precision( $fValue[2], 4 ) );
+                        break;
+                    }
+                    
+                    case 4:
+                    {
+                        $stringValue = `getAttr ( $rootAttr + ".keyData" )`;
+                        break;
+                    }
+                }
+                
+                
+                $cell = $stringValue;
+                break;
+            }
+
+            case 4:     // Misc
+            {
+                // Get the raw string
+                string $stringValue = ( "[" + $indices[$row] + "]" );
+                $cell = $stringValue;
+                break;
+            }
+        }
+    }
+    else
+    {
+        warning( "Skip drawing of row " + $row );
+    }
+        
+    return $cell;
+}
+
+//===========================================================================
+// p3dEventAnimAddKey           (global)
+//===========================================================================
+// Description: Convenience function to add a new key (i.e. a new multi-instance
+//                   in the array attribute).  The new key will alway use the
+//                   first unused index within the array attribute.
+//
+// Constraints: 
+//
+// Parameters:  string $node: The p3dEventAnim node for which to add the key.
+//                   string $ui: The scriptTable UI that will reflect the change.
+//
+// Return:      (void)
+//
+//===========================================================================
+global proc p3dEventAnimAddKey( string $node, string $ui )
+{
+    int $nextIndex = FirstAvailableKeyDataIndex( $node );
+
+    string $attr = ( $node + ".kttd[" + $nextIndex + "].keyData" );
+
+    setAttr -type "string" $attr "";
+
+    p3dEventAnimRebuildTable( $node, $ui );
+    
+}
+
+//===========================================================================
+// p3dEventAnimRemoveKey            (global)
+//===========================================================================
+// Description: Convenience function to remove a key (i.e. a multi-instance
+//                   in the array attribute).
+//
+// Constraints: 
+//
+// Parameters:  string $node: The p3dEventAnim node from which to remove the key.
+//                   string $ui: The scriptTable UI that will reflect the change.
+//                   int $index: The zero-based index for the key.  This is NOT
+//                               the logical index from the array!  This represents
+//                               the n'th _active_ index within the array; i.e.
+//                               to delete index [2] from { [0], [2], [3] } you would
+//                               remove index 1.
+//
+// Return:      (void)
+//
+//===========================================================================
+global proc p3dEventAnimRemoveKey( string $node, string $ui, int $index )
+{
+    int $indices[] = getKeyDataIndices( $node );
+
+//  int $status = `removeMultiInstance -break true ( $node + ".kttd[" + ( $indices[$index] ) + "];" )`;
+//  string $cmd = ( "removeMultiInstance -break true " + $node + ".kttd[" + ( $indices[$index] ) + "];" );
+//  evalEcho $cmd;
+    string $attr = ( $node + ".kttd[" + ( $indices[$index] ) + "]" );
+    removeMultiInstance -break true $attr;
+
+    p3dEventAnimRebuildTable( $node, $ui );
+}
+
+//===========================================================================
+// AEp3dEventAnimPostMenu           (global)
+//===========================================================================
+// Description: Posts the popup menu for the scriptTable.  The popupMenu
+//                   provides the following functions:
+//
+//                      Add Key
+//                      Remove Key
+//
+// Constraints: Remove Key is not shown if the mouse pointer was not over
+//                   a valid row when the menu was invoked.
+//
+// Parameters:  string $menu: This popupMenu UI control.
+//                   string $node: The current p3dEventAnimNode.
+//                   string $ui: The scriptTable UI control which is the parent 
+//                               for this popupMenu.
+//
+// Return:      (void)
+//
+//===========================================================================
+global proc AEp3dEventAnimPostMenu( string $menu, string $node, string $ui )
+{
+    popupMenu -e -deleteAllItems $menu;
+    
+    setParent -m $menu;
+    
+    int $row = `scriptTable -q -underPointerRow $ui`;
+    
+    string $addCmd = ( "p3dEventAnimAddKey " + $node + " " + $ui );
+    string $deleteCmd = ( "p3dEventAnimRemoveKey " + $node + " " + $ui + " " + ( $row-1 ) );
+
+    menuItem -label ( "Add Key" ) -c $addCmd;   
+    
+    if ( $row > 0 )
+    {
+        menuItem -label ( "Remove Key" ) -c $deleteCmd;
+    }
+    
+}
+
+//===========================================================================
+// AEp3dEventAnimNew
+//===========================================================================
+// Description: This is the 'editorTemplate -callCustom' callback to create
+//                   the controls for the '.keyTimeTypeData' attribute.
+//
+// Constraints: Immediately calls AEp3dEventAnimReplace, to populate the controls.
+//
+// Parameters:  string $attr: The .keyTimeTypeData attribute for which the 
+//                                 controls are being created (provided by Maya).
+//
+// Return:      (void)
+//
+//===========================================================================
+global proc AEp3dEventAnimNew( string $attr )
+{
+    global int $gTextColumnWidthIndex;
+
+    string $node = rootNode( $attr );
+
+    string $ui = "p3dEventAnimScriptTableUI";
+
+    string $form = `formLayout -height 256`;
+    
+        string $ui = animChannelTable( $form, $node, $ui );
+
+        setParent ..;
+
+    formLayout -e
+        -af     $ui         "top"       0
+        -af     $ui         "left"      0
+        -af     $ui         "right"     0
+        -af     $ui         "bottom"    0
+            $form;
+
+    AEp3dEventAnimReplace( $attr );
+}
+
+//===========================================================================
+// AEp3dEventAnimReplace
+//===========================================================================
+// Description: This is the 'editorTemplate -callCustom' callback to populate
+//                   the controls for the '.keyTimeTypeData' attribute.
+//
+// Constraints: 
+//
+// Parameters:  string $attr: The .keyTimeTypeData attribute for which the 
+//                                 controls are being created (provided by Maya).
+//
+// Return:      (void)
+//
+//===========================================================================
+global proc AEp3dEventAnimReplace( string $attr )
+{
+    string $node = rootNode( $attr );
+    
+    string $ui = "p3dEventAnimScriptTableUI";
+    
+//  p3dEventAnimRebuildTable( $node, $ui );
+
+    animChannelTable_Update( $ui, $node );
+}
+
+//===========================================================================
+// AEp3dEventAnimTemplate
+//===========================================================================
+// Description: Specifies the Attribute Editor template for the
+//                   p3dEventAnim dependency graph node.
+//
+// Constraints: Procedures required for custom controls:
+//
+//                      .keyTimeTypeData: "AEp3dEventAnimNew()" "AEp3dEventAnimReplace()"
+//
+// Parameters:  string $nodeName: The current p3dEventAnim node (provided
+//                                     by Maya).
+//
+// Return:      (void)
+//
+//===========================================================================
+global proc AEp3dEventAnimTemplate( string $nodeName )
+{
+    editorTemplate -beginLayout "Pure3D Events" -collapse 0;
+        
+        editorTemplate -addControl "address";
+        editorTemplate -addControl "cyclic";
+
+        editorTemplate -callCustom "AEp3dEventAnimNew" "AEp3dEventAnimReplace" "keyTimeTypeData";
+        
+        editorTemplate -suppress "key";
+        
+    editorTemplate -endLayout;
+
+    AEdependNodeTemplate $nodeName;
+    
+    editorTemplate -addExtraControls;
+    
+}

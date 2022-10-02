@@ -1,0 +1,123 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::Scrolled - Create a widget with attached scrollbar(s)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OPTIONS">OPTIONS</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::Scrolled - Create a widget with attached <CODE>scrollbar(s)</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    $whatever = $parent-&gt;Scrolled('Whatever',
+                                -scrollbars = 'nw',
+                                ... widget options of Whatever here...
+                                );
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+To stop a flood of <STRONG>ScrlWhatever</STRONG> Perl/Tk introcuded the special constructor
+<STRONG>Scrolled</STRONG>.  <STRONG>Scrolled</STRONG> creates a widget of the given Class 'Whatever' with attached <EM>scrollbar</EM>(s).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="OPTIONS">OPTIONS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item__scrollbars">-scrollbars
+
+</A></STRONG><DD>
+Expects as argument the position where the scrollbars should be created.  <A HREF="#item__w_">'w'</A>, <A HREF="#item__e_">'e'</A> or <A HREF="#item__n_">'n'</A>, <A HREF="#item__s_">'s'</A> or a combination of them. If the one or both positions are prefixed with <CODE>'o'</CODE> the scrollbar will only show up if there is a 'real' need to scroll.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_all">all other option
+
+</A></STRONG><DD>
+All options beside &lt;-scrollbars&gt; are passed to the 'Whatever' widget
+constructor.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+If a widget does not support <CODE>-{x,y}scrollcommand</CODE> options,
+<STRONG>Scrolled</STRONG> does not complain if the specified widget class does not support them.
+E.g.,
+
+
+<P>
+
+<PRE>    $parent-&gt;Scrolled('Button', ...)
+</PRE>
+
+<P>
+
+One does not get an error message or warning when one tries to configure
+scrollbars after the widget construction:
+
+
+<P>
+
+<PRE>    $ascrolled-&gt;scrollbars('e')
+    $ascrolled-&gt;configure(-scrollbars =&gt; 'e');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Scrollbar, Tk::Widget.pm(sub Scrollbars), Tk::Frame.pm(sub AddScrollbars)
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

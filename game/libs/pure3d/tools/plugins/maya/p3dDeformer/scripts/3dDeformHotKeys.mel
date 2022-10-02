@@ -1,0 +1,185 @@
+// Copyright (C) 2001 Radical Entertainment
+// 
+// Name:   p3dDeformHotKeys.mel
+// Author: Pamela Chow
+//
+// Description: Functions save and restore hotkey assignments
+//
+// Contents:
+// global proc p3dDeformSetKeyPress(string $key, string $nameCmd)
+// global proc p3dDeformWriteHotKeyFile()
+// global proc p3dDeformApplyHotKeyFile()
+// global proc int p3dDeformHotKeyFileExists()
+
+
+
+
+//*************************************************************************
+// Description:	Assigns the specified name command to the hotkey
+//
+// Parameters: $nameCmd = a nameCommand object (created using nameCommand mel cmd)
+//			   $key = hot key (single character)
+//
+// Returns:
+//
+//***************************************************************************/
+
+global proc p3dDeformSetKeyPress(string $key, string $nameCmd)
+{
+	//debug
+	p3dDeformDebugTrace("In p3dDeformSetKeyPress");
+	//debug
+
+	if($key == "")
+		print "Error: Invalid paramater for p3dDeformSetKeyPress."
+
+	//finally assign the desired command to the hotkey
+	hotkey -k $key -name "";
+	hotkey -k $key -name $nameCmd;
+	hotkey -k $key -rn "";
+
+}
+
+
+//-----------------------------------------------------------------------
+//Procedures for save user hotkey settings temporarily while in dragger
+//context:
+
+/*************************************************************************
+// Description:	Causes the current user selected hotkey assignments to be 
+// saved to the designated maya preferences file: userHotkeys.mel. Then, copies
+// the content of this file to deformerBackUpHotKeys.mel.
+//
+// Parameters: none
+//
+// Returns: void
+//
+***************************************************************************/
+
+global proc p3dDeformWriteHotKeyFile()
+{
+	//------first ask Maya to save user hotkeys
+	savePrefs -hk;
+	
+	//----- copy user hotkeys to a deformerUserHotKeys.mel
+	string $deformerUserHkFile;
+	string $mayaUserHkFile = `internalVar -userPrefDir`;
+	$deformerUserHkFile = $mayaUserHkFile;
+	$mayaUserHkFile+="userHotkeys.mel";
+	$deformerUserHkFile += "deformerBackUpHotKeys.mel";
+
+	int $err = catch($fileId_deformer = fopen($deformerUserHkFile,"w"));
+	if(($fileId_deformer == 0) || ($err == 1))
+	{
+		error "Failed to open deformerUserHotkey.mel for writing";
+		return;
+	}
+
+	$err = catch($fileId_maya = fopen($mayaUserHkFile,"r"));
+	if (($fileId_maya != 0) && ($err != 1))
+    {
+		p3dDeformDebugTrace("In p3dDeformWriteHotKeyFile.");
+		
+		string $fileContents = `fread $fileId_maya $fileContents`;
+		//debug
+		p3dDeformDebugStr("$fileContents =",$fileContents);
+		//debug
+		fwrite $fileId_deformer $fileContents;
+		fclose $fileId_maya;
+		fclose $fileId_deformer;
+	}
+}
+
+
+/*************************************************************************
+// Description:Tests to see if the file deformerBackUpHotKeys.mel exists in the
+// default user preferences directory.	
+//
+// Parameters:
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc int p3dDeformHotKeyFileExists()
+{
+	string $dir = `internalVar -userPrefDir`;
+	string $files[]= `getFileList -folder $dir`;
+
+	for($file in $files)
+	{
+		if($file == "deformerBackUpHotKeys.mel")
+			return 1;
+	}
+	return 0;
+}
+
+
+/*************************************************************************
+// Description:	If a deformerBackUpHotKeys.mel file exists in user preferences dir
+// this proc will execute its contents (restoring the user hotkey assignments
+// specified in the file). The proc then deletes the file.
+//
+// Parametrs:
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformApplyHotKeyFile()
+{
+	p3dDeformDebugTrace("In p3dDeformApplyHotKeyFile");
+
+	if(p3dDeformHotKeyFileExists()) //if the deformerBackUpHotKeys.mel file exists
+	{	
+		string $deformerUserHkFile = `internalVar -userPrefDir`;
+		$deformerUserHkFile += "deformerBackUpHotKeys.mel";
+		
+		int $fileId_deformer;
+		int $err = catch($fileId_deformer = fopen($deformerUserHkFile,"r"));
+
+	
+		if(($fileId_deformer == 0) || ($err == 1))
+		{
+			error "Unable to open deformerBackUpHotKeys.mel\n";
+			return;
+		}
+		
+		//execute its contents
+		string $fileContents = `fread $fileId_deformer $fileContents`;
+		p3dDeformDebugStr("$fileContents =", $fileContents);
+		eval($fileContents);
+		fclose $fileId_deformer;
+
+		//delete the file
+		int $rc = `sysFile -del $deformerUserHkFile`;
+		p3dDeformDebugInt("$rc =", $rc );
+	}
+
+}
+
+
+
+//test procedure
+/*
+global proc p3dTestUserHotKeySys()
+{
+	p3dDeformSetKeyPress("r", "printFriendlyGreeting");
+	//---- at this point the namecommand assigned to "r" is "printFriendlyGreeting"
+	p3dDeformWriteHotKeyFile();
+	
+	hotkey -fs;
+	//---- restore hotkey defaults
+	
+	p3dDeformApplyHotKeyFile();
+	//---- reassign "r" to "printFriendlyGreeting"
+	//---- the deformerBackUpHotKeys.mel file should no longer exists in the user pref dir.
+}
+
+global proc printGreetingPam()
+{
+	print("It's a nice day in Vancouver!");
+
+}
+*/
+//------------------------------------------------------------------------------------

@@ -1,0 +1,2146 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlop - Perl operators and precedence
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Terms_and_List_Operators_Leftwa">Terms and List Operators (Leftward)</A>
+		<LI><A HREF="#The_Arrow_Operator">The Arrow Operator</A>
+		<LI><A HREF="#Auto_increment_and_Auto_decremen">Auto-increment and Auto-decrement</A>
+		<LI><A HREF="#Exponentiation">Exponentiation</A>
+		<LI><A HREF="#Symbolic_Unary_Operators">Symbolic Unary Operators</A>
+		<LI><A HREF="#Binding_Operators">Binding Operators</A>
+		<LI><A HREF="#Multiplicative_Operators">Multiplicative Operators</A>
+		<LI><A HREF="#Additive_Operators">Additive Operators</A>
+		<LI><A HREF="#Shift_Operators">Shift Operators</A>
+		<LI><A HREF="#Named_Unary_Operators">Named Unary Operators</A>
+		<LI><A HREF="#Relational_Operators">Relational Operators</A>
+		<LI><A HREF="#Equality_Operators">Equality Operators</A>
+		<LI><A HREF="#Bitwise_And">Bitwise And</A>
+		<LI><A HREF="#Bitwise_Or_and_Exclusive_Or">Bitwise Or and Exclusive Or</A>
+		<LI><A HREF="#C_style_Logical_And">C-style Logical And</A>
+		<LI><A HREF="#C_style_Logical_Or">C-style Logical Or</A>
+		<LI><A HREF="#Range_Operator">Range Operator</A>
+		<LI><A HREF="#Conditional_Operator">Conditional Operator</A>
+		<LI><A HREF="#Assignment_Operators">Assignment Operators</A>
+		<LI><A HREF="#Comma_Operator">Comma Operator</A>
+		<LI><A HREF="#List_Operators_Rightward_">List Operators (Rightward)</A>
+		<LI><A HREF="#Logical_Not">Logical Not</A>
+		<LI><A HREF="#Logical_And">Logical And</A>
+		<LI><A HREF="#Logical_or_and_Exclusive_Or">Logical or and Exclusive Or</A>
+		<LI><A HREF="#C_Operators_Missing_From_Perl">C Operators Missing From Perl</A>
+		<LI><A HREF="#Quote_and_Quote_like_Operators">Quote and Quote-like Operators</A>
+		<LI><A HREF="#Regexp_Quote_Like_Operators">Regexp Quote-Like Operators</A>
+		<LI><A HREF="#I_O_Operators">I/O Operators</A>
+		<LI><A HREF="#Constant_Folding">Constant Folding</A>
+		<LI><A HREF="#Integer_Arithmetic">Integer Arithmetic</A>
+		<LI><A HREF="#Floating_point_Arithmetic">Floating-point Arithmetic</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlop - Perl operators and precedence
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+Perl operators have the following associativity and precedence, listed from highest precedence to lowest. Note that all operators borrowed from 
+<FONT SIZE=-1>C</FONT> keep the same precedence relationship with each other, even where C's precedence is slightly screwy. (This makes learning Perl easier for 
+<FONT SIZE=-1>C</FONT> folks.) With very few exceptions, these all operate on scalar values only, not array values.
+
+
+
+<P>
+
+<PRE>    left        terms and list operators (leftward)
+    left        -&gt;
+    nonassoc    ++ --
+    right       **
+    right       ! ~ \ and unary + and -
+    left        =~ !~
+    left        * / % x
+    left        + - .
+    left        &lt;&lt; &gt;&gt;
+    nonassoc    named unary operators
+    nonassoc    &lt; &gt; &lt;= &gt;= lt gt le ge
+    nonassoc    == != &lt;=&gt; eq ne cmp
+    left        &amp;
+    left        | ^
+    left        &amp;&amp;
+    left        ||
+    nonassoc    ..  ...
+    right       ?:
+    right       = += -= *= etc.
+    left        , =&gt;
+    nonassoc    list operators (rightward)
+    right       not
+    left        and
+    left        or xor
+</PRE>
+
+<P>
+
+In the following sections, these operators are covered in precedence order.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Terms_and_List_Operators_Leftwa">Terms and List Operators (Leftward)
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> 
+<FONT SIZE=-1>TERM</FONT> has the highest precedence in Perl. They includes variables, quote and quote-like operators, any expression in parentheses, and any function whose arguments are parenthesized. Actually, there aren't really functions in this sense, just list operators and unary operators behaving as functions because you put parentheses around the arguments. These are all documented in
+ <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>.
+
+
+<P>
+
+If any list operator (print(), etc.) or any unary operator (chdir(), etc.)
+is followed by a left parenthesis as the next token, the operator and
+arguments within parentheses are taken to be of highest precedence, just
+like a normal function call.
+
+
+<P>
+
+In the absence of parentheses, the precedence of list operators such as
+<A HREF="#item_print">print</A>, <A HREF="#item_sort">sort</A>, or <A HREF="#item_chmod">chmod</A> is either very high or very low depending on whether you are looking at the
+left side or the right side of the operator. For example, in
+
+
+<P>
+
+<PRE>    @ary = (1, 3, sort 4, 2);
+    print @ary;         # prints 1324
+</PRE>
+
+<P>
+
+the commas on the right of the sort are evaluated before the sort, but the commas on the left are evaluated after. In other words, list operators tend to gobble up all the arguments that follow them, and then act like a simple 
+<FONT SIZE=-1>TERM</FONT> with regard to the preceding expression. Note that you have to be careful with parentheses:
+
+
+
+<P>
+
+<PRE>    # These evaluate exit before doing the print:
+    print($foo, exit);  # Obviously not what you want.
+    print $foo, exit;   # Nor is this.
+</PRE>
+
+<P>
+
+<PRE>    # These do the print before evaluating exit:
+    (print $foo), exit; # This is what you want.
+    print($foo), exit;  # Or this.
+    print ($foo), exit; # Or even this.
+</PRE>
+
+<P>
+
+Also note that
+
+
+<P>
+
+<PRE>    print ($foo &amp; 255) + 1, &quot;\n&quot;;
+</PRE>
+
+<P>
+
+probably doesn't do what you expect at first glance. See
+<A HREF="#Named_Unary_Operators">Named Unary Operators</A> for more discussion of this.
+
+
+<P>
+
+Also parsed as terms are the <A HREF="#item_do_">do {}</A> and <A HREF="#item_eval_">eval {}</A> constructs, as well as subroutine and method calls, and the anonymous
+constructors <CODE>[]</CODE> and <CODE>{}</CODE>.
+
+
+<P>
+
+See also <A HREF="#Quote_and_Quote_like_Operators">Quote and Quote-like Operators</A> toward the end of this section, as well as <A HREF="#I_O_Operators">I/O Operators</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="The_Arrow_Operator">The Arrow Operator
+
+</A></H2>
+Just as in 
+<FONT SIZE=-1>C</FONT> and 
+<FONT SIZE=-1>C++,</FONT> ``<A HREF="#item__gt_">-&gt;</A>'' is an infix dereference operator. If the right side is either a <CODE>[...]</CODE> or <CODE>{...}</CODE> subscript, then the left side must be either a hard or symbolic reference
+to an array or hash (or a location capable of holding a hard reference, if
+it's an lvalue (assignable)). See <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A>.
+
+
+<P>
+
+Otherwise, the right side is a method name or a simple scalar variable
+containing the method name, and the left side must either be an object (a
+blessed reference) or a class name (that is, a package name). See <A HREF="/n|/perl/html/./lib/Pod/perlobj.html#">the perlobj manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Auto_increment_and_Auto_decremen">Auto-increment and Auto-decrement
+
+</A></H2>
+``++'' and ``--'' work as in 
+<FONT SIZE=-1>C.</FONT> That is, if placed before a variable, they
+increment or decrement the variable before returning the value, and if
+placed after, increment or decrement the variable after returning the
+value.
+
+
+<P>
+
+The auto-increment operator has a little extra builtin magic to it. If you
+increment a variable that is numeric, or that has ever been used in a
+numeric context, you get a normal increment. If, however, the variable has
+been used in only string contexts since it was set, and has a value that is
+not null and matches the pattern
+<CODE>/^[a-zA-Z]*[0-9]*$/</CODE>, the increment is done as a string, preserving each character within its
+range, with carry:
+
+
+<P>
+
+<PRE>    print ++($foo = '99');      # prints '100'
+    print ++($foo = 'a0');      # prints 'a1'
+    print ++($foo = 'Az');      # prints 'Ba'
+    print ++($foo = 'zz');      # prints 'aaa'
+</PRE>
+
+<P>
+
+The auto-decrement operator is not magical.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Exponentiation">Exponentiation
+
+</A></H2>
+Binary ``**'' is the exponentiation operator. Note that it binds even more
+tightly than unary minus, so -2**4 is -(2**4), not (-2)**4. (This is
+implemented using C's <CODE>pow(3)</CODE> function, which actually works on
+doubles internally.)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Symbolic_Unary_Operators">Symbolic Unary Operators
+
+</A></H2>
+Unary ``!'' performs logical negation, i.e., ``not''. See also <CODE>not</CODE> for a lower precedence version of this.
+
+
+<P>
+
+Unary ``-'' performs arithmetic negation if the operand is numeric. If the
+operand is an identifier, a string consisting of a minus sign concatenated
+with the identifier is returned. Otherwise, if the string starts with a
+plus or minus, a string starting with the opposite sign is returned. One
+effect of these rules is that <CODE>-bareword</CODE> is equivalent to <CODE>"-bareword"</CODE>.
+
+
+<P>
+
+Unary ``~'' performs bitwise negation, i.e., 1's complement. (See also <A HREF="#Integer_Arithmetic">Integer Arithmetic</A>.)
+
+
+<P>
+
+Unary ``+'' has no effect whatsoever, even on strings. It is useful
+syntactically for separating a function name from a parenthesized
+expression that would otherwise be interpreted as the complete list of
+function arguments. (See examples above under <A HREF="#Terms_and_List_Operators_Leftwa">Terms and List Operators (Leftward)</A>.)
+
+
+<P>
+
+Unary ``\'' creates a reference to whatever follows it. See <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A>. Do not confuse this behavior with the behavior of backslash within a
+string, although both forms do convey the notion of protecting the next
+thing from interpretation.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Binding_Operators">Binding Operators
+
+</A></H2>
+Binary ``=~'' binds a scalar expression to a pattern match. Certain
+operations search or modify the string <CODE>$_</CODE> by default. This
+operator makes that kind of operation work on some other string. The right
+argument is a search pattern, substitution, or translation. The left
+argument is what is supposed to be searched, substituted, or translated
+instead of the default $_. The return value indicates the success of the
+operation. (If the right argument is an expression rather than a search
+pattern, substitution, or translation, it is interpreted as a search
+pattern at run time. This can be is less efficient than an explicit search,
+because the pattern must be compiled every time the expression is
+evaluated.
+
+
+<P>
+
+Binary ``!~'' is just like ``=~'' except the return value is negated in the
+logical sense.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Multiplicative_Operators">Multiplicative Operators
+
+</A></H2>
+Binary ``*'' multiplies two numbers.
+
+
+<P>
+
+Binary ``/'' divides two numbers.
+
+
+<P>
+
+Binary ``%'' computes the modulus of two numbers. Given integer operands <A HREF="#item__a">$a</A> and <A HREF="#item__b">$b</A>: If <A HREF="#item__b">$b</A> is positive, then <CODE>$a % $b</CODE> is
+<A HREF="#item__a">$a</A> minus the largest multiple of <A HREF="#item__b">$b</A> that is not greater than
+<A HREF="#item__a">$a</A>. If <A HREF="#item__b">$b</A> is negative, then <CODE>$a % $b</CODE> is <A HREF="#item__a">$a</A> minus the smallest multiple of <A HREF="#item__b">$b</A> that is not less than <A HREF="#item__a">$a</A> (i.e. the result will be less than or equal to zero).
+
+
+<P>
+
+Binary ``x'' is the repetition operator. In a scalar context, it returns a
+string consisting of the left operand repeated the number of times
+specified by the right operand. In a list context, if the left operand is a
+list in parentheses, it repeats the list.
+
+
+<P>
+
+<PRE>    print '-' x 80;             # print row of dashes
+</PRE>
+
+<P>
+
+<PRE>    print &quot;\t&quot; x ($tab/8), ' ' x ($tab%8);      # tab over
+</PRE>
+
+<P>
+
+<PRE>    @ones = (1) x 80;           # a list of 80 1's
+    @ones = (5) x @ones;        # set all elements to 5
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Additive_Operators">Additive Operators
+
+</A></H2>
+Binary ``+'' returns the sum of two numbers.
+
+
+<P>
+
+Binary ``-'' returns the difference of two numbers.
+
+
+<P>
+
+Binary ``.'' concatenates two strings.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Shift_Operators">Shift Operators
+
+</A></H2>
+Binary ``&lt;&lt;`` returns the value of its left argument shifted left by the number of
+bits specified by the right argument. Arguments should be integers. (See
+also <A HREF="#Integer_Arithmetic">Integer Arithmetic</A>.)
+
+
+<P>
+
+Binary ``&gt;&gt;'' returns the value of its left argument shifted right by
+the number of bits specified by the right argument. Arguments should be
+integers. (See also <A HREF="#Integer_Arithmetic">Integer Arithmetic</A>.)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Named_Unary_Operators">Named Unary Operators
+
+</A></H2>
+The various named unary operators are treated as functions with one
+argument, with optional parentheses. These include the filetest operators,
+like <A HREF="#item__f">-f</A>, <CODE>-M</CODE>, etc. See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>.
+
+
+<P>
+
+If any list operator (print(), etc.) or any unary operator (chdir(), etc.)
+is followed by a left parenthesis as the next token, the operator and
+arguments within parentheses are taken to be of highest precedence, just
+like a normal function call. Examples:
+
+
+<P>
+
+<PRE>    chdir $foo    || die;       # (chdir $foo) || die
+    chdir($foo)   || die;       # (chdir $foo) || die
+    chdir ($foo)  || die;       # (chdir $foo) || die
+    chdir +($foo) || die;       # (chdir $foo) || die
+</PRE>
+
+<P>
+
+but, because * is higher precedence than ||:
+
+
+<P>
+
+<PRE>    chdir $foo * 20;    # chdir ($foo * 20)
+    chdir($foo) * 20;   # (chdir $foo) * 20
+    chdir ($foo) * 20;  # (chdir $foo) * 20
+    chdir +($foo) * 20; # chdir ($foo * 20)
+</PRE>
+
+<P>
+
+<PRE>    rand 10 * 20;       # rand (10 * 20)
+    rand(10) * 20;      # (rand 10) * 20
+    rand (10) * 20;     # (rand 10) * 20
+    rand +(10) * 20;    # rand (10 * 20)
+</PRE>
+
+<P>
+
+See also <A HREF="#Terms_and_List_Operators_Leftwa">Terms and List Operators (Leftward)</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Relational_Operators">Relational Operators
+
+</A></H2>
+Binary ``&lt;'' returns true if the left argument is numerically less than the right
+argument.
+
+
+<P>
+
+Binary ``&gt;'' returns true if the left argument is numerically greater than the right
+argument.
+
+
+<P>
+
+Binary ``&lt;='' returns true if the left argument is numerically less than or equal to
+the right argument.
+
+
+<P>
+
+Binary ``&gt;='' returns true if the left argument is numerically greater than or equal
+to the right argument.
+
+
+<P>
+
+Binary ``lt'' returns true if the left argument is stringwise less than the
+right argument.
+
+
+<P>
+
+Binary ``gt'' returns true if the left argument is stringwise greater than
+the right argument.
+
+
+<P>
+
+Binary ``le'' returns true if the left argument is stringwise less than or
+equal to the right argument.
+
+
+<P>
+
+Binary ``ge'' returns true if the left argument is stringwise greater than
+or equal to the right argument.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Equality_Operators">Equality Operators
+
+</A></H2>
+Binary ``=='' returns true if the left argument is numerically equal to the
+right argument.
+
+
+<P>
+
+Binary ``!='' returns true if the left argument is numerically not equal to
+the right argument.
+
+
+<P>
+
+Binary ``&lt;=&gt;`` returns -1, 0, or 1 depending on whether the left argument is
+numerically less than, equal to, or greater than the right argument.
+
+
+<P>
+
+Binary ``eq'' returns true if the left argument is stringwise equal to the
+right argument.
+
+
+<P>
+
+Binary ``ne'' returns true if the left argument is stringwise not equal to
+the right argument.
+
+
+<P>
+
+Binary ``cmp'' returns -1, 0, or 1 depending on whether the left argument
+is stringwise less than, equal to, or greater than the right argument.
+
+
+<P>
+
+``lt'', ``le'', ``ge'', ``gt'' and ``cmp'' use the collation (sort) order
+specified by the current locale if <CODE>use locale</CODE> is in effect. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Bitwise_And">Bitwise And
+
+</A></H2>
+Binary ``&amp;'' returns its operators ANDed together bit by bit. (See also <A HREF="#Integer_Arithmetic">Integer Arithmetic</A>.)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Bitwise_Or_and_Exclusive_Or">Bitwise Or and Exclusive Or
+
+</A></H2>
+Binary ``|'' returns its operators ORed together bit by bit. (See also <A HREF="#Integer_Arithmetic">Integer Arithmetic</A>.)
+
+
+<P>
+
+Binary ``^'' returns its operators XORed together bit by bit. (See also <A HREF="#Integer_Arithmetic">Integer Arithmetic</A>.)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="C_style_Logical_And">C-style Logical And
+
+</A></H2>
+Binary ``&amp;&amp;'' performs a short-circuit logical 
+<FONT SIZE=-1>AND</FONT> operation. That is, if the left operand is false,
+the right operand is not even evaluated. Scalar or list context propagates
+down to the right operand if it is evaluated.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="C_style_Logical_Or">C-style Logical Or
+
+</A></H2>
+Binary ``||'' performs a short-circuit logical 
+<FONT SIZE=-1>OR</FONT> operation. That is, if the left operand is true,
+the right operand is not even evaluated. Scalar or list context propagates
+down to the right operand if it is evaluated.
+
+
+<P>
+
+The <CODE>||</CODE> and <CODE>&&</CODE> operators differ from C's in that, rather than returning 0 or 1, they
+return the last value evaluated. Thus, a reasonably portable way to find
+out the home directory (assuming it's not ``0'') might be:
+
+
+<P>
+
+<PRE>    $home = $ENV{'HOME'} || $ENV{'LOGDIR'} ||
+        (getpwuid($&lt;))[7] || die &quot;You're homeless!\n&quot;;
+</PRE>
+
+<P>
+
+As more readable alternatives to <CODE>&&</CODE> and <CODE>||</CODE>, Perl provides ``and'' and ``or'' operators (see below). The short-circuit
+behavior is identical. The precedence of ``and'' and ``or'' is much lower,
+however, so that you can safely use them after a list operator without the
+need for parentheses:
+
+
+<P>
+
+<PRE>    unlink &quot;alpha&quot;, &quot;beta&quot;, &quot;gamma&quot;
+            or gripe(), next LINE;
+</PRE>
+
+<P>
+
+With the C-style operators that would have been written like this:
+
+
+<P>
+
+<PRE>    unlink(&quot;alpha&quot;, &quot;beta&quot;, &quot;gamma&quot;)
+            || (gripe(), next LINE);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Range_Operator">Range Operator
+
+</A></H2>
+Binary ``..'' is the range operator, which is really two different
+operators depending on the context. In a list context, it returns an array
+of values counting (by ones) from the left value to the right value. This
+is useful for writing <CODE>for (1..10)</CODE> loops and for doing slice operations on arrays. Be aware that under the
+current implementation, a temporary array is created, so you'll burn a lot
+of memory if you write something like this:
+
+
+<P>
+
+<PRE>    for (1 .. 1_000_000) {
+        # code
+    }
+</PRE>
+
+<P>
+
+In a scalar context, ``..'' returns a boolean value. The operator is
+bistable, like a flip-flop, and emulates the line-range (comma) operator of <STRONG>sed</STRONG>, <STRONG>awk</STRONG>, and various editors. Each ``..'' operator maintains its own boolean
+state. It is false as long as its left operand is false. Once the left
+operand is true, the range operator stays true until the right operand is
+true, <EM>AFTER</EM> which the range operator becomes false again. (It doesn't become false till
+the next time the range operator is evaluated. It can test the right
+operand and become false on the same evaluation it became true (as in <STRONG>awk</STRONG>), but it still returns true once. If you don't want it to test the right
+operand till the next evaluation (as in <STRONG>sed</STRONG>), use three dots (``...'') instead of two.) The right operand is not evaluated while the operator is in the ``false'' state, and the left operand is not evaluated while the operator is in the ``true'' state. The precedence is a little lower than || and &amp;&amp;. The value returned is either the null string for false, or a sequence number (beginning with 1) for true. The sequence number is reset for each range encountered. The final sequence number in a range has the string 
+<FONT SIZE=-1>``E0''</FONT> appended to it, which doesn't affect its numeric value, but gives you something to search for if you want to exclude the endpoint. You can exclude the beginning point by waiting for the sequence number to be greater than 1. If either operand of scalar ``..'' is a numeric literal, that operand is implicitly compared to the
+ <CODE>$.</CODE> variable, the current line number. Examples:
+
+
+<P>
+
+As a scalar operator:
+
+
+<P>
+
+<PRE>    if (101 .. 200) { print; }  # print 2nd hundred lines
+    next line if (1 .. /^$/);   # skip header lines
+    s/^/&gt; / if (/^$/ .. eof()); # quote body
+</PRE>
+
+<P>
+
+As a list operator:
+
+
+<P>
+
+<PRE>    for (101 .. 200) { print; } # print $_ 100 times
+    @foo = @foo[0 .. $#foo];    # an expensive no-op
+    @foo = @foo[$#foo-4 .. $#foo];      # slice last 5 items
+</PRE>
+
+<P>
+
+The range operator (in a list context) makes use of the magical
+auto-increment algorithm if the operands are strings. You can say
+
+
+<P>
+
+<PRE>    @alphabet = ('A' .. 'Z');
+</PRE>
+
+<P>
+
+to get all the letters of the alphabet, or
+
+
+<P>
+
+<PRE>    $hexdigit = (0 .. 9, 'a' .. 'f')[$num &amp; 15];
+</PRE>
+
+<P>
+
+to get a hexadecimal digit, or
+
+
+<P>
+
+<PRE>    @z2 = ('01' .. '31');  print $z2[$mday];
+</PRE>
+
+<P>
+
+to get dates with leading zeros. If the final value specified is not in the
+sequence that the magical increment would produce, the sequence goes until
+the next value would be longer than the final value specified.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Conditional_Operator">Conditional Operator
+
+</A></H2>
+Ternary ``?:'' is the conditional operator, just as in 
+<FONT SIZE=-1>C.</FONT> It works much like an if-then-else. If the argument
+before the ? is true, the argument before the : is returned, otherwise the
+argument after the : is returned. For example:
+
+
+<P>
+
+<PRE>    printf &quot;I have %d dog%s.\n&quot;, $n,
+            ($n == 1) ? '' : &quot;s&quot;;
+</PRE>
+
+<P>
+
+Scalar or list context propagates downward into the 2nd or 3rd argument,
+whichever is selected.
+
+
+<P>
+
+<PRE>    $a = $ok ? $b : $c;  # get a scalar
+    @a = $ok ? @b : @c;  # get an array
+    $a = $ok ? @b : @c;  # oops, that's just a count!
+</PRE>
+
+<P>
+
+The operator may be assigned to if both the 2nd and 3rd arguments are legal
+lvalues (meaning that you can assign to them):
+
+
+<P>
+
+<PRE>    ($a_or_b ? $a : $b) = $c;
+</PRE>
+
+<P>
+
+This is not necessarily guaranteed to contribute to the readability of your
+program.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Assignment_Operators">Assignment Operators
+
+</A></H2>
+``='' is the ordinary assignment operator.
+
+
+<P>
+
+Assignment operators work as in 
+<FONT SIZE=-1>C.</FONT> That is,
+
+
+<P>
+
+<PRE>    $a += 2;
+</PRE>
+
+<P>
+
+is equivalent to
+
+
+<P>
+
+<PRE>    $a = $a + 2;
+</PRE>
+
+<P>
+
+although without duplicating any side effects that dereferencing the lvalue
+might trigger, such as from <CODE>tie().</CODE> Other assignment operators
+work similarly. The following are recognized:
+
+
+<P>
+
+<PRE>    **=    +=    *=    &amp;=    &lt;&lt;=    &amp;&amp;=
+           -=    /=    |=    &gt;&gt;=    ||=
+           .=    %=    ^=
+                 x=
+</PRE>
+
+<P>
+
+Note that while these are grouped by family, they all have the precedence
+of assignment.
+
+
+<P>
+
+Unlike in 
+<FONT SIZE=-1>C,</FONT> the assignment operator produces a valid lvalue.
+Modifying an assignment is equivalent to doing the assignment and then
+modifying the variable that was assigned to. This is useful for modifying a
+copy of something, like this:
+
+
+<P>
+
+<PRE>    ($tmp = $global) =~ tr [A-Z] [a-z];
+</PRE>
+
+<P>
+
+Likewise,
+
+
+<P>
+
+<PRE>    ($a += 2) *= 3;
+</PRE>
+
+<P>
+
+is equivalent to
+
+
+<P>
+
+<PRE>    $a += 2;
+    $a *= 3;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Comma_Operator">Comma Operator
+
+</A></H2>
+Binary ``,'' is the comma operator. In a scalar context it evaluates its
+left argument, throws that value away, then evaluates its right argument
+and returns that value. This is just like C's comma operator.
+
+
+<P>
+
+In a list context, it's just the list argument separator, and inserts both
+its arguments into the list.
+
+
+<P>
+
+The =&gt; digraph is mostly just a synonym for the comma operator. It's useful for
+documenting arguments that come in pairs. As of release 5.001, it also
+forces any word to the left of it to be interpreted as a string.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="List_Operators_Rightward_">List Operators (Rightward)
+
+</A></H2>
+On the right side of a list operator, it has very low precedence, such that
+it controls all comma-separated expressions found there. The only operators
+with lower precedence are the logical operators ``and'', ``or'', and
+``not'', which may be used to evaluate calls to list operators without the
+need for extra parentheses:
+
+
+<P>
+
+<PRE>    open HANDLE, &quot;filename&quot;
+        or die &quot;Can't open: $!\n&quot;;
+</PRE>
+
+<P>
+
+See also discussion of list operators in <A HREF="#Terms_and_List_Operators_Leftwa">Terms and List Operators (Leftward)</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Logical_Not">Logical Not
+
+</A></H2>
+Unary ``not'' returns the logical negation of the expression to its right.
+It's the equivalent of ``!'' except for the very low precedence.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Logical_And">Logical And
+
+</A></H2>
+Binary ``and'' returns the logical conjunction of the two surrounding
+expressions. It's equivalent to &amp;&amp; except for the very low
+precedence. This means that it short-circuits: i.e., the right expression
+is evaluated only if the left expression is true.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Logical_or_and_Exclusive_Or">Logical or and Exclusive Or
+
+</A></H2>
+Binary ``or'' returns the logical disjunction of the two surrounding
+expressions. It's equivalent to || except for the very low precedence. This
+means that it short-circuits: i.e., the right expression is evaluated only
+if the left expression is false.
+
+
+<P>
+
+Binary ``xor'' returns the exclusive-OR of the two surrounding expressions.
+It cannot short circuit, of course.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="C_Operators_Missing_From_Perl">C Operators Missing From Perl
+
+</A></H2>
+Here is what 
+<FONT SIZE=-1>C</FONT> has that Perl doesn't:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_unary">unary &amp;
+
+</A></STRONG><DD>
+Address-of operator. (But see the ``\'' operator for taking a reference.)
+
+
+<P>
+
+<DT><STRONG>unary *
+
+</A></STRONG><DD>
+Dereference-address operator. (Perl's prefix dereferencing operators are
+typed: $, @, %, and &amp;.)
+
+
+<P>
+
+<DT><STRONG><A NAME="item__TYPE_">(TYPE)
+
+</A></STRONG><DD>
+Type casting operator.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Quote_and_Quote_like_Operators">Quote and Quote-like Operators
+
+</A></H2>
+While we usually think of quotes as literal values, in Perl they function
+as operators, providing various kinds of interpolating and pattern matching
+capabilities. Perl provides customary quote characters for these behaviors,
+but also provides a way for you to choose your quote character for any of
+them. In the following table, a <CODE>{}</CODE> represents any pair of delimiters you choose. Non-bracketing delimiters use
+the same character fore and aft, but the 4 sorts of brackets (round, angle,
+square, curly) will all nest.
+
+
+<P>
+
+<PRE>    Customary  Generic     Meaning    Interpolates
+        ''       q{}       Literal         no
+        &quot;&quot;      qq{}       Literal         yes
+        ``      qx{}       Command         yes
+                qw{}      Word list        no
+        //       m{}    Pattern match      yes
+                 s{}{}   Substitution      yes
+                tr{}{}   Translation       no
+</PRE>
+
+<P>
+
+For constructs that do interpolation, variables beginning with ``<CODE>$</CODE>'' or ``<CODE>@</CODE>'' are interpolated, as are the following sequences:
+
+
+<P>
+
+<PRE>    \t          tab             (HT, TAB)
+    \n          newline         (LF, NL)
+    \r          return          (CR)
+    \f          form feed       (FF)
+    \b          backspace       (BS)
+    \a          alarm (bell)    (BEL)
+    \e          escape          (ESC)
+    \033        octal char
+    \x1b        hex char
+    \c[         control char
+    \l          lowercase next char
+    \u          uppercase next char
+    \L          lowercase till \E
+    \U          uppercase till \E
+    \E          end case modification
+    \Q          quote regexp metacharacters till \E
+</PRE>
+
+<P>
+
+If <CODE>use locale</CODE> is in effect, the case map used by <A HREF="#item__l">\l</A>, <A HREF="#item__L">\L</A>, <CODE>\u</CODE>
+and &lt;
+<FONT SIZE=-1>\U&gt;</FONT> is taken from the current locale. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>.
+
+
+<P>
+
+Patterns are subject to an additional level of interpretation as a regular
+expression. This is done as a second pass, after variables are
+interpolated, so that regular expressions may be incorporated into the
+pattern from the variables. If this is not what you want, use <CODE>\Q</CODE> to interpolate a variable literally.
+
+
+<P>
+
+Apart from the above, there are no multiple levels of interpolation. In
+particular, contrary to the expectations of shell programmers, back-quotes
+do <EM>NOT</EM> interpolate within double quotes, nor do single quotes impede evaluation of
+variables when used within double quotes.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Regexp_Quote_Like_Operators">Regexp Quote-Like Operators
+
+</A></H2>
+Here are the quote-like operators that apply to pattern matching and
+related activities.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__PATTERN_">?PATTERN?
+
+</A></STRONG><DD>
+This is just like the <CODE>/pattern/</CODE> search, except that it matches only once between calls to the
+<CODE>reset()</CODE> operator. This is a useful optimization when you want
+to see only the first occurrence of something in each file of a set of
+files, for instance. Only <CODE>??</CODE>
+patterns local to the current package are reset.
+
+
+<P>
+
+This usage is vaguely deprecated, and may be removed in some future version
+of Perl.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_m">m/PATTERN/gimosx
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__PATTERN_gimosx">/PATTERN/gimosx
+
+</A></STRONG><DD>
+Searches a string for a pattern match, and in a scalar context returns true
+(1) or false (''). If no string is specified via the <CODE>=~</CODE> or
+<CODE>!~</CODE> operator, the <CODE>$_</CODE> string is searched. (The string specified
+with
+<CODE>=~</CODE> need not be an lvalue--it may be the result of an expression evaluation,
+but remember the <CODE>=~</CODE> binds rather tightly.) See also
+<A HREF="/n|/perl/html/./lib/Pod/perlre.html#">the perlre manpage</A>. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A> for discussion of additional considerations which apply when <CODE>use locale</CODE> is in effect.
+
+
+<P>
+
+Options are:
+
+
+<P>
+
+<PRE>    g   Match globally, i.e., find all occurrences.
+    i   Do case-insensitive pattern matching.
+    m   Treat string as multiple lines.
+    o   Compile pattern only once.
+    s   Treat string as single line.
+    x   Use extended regular expressions.
+</PRE>
+
+<P>
+
+If ``/'' is the delimiter then the initial <A HREF="#item_m">m</A> is optional. With the <A HREF="#item_m">m</A>
+you can use any pair of non-alphanumeric, non-whitespace characters as delimiters. This is particularly useful for matching Unix path names that contain ``/'', to avoid 
+<FONT SIZE=-1>LTS</FONT> (leaning toothpick syndrome). If ``?'' is the delimiter, then the match-only-once rule of
+ <CODE>?PATTERN?</CODE> applies.
+
+
+<P>
+
+
+<FONT SIZE=-1>PATTERN</FONT> may contain variables, which will be
+interpolated (and the pattern recompiled) every time the pattern search is
+evaluated. (Note that <CODE>$)</CODE> and <CODE>$|</CODE> might not be interpolated because they look like end-of-string tests.) If
+you want such a pattern to be compiled only once, add a <CODE>/o</CODE> after the trailing delimiter. This avoids expensive run-time
+recompilations, and is useful when the value you are interpolating won't
+change over the life of the script. However, mentioning
+<CODE>/o</CODE> constitutes a promise that you won't change the variables in the pattern.
+If you change them, Perl won't even notice.
+
+
+<P>
+
+If the 
+<FONT SIZE=-1>PATTERN</FONT> evaluates to a null string, the last
+successfully executed regular expression is used instead.
+
+
+<P>
+
+If used in a context that requires a list value, a pattern match returns a
+list consisting of the subexpressions matched by the parentheses in the
+pattern, i.e., (<CODE>$1</CODE>, $2, $3...). (Note that here <CODE>$1</CODE> etc. are also set, and that
+this differs from Perl 4's behavior.) If the match fails, a null array is
+returned. If the match succeeds, but there were no parentheses, a list
+value of (1) is returned.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    open(TTY, '/dev/tty');
+    &lt;TTY&gt; =~ /^y/i &amp;&amp; foo();    # do foo if desired
+</PRE>
+
+<P>
+
+<PRE>    if (/Version: *([0-9.]*)/) { $version = $1; }
+</PRE>
+
+<P>
+
+<PRE>    next if m#^/usr/spool/uucp#;
+</PRE>
+
+<P>
+
+<PRE>    # poor man's grep
+    $arg = shift;
+    while (&lt;&gt;) {
+        print if /$arg/o;       # compile only once
+    }
+</PRE>
+
+<P>
+
+<PRE>    if (($F1, $F2, $Etc) = ($foo =~ /^(\S+)\s+(\S+)\s*(.*)/))
+</PRE>
+
+<P>
+
+This last example splits <CODE>$foo</CODE> into the first two words and the remainder of the line, and assigns those three fields to 
+<FONT SIZE=-1>$F1,</FONT> 
+<FONT SIZE=-1>$F2,</FONT> and $Etc. The conditional is true if any variables were assigned, i.e., if the pattern matched.
+
+
+
+<P>
+
+The <CODE>/g</CODE> modifier specifies global pattern matching--that is, matching as many times
+as possible within the string. How it behaves depends on the context. In a
+list context, it returns a list of all the substrings matched by all the
+parentheses in the regular expression. If there are no parentheses, it
+returns a list of all the matched strings, as if there were parentheses
+around the whole pattern.
+
+
+<P>
+
+In a scalar context, <CODE>m//g</CODE> iterates through the string, returning 
+<FONT SIZE=-1>TRUE</FONT> each time it matches, and 
+<FONT SIZE=-1>FALSE</FONT> when it eventually runs out of matches. (In other words, it remembers where it left off last time and restarts the search at that point. You can actually find the current match position of a string or set it using the <CODE>pos()</CODE> function; see
+
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#pos">pos</A>.) 
+<FONT SIZE=-1>A</FONT> failed match normally resets the search position to
+the beginning of the string, but you can avoid that by adding the ``c''
+modifier (e.g. <CODE>m//gc</CODE>). Modifying the target string also resets the search position.
+
+
+<P>
+
+You can intermix <CODE>m//g</CODE> matches with <CODE>m/\G.../g</CODE>, where <CODE>\G</CODE> is a zero-width assertion that matches the exact position where the
+previous
+<CODE>m//g</CODE>, if any, left off. The <CODE>\G</CODE> assertion is not supported without the <CODE>/g</CODE> modifier; currently, without <CODE>/g</CODE>, <CODE>\G</CODE> behaves just like
+<A HREF="#item__A">\A</A>, but that's accidental and may change in the future.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    # list context
+    ($one,$five,$fifteen) = (`uptime` =~ /(\d+\.\d+)/g);
+</PRE>
+
+<P>
+
+<PRE>    # scalar context
+    $/ = &quot;&quot;; $* = 1;  # $* deprecated in modern perls
+    while (defined($paragraph = &lt;&gt;)) {
+        while ($paragraph =~ /[a-z]['&quot;)]*[.!?]+['&quot;)]*\s/g) {
+            $sentences++;
+        }
+    }
+    print &quot;$sentences\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    # using m//gc with \G
+    $_ = &quot;ppooqppqq&quot;;
+    while ($i++ &lt; 2) {
+        print &quot;1: '&quot;;
+        print $1 while /(o)/gc; print &quot;', pos=&quot;, pos, &quot;\n&quot;;
+        print &quot;2: '&quot;;
+        print $1 if /\G(q)/gc;  print &quot;', pos=&quot;, pos, &quot;\n&quot;;
+        print &quot;3: '&quot;;
+        print $1 while /(p)/gc; print &quot;', pos=&quot;, pos, &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+The last example should print:
+
+
+<P>
+
+<PRE>    1: 'oo', pos=4
+    2: 'q', pos=5
+    3: 'pp', pos=7
+    1: '', pos=7
+    2: 'q', pos=8
+    3: '', pos=8
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> useful idiom for <CODE>lex</CODE>-like scanners is <CODE>/\G.../gc</CODE>. You can combine several regexps like this to process a string
+part-by-part, doing different actions depending on which regexp matched.
+Each regexp tries to match where the previous one leaves off.
+
+
+<P>
+
+<PRE> $_ = &lt;&lt;'EOL';
+      $url = new URI::URL &quot;<A HREF="http://www/&quot">http://www/&quot</A>;;   die if $url eq &quot;xXx&quot;;
+ EOL
+ LOOP:
+    {
+      print(&quot; digits&quot;),         redo LOOP if /\G\d+\b[,.;]?\s*/gc;
+      print(&quot; lowercase&quot;),      redo LOOP if /\G[a-z]+\b[,.;]?\s*/gc;
+      print(&quot; UPPERCASE&quot;),      redo LOOP if /\G[A-Z]+\b[,.;]?\s*/gc;
+      print(&quot; Capitalized&quot;),    redo LOOP if /\G[A-Z][a-z]+\b[,.;]?\s*/gc;
+      print(&quot; MiXeD&quot;),          redo LOOP if /\G[A-Za-z]+\b[,.;]?\s*/gc;
+      print(&quot; alphanumeric&quot;),   redo LOOP if /\G[A-Za-z0-9]+\b[,.;]?\s*/gc;
+      print(&quot; line-noise&quot;),     redo LOOP if /\G[^A-Za-z0-9]+/gc;
+      print &quot;. That's all!\n&quot;;
+    }
+</PRE>
+
+<P>
+
+Here is the output (split into several lines):
+
+
+<P>
+
+<PRE> line-noise lowercase line-noise lowercase UPPERCASE line-noise
+ UPPERCASE line-noise lowercase line-noise lowercase line-noise
+ lowercase lowercase line-noise lowercase lowercase line-noise
+ MiXeD line-noise. That's all!
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_q">q/STRING/
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__STRING_">'STRING'
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> single-quoted, literal string. 
+<FONT SIZE=-1>A</FONT> backslash represents a backslash unless followed by the delimiter or another backslash, in which case the delimiter or backslash is interpolated.
+
+
+
+<P>
+
+<PRE>    $foo = q!I said, &quot;You said, 'She said it.'&quot;!;
+    $bar = q('This is it.');
+    $baz = '\n';                # a two-character string
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_qq">qq/STRING/
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__STRING_">"STRING"
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> double-quoted, interpolated string.
+
+
+<P>
+
+<PRE>    $_ .= qq
+     (*** The previous line contains the naughty word &quot;$1&quot;.\n)
+                if /(tcl|rexx|python)/;      # :-)
+    $baz = &quot;\n&quot;;                # a one-character string
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_qx">qx/STRING/
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__STRING_">`STRING`
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> string which is interpolated and then executed as a system command. The collected standard output of the command is returned. In scalar context, it comes back as a single (potentially multi-line) string. In list context, returns a list of lines (however you've defined lines with $/ or 
+<FONT SIZE=-1>$INPUT_RECORD_SEPARATOR).</FONT>
+
+
+
+<P>
+
+<PRE>    $today = qx{ date };
+</PRE>
+
+<P>
+
+Note that how the string gets evaluated is entirely subject to the command
+interpreter on your system. On most platforms, you will have to protect
+shell metacharacters if you want them treated literally. On some platforms
+(notably DOS-like ones), the shell may not be capable of dealing with
+multiline commands, so putting newlines in the string may not get you what
+you want. You may be able to evaluate multiple commands in a single line by
+separating them with the command separator character, if your shell
+supports that (e.g. <CODE>;</CODE> on many Unix shells; <CODE>&</CODE> on the Windows 
+<FONT SIZE=-1>NT</FONT> <CODE>cmd</CODE> shell).
+
+
+<P>
+
+Beware that some command shells may place restrictions on the length of the
+command line. You must ensure your strings don't exceed this limit after
+any necessary interpolations. See the platform-specific release notes for
+more details about your particular environment.
+
+
+<P>
+
+Also realize that using this operator frequently leads to unportable
+programs.
+
+
+<P>
+
+See <A HREF="#I_O_Operators">I/O Operators</A> for more discussion.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_qw">qw/STRING/
+
+</A></STRONG><DD>
+Returns a list of the words extracted out of 
+<FONT SIZE=-1>STRING,</FONT> using embedded whitespace as the word
+delimiters. It is exactly equivalent to
+
+
+<P>
+
+<PRE>    split(' ', q/STRING/);
+</PRE>
+
+<P>
+
+Some frequently seen examples:
+
+
+<P>
+
+<PRE>    use POSIX qw( setlocale localeconv )
+    @EXPORT = qw( foo bar baz );
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> common mistake is to try to separate the words with
+comma or to put comments into a multi-line qw-string. For this reason the <A HREF="#item__w">-w</A>
+switch produce warnings if the 
+<FONT SIZE=-1>STRING</FONT> contains the ``,'' or the ``#'' character.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_s">s/PATTERN/REPLACEMENT/egimosx
+
+</A></STRONG><DD>
+Searches a string for a pattern, and if found, replaces that pattern with
+the replacement text and returns the number of substitutions made.
+Otherwise it returns false (specifically, the empty string).
+
+
+<P>
+
+If no string is specified via the <CODE>=~</CODE> or <CODE>!~</CODE> operator, the <CODE>$_</CODE>
+variable is searched and modified. (The string specified with <CODE>=~</CODE> must be a scalar variable, an array element, a hash element, or an
+assignment to one of those, i.e., an lvalue.)
+
+
+<P>
+
+If the delimiter chosen is single quote, no variable interpolation is done on either the 
+<FONT SIZE=-1>PATTERN</FONT> or the 
+<FONT SIZE=-1>REPLACEMENT.</FONT> Otherwise, if the 
+<FONT SIZE=-1>PATTERN</FONT> contains a $ that looks like a variable rather than an end-of-string test, the variable will be interpolated into the pattern at run-time. If you want the pattern compiled only once the first time the variable is interpolated, use the
+ <CODE>/o</CODE> option. If the pattern evaluates to a null string, the last successfully
+executed regular expression is used instead. See <A HREF="/n|/perl/html/./lib/Pod/perlre.html#">the perlre manpage</A> for further explanation on these. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A> for discussion of additional considerations which apply when <CODE>use locale</CODE> is in effect.
+
+
+<P>
+
+Options are:
+
+
+<P>
+
+<PRE>    e   Evaluate the right side as an expression.
+    g   Replace globally, i.e., all occurrences.
+    i   Do case-insensitive pattern matching.
+    m   Treat string as multiple lines.
+    o   Compile pattern only once.
+    s   Treat string as single line.
+    x   Use extended regular expressions.
+</PRE>
+
+<P>
+
+Any non-alphanumeric, non-whitespace delimiter may replace the slashes. If
+single quotes are used, no interpretation is done on the replacement string
+(the <A HREF="#item__e">/e</A> modifier overrides this, however). Unlike Perl 4, Perl 5 treats backticks as normal delimiters; the replacement text is not evaluated as a command. If the 
+<FONT SIZE=-1>PATTERN</FONT> is delimited by bracketing quotes, the 
+<FONT SIZE=-1>REPLACEMENT</FONT> has its own pair of quotes, which may or may not be bracketing quotes, e.g.,
+
+<A HREF="#item_s">s(foo)(bar)</A> or <CODE>s&lt;foo&gt;/bar/</CODE>. 
+<FONT SIZE=-1>A</FONT> <A HREF="#item__e">/e</A> will cause the replacement portion to be interpreter as a full-fledged Perl
+expression and <CODE>eval()ed</CODE> right then and there. It is, however,
+syntax checked at compile-time.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    s/\bgreen\b/mauve/g;                # don't change wintergreen
+</PRE>
+
+<P>
+
+<PRE>    $path =~ s|/usr/bin|/usr/local/bin|;
+</PRE>
+
+<P>
+
+<PRE>    s/Login: $foo/Login: $bar/; # run-time pattern
+</PRE>
+
+<P>
+
+<PRE>    ($foo = $bar) =~ s/this/that/;
+</PRE>
+
+<P>
+
+<PRE>    $count = ($paragraph =~ s/Mister\b/Mr./g);
+</PRE>
+
+<P>
+
+<PRE>    $_ = 'abc123xyz';
+    s/\d+/$&amp;*2/e;               # yields 'abc246xyz'
+    s/\d+/sprintf(&quot;%5d&quot;,$&amp;)/e;  # yields 'abc  246xyz'
+    s/\w/$&amp; x 2/eg;             # yields 'aabbcc  224466xxyyzz'
+</PRE>
+
+<P>
+
+<PRE>    s/%(.)/$percent{$1}/g;      # change percent escapes; no /e
+    s/%(.)/$percent{$1} || $&amp;/ge;       # expr now, so /e
+    s/^=(\w+)/&amp;pod($1)/ge;      # use function call
+</PRE>
+
+<P>
+
+<PRE>    # /e's can even nest;  this will expand
+    # simple embedded variables in $_
+    s/(\$\w+)/$1/eeg;
+</PRE>
+
+<P>
+
+<PRE>    # Delete C comments.
+    $program =~ s {
+        /\*     # Match the opening delimiter.
+        .*?     # Match a minimal number of characters.
+        \*/     # Match the closing delimiter.
+    } []gsx;
+</PRE>
+
+<P>
+
+<PRE>    s/^\s*(.*?)\s*$/$1/;        # trim white space
+</PRE>
+
+<P>
+
+<PRE>    s/([^ ]*) *([^ ]*)/$2 $1/;  # reverse 1st two fields
+</PRE>
+
+<P>
+
+Note the use of $ instead of \ in the last example. Unlike
+<STRONG>sed</STRONG>, we use the \&lt;<EM>digit</EM>&gt; form in only the left hand side. Anywhere else it's $&lt;<EM>digit</EM>&gt;.
+
+
+<P>
+
+Occasionally, you can't use just a <CODE>/g</CODE> to get all the changes to occur. Here are two common cases:
+
+
+<P>
+
+<PRE>    # put commas in the right places in an integer
+    1 while s/(.*\d)(\d\d\d)/$1,$2/g;      # perl4
+    1 while s/(\d)(\d\d\d)(?!\d)/$1,$2/g;  # perl5
+</PRE>
+
+<P>
+
+<PRE>    # expand tabs to 8-column spacing
+    1 while s/\t+/' ' x (length($&amp;)*8 - length($`)%8)/e;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_tr">tr/SEARCHLIST/REPLACEMENTLIST/cds
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_y">y/SEARCHLIST/REPLACEMENTLIST/cds
+
+</A></STRONG><DD>
+Translates all occurrences of the characters found in the search list with
+the corresponding character in the replacement list. It returns the number
+of characters replaced or deleted. If no string is specified via the =~ or
+!~ operator, the <CODE>$_</CODE> string is translated. (The string
+specified with =~ must be a scalar variable, an array element, a hash
+element, or an assignment to one of those, i.e., an lvalue.) For <STRONG>sed</STRONG> devotees, <A HREF="#item_y">y</A> is provided as a synonym for <A HREF="#item_tr">tr</A>. If the 
+<FONT SIZE=-1>SEARCHLIST</FONT> is delimited by bracketing quotes, the 
+<FONT SIZE=-1>REPLACEMENTLIST</FONT> has its own pair of quotes, which may or may not be bracketing quotes, e.g.,
+ <CODE>tr[A-Z][a-z]</CODE> or <CODE>tr(+-*/)/ABCD/</CODE>.
+
+
+<P>
+
+Options:
+
+
+<P>
+
+<PRE>    c   Complement the SEARCHLIST.
+    d   Delete found but unreplaced characters.
+    s   Squash duplicate replaced characters.
+</PRE>
+
+<P>
+
+If the <A HREF="#item__c">/c</A> modifier is specified, the 
+<FONT SIZE=-1>SEARCHLIST</FONT> character set is complemented. If the <A HREF="#item__d">/d</A> modifier is specified, any characters specified by 
+<FONT SIZE=-1>SEARCHLIST</FONT> not found in 
+<FONT SIZE=-1>REPLACEMENTLIST</FONT> are deleted. (Note that this is slightly more flexible than the behavior of some
+ <STRONG>tr</STRONG>
+programs, which delete anything they find in the 
+<FONT SIZE=-1>SEARCHLIST,</FONT> period.) If the <A HREF="#item__s">/s</A> modifier is specified, sequences of characters that were translated to the
+same character are squashed down to a single instance of the character.
+
+
+<P>
+
+If the <A HREF="#item__d">/d</A> modifier is used, the 
+<FONT SIZE=-1>REPLACEMENTLIST</FONT> is always interpreted exactly as specified. Otherwise, if the 
+<FONT SIZE=-1>REPLACEMENTLIST</FONT> is shorter than the 
+<FONT SIZE=-1>SEARCHLIST,</FONT> the final character is replicated till it is long enough. If the 
+<FONT SIZE=-1>REPLACEMENTLIST</FONT> is null, the 
+<FONT SIZE=-1>SEARCHLIST</FONT> is replicated. This latter is useful for counting characters in a class or for squashing character sequences in a class.
+
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>    $ARGV[1] =~ tr/A-Z/a-z/;    # canonicalize to lower case
+</PRE>
+
+<P>
+
+<PRE>    $cnt = tr/*/*/;             # count the stars in $_
+</PRE>
+
+<P>
+
+<PRE>    $cnt = $sky =~ tr/*/*/;     # count the stars in $sky
+</PRE>
+
+<P>
+
+<PRE>    $cnt = tr/0-9//;            # count the digits in $_
+</PRE>
+
+<P>
+
+<PRE>    tr/a-zA-Z//s;               # bookkeeper -&gt; bokeper
+</PRE>
+
+<P>
+
+<PRE>    ($HOST = $host) =~ tr/a-z/A-Z/;
+</PRE>
+
+<P>
+
+<PRE>    tr/a-zA-Z/ /cs;             # change non-alphas to single space
+</PRE>
+
+<P>
+
+<PRE>    tr [\200-\377]
+       [\000-\177];             # delete 8th bit
+</PRE>
+
+<P>
+
+If multiple translations are given for a character, only the first one is
+used:
+
+
+<P>
+
+<PRE>    tr/AAA/XYZ/
+</PRE>
+
+<P>
+
+will translate any 
+<FONT SIZE=-1>A</FONT> to 
+<FONT SIZE=-1>X.</FONT>
+
+
+<P>
+
+Note that because the translation table is built at compile time, neither the 
+<FONT SIZE=-1>SEARCHLIST</FONT> nor the 
+<FONT SIZE=-1>REPLACEMENTLIST</FONT> are subjected to double quote interpolation. That means that if you want to use variables, you must use an <CODE>eval():</CODE>
+
+
+
+<P>
+
+<PRE>    eval &quot;tr/$oldlist/$newlist/&quot;;
+    die $@ if $@;
+</PRE>
+
+<P>
+
+<PRE>    eval &quot;tr/$oldlist/$newlist/, 1&quot; or die $@;
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="I_O_Operators">I/O Operators
+
+</A></H2>
+There are several 
+<FONT SIZE=-1>I/O</FONT> operators you should know about. 
+<FONT SIZE=-1>A</FONT> string is enclosed by backticks (grave accents) first undergoes variable substitution just like a double quoted string. It is then interpreted as a command, and the output of that command is the value of the pseudo-literal, like in a shell. In a scalar context, a single string consisting of all the output is returned. In a list context, a list of values is returned, one for each line of output. (You can set
+ <CODE>$/</CODE> to use a different line terminator.) The command is executed each time the
+pseudo-literal is evaluated. The status value of the command is returned in <CODE>$?</CODE> (see <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#">the perlvar manpage</A> for the interpretation of <CODE>$?</CODE>). Unlike in <STRONG>csh</STRONG>, no translation is done on the return data--newlines remain newlines.
+Unlike in any of the shells, single quotes do not hide variable names in
+the command from interpretation. To pass a $ through to the shell you need
+to hide it with a backslash. The generalized form of backticks is <A HREF="#item_qx_">qx//</A>. (Because backticks always undergo shell expansion as well, see <A HREF="/n|/perl/html/./lib/Pod/perlsec.html#">the perlsec manpage</A> for security concerns.)
+
+
+<P>
+
+Evaluating a filehandle in angle brackets yields the next line from that
+file (newline, if any, included), or <A HREF="#item_undef">undef</A> at end of file. Ordinarily you must assign that value to a variable, but
+there is one situation where an automatic assignment happens.  <EM>If and ONLY if</EM> the input symbol is the only thing inside the conditional of a <CODE>while</CODE> or
+<CODE>for(;;)</CODE> loop, the value is automatically assigned to the variable
+<CODE>$_</CODE>. The assigned value is then tested to see if it is defined. (This may seem
+like an odd thing to you, but you'll use the construct in almost every Perl
+script you write.) Anyway, the following lines are equivalent to each
+other:
+
+
+<P>
+
+<PRE>    while (defined($_ = &lt;STDIN&gt;)) { print; }
+    while (&lt;STDIN&gt;) { print; }
+    for (;&lt;STDIN&gt;;) { print; }
+    print while defined($_ = &lt;STDIN&gt;);
+    print while &lt;STDIN&gt;;
+</PRE>
+
+<P>
+
+The filehandles 
+<FONT SIZE=-1>STDIN,</FONT> 
+<FONT SIZE=-1>STDOUT,</FONT> and 
+<FONT SIZE=-1>STDERR</FONT> are predefined. (The filehandles
+ <CODE>stdin</CODE>, <CODE>stdout</CODE>, and <CODE>stderr</CODE> will also work except in packages, where they would be interpreted as local
+identifiers rather than global.) Additional filehandles may be created with
+the <CODE>open()</CODE> function. See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#open_">open()</A> for details on this.
+
+
+<P>
+
+If a &lt;
+<FONT SIZE=-1>FILEHANDLE</FONT>&gt; is used in a context that is looking for a list, a list consisting of all
+the input lines is returned, one line per list element. It's easy to make a <EM>LARGE</EM> data space this way, so use with care.
+
+
+<P>
+
+The null filehandle &lt;&gt; is special and can be used to emulate the behavior of <STRONG>sed</STRONG> and <STRONG>awk</STRONG>. Input from &lt;&gt; comes either from standard input, or from each file listed on the command
+line. Here's how it works: the first time &lt;&gt; is evaluated, the <CODE>@ARGV</CODE> array is checked, and if it is null, <CODE>$ARGV[0]</CODE> is set to ``-'', which when opened gives you standard input. The
+<CODE>@ARGV</CODE> array is then processed as a list of filenames. The loop
+
+
+<P>
+
+<PRE>    while (&lt;&gt;) {
+        ...                     # code for each line
+    }
+</PRE>
+
+<P>
+
+is equivalent to the following Perl-like pseudo code:
+
+
+<P>
+
+<PRE>    unshift(@ARGV, '-') unless @ARGV;
+    while ($ARGV = shift) {
+        open(ARGV, $ARGV);
+        while (&lt;ARGV&gt;) {
+            ...         # code for each line
+        }
+    }
+</PRE>
+
+<P>
+
+except that it isn't so cumbersome to say, and will actually work. It really does shift array <CODE>@ARGV</CODE> and put the current filename into variable 
+<FONT SIZE=-1>$ARGV.</FONT> It also uses filehandle
+ <EM>ARGV</EM> internally--&lt;&gt; is just a synonym for &lt;
+<FONT SIZE=-1>ARGV</FONT>&gt;, which is magical. (The pseudo code above doesn't work because it treats &lt;
+<FONT SIZE=-1>ARGV</FONT>&gt; as non-magical.)
+
+
+<P>
+
+You can modify <CODE>@ARGV</CODE> before the first &lt;&gt; as long as the array ends up containing the list of filenames you really
+want. Line numbers (<CODE>$.</CODE>) continue as if the input were one big happy file. (But see example under
+<CODE>eof()</CODE> for how to reset line numbers on each file.)
+
+
+<P>
+
+If you want to set <CODE>@ARGV</CODE> to your own list of files, go right
+ahead. If you want to pass switches into your script, you can use one of
+the Getopts modules or put a loop on the front like this:
+
+
+<P>
+
+<PRE>    while ($_ = $ARGV[0], /^-/) {
+        shift;
+        last if /^--$/;
+        if (/^-D(.*)/) { $debug = $1 }
+        if (/^-v/)     { $verbose++  }
+        ...             # other switches
+    }
+    while (&lt;&gt;) {
+        ...             # code for each line
+    }
+</PRE>
+
+<P>
+
+The &lt;&gt; symbol will return 
+<FONT SIZE=-1>FALSE</FONT> only once. If you call it again after this it will assume you are processing another <CODE>@ARGV</CODE> list, and if you haven't set 
+<FONT SIZE=-1>@ARGV,</FONT> will input from 
+<FONT SIZE=-1>STDIN.</FONT>
+
+
+
+<P>
+
+If the string inside the angle brackets is a reference to a scalar variable
+(e.g., &lt;<CODE>$foo</CODE>&gt;), then that variable contains the name of the filehandle to input from, or
+a reference to the same. For example:
+
+
+<P>
+
+<PRE>    $fh = \*STDIN;
+    $line = &lt;$fh&gt;;
+</PRE>
+
+<P>
+
+If the string inside angle brackets is not a filehandle or a scalar
+variable containing a filehandle name or reference, then it is interpreted
+as a filename pattern to be globbed, and either a list of filenames or the
+next filename in the list is returned, depending on context. One level of $
+interpretation is done first, but you can't say <CODE>&lt;$foo&gt;</CODE>
+because that's an indirect filehandle as explained in the previous
+paragraph. (In older versions of Perl, programmers would insert curly
+brackets to force interpretation as a filename glob: <CODE>&lt;${foo}&gt;</CODE>. These days, it's considered cleaner to call the internal function
+directly as <A HREF="#item_glob">glob($foo)</A>, which is probably the right way to have done it in the first place.)
+Example:
+
+
+<P>
+
+<PRE>    while (&lt;*.c&gt;) {
+        chmod 0644, $_;
+    }
+</PRE>
+
+<P>
+
+is equivalent to
+
+
+<P>
+
+<PRE>    open(FOO, &quot;echo *.c | tr -s ' \t\r\f' '\\012\\012\\012\\012'|&quot;);
+    while (&lt;FOO&gt;) {
+        chop;
+        chmod 0644, $_;
+    }
+</PRE>
+
+<P>
+
+In fact, it's currently implemented that way. (Which means it will not work
+on filenames with spaces in them unless you have <CODE>csh(1)</CODE> on
+your machine.) Of course, the shortest way to do the above is:
+
+
+<P>
+
+<PRE>    chmod 0644, &lt;*.c&gt;;
+</PRE>
+
+<P>
+
+Because globbing invokes a shell, it's often faster to call
+<CODE>readdir()</CODE> yourself and do your own <CODE>grep()</CODE> on the
+filenames. Furthermore, due to its current implementation of using a shell,
+the <CODE>glob()</CODE> routine may get ``Arg list too long'' errors
+(unless you've installed <CODE>tcsh(1L)</CODE> as <EM>/bin/csh</EM>).
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> glob evaluates its (embedded) argument only when it is starting a new list. All values must be read before it will start over. In a list context this isn't important, because you automatically get them all anyway. In a scalar context, however, the operator returns the next value each time it is called, or a 
+<FONT SIZE=-1>FALSE</FONT> value if you've just run out. Again, 
+<FONT SIZE=-1>FALSE</FONT> is returned only once. So if you're expecting a single value from a glob, it is much better to say
+
+
+
+<P>
+
+<PRE>    ($file) = &lt;blurch*&gt;;
+</PRE>
+
+<P>
+
+than
+
+
+<P>
+
+<PRE>    $file = &lt;blurch*&gt;;
+</PRE>
+
+<P>
+
+because the latter will alternate between returning a filename and returning 
+<FONT SIZE=-1>FALSE.</FONT>
+
+
+
+<P>
+
+It you're trying to do variable interpolation, it's definitely better to
+use the <CODE>glob()</CODE> function, because the older notation can cause
+people to become confused with the indirect filehandle notation.
+
+
+<P>
+
+<PRE>    @files = glob(&quot;$dir/*.[ch]&quot;);
+    @files = glob($files[$i]);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Constant_Folding">Constant Folding
+
+</A></H2>
+Like 
+<FONT SIZE=-1>C,</FONT> Perl does a certain amount of expression evaluation
+at compile time, whenever it determines that all of the arguments to an
+operator are static and have no side effects. In particular, string
+concatenation happens at compile time between literals that don't do
+variable substitution. Backslash interpretation also happens at compile
+time. You can say
+
+
+<P>
+
+<PRE>    'Now is the time for all' . &quot;\n&quot; .
+        'good men to come to.'
+</PRE>
+
+<P>
+
+and this all reduces to one string internally. Likewise, if you say
+
+
+<P>
+
+<PRE>    foreach $file (@filenames) {
+        if (-s $file &gt; 5 + 100 * 2**16) { ... }
+    }
+</PRE>
+
+<P>
+
+the compiler will precompute the number that expression represents so that
+the interpreter won't have to.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Integer_Arithmetic">Integer Arithmetic
+
+</A></H2>
+By default Perl assumes that it must do most of its arithmetic in floating
+point. But by saying
+
+
+<P>
+
+<PRE>    use integer;
+</PRE>
+
+<P>
+
+you may tell the compiler that it's okay to use integer operations from here to the end of the enclosing 
+<FONT SIZE=-1>BLOCK.</FONT> An inner 
+<FONT SIZE=-1>BLOCK</FONT> may countermand this by saying
+
+
+
+<P>
+
+<PRE>    no integer;
+</PRE>
+
+<P>
+
+which lasts until the end of that 
+<FONT SIZE=-1>BLOCK.</FONT>
+
+
+<P>
+
+The bitwise operators (``&amp;'', ``|'', ``^'', ``~'', ``&lt;&lt;``, and ''&gt;&gt;``) always produce integral results. However, <CODE>use integer</CODE> still has meaning for them. By default, their results are interpreted as
+unsigned integers. However, if <CODE>use integer</CODE> is in effect, their results are interpreted as signed integers. For
+example, <CODE>~0</CODE> usually evaluates to a large integral value. However, <CODE>use integer; ~0</CODE> is -1.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Floating_point_Arithmetic">Floating-point Arithmetic
+
+</A></H2>
+While <CODE>use integer</CODE> provides integer-only arithmetic, there is no similar ways to provide
+rounding or truncation at a certain number of decimal places. For rounding
+to a certain number of digits, <CODE>sprintf()</CODE> or
+<CODE>printf()</CODE> is usually the easiest route.
+
+
+<P>
+
+The 
+<FONT SIZE=-1>POSIX</FONT> module (part of the standard perl distribution) implements <CODE>ceil(),</CODE> <CODE>floor(),</CODE> and a number of other mathematical and trigonometric functions. The Math::Complex module (part of the standard perl distribution) defines a number of mathematical functions that can also work on real numbers. Math::Complex not as efficient as 
+<FONT SIZE=-1>POSIX,</FONT> but 
+<FONT SIZE=-1>POSIX</FONT> can't work with complex numbers.
+
+
+
+<P>
+
+Rounding in financial applications can have serious implications, and the
+rounding method used should be specified precisely. In these cases, it
+probably pays not to trust whichever system rounding is being used by Perl,
+but to instead implement the rounding function you need yourself.
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

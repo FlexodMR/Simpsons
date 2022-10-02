@@ -1,0 +1,85 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::Xrm - X Resource/Defaults/Options routines that obey the rules.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#BUGS">BUGS </A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::Xrm - 
+<FONT SIZE=-1>X</FONT> Resource/Defaults/Options routines that obey the
+rules.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>   use Tk;
+   use Tk::Xrm;  
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Using this modules causes Tk's Option code to be replaced by versions which use routines from &lt;X11/Xresource.h&gt; - i.e. same ones every other 
+<FONT SIZE=-1>X</FONT> toolkit uses.
+
+
+
+<P>
+
+Result is that ``matching'' of name/Class with the options database follows the same rules as other 
+<FONT SIZE=-1>X</FONT> toolkits. This makes it more predictable, and makes it easier to have a single ~/.Xdefaults file which gives sensible results for both Tk and (say) Motif applications.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS 
+
+</A></H1>
+Currently <CODE>optionAdd('key' =</CODE> 'value' [, priority])&gt; ignores optional priority completely and just
+does <CODE>XrmPutStringResource().</CODE> Perhaps it should be more subtle
+and do <CODE>XrmMergeDatabases()</CODE> or
+<CODE>XrmCombineDatabase().</CODE>
+
+
+<P>
+
+This version is a little slower than Tk's re-invention but there is more
+optimization that can be done.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

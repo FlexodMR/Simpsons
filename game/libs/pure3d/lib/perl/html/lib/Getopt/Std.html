@@ -1,0 +1,81 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>getopt - Process single-character switches with switch clustering
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+getopt - Process single-character switches with switch clustering
+
+
+<P>
+
+getopts - Process single-character switches with switch clustering
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Getopt::Std;
+</PRE>
+
+<P>
+
+<PRE>    getopt('oDI');    # -o, -D &amp; -I take arg.  Sets opt_* as a side effect.
+    getopt('oDI', \%opts);    # -o, -D &amp; -I take arg.  Values in %opts
+    getopts('oif:');  # -o &amp; -i are boolean flags, -f takes an argument
+                      # Sets opt_* as a side effect.
+    getopts('oif:', \%opts);  # options as above. Values in %opts
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>getopt()</CODE> functions processes single-character switches
+with switch clustering. Pass one argument which is a string containing all
+switches that take an argument. For each switch found, sets
+<CODE>$opt_x</CODE> (where x is the switch name) to the value of the
+argument, or 1 if no argument. Switches which take an argument don't care
+whether there is a space between the switch and the argument.
+
+
+<P>
+
+For those of you who don't like additional variables being created,
+<CODE>getopt()</CODE> and <CODE>getopts()</CODE> will also accept a hash
+reference as an optional second argument. Hash keys will be x (where x is
+the switch name) with key values the value of the argument or 1 if no
+argument is specified.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

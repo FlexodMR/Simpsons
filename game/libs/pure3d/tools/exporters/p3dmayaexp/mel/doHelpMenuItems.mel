@@ -1,0 +1,134 @@
+// Copyright (C) 1997-1999 Alias|Wavefront,
+// a division of Silicon Graphics Limited.
+//
+// The information in this file is provided for the exclusive use of the
+// licensees of Alias|Wavefront.  Such users have the right to use, modify,
+// and incorporate this code into other products for purposes authorized
+// by the Alias|Wavefront license agreement, without fee.
+//
+// ALIAS|WAVEFRONT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+// INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+// EVENT SHALL ALIAS|WAVEFRONT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+// DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+// TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+// Copyright (C) 1997-1998 Alias|Wavefront,
+// a division of Silicon Graphics Limited.
+//
+// The information in this file is provided for the exclusive use of the
+// licensees of Alias|Wavefront.  Such users have the right to use, modify,
+// and incorporate this code into other products for purposes authorized
+// by the Alias|Wavefront license agreement, without fee.
+//
+// ALIAS|WAVEFRONT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+// INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+// EVENT SHALL ALIAS|WAVEFRONT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+// DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+// TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+//
+//  Alias|Wavefront Script File
+//  MODIFY THIS AT YOUR OWN RISK
+//
+//  Creation Date:  Nov 25 1998
+//
+// 
+//  Description:
+//      This procedure creates the help menu items.
+//
+//	Arguments:
+//		$object - is the name of the panel or window.
+//		$menuParent - is the parent window.
+//
+
+
+global proc setPopUpHelpMode ( int $newMode)
+//
+//	Description:
+//		Simply set the state of the pop up help mode and
+// 		store in an optionVar for preference persistancy.
+//
+{
+	help -popupMode $newMode;
+	optionVar -iv popUpHelpMode $newMode;
+}
+
+global proc setHelpMenuState ( string $menu )
+//
+//	Description simply set the state of this popup menu
+//
+{
+	int $state = `help -q -popupMode`;
+	menuItem -e -checkBox $state ($menu + "|popUpHelpState");
+}
+
+global proc doHelpMenuItems (string $object, string $menuParent) 
+{
+
+	int $numOfMenuItemsBefore;
+	int $numOfMenuItemsAfter;
+
+	menuItem -label "Product Information..."
+		-annotation "Product Information: Displays version number and other product information for Maya"
+		-command about;
+//	menuItem -label "System Information..." 
+//		-enable false; 
+
+	menuItem -divider true; 
+   menuItem -label "Pure3D Help..." 
+		-annotation "Radical Artist Guide: Install instructions and help for all Radical artists tools."
+		-command "doBrowserHelp { \"UserAbsolute\" , \"T:/Pure3d/Guides/Artist/index_art.htm\" };";
+		
+
+	menuItem -divider true; 
+	menuItem -label "Library..." 
+		-annotation "Library: Opens online table of contents in HTML browser"
+		-command "$gBuffStrArr={\"Top\"};doBrowserHelp $gBuffStrArr;";
+	menuItem -label "Global Index..." 
+		-annotation "Global Index: Opens online index in HTML browser"
+		-command "doBrowserHelp { \"UserRelative\" , \"GlobalIndex.html\" };";
+	menuItem -label "Search..." 
+		-annotation "Search: Opens online search in HTML browser"
+		-command "doBrowserHelp { \"UserRelative\" , \"Search/search.html\" };";
+
+
+   menuItem -divider true;
+
+	menuItem -label "Popup Help" 
+		-annotation "Popup Help: Toggles the captioned \"tips\" that display in Maya"
+		-enable true
+		-checkBox (`optionVar -q popUpHelpMode`)
+		-command "setPopUpHelpMode #1"
+		popUpHelpState;
+//	menuItem -label "Click Help";
+
+//	menuItem -divider true; 
+//	menuItem -label "Help on Active Window..." 
+//		-enable false; 
+
+	//	Context sensitive menu Items relative to each window.
+	//
+	menuItem -divider true; 
+	$numOfMenuItemsBefore = `menu -query -numberOfItems HelpMenu`;
+	doContextHelpProc $object $menuParent;
+	$numOfMenuItemsAfter = `menu -query -numberOfItems HelpMenu`;
+
+	if ($numOfMenuItemsBefore != $numOfMenuItemsAfter)
+	{
+		menuItem -divider true; 
+	}
+
+//	menuItem -label "Help on Help..."
+//		-enable false; 
+	menuItem -label "Maya Basics..."  			
+		-annotation "Maya Basics: Opens information about Maya UI, windows, etc., in HTML browser"
+		-command "doBrowserHelp { \"UserRelative\" , \"UserGuide/Overview/index.html\" };";
+	menuItem -label "MEL..."
+		-annotation "MEL: Opens MEL table of contents in HTML browser"
+		-command "doBrowserHelp { \"UserRelative\" , \"UserGuide/MEL/CommandsTOC.doc.html\" };";
+
+}	

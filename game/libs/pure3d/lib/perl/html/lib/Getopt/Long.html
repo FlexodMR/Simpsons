@@ -1,0 +1,929 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>GetOptions - extended processing of command line options
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Linkage_specification">Linkage specification</A>
+		<LI><A HREF="#Aliases_and_abbreviations">Aliases and abbreviations</A>
+		<LI><A HREF="#Non_option_call_back_routine">Non-option call-back routine</A>
+		<LI><A HREF="#Option_starters">Option starters</A>
+		<LI><A HREF="#Return_value">Return value</A>
+	</UL>
+
+	<LI><A HREF="#COMPATIBILITY">COMPATIBILITY</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#CONFIGURATION_OPTIONS">CONFIGURATION OPTIONS</A>
+	<LI><A HREF="#OTHER_USEFUL_VARIABLES">OTHER USEFUL VARIABLES</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+GetOptions - extended processing of command line options
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use Getopt::Long;
+  $result = GetOptions (...option-descriptions...);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The Getopt::Long module implements an extended getopt function called <CODE>GetOptions().</CODE> This function adheres to the 
+<FONT SIZE=-1>POSIX</FONT> syntax for command line options, with 
+<FONT SIZE=-1>GNU</FONT> extensions. In general, this means that options have long names instead of single letters, and are introduced with a double dash ``--''. Support for bundling of command line options, as was the case with the more traditional single-letter approach, is provided but not enabled by default. For example, the 
+<FONT SIZE=-1>UNIX</FONT> ``ps'' command can be given the command line ``option''
+
+
+
+<P>
+
+<PRE>  -vax
+</PRE>
+
+<P>
+
+which means the combination of <STRONG>-v</STRONG>, <STRONG>-a</STRONG> and <STRONG>-x</STRONG>. With the new syntax <STRONG>--vax</STRONG> would be a single option, probably indicating a computer architecture. 
+
+
+<P>
+
+Command line options can be used to set values. These values can be
+specified in one of two ways:
+
+
+<P>
+
+<PRE>  --size 24
+  --size=24
+</PRE>
+
+<P>
+
+GetOptions is called with a list of option-descriptions, each of which
+consists of two elements: the option specifier and the option linkage. The
+option specifier defines the name of the option and, optionally, the value
+it can take. The option linkage is usually a reference to a variable that
+will be set when the option is used. For example, the following call to
+GetOptions:
+
+
+<P>
+
+<PRE>  GetOptions(&quot;size=i&quot; =&gt; \$offset);
+</PRE>
+
+<P>
+
+will accept a command line option ``size'' that must have an integer value.
+With a command line of ``--size 24'' this will cause the variable
+<CODE>$offset</CODE> to get the value 24.
+
+
+<P>
+
+Alternatively, the first argument to GetOptions may be a reference to a 
+<FONT SIZE=-1>HASH</FONT> describing the linkage for the options. The
+following call is equivalent to the example above:
+
+
+<P>
+
+<PRE>  %optctl = (&quot;size&quot; =&gt; \$offset);
+  GetOptions(\%optctl, &quot;size=i&quot;);
+</PRE>
+
+<P>
+
+Linkage may be specified using either of the above methods, or both. Linkage specified in the argument list takes precedence over the linkage specified in the 
+<FONT SIZE=-1>HASH.</FONT>
+
+
+
+<P>
+
+The command line options are taken from array 
+<FONT SIZE=-1>@ARGV.</FONT> Upon completion of GetOptions,
+<CODE>@ARGV</CODE> will contain the rest (i.e. the non-options) of the
+command line. Each option specifier designates the name of the option,
+optionally followed by an argument specifier. Values for argument
+specifiers are:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_ltnonegt">ltnonegt
+
+</A></STRONG><DD>
+Option does not take an argument. The option variable will be set to 1.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__">!
+
+</A></STRONG><DD>
+Option does not take an argument and may be negated, i.e. prefixed by
+``no''. E.g. ``foo!'' will allow <STRONG>--foo</STRONG> (with value 1) and <STRONG>-nofoo</STRONG>
+(with value 0). The option variable will be set to 1, or 0 if negated.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__s">=s
+
+</A></STRONG><DD>
+Option takes a mandatory string argument. This string will be assigned to
+the option variable. Note that even if the string argument starts with <STRONG>-</STRONG> or <STRONG>--</STRONG>, it will not be considered an option on itself.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__s">:s
+
+</A></STRONG><DD>
+Option takes an optional string argument. This string will be assigned to
+the option variable. If omitted, it will be assigned ``'' (an empty
+string). If the string argument starts with <STRONG>-</STRONG> or <STRONG>--</STRONG>, it will be considered an option on itself.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__i">=i
+
+</A></STRONG><DD>
+Option takes a mandatory integer argument. This value will be assigned to
+the option variable. Note that the value may start with <STRONG>-</STRONG> to indicate a negative value. 
+
+
+<P>
+
+<DT><STRONG><A NAME="item__i">:i
+
+</A></STRONG><DD>
+Option takes an optional integer argument. This value will be assigned to
+the option variable. If omitted, the value 0 will be assigned. Note that
+the value may start with <STRONG>-</STRONG> to indicate a negative value.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__f">=f
+
+</A></STRONG><DD>
+Option takes a mandatory real number argument. This value will be assigned
+to the option variable. Note that the value may start with <STRONG>-</STRONG> to indicate a negative value.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__f">:f
+
+</A></STRONG><DD>
+Option takes an optional real number argument. This value will be assigned
+to the option variable. If omitted, the value 0 will be assigned.
+
+
+<P>
+
+</DL>
+
+<FONT SIZE=-1>A</FONT> lone dash <STRONG>-</STRONG> is considered an option, the corresponding option name is the empty string.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> double dash on itself <STRONG>--</STRONG> signals end of the options list.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Linkage_specification">Linkage specification
+
+</A></H2>
+The linkage specifier is optional. If no linkage is explicitly specified but a ref 
+<FONT SIZE=-1>HASH</FONT> is passed, GetOptions will place the value in the 
+<FONT SIZE=-1>HASH.</FONT> For example:
+
+
+
+<P>
+
+<PRE>  %optctl = ();
+  GetOptions (\%optctl, &quot;size=i&quot;);
+</PRE>
+
+<P>
+
+will perform the equivalent of the assignment
+
+
+<P>
+
+<PRE>  $optctl{&quot;size&quot;} = 24;
+</PRE>
+
+<P>
+
+For array options, a reference to an array is used, e.g.:
+
+
+<P>
+
+<PRE>  %optctl = ();
+  GetOptions (\%optctl, &quot;sizes=i@&quot;);
+</PRE>
+
+<P>
+
+with command line ``-sizes 24 -sizes 48'' will perform the equivalent of
+the assignment
+
+
+<P>
+
+<PRE>  $optctl{&quot;sizes&quot;} = [24, 48];
+</PRE>
+
+<P>
+
+For hash options (an option whose argument looks like ``name=value''), a
+reference to a hash is used, e.g.:
+
+
+<P>
+
+<PRE>  %optctl = ();
+  GetOptions (\%optctl, &quot;define=s%&quot;);
+</PRE>
+
+<P>
+
+with command line ``--define foo=hello --define bar=world'' will perform
+the equivalent of the assignment
+
+
+<P>
+
+<PRE>  $optctl{&quot;define&quot;} = {foo=&gt;'hello', bar=&gt;'world')
+</PRE>
+
+<P>
+
+If no linkage is explicitly specified and no ref 
+<FONT SIZE=-1>HASH</FONT> is passed, GetOptions will put the value in a
+global variable named after the option, prefixed by ``opt_''. To yield a
+usable Perl variable, characters that are not part of the syntax for
+variables are translated to underscores. For example,
+``--fpp-struct-return'' will set the variable $opt_fpp_struct_return. Note
+that this variable resides in the namespace of the calling program, not
+necessarily <STRONG>main</STRONG>. For example:
+
+
+<P>
+
+<PRE>  GetOptions (&quot;size=i&quot;, &quot;sizes=i@&quot;);
+</PRE>
+
+<P>
+
+with command line ``-size 10 -sizes 24 -sizes 48'' will perform the
+equivalent of the assignments
+
+
+<P>
+
+<PRE>  $opt_size = 10;
+  @opt_sizes = (24, 48);
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> lone dash <STRONG>-</STRONG> is considered an option, the corresponding Perl identifier is
+<CODE>$opt_</CODE> .
+
+
+<P>
+
+The linkage specifier can be a reference to a scalar, a reference to an
+array, a reference to a hash or a reference to a subroutine.
+
+
+<P>
+
+If a 
+<FONT SIZE=-1>REF</FONT> 
+<FONT SIZE=-1>SCALAR</FONT> is supplied, the new value is stored in the referenced variable. If the option occurs more than once, the previous value is overwritten.
+ 
+
+
+<P>
+
+If a 
+<FONT SIZE=-1>REF</FONT> 
+<FONT SIZE=-1>ARRAY</FONT> is supplied, the new value is appended (pushed) to the referenced array.
+ 
+
+
+<P>
+
+If a 
+<FONT SIZE=-1>REF</FONT> 
+<FONT SIZE=-1>HASH</FONT> is supplied, the option value should look like ``key'' or ``key=value'' (if the ``=value'' is omitted then a value of 1 is implied). In this case, the element of the referenced hash with the key ``key'' is assigned ``value''.
+ 
+
+
+<P>
+
+If a 
+<FONT SIZE=-1>REF</FONT> 
+<FONT SIZE=-1>CODE</FONT> is supplied, the referenced subroutine is called with two arguments: the option name and the option value. The option name is always the true name, not an abbreviation or alias.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Aliases_and_abbreviations">Aliases and abbreviations
+
+</A></H2>
+The option name may actually be a list of option names, separated by
+``|''s, e.g. ``foo|bar|blech=s''. In this example, ``foo'' is the true name
+of this option. If no linkage is specified, options ``foo'', ``bar'' and
+``blech'' all will set $opt_foo.
+
+
+<P>
+
+Option names may be abbreviated to uniqueness, depending on configuration
+option <STRONG>auto_abbrev</STRONG>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Non_option_call_back_routine">Non-option call-back routine
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> special option specifier, &lt;&gt;, can be used to designate a subroutine to handle non-option arguments.
+GetOptions will immediately call this subroutine for every non-option it
+encounters in the options list. This subroutine gets the name of the
+non-option passed. This feature requires configuration option <STRONG>permute</STRONG>, see section 
+<FONT SIZE=-1>CONFIGURATION</FONT> 
+<FONT SIZE=-1>OPTIONS.</FONT>
+
+
+
+<P>
+
+See also the examples.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Option_starters">Option starters
+
+</A></H2>
+On the command line, options can start with <STRONG>-</STRONG> (traditional), <STRONG>--</STRONG>
+
+<FONT SIZE=-1>(POSIX)</FONT> and <STRONG>+</STRONG> 
+<FONT SIZE=-1>(GNU,</FONT> now being phased out). The latter is not allowed
+if the environment variable <STRONG>POSIXLY_CORRECT</STRONG> has been defined.
+
+
+<P>
+
+Options that start with ``--'' may have an argument appended, separated
+with an ``='', e.g. ``--foo=bar''.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Return_value">Return value
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> return status of 0 (false) indicates that the
+function detected one or more errors.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COMPATIBILITY">COMPATIBILITY
+
+</A></H1>
+Getopt::Long::GetOptions() is the successor of
+<STRONG>newgetopt.pl</STRONG> that came with Perl 4. It is fully upward compatible. In fact, the Perl 5
+version of newgetopt.pl is just a wrapper around the module.
+
+
+<P>
+
+If an ``@'' sign is appended to the argument specifier, the option is treated as an array. <CODE>Value(s)</CODE> are not set, but pushed into array @opt_name. If explicit linkage is supplied, this must be a reference to an 
+<FONT SIZE=-1>ARRAY.</FONT>
+
+
+
+<P>
+
+If an ``%'' sign is appended to the argument specifier, the option is treated as a hash. <CODE>Value(s)</CODE> of the form ``name=value'' are set by setting the element of the hash <CODE>%opt_name</CODE> with key ``name'' to ``value'' (if the ``=value'' portion is omitted it defaults to 1). If explicit linkage is supplied, this must be a reference to a 
+<FONT SIZE=-1>HASH.</FONT>
+
+
+
+<P>
+
+If configuration option <STRONG>getopt_compat</STRONG> is set (see section 
+<FONT SIZE=-1>CONFIGURATION</FONT> 
+<FONT SIZE=-1>OPTIONS),</FONT> options that start with ``+'' or ``-'' may also include their arguments, e.g. ``+foo=bar''. This is for compatiblity with older implementations of the 
+<FONT SIZE=-1>GNU</FONT> ``getopt'' routine.
+
+
+
+<P>
+
+If the first argument to GetOptions is a string consisting of only
+non-alphanumeric characters, it is taken to specify the option starter
+characters. Everything starting with one of these characters from the
+starter will be considered an option. <STRONG>Using a starter argument is
+strongly deprecated.</STRONG>
+
+
+
+
+<P>
+
+For convenience, option specifiers may have a leading <STRONG>-</STRONG> or <STRONG>--</STRONG>, so it is possible to write:
+
+
+<P>
+
+<PRE>   GetOptions qw(-foo=s --bar=i --ar=s);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+If the option specifier is ``one:i'' (i.e. takes an optional integer
+argument), then the following situations are handled:
+
+
+<P>
+
+<PRE>   -one -two            -&gt; $opt_one = '', -two is next option
+   -one -2              -&gt; $opt_one = -2
+</PRE>
+
+<P>
+
+Also, assume specifiers ``foo=s'' and ``bar:s'' :
+
+
+<P>
+
+<PRE>   -bar -xxx            -&gt; $opt_bar = '', '-xxx' is next option
+   -foo -bar            -&gt; $opt_foo = '-bar'
+   -foo --              -&gt; $opt_foo = '--'
+</PRE>
+
+<P>
+
+In 
+<FONT SIZE=-1>GNU</FONT> or 
+<FONT SIZE=-1>POSIX</FONT> format, option names and values can be combined:
+
+
+
+<P>
+
+<PRE>   +foo=blech           -&gt; $opt_foo = 'blech'
+   --bar=               -&gt; $opt_bar = ''
+   --bar=--             -&gt; $opt_bar = '--'
+</PRE>
+
+<P>
+
+Example of using variable references:
+
+
+<P>
+
+<PRE>   $ret = GetOptions ('foo=s', \$foo, 'bar=i', 'ar=s', \@ar);
+</PRE>
+
+<P>
+
+With command line options ``-foo blech -bar 24 -ar xx -ar yy'' this will
+result in:
+
+
+<P>
+
+<PRE>   $foo = 'blech'
+   $opt_bar = 24
+   @ar = ('xx','yy')
+</PRE>
+
+<P>
+
+Example of using the &lt;&gt; option specifier:
+
+
+<P>
+
+<PRE>   @ARGV = qw(-foo 1 bar -foo 2 blech);
+   GetOptions(&quot;foo=i&quot;, \$myfoo, &quot;&lt;&gt;&quot;, \&amp;mysub);
+</PRE>
+
+<P>
+
+Results:
+
+
+<P>
+
+<PRE>   mysub(&quot;bar&quot;) will be called (with $myfoo being 1)
+   mysub(&quot;blech&quot;) will be called (with $myfoo being 2)
+</PRE>
+
+<P>
+
+Compare this with:
+
+
+<P>
+
+<PRE>   @ARGV = qw(-foo 1 bar -foo 2 blech);
+   GetOptions(&quot;foo=i&quot;, \$myfoo);
+</PRE>
+
+<P>
+
+This will leave the non-options in 
+<FONT SIZE=-1>@ARGV:</FONT>
+
+
+<P>
+
+<PRE>   $myfoo -&gt; 2
+   @ARGV -&gt; qw(bar blech)
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONFIGURATION_OPTIONS">CONFIGURATION OPTIONS
+
+</A></H1>
+<STRONG>GetOptions</STRONG> can be configured by calling subroutine
+<STRONG>Getopt::Long::config</STRONG>. This subroutine takes a list of quoted strings, each specifying a
+configuration option to be set, e.g.
+<STRONG>ignore_case</STRONG>. Options can be reset by prefixing with <STRONG>no_</STRONG>, e.g.
+<STRONG>no_ignore_case</STRONG>. Case does not matter. Multiple calls to <STRONG>config</STRONG>
+are possible.
+
+
+<P>
+
+Previous versions of Getopt::Long used variables for the purpose of
+configuring. Although manipulating these variables still work, it is
+strongly encouraged to use the new <STRONG>config</STRONG> routine. Besides, it is much easier.
+
+
+<P>
+
+The following options are available:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_default">default
+
+</A></STRONG><DD>
+This option causes all configuration options to be reset to their default
+values.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_auto_abbrev">auto_abbrev
+
+</A></STRONG><DD>
+Allow option names to be abbreviated to uniqueness. Default is set unless environment variable 
+<FONT SIZE=-1>POSIXLY_CORRECT</FONT> has been set, in which case
+ <STRONG>auto_abbrev</STRONG> is reset.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getopt_compat">getopt_compat   
+
+</A></STRONG><DD>
+Allow '+' to start options. Default is set unless environment variable 
+<FONT SIZE=-1>POSIXLY_CORRECT</FONT> has been set, in which case <STRONG>getopt_compat</STRONG> is reset.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_require_order">require_order
+
+</A></STRONG><DD>
+Whether non-options are allowed to be mixed with options. Default is set unless environment variable 
+<FONT SIZE=-1>POSIXLY_CORRECT</FONT> has been set, in which case b&lt;require_order&gt; is reset.
+
+
+
+<P>
+
+See also <STRONG>permute</STRONG>, which is the opposite of <STRONG>require_order</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_permute">permute
+
+</A></STRONG><DD>
+Whether non-options are allowed to be mixed with options. Default is set unless environment variable 
+<FONT SIZE=-1>POSIXLY_CORRECT</FONT> has been set, in which case
+ <STRONG>permute</STRONG> is reset. Note that <STRONG>permute</STRONG> is the opposite of <STRONG>require_order</STRONG>.
+
+
+<P>
+
+If <STRONG>permute</STRONG> is set, this means that 
+
+
+<P>
+
+<PRE>    -foo arg1 -bar arg2 arg3
+</PRE>
+
+<P>
+
+is equivalent to
+
+
+<P>
+
+<PRE>    -foo -bar arg1 arg2 arg3
+</PRE>
+
+<P>
+
+If a non-option call-back routine is specified, <CODE>@ARGV</CODE> will
+always be empty upon succesful return of GetOptions since all options have
+been processed, except when <STRONG>--</STRONG> is used:
+
+
+<P>
+
+<PRE>    -foo arg1 -bar arg2 -- arg3
+</PRE>
+
+<P>
+
+will call the call-back routine for arg1 and arg2, and terminate leaving arg2 in 
+<FONT SIZE=-1>@ARGV.</FONT>
+
+
+
+<P>
+
+If <STRONG>require_order</STRONG> is set, options processing terminates when the first non-option is
+encountered.
+
+
+<P>
+
+<PRE>    -foo arg1 -bar arg2 arg3
+</PRE>
+
+<P>
+
+is equivalent to
+
+
+<P>
+
+<PRE>    -foo -- arg1 -bar arg2 arg3
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_bundling">bundling (default: reset)
+
+</A></STRONG><DD>
+Setting this variable to a non-zero value will allow single-character
+options to be bundled. To distinguish bundles from long option names, long
+options must be introduced with <STRONG>--</STRONG> and single-character options (and bundles) with <STRONG>-</STRONG>. For example,
+
+
+<P>
+
+<PRE>    ps -vax --vax
+</PRE>
+
+<P>
+
+would be equivalent to
+
+
+<P>
+
+<PRE>    ps -v -a -x --vax
+</PRE>
+
+<P>
+
+provided ``vax'', ``v'', ``a'' and ``x'' have been defined to be valid
+options. 
+
+
+<P>
+
+Bundled options can also include a value in the bundle; this value has to
+be the last part of the bundle, e.g.
+
+
+<P>
+
+<PRE>    scale -h24 -w80
+</PRE>
+
+<P>
+
+is equivalent to
+
+
+<P>
+
+<PRE>    scale -h 24 -w 80
+</PRE>
+
+<P>
+
+Note: resetting <STRONG>bundling</STRONG> also resets <STRONG>bundling_override</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_bundling_override">bundling_override (default: reset)
+
+</A></STRONG><DD>
+If <STRONG>bundling_override</STRONG> is set, bundling is enabled as with
+<STRONG>bundling</STRONG> but now long option names override option bundles. In the above example, <STRONG>-vax</STRONG> would be interpreted as the option ``vax'', not the bundle ``v'', ``a'',
+``x''.
+
+
+<P>
+
+Note: resetting <STRONG>bundling_override</STRONG> also resets <STRONG>bundling</STRONG>.
+
+
+<P>
+
+<STRONG>Note:</STRONG> Using option bundling can easily lead to unexpected results, especially
+when mixing long options and bundles. Caveat emptor.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ignore_case">ignore_case  (default: set)
+
+</A></STRONG><DD>
+If set, case is ignored when matching options.
+
+
+<P>
+
+Note: resetting <STRONG>ignore_case</STRONG> also resets <STRONG>ignore_case_always</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ignore_case_always">ignore_case_always (default: reset)
+
+</A></STRONG><DD>
+When bundling is in effect, case is ignored on single-character options
+also. 
+
+
+<P>
+
+Note: resetting <STRONG>ignore_case_always</STRONG> also resets <STRONG>ignore_case</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_pass_through">pass_through (default: reset)
+
+</A></STRONG><DD>
+Unknown options are passed through in <CODE>@ARGV</CODE> instead of being
+flagged as errors. This makes it possible to write wrapper scripts that
+process only part of the user supplied options, and passes the remaining
+options to some other program.
+
+
+<P>
+
+This can be very confusing, especially when <STRONG>permute</STRONG> is also set.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_debug">debug (default: reset)
+
+</A></STRONG><DD>
+Enable copious debugging output.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="OTHER_USEFUL_VARIABLES">OTHER USEFUL VARIABLES
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item__Getopt_Long_VERSION">$Getopt::Long::VERSION
+
+</A></STRONG><DD>
+The version number of this Getopt::Long implementation in the format
+<CODE>major</CODE>.<CODE>minor</CODE>. This can be used to have Exporter check the version, e.g.
+
+
+<P>
+
+<PRE>    use Getopt::Long 3.00;
+</PRE>
+
+<P>
+
+You can inspect $Getopt::Long::major_version and
+$Getopt::Long::minor_version for the individual components.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__Getopt_Long_error">$Getopt::Long::error
+
+</A></STRONG><DD>
+Internal error flag. May be incremented from a call-back routine to cause
+options parsing to fail.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,76 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformSnapToReferenceMesh.mel
+// Author: Bryan Brandt
+//
+// Description: snap a mesh's vertices to that of a reference mesh
+//
+
+// Main script entry point.  Requires user to have selected two meshes.
+// The first selected mesh's vertices are snapped to the second (reference) mesh's vertices.
+//
+global proc p3dDeformSnapToReferenceMesh()
+{
+   string $sel[] = `ls -l -sl`;
+   int $sel_count = size($sel);
+
+   if ($sel_count != 2)
+   {
+      error "Two meshes must be selected";
+   }
+
+   string $mesh_orig = p3dDeformFindInHistory("mesh", 0, $sel[0]);
+   int $mesh_str_length = size($mesh_orig);
+   if ($mesh_str_length == 0)
+   {
+      error "First selection was not a mesh";
+   }
+
+   string $mesh_ref = p3dDeformFindInHistory("mesh", 0, $sel[1]);
+   $mesh_str_length = size($mesh_ref);
+   if ($mesh_str_length == 0)
+   {
+      error "Second selection was not a mesh";
+   }
+
+   waitCursor -state on;
+   catch (`p3dDeformSnapMesh $mesh_orig $mesh_ref`);
+   waitCursor -state off;
+}
+
+
+
+
+
+
+global proc p3dDeformCopyOffsetsScript()
+{
+ string $sel[] = `ls -sl`;
+   int $sel_count = size($sel);
+
+   if ($sel_count != 2)
+   {
+      error "Two meshes must be selected";
+   }
+
+   string $mesh_orig = p3dDeformFindInHistory("mesh", 0, $sel[0]);
+   int $mesh_str_length = size($mesh_orig);
+   if ($mesh_str_length == 0)
+   {
+      error "First selection was not a mesh";
+   }
+
+   string $mesh_ref = p3dDeformFindInHistory("mesh", 0, $sel[1]);
+   $mesh_str_length = size($mesh_ref);
+   if ($mesh_str_length == 0)
+   {
+      error "Second selection was not a mesh";
+   }
+
+   waitCursor -state on;
+   catch (`p3dDeformCopyOffsets $mesh_orig $mesh_ref`);
+   waitCursor -state off;
+}
+
+
+// End of file.

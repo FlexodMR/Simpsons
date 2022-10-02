@@ -1,0 +1,185 @@
+//---------------------------------------------------------------------------
+// Fat Pedestrian
+//---------------------------------------------------------------------------
+
+// skeleton rig
+rig "fpdRig"
+{
+    skeleton "Motion_Root";
+
+    // roots
+    jointIndex_AIRoot 0;
+    jointIndex_OrientationRoot 0;
+    joint_MotionRoot "Motion_Root";
+    joint_BalanceRoot "Balance_Root";
+    joint_CharacterRoot "Character_Root";
+
+    // balance root
+    maxBalanceRootCompress 0.25;
+
+    // legs
+    leg "left"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 1;
+
+        joint_FKMin "Hip_L";
+        joint_FKMax "Ball_L";
+
+        joint_Thigh "Hip_L";
+        joint_Knee "Knee_L";
+        joint_Ankle "Ankle_L";
+
+        //joint_Effector "Left_Foot";
+        //joint_PoleVector "Left_Knee";
+        //joint_OrientOffset "L_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+
+    leg "right"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 0;
+
+        joint_FKMin "Hip_R";
+        joint_FKMax "Ball_R";
+
+        joint_Thigh "Hip_R";
+        joint_Knee "Knee_R";
+        joint_Ankle "Ankle_R";
+
+        //joint_Effector "Right_Foot";
+        //joint_PoleVector "Right_Knee";
+        //joint_OrientOffset "R_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+};
+
+// bank
+bank "fpdBank"
+{
+    // reference to skeleton configuration
+    rig "fpdRig";
+
+    default animation.blendOutTime 0.1;
+    default animation.blendInTime 0.1;
+
+    animation "flail"
+    {
+	    animation "fpd_flail";
+    };
+    animation "hit_by_car_front"
+    {
+	    animation "fpd_hit_by_car_front";
+    };
+    animation "hit_by_car_back"
+    {
+	    animation "fpd_hit_by_car_back";
+    };
+    animation "dodge"
+    {
+	    animation "fpd_dodge";
+    };
+    animation "near_miss_angry"
+    {
+	    animation "fpd_near_miss_angry";
+    };
+
+    animation "bump_into_person"
+    {
+	    animation "fpd_bump_into_person";
+    };
+
+        animation "driver_idle"
+    {
+	    animation "fpd_driver_idle";
+    };
+    animation "driver_turn_left"
+    {
+	    animation "fpd_turn_left";
+    };
+    animation "driver_turn_right"
+    {
+	    animation "fpd_turn_right";
+    };
+    animation "driver_decelerate"
+    {
+	    animation "fpd_driver_decelerate";
+    };
+    animation "driver_accelerate"
+    {
+	    animation "fpd_accelerate";
+    };
+
+    animation "driver_wave"
+    {
+	    animation "fpd_driver_wave";
+    };
+   
+    animation "driver_sway_left"
+    {
+	    animation "fpd_sway_left";
+    };
+    animation "driver_sway_right"
+    {
+	    animation "fpd_sway_right";
+    };
+    animation "driver_turn_right"
+    {
+	    animation "fpd_turn_right";
+    };
+    animation "driver_crash"
+    {
+	    animation "fpd_crash";
+    };
+    
+    animation "driver_reverse"
+    {
+	    animation "fpd_reverse";
+    };
+
+    animation "driver_wave_goodbye"
+    {
+	    animation "fpd_wave_goodbye";
+    };
+
+
+
+
+
+    locomotion4 "fpdLoco"
+    {
+        idle "fpd_loco_idle_rest";
+
+        blendInTime 0.1;
+        blendOutTime 0.1;
+
+        priority 1;
+
+        acceleration 50;
+        //turningAcceleration 1440;
+        turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        animation "n" 0 "fpd_loco_walk";
+        animation "w" 0 "fpd_loco_walk";
+        animation "s" 0 "fpd_loco_walk";
+        animation "e" 0 "fpd_loco_walk";
+
+        animation "n" 1 "fpd_loco_run";
+        animation "w" 1 "fpd_loco_run";
+        animation "s" 1 "fpd_loco_run";
+        animation "e" 1 "fpd_loco_run";
+    };
+};
+
+puppet "fpdPuppet"
+{
+    bank "fpdBank";
+};
+
+
+// End of file.

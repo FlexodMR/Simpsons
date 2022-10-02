@@ -1,0 +1,219 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>fileparse - split a pathname into pieces
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+fileparse - split a pathname into pieces
+
+
+<P>
+
+basename - extract just the filename from a path
+
+
+<P>
+
+dirname - extract just the directory from a path
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use <A HREF="File::Basename">File::Basename</A>;
+</PRE>
+
+<P>
+
+<PRE>    ($name,$path,$suffix) = fileparse($fullname,@suffixlist)
+    fileparse_set_fstype($os_string);
+    $basename = basename($fullname,@suffixlist);
+    $dirname = dirname($fullname);
+</PRE>
+
+<P>
+
+<PRE>    ($name,$path,$suffix) = fileparse(&quot;lib/File/Basename.pm&quot;,&quot;\.pm&quot;);
+    fileparse_set_fstype(&quot;VMS&quot;);
+    $basename = basename(&quot;lib/File/Basename.pm&quot;,&quot;.pm&quot;);
+    $dirname = dirname(&quot;lib/File/Basename.pm&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+These routines allow you to parse file specifications into useful pieces
+using the syntax of different operating systems.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_fileparse_set_fstype">fileparse_set_fstype
+
+</A></STRONG><DD>
+You select the syntax via the routine <CODE>fileparse_set_fstype().</CODE>
+
+
+<P>
+
+If the argument passed to it contains one of the substrings 
+<FONT SIZE=-1>``VMS'',</FONT> 
+<FONT SIZE=-1>``MSDOS'',</FONT> ``MacOS'', ``AmigaOS'' or ``MSWin32'', the file specification syntax of that operating system is used in future calls to <CODE>fileparse(),</CODE> <CODE>basename(),</CODE> and <CODE>dirname().</CODE> If it contains none of these substrings, 
+<FONT SIZE=-1>UNIX</FONT> syntax is used. This pattern matching is case-insensitive. If you've selected 
+<FONT SIZE=-1>VMS</FONT> syntax, and the file specification you pass to one of these routines contains a ``/'', they assume you are using 
+<FONT SIZE=-1>UNIX</FONT> emulation and apply the 
+<FONT SIZE=-1>UNIX</FONT> syntax rules instead, for that function call only.
+
+
+
+<P>
+
+If the argument passed to it contains one of the substrings 
+<FONT SIZE=-1>``VMS'',</FONT> 
+<FONT SIZE=-1>``MSDOS'',</FONT> ``MacOS'', ``AmigaOS'', ``os2'', ``MSWin32'' or 
+<FONT SIZE=-1>``RISCOS'',</FONT> then the pattern matching for suffix removal is performed without regard for case, since those systems are not case-sensitive when opening existing files (though some of them preserve case on file creation).
+
+
+
+<P>
+
+If you haven't called <CODE>fileparse_set_fstype(),</CODE> the syntax is
+chosen by examining the builtin variable <CODE>$^O</CODE> according to these rules.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_fileparse">fileparse
+
+</A></STRONG><DD>
+The <CODE>fileparse()</CODE> routine divides a file specification into
+three parts: a leading <STRONG>path</STRONG>, a file <STRONG>name</STRONG>, and a <STRONG>suffix</STRONG>. The
+<STRONG>path</STRONG> contains everything up to and including the last directory separator in the
+input file specification. The remainder of the input file specification is
+then divided into <STRONG>name</STRONG> and <STRONG>suffix</STRONG> based on the optional patterns you specify in <CODE>@suffixlist</CODE>. Each element of this list is interpreted as a regular expression, and is
+matched against the end of <STRONG>name</STRONG>. If this succeeds, the matching portion of
+<STRONG>name</STRONG> is removed and prepended to <STRONG>suffix</STRONG>. By proper use of
+<CODE>@suffixlist</CODE>, you can remove file types or versions for examination.
+
+
+<P>
+
+You are guaranteed that if you concatenate <STRONG>path</STRONG>, <STRONG>name</STRONG>, and
+<STRONG>suffix</STRONG> together in that order, the result will denote the same file as the input
+file specification.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+Using 
+<FONT SIZE=-1>UNIX</FONT> file syntax:
+
+
+<P>
+
+<PRE>    ($base,$path,$type) = fileparse('/virgil/aeneid/draft.book7',
+                                    '\.book\d+');
+</PRE>
+
+<P>
+
+would yield
+
+
+<P>
+
+<PRE>    $base eq 'draft'
+    $path eq '/virgil/aeneid/',
+    $type eq '.book7'
+</PRE>
+
+<P>
+
+Similarly, using 
+<FONT SIZE=-1>VMS</FONT> syntax:
+
+
+<P>
+
+<PRE>    ($name,$dir,$type) = fileparse('Doc_Root:[Help]Rhetoric.Rnh',
+                                   '\..*');
+</PRE>
+
+<P>
+
+would yield
+
+
+<P>
+
+<PRE>    $name eq 'Rhetoric'
+    $dir  eq 'Doc_Root:[Help]'
+    $type eq '.Rnh'
+</PRE>
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_basename">basename
+
+</A></STRONG><DD>
+The <CODE>basename()</CODE> routine returns the first element of the list produced by calling <CODE>fileparse()</CODE> with the same arguments, except that it always quotes metacharacters in the given suffixes. It is provided for programmer compatibility with the 
+<FONT SIZE=-1>UNIX</FONT> shell command <CODE>basename(1).</CODE>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dirname">dirname
+
+</A></STRONG><DD>
+The <CODE>dirname()</CODE> routine returns the directory portion of the input file specification. When using 
+<FONT SIZE=-1>VMS</FONT> or MacOS syntax, this is identical to the second element of the list produced by calling <CODE>fileparse()</CODE> with the same input file specification. (Under 
+<FONT SIZE=-1>VMS,</FONT> if there is no directory information in the input file specification, then the current default device and directory are returned.) When using 
+<FONT SIZE=-1>UNIX</FONT> or 
+<FONT SIZE=-1>MSDOS</FONT> syntax, the return value conforms to the behavior of the 
+<FONT SIZE=-1>UNIX</FONT> shell command <CODE>dirname(1).</CODE> This is usually the same as the behavior of <CODE>fileparse(),</CODE> but differs in some cases. For example, for the input file specification
+ <EM>lib/</EM>, <CODE>fileparse()</CODE> considers the directory name to be <EM>lib/</EM>, while <CODE>dirname()</CODE> considers the directory name to be <EM>.</EM>).
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

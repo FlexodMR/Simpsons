@@ -1,0 +1,84 @@
+global proc updateWhatIsUV()
+{
+    int $feMask_UV = 35;
+
+    string $uvs[];
+    string $verts[];
+    float $uvCoord[];
+    
+    $verts[0] = "N/A";
+    $uvCoord[0] = 0.0;
+    $uvCoord[1] = 0.0;
+
+    $uvs = `filterExpand -ex true -sm $feMask_UV`;
+    if ( `size $uvs` > 0 )
+    {
+        $verts = `polyListComponentConversion -fuv -tv $uvs[0]`;
+        $uvCoord = `polyEditUV -q $uvs[0]`;
+    }
+    else
+    {
+        $uvs[0] = "N/A";
+    }
+
+    textField -e -text $uvs[0] whatIsUV_uv;
+    
+    floatField -e -value $uvCoord[0] whatIsUV_uvCoordU;    
+    floatField -e -value $uvCoord[1] whatIsUV_uvCoordV;    
+    
+    textField -e -text $verts[0] whatIsUV_vertex;
+}
+
+global proc whatIsUV()
+{
+    if ( `window -exists whatIsUVui` )
+        deleteUI -window whatIsUVui;
+        
+    int $labelWidth = 20;
+    
+    window -title "What Is UV?" whatIsUVui;
+    
+    string $form = `formLayout`;
+    
+        text -label "UV" -align "right" whatIsUV_uvLabel;
+        textField -editable false -text "" whatIsUV_uv;
+        
+        floatField -editable false whatIsUV_uvCoordU;
+        floatField -editable false whatIsUV_uvCoordV;
+        
+        text -label "Vertex" -align "right" whatIsUV_vertexLabel;
+        textField -editable false -text "" whatIsUV_vertex;
+    
+        setParent ..;
+
+    formLayout -e
+
+        -af     whatIsUV_uvLabel            "top"       8
+        -ap     whatIsUV_uvLabel            "right"     2   $labelWidth
+
+        -af     whatIsUV_uv                 "top"       4
+        -ap     whatIsUV_uv                 "left"      2   $labelWidth
+        -af     whatIsUV_uv                 "right"     4
+        
+        -ac     whatIsUV_uvCoordU           "top"       4   whatIsUV_uv
+        -ap     whatIsUV_uvCoordU           "left"      2   $labelWidth
+        -ap     whatIsUV_uvCoordU           "right"     2   ( $labelWidth + ( ( 100 - $labelWidth ) / 2 ) )
+
+        -ac     whatIsUV_uvCoordV           "top"       4   whatIsUV_uv
+        -ap     whatIsUV_uvCoordV           "left"      2   ( $labelWidth + ( ( 100 - $labelWidth ) / 2 ) )
+        -af     whatIsUV_uvCoordV           "right"     4
+        
+        -ac     whatIsUV_vertexLabel        "top"       8   whatIsUV_uvCoordU
+        -ap     whatIsUV_vertexLabel        "right"     2   $labelWidth
+        -ac     whatIsUV_vertex             "top"       4   whatIsUV_uvCoordU
+        -ap     whatIsUV_vertex             "left"      2   $labelWidth
+        -af     whatIsUV_vertex             "right"     4
+
+            $form;        
+    
+    scriptJob -parent whatIsUVui -event "SelectionChanged" updateWhatIsUV;
+
+    updateWhatIsUV;
+    
+    showWindow;
+}

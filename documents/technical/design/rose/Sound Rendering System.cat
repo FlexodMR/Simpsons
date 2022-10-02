@@ -1,0 +1,2099 @@
+
+(object Petal
+    version    	44
+    _written   	"Rose 7.0.9420.17"
+    charSet    	0)
+
+(object Class_Category "Sound Rendering System"
+    is_unit    	TRUE
+    is_loaded  	TRUE
+    attributes 	(list Attribute_Set
+	(object Attribute
+	    tool       	"sc"
+	    name       	"SourceControlSpec"
+	    value      	"-- using Perforce --"))
+    quid       	"3C8931F702DF"
+    exportControl 	"Public"
+    logical_models 	(list unit_reference_list
+	(object Class "IDaSoundResourceManager"
+	    quid       	"3C8D35F302FB"
+	    stereotype 	"Interface")
+	(object Class "daSoundRenderingManager"
+	    quid       	"3C8E9CCF0390"
+	    documentation 	"The Sound Rendering System overlord class.  Creates and initializes the managers, and provides access to them for the Model layer."
+	    operations 	(list Operations
+		(object Operation "GetResourceManager"
+		    quid       	"3C9BC21B005A"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "Initialize"
+		    quid       	"3CB376770099"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "daSoundDynaLoadManager"
+	    quid       	"3C9682D9024D"
+	    documentation 	"Manages the sound regions in console sound memory (SPU/ARAM/Xbox main RAM).  The allocated resources ask this guy for a chunk of sound memory when allocation occurs."
+	    used_nodes 	(list uses_relationship_list
+		(object Uses_Relationship
+		    quid       	"3C968DA70179"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundDynaLoadRegion"
+		    quidu      	"3C968D1B0332"))
+	    operations 	(list Operations
+		(object Operation "CreateRegion"
+		    quid       	"3C9BC94B0171"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "daSoundDynaLoadRegion"
+	    quid       	"3C968D1B0332"
+	    documentation 	"Represents a chunk of sound memory.  Created and handed off by the daSoundDynaLoadManager object."
+	    operations 	(list Operations
+		(object Operation "SwapInObject"
+		    quid       	"3C9F76EF0269"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "SetPendingSwapObject"
+		    quid       	"3C9F7A34026E"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "daSoundInteractiveMusicManager"
+	    quid       	"3C96B1D10000"
+	    documentation 	"This class isn't really fleshed out yet, because it's currently unclear whether we'll have interactive music at all, since interactive music and externally-composed tunes are apparently mutually exclusive.  If we decide not to go with interactive music, this class and its children disappear.")
+	(object Class "daScriptLoader"
+	    quid       	"3C9BA54502C7"
+	    documentation 	"Used to load script files at startup.  There should only be one object of this class, and it should only exist for as long as it takes to load the scripts."
+	    operations 	(list Operations
+		(object Operation "LoadScripts"
+		    quid       	"3C9BAE19035A"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Association "$UNNAMED$0"
+	    quid       	"3C8D3B7F0165"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$1"
+		    quid       	"3C8D3B8001F1"
+		    supplier   	"Logical View::View::Sound Rendering System::SoundFileManagement::IDaSoundAllocatedResource"
+		    quidu      	"3C89422D02EE"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$2"
+		    quid       	"3C8D3B800201"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager"
+		    quidu      	"3C8D35B40339")))
+	(object Association "$UNNAMED$3"
+	    quid       	"3C8D3C7F03D6"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$4"
+		    quid       	"3C8D3C80024F"
+		    supplier   	"Logical View::Services::RadCore::IRadObjectBTree"
+		    quidu      	"3C8D3C11009A"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$5"
+		    quid       	"3C8D3C80025F"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager"
+		    quidu      	"3C8D35B40339")))
+	(object Association "$UNNAMED$6"
+	    quid       	"3C8D3CE40174"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$7"
+		    quid       	"3C8D3CE50145"
+		    supplier   	"Logical View::Services::RadCore::IRadObjectBTree"
+		    quidu      	"3C8D3C11009A"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$8"
+		    quid       	"3C8D3CE50155"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager"
+		    quidu      	"3C8D35B40339"
+		    Containment 	"By Value"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$9"
+	    quid       	"3C8D3D4C02CC"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$10"
+		    quid       	"3C8D3D4C0368"
+		    supplier   	"Logical View::Services::RadCore::radRefCount"
+		    quidu      	"3C89380702DF"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$11"
+		    quid       	"3C8D3D4C0388"
+		    supplier   	"Logical View::Services::RadCore::IRadObjectBTree"
+		    quidu      	"3C8D3C11009A"
+		    Containment 	"By Reference"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$12"
+	    quid       	"3C8D430C03A7"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$13"
+		    quid       	"3C8D430D0126"
+		    supplier   	"Logical View::Services::RadScript::IRadNameSpace"
+		    quidu      	"3C8D42D403A7"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$14"
+		    quid       	"3C8D430D0136"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager"
+		    quidu      	"3C8D35B40339")))
+	(object Association "$UNNAMED$15"
+	    quid       	"3C8D431F026E"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$16"
+		    quid       	"3C8D432303E5"
+		    supplier   	"Logical View::View::Sound Rendering System::SoundFileManagement::IDaSoundResource"
+		    quidu      	"3C89353203D9"
+		    Containment 	"By Reference"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$17"
+		    quid       	"3C8D432303E6"
+		    supplier   	"Logical View::Services::RadScript::IRadNameSpace"
+		    quidu      	"3C8D42D403A7"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$18"
+	    quid       	"3C8E9D0D0073"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$19"
+		    quid       	"3C8E9D0D02A6"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager"
+		    quidu      	"3C8D35B40339"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$20"
+		    quid       	"3C8E9D0D02A7"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundRenderingManager"
+		    quidu      	"3C8E9CCF0390"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$21"
+	    quid       	"3C9660C0031D"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$22"
+		    quid       	"3C9660C1006D"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceDebugSource"
+		    quidu      	"3C9660A2030E"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$23"
+		    quid       	"3C9660C1006E"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager"
+		    quidu      	"3C8D35B40339"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$24"
+	    quid       	"3C96831102B9"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$25"
+		    quid       	"3C96831200B5"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundDynaLoadManager"
+		    quidu      	"3C9682D9024D"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$26"
+		    quid       	"3C96831200B6"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundRenderingManager"
+		    quidu      	"3C8E9CCF0390"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$27"
+	    quid       	"3C968DB50012"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$28"
+		    quid       	"3C968DB501F6"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundDynaLoadRegion"
+		    quidu      	"3C968D1B0332"
+		    Containment 	"By Reference"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$29"
+		    quid       	"3C968DB50206"
+		    supplier   	"Logical View::View::Sound Rendering System::SoundFileManagement::daSoundAllocatedResource"
+		    quidu      	"3C89421602B0"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$30"
+	    quid       	"3C96B1E3002E"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$31"
+		    quid       	"3C96B1E30203"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundInteractiveMusicManager"
+		    quidu      	"3C96B1D10000"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$32"
+		    quid       	"3C96B1E30204"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundRenderingManager"
+		    quidu      	"3C8E9CCF0390"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$33"
+	    quid       	"3C96B2110211"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$34"
+		    quid       	"3C96B212027F"
+		    supplier   	"Logical View::View::Sound Rendering System::Interactive Sound::daSoundMusicPerformance"
+		    quidu      	"3C96B2040127"
+		    Containment 	"By Reference"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$35"
+		    quid       	"3C96B2120280"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundInteractiveMusicManager"
+		    quidu      	"3C96B1D10000"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$36"
+	    quid       	"3C96B2EF019E"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$37"
+		    quid       	"3C96B2EF02D7"
+		    supplier   	"Logical View::Services::RadSound::IRadSoundMultiInputKnob"
+		    quidu      	"3C96B24802AC"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$38"
+		    quid       	"3C96B2EF02D8"
+		    supplier   	"Logical View::View::Sound Rendering System::Interactive Sound::daSoundMusicPerformance"
+		    quidu      	"3C96B2040127"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$39"
+	    quid       	"3C96B2FA023A"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$40"
+		    quid       	"3C96B2FA0325"
+		    supplier   	"Logical View::Services::RadMusic::IRadMusicPerformance"
+		    quidu      	"3C96B284029B"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$41"
+		    quid       	"3C96B2FA0326"
+		    supplier   	"Logical View::View::Sound Rendering System::Interactive Sound::daSoundMusicPerformance"
+		    quidu      	"3C96B2040127"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$42"
+	    quid       	"3C96B7820096"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$43"
+		    quid       	"3C96B78202B9"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Tuner::daSoundTuner"
+		    quidu      	"3C96B775024C"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$44"
+		    quid       	"3C96B78202C8"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundRenderingManager"
+		    quidu      	"3C8E9CCF0390"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$45"
+	    quid       	"3C96B93A0194"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$46"
+		    quid       	"3C96B93A029E"
+		    supplier   	"Logical View::Services::RadSound::IRadSoundFade"
+		    quidu      	"3C96B8C702A1"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$47"
+		    quid       	"3C96B93A02AD"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Tuner::daSoundTuner_ActiveFadeInfo"
+		    quidu      	"3C96B7AE0076")))
+	(object Association "$UNNAMED$48"
+	    quid       	"3C96BA4E0352"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$49"
+		    quid       	"3C96BA4F0055"
+		    supplier   	"Logical View::Services::RadSound::IRadSoundMultiInputKnob"
+		    quidu      	"3C96B24802AC"
+		    client_cardinality 	(value cardinality "n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$50"
+		    quid       	"3C96BA4F0064"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Tuner::daSoundTuner"
+		    quidu      	"3C96B775024C"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$51"
+	    quid       	"3C96BA8E00E0"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$52"
+		    quid       	"3C96BA8E0322"
+		    supplier   	"Logical View::Services::RadSound::IRadSoundFade"
+		    quidu      	"3C96B8C702A1"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$53"
+		    quid       	"3C96BA8E0331"
+		    supplier   	"Logical View::View::Sound Rendering System::Sound Tuner::daSoundTuner"
+		    quidu      	"3C96B775024C"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$54"
+	    quid       	"3C9BA5550150"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$55"
+		    quid       	"3C9BA55502C7"
+		    supplier   	"Logical View::View::Sound Rendering System::daScriptLoader"
+		    quidu      	"3C9BA54502C7"
+		    Containment 	"By Reference"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$56"
+		    quid       	"3C9BA55502C8"
+		    supplier   	"Logical View::View::Sound Rendering System::daSoundRenderingManager"
+		    quidu      	"3C8E9CCF0390"
+		    is_aggregate 	TRUE)))
+	(object Class_Category "SoundFileManagement"
+	    is_unit    	TRUE
+	    is_loaded  	FALSE
+	    file_name  	"D:\\Simpsons2\\documents\\technical\\design\\rose\\SoundFileManagement.cat"
+	    quid       	"3C8E51E50108")
+	(object Class_Category "SoundPlayers"
+	    is_unit    	TRUE
+	    is_loaded  	FALSE
+	    file_name  	"D:\\Simpsons2\\documents\\technical\\design\\rose\\SoundPlayers.cat"
+	    quid       	"3C97932F01A9")
+	(object Class_Category "Sound Resource Management"
+	    quid       	"3CAF827000EE"
+	    exportControl 	"Public"
+	    logical_models 	(list unit_reference_list
+		(object Class "daSoundResourceManager"
+		    quid       	"3C8D35B40339"
+		    documentation 	"Responsible for maintaining the list of allocated sound resources."
+		    superclasses 	(list inheritance_relationship_list
+			(object Inheritance_Relationship
+			    quid       	"3C8D35E9005B"
+			    supplier   	"Logical View::Services::RadCore::radRefCount"
+			    quidu      	"3C89380702DF"))
+		    used_nodes 	(list uses_relationship_list
+			(object Uses_Relationship
+			    quid       	"3C8D3C5301A3"
+			    supplier   	"Logical View::Services::RadCore::IRadObjectBTree"
+			    quidu      	"3C8D3C11009A"
+			    exportControl 	"Implementation"))
+		    realized_interfaces 	(list realize_rel_list
+			(object Realize_Relationship
+			    quid       	"3C8D361E01C2"
+			    supplier   	"Logical View::View::Sound Rendering System::IDaSoundResourceManager"
+			    quidu      	"3C8D35F302FB"))
+		    operations 	(list Operations
+			(object Operation "FindResource"
+			    quid       	"3C9BC2600114"
+			    concurrency 	"Sequential"
+			    opExportControl 	"Public"
+			    uid        	0)
+			(object Operation "AllocateResource"
+			    quid       	"3C9BC6DF0215"
+			    concurrency 	"Sequential"
+			    opExportControl 	"Public"
+			    uid        	0)
+			(object Operation "FindAllResources"
+			    quid       	"3CB381A40218"
+			    concurrency 	"Sequential"
+			    opExportControl 	"Public"
+			    uid        	0)))
+		(object Class "daSoundDebugSource"
+		    quid       	"3C96608D039B")
+		(object Class "daSoundResourceDebugSource"
+		    quid       	"3C9660A2030E"
+		    superclasses 	(list inheritance_relationship_list
+			(object Inheritance_Relationship
+			    quid       	"3C9660B90290"
+			    supplier   	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundDebugSource"
+			    quidu      	"3C96608D039B"))))
+	    logical_presentations 	(list unit_reference_list
+		(object ClassDiagram "Main"
+		    quid       	"3CAF82D80286"
+		    title      	"Main"
+		    zoom       	100
+		    max_height 	28350
+		    max_width  	21600
+		    origin_x   	0
+		    origin_y   	1288
+		    items      	(list diagram_item_list
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::Sound Resource Management::daSoundDebugSource" @1
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(560, 544)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@1
+				location   	(341, 492)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	438
+				justify    	0
+				label      	"daSoundDebugSource")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96608D039B"
+			    width      	456
+			    height     	128
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::Services::RadCore::radRefCount" @2
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(1328, 512)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@2
+				location   	(1189, 433)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	278
+				justify    	0
+				label      	"radRefCount")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C89380702DF"
+			    width      	296
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::SoundFileManagement::IDaSoundResource" @3
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(1792, 1552)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@3
+				location   	(1514, 1461)
+				fill_color 	16777215
+				nlines     	1
+				max_width  	557
+				justify    	0
+				label      	"IDaSoundResource")
+			    stereotype 	(object ItemLabel
+				Parent_View 	@3
+				location   	(1514, 1411)
+				fill_color 	13434879
+				anchor     	10
+				nlines     	1
+				max_width  	557
+				justify    	0
+				label      	"<<Interface>>")
+			    icon       	"Interface"
+			    icon_style 	"Label"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C89353203D9"
+			    width      	575
+			    height     	306
+			    annotation 	8)
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceDebugSource" @4
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(560, 848)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@4
+				location   	(253, 796)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	614
+				justify    	0
+				label      	"daSoundResourceDebugSource")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C9660A2030E"
+			    width      	632
+			    height     	128
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object InheritView "" @5
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9660B90290"
+			    client     	@4
+			    supplier   	@1
+			    line_style 	0)
+			(object ClassView "Class" "Logical View::Services::RadScript::IRadNameSpace" @6
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(1792, 1184)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@6
+				location   	(1618, 1105)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	348
+				justify    	0
+				label      	"IRadNameSpace")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C8D42D403A7"
+			    width      	366
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object AssociationViewNew "$UNNAMED$15" @7
+			    location   	(1792, 1336)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C8D431F026E"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$16" @8
+				    Parent_View 	@7
+				    location   	(560, 1032)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C8D432303E5"
+				    client     	@7
+				    supplier   	@3
+				    line_style 	0)
+				(object RoleView "$UNNAMED$17" @9
+				    Parent_View 	@7
+				    location   	(560, 1032)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C8D432303E6"
+				    client     	@7
+				    supplier   	@6
+				    line_style 	0)))
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager" @10
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(1328, 848)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@10
+				location   	(1069, 796)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	518
+				justify    	0
+				label      	"daSoundResourceManager")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C8D35B40339"
+			    width      	536
+			    height     	128
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object AssociationViewNew "$UNNAMED$21" @11
+			    location   	(967, 848)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9660C0031D"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$22" @12
+				    Parent_View 	@11
+				    location   	(375, -16)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C9660C1006D"
+				    client     	@11
+				    supplier   	@4
+				    line_style 	0)
+				(object RoleView "$UNNAMED$23" @13
+				    Parent_View 	@11
+				    location   	(375, -16)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C9660C1006E"
+				    client     	@11
+				    supplier   	@10
+				    line_style 	0)))
+			(object InheritView "" @14
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C8D35E9005B"
+			    client     	@10
+			    supplier   	@2
+			    line_style 	0)
+			(object AssociationViewNew "$UNNAMED$12" @15
+			    location   	(1541, 1002)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C8D430C03A7"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$13" @16
+				    Parent_View 	@15
+				    location   	(453, 554)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C8D430D0126"
+				    client     	@15
+				    supplier   	@6
+				    line_style 	0)
+				(object RoleView "$UNNAMED$14" @17
+				    Parent_View 	@15
+				    location   	(453, 554)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C8D430D0136"
+				    client     	@15
+				    supplier   	@10
+				    line_style 	0)))
+			(object ClassView "Class" "Logical View::Services::RadCore::radRefCount" @18
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(784, 1600)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@18
+				location   	(645, 1521)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	278
+				justify    	0
+				label      	"radRefCount")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C89380702DF"
+			    width      	296
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::Services::RadCore::IRadObjectBTree" @19
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(784, 1200)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@19
+				location   	(606, 1121)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	356
+				justify    	0
+				label      	"IRadObjectBTree")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C8D3C11009A"
+			    width      	374
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object AssociationViewNew "$UNNAMED$6" @20
+			    location   	(1076, 1010)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C8D3CE40174"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$7" @21
+				    Parent_View 	@20
+				    location   	(372, 466)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C8D3CE50145"
+				    client     	@20
+				    supplier   	@19
+				    line_style 	0)
+				(object RoleView "$UNNAMED$8" @22
+				    Parent_View 	@20
+				    location   	(372, 466)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C8D3CE50155"
+				    client     	@20
+				    supplier   	@10
+				    line_style 	0)))
+			(object AssociationViewNew "$UNNAMED$9" @23
+			    location   	(784, 1399)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C8D3D4C02CC"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$10" @24
+				    Parent_View 	@23
+				    location   	(240, 983)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C8D3D4C0368"
+				    client     	@23
+				    supplier   	@18
+				    line_style 	0)
+				(object RoleView "$UNNAMED$11" @25
+				    Parent_View 	@23
+				    location   	(240, 983)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C8D3D4C0388"
+				    client     	@23
+				    supplier   	@19
+				    line_style 	0)))
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::daSoundDynaLoadRegion" @26
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(784, 2400)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@26
+				location   	(494, 2320)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	580
+				justify    	0
+				label      	"daSoundDynaLoadRegion")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C968D1B0332"
+			    width      	598
+			    height     	184
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::SoundFileManagement::daSoundAllocatedResource" @27
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    location   	(784, 1968)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@27
+				location   	(511, 1888)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	546
+				justify    	0
+				label      	"daSoundAllocatedResource")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C89421602B0"
+			    width      	564
+			    height     	184
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object InheritView "" @28
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C8942700177"
+			    client     	@27
+			    supplier   	@18
+			    line_style 	0)
+			(object AssociationViewNew "$UNNAMED$27" @29
+			    location   	(784, 2183)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C968DB50012"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$28" @30
+				    Parent_View 	@29
+				    location   	(224, 199)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C968DB501F6"
+				    client     	@29
+				    supplier   	@26
+				    line_style 	0)
+				(object RoleView "$UNNAMED$29" @31
+				    Parent_View 	@29
+				    location   	(224, 199)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C968DB50206"
+				    client     	@29
+				    supplier   	@27
+				    line_style 	0)))))))
+	(object Class_Category "Sound Tuner"
+	    quid       	"3CAF834003A1"
+	    exportControl 	"Public"
+	    logical_models 	(list unit_reference_list
+		(object Class "daSoundTuner"
+		    quid       	"3C96B775024C"
+		    documentation 	"Provides a master volume setting, as well as separate volume controls for various sound types (e.g. music, sound effects)."
+		    used_nodes 	(list uses_relationship_list
+			(object Uses_Relationship
+			    quid       	"3C96B7C801AD"
+			    supplier   	"Logical View::View::Sound Rendering System::Sound Tuner::daSoundTuner_ActiveFadeInfo"
+			    quidu      	"3C96B7AE0076")))
+		(object Class "daSoundTuner_ActiveFadeInfo"
+		    quid       	"3C96B7AE0076"
+		    superclasses 	(list inheritance_relationship_list
+			(object Inheritance_Relationship
+			    quid       	"3C96B848016C"
+			    supplier   	"Logical View::Services::RadCore::radObject"
+			    quidu      	"3C96B8110303"))
+		    used_nodes 	(list uses_relationship_list
+			(object Uses_Relationship
+			    quid       	"3C96B88C0293"
+			    stereotype 	"bind"
+			    supplier   	"Logical View::Services::RadCore::radLinkedClass"
+			    quidu      	"3C89381F0223")
+			(object Uses_Relationship
+			    quid       	"3C96B9F202C8"
+			    supplier   	"Logical View::View::Sound Rendering System::daSoundRenderingManager"
+			    quidu      	"3C8E9CCF0390"))
+		    realized_interfaces 	(list realize_rel_list
+			(object Realize_Relationship
+			    quid       	"3C96B86102E2"
+			    supplier   	"Logical View::Services::RadCore::radLinkedClass"
+			    quidu      	"3C89381F0223"))))
+	    logical_presentations 	(list unit_reference_list
+		(object ClassDiagram "Main"
+		    quid       	"3CAF835503A1"
+		    title      	"Main"
+		    zoom       	100
+		    max_height 	28350
+		    max_width  	21600
+		    origin_x   	2431
+		    origin_y   	0
+		    items      	(list diagram_item_list
+			(object ClassView "Class" "Logical View::Services::RadCore::radObject" @32
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(3248, 752)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@32
+				location   	(3109, 673)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	278
+				justify    	0
+				label      	"radObject")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B8110303"
+			    width      	296
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "ParameterizedClass" "Logical View::Services::RadCore::radLinkedClass" @33
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(3776, 736)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@33
+				location   	(3620, 679)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	312
+				justify    	0
+				label      	"radLinkedClass")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C89381F0223"
+			    width      	330
+			    height     	215
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::Services::RadSound::IRadSoundFade" @34
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(3248, 1488)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@34
+				location   	(3088, 1409)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	320
+				justify    	0
+				label      	"IRadSoundFade")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B8C702A1"
+			    width      	338
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::Sound Tuner::daSoundTuner_ActiveFadeInfo" @35
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(3248, 1104)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@35
+				location   	(2953, 1052)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	590
+				justify    	0
+				label      	"daSoundTuner_ActiveFadeInfo")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B7AE0076"
+			    width      	608
+			    height     	128
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object InheritView "" @36
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B848016C"
+			    client     	@35
+			    supplier   	@32
+			    line_style 	0)
+			(object UsesView "" @37
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	(object SegLabel @38
+				Parent_View 	@37
+				location   	(3612, 956)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	10
+				anchor_loc 	1
+				nlines     	1
+				max_width  	237
+				justify    	0
+				label      	"<<bind>>"
+				pctDist    	0.796370
+				height     	88
+				orientation 	1)
+			    line_color 	3342489
+			    quidu      	"3C96B88C0293"
+			    client     	@35
+			    supplier   	@33
+			    line_style 	0)
+			(object AssociationViewNew "$UNNAMED$45" @39
+			    location   	(3248, 1282)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B93A0194"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$46" @40
+				    Parent_View 	@39
+				    location   	(-704, 98)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96B93A029E"
+				    client     	@39
+				    supplier   	@34
+				    line_style 	0)
+				(object RoleView "$UNNAMED$47" @41
+				    Parent_View 	@39
+				    location   	(-704, 98)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96B93A02AD"
+				    client     	@39
+				    supplier   	@35
+				    line_style 	0)))
+			(object ClassView "Class" "Logical View::Services::RadSound::IRadSoundMultiInputKnob" @42
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(2112, 1136)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@42
+				location   	(1862, 1057)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	500
+				justify    	0
+				label      	"IRadSoundMultiInputKnob")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B24802AC"
+			    width      	518
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::Services::RadSound::IRadSoundFade" @43
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(2640, 1136)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@43
+				location   	(2480, 1057)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	320
+				justify    	0
+				label      	"IRadSoundFade")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B8C702A1"
+			    width      	338
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::Sound Tuner::daSoundTuner" @44
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(2640, 704)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@44
+				location   	(2492, 652)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	296
+				justify    	0
+				label      	"daSoundTuner")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B775024C"
+			    width      	314
+			    height     	128
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object UsesView "" @45
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B7C801AD"
+			    client     	@44
+			    supplier   	@35
+			    line_style 	0)
+			(object AssociationViewNew "$UNNAMED$48" @46
+			    location   	(2391, 906)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96BA4E0352"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$49" @47
+				    Parent_View 	@46
+				    location   	(-889, -278)
+				    font       	(object Font
+					size       	10
+					face       	"Arial"
+					bold       	FALSE
+					italics    	FALSE
+					underline  	FALSE
+					strike     	FALSE
+					color      	0
+					default_color 	TRUE)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96BA4F0055"
+				    client     	@46
+				    supplier   	@42
+				    line_style 	0
+				    label      	(object SegLabel @48
+					Parent_View 	@47
+					location   	(2309, 1018)
+					font       	(object Font
+					    size       	10
+					    face       	"Arial"
+					    bold       	FALSE
+					    italics    	FALSE
+					    underline  	FALSE
+					    strike     	FALSE
+					    color      	0
+					    default_color 	TRUE)
+					anchor     	2
+					anchor_loc 	1
+					nlines     	1
+					max_width  	15
+					justify    	0
+					label      	"n"
+					pctDist    	0.620129
+					height     	34
+					orientation 	0))
+				(object RoleView "$UNNAMED$50" @49
+				    Parent_View 	@46
+				    location   	(-889, -278)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96BA4F0064"
+				    client     	@46
+				    supplier   	@44
+				    line_style 	0)))
+			(object AssociationViewNew "$UNNAMED$51" @50
+			    location   	(2640, 906)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96BA8E00E0"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$52" @51
+				    Parent_View 	@50
+				    location   	(-672, -278)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96BA8E0322"
+				    client     	@50
+				    supplier   	@43
+				    line_style 	0)
+				(object RoleView "$UNNAMED$53" @52
+				    Parent_View 	@50
+				    location   	(-672, -278)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96BA8E0331"
+				    client     	@50
+				    supplier   	@44
+				    line_style 	0)))))))
+	(object Class_Category "Interactive Sound"
+	    quid       	"3CAF83A000B5"
+	    exportControl 	"Public"
+	    logical_models 	(list unit_reference_list
+		(object Class "daSoundMusicPerformance"
+		    quid       	"3C96B2040127"))
+	    logical_presentations 	(list unit_reference_list
+		(object ClassDiagram "Main"
+		    quid       	"3CAF83B90384"
+		    title      	"Main"
+		    zoom       	100
+		    max_height 	28350
+		    max_width  	21600
+		    origin_x   	1059
+		    origin_y   	88
+		    items      	(list diagram_item_list
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::daSoundInteractiveMusicManager" @53
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(1136, 336)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@53
+				location   	(816, 256)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	640
+				justify    	0
+				label      	"daSoundInteractiveMusicManager")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B1D10000"
+			    width      	658
+			    height     	184
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::Services::RadSound::IRadSoundMultiInputKnob" @54
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(928, 1072)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@54
+				location   	(678, 993)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	500
+				justify    	0
+				label      	"IRadSoundMultiInputKnob")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B24802AC"
+			    width      	518
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::Services::RadMusic::IRadMusicPerformance" @55
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(1488, 1072)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	TRUE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@55
+				location   	(1263, 993)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	450
+				justify    	0
+				label      	"IRadMusicPerformance")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B284029B"
+			    width      	468
+			    height     	182
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object ClassView "Class" "Logical View::View::Sound Rendering System::Interactive Sound::daSoundMusicPerformance" @56
+			    ShowCompartmentStereotypes 	TRUE
+			    IncludeAttribute 	TRUE
+			    IncludeOperation 	TRUE
+			    location   	(1136, 736)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    label      	(object ItemLabel
+				Parent_View 	@56
+				location   	(846, 656)
+				fill_color 	13434879
+				nlines     	1
+				max_width  	580
+				justify    	0
+				label      	"daSoundMusicPerformance")
+			    icon_style 	"Icon"
+			    line_color 	3342489
+			    fill_color 	13434879
+			    quidu      	"3C96B2040127"
+			    width      	598
+			    height     	184
+			    annotation 	8
+			    autoResize 	TRUE)
+			(object AssociationViewNew "$UNNAMED$33" @57
+			    location   	(1136, 535)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B2110211"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$34" @58
+				    Parent_View 	@57
+				    location   	(-1184, -297)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96B212027F"
+				    client     	@57
+				    supplier   	@56
+				    line_style 	0)
+				(object RoleView "$UNNAMED$35" @59
+				    Parent_View 	@57
+				    location   	(-1184, -297)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96B2120280"
+				    client     	@57
+				    supplier   	@53
+				    line_style 	0)))
+			(object AssociationViewNew "$UNNAMED$36" @60
+			    location   	(1030, 904)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B2EF019E"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$37" @61
+				    Parent_View 	@60
+				    location   	(-1178, -360)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96B2EF02D7"
+				    client     	@60
+				    supplier   	@54
+				    line_style 	0)
+				(object RoleView "$UNNAMED$38" @62
+				    Parent_View 	@60
+				    location   	(-1178, -360)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96B2EF02D8"
+				    client     	@60
+				    supplier   	@56
+				    line_style 	0)))
+			(object AssociationViewNew "$UNNAMED$39" @63
+			    location   	(1312, 904)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B2FA023A"
+			    roleview_list 	(list RoleViews
+				(object RoleView "$UNNAMED$40" @64
+				    Parent_View 	@63
+				    location   	(-1136, -360)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96B2FA0325"
+				    client     	@63
+				    supplier   	@55
+				    line_style 	0)
+				(object RoleView "$UNNAMED$41" @65
+				    Parent_View 	@63
+				    location   	(-1136, -360)
+				    stereotype 	TRUE
+				    line_color 	3342489
+				    quidu      	"3C96B2FA0326"
+				    client     	@63
+				    supplier   	@56
+				    line_style 	0))))))))
+    logical_presentations 	(list unit_reference_list
+	(object ClassDiagram "Main"
+	    quid       	"3C8933B00177"
+	    title      	"Main"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	694
+	    origin_y   	131
+	    items      	(list diagram_item_list
+		(object CategoryView "Logical View::View::Sound Rendering System::SoundFileManagement" @66
+		    location   	(1312, 2464)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@66
+			location   	(1078, 2380)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	468
+			justify    	0
+			label      	"SoundFileManagement")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C8E51E50108"
+		    width      	481
+		    height     	181)
+		(object ClassView "Class" "Logical View::View::Sound Rendering System::daSoundDynaLoadRegion" @67
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1392, 1344)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@67
+			location   	(1143, 1292)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	498
+			justify    	0
+			label      	"daSoundDynaLoadRegion")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C968D1B0332"
+		    width      	516
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object CategoryView "Logical View::View::Sound Rendering System::SoundPlayers" @68
+		    location   	(1920, 2464)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@68
+			location   	(1708, 2383)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	424
+			justify    	0
+			label      	"SoundPlayers")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C97932F01A9"
+		    width      	437
+		    height     	175)
+		(object ClassView "Class" "Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager" @69
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(704, 800)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@69
+			location   	(371, 720)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	666
+			justify    	0
+			label      	"daSoundResourceManager")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C8D35B40339"
+		    width      	684
+		    height     	184
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::View::Sound Rendering System::daSoundDynaLoadManager" @70
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1392, 800)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@70
+			location   	(1127, 748)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	530
+			justify    	0
+			label      	"daSoundDynaLoadManager")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9682D9024D"
+		    width      	548
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object UsesView "" @71
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C968DA70179"
+		    client     	@70
+		    supplier   	@67
+		    line_style 	0)
+		(object ClassView "Class" "Logical View::View::Sound Rendering System::daSoundInteractiveMusicManager" @72
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1824, 1024)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@72
+			location   	(1504, 972)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	640
+			justify    	0
+			label      	"daSoundInteractiveMusicManager")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C96B1D10000"
+		    width      	658
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::View::Sound Rendering System::Sound Tuner::daSoundTuner" @73
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(2272, 800)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@73
+			location   	(2099, 720)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	346
+			justify    	0
+			label      	"daSoundTuner")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C96B775024C"
+		    width      	364
+		    height     	184
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::View::Sound Rendering System::daScriptLoader" @74
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(2768, 800)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@74
+			location   	(2615, 748)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	306
+			justify    	0
+			label      	"daScriptLoader")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9BA54502C7"
+		    width      	324
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::View::Sound Rendering System::daSoundRenderingManager" @75
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1824, 336)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@75
+			location   	(1558, 284)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	532
+			justify    	0
+			label      	"daSoundRenderingManager")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C8E9CCF0390"
+		    width      	550
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$18" @76
+		    location   	(1296, 553)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C8E9D0D0073"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$19" @77
+			    Parent_View 	@76
+			    location   	(-80, 233)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C8E9D0D02A6"
+			    client     	@76
+			    supplier   	@69
+			    line_style 	0)
+			(object RoleView "$UNNAMED$20" @78
+			    Parent_View 	@76
+			    location   	(-80, 233)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C8E9D0D02A7"
+			    client     	@76
+			    supplier   	@75
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$24" @79
+		    location   	(1607, 567)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C96831102B9"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$25" @80
+			    Parent_View 	@79
+			    location   	(7, 247)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96831200B5"
+			    client     	@79
+			    supplier   	@70
+			    line_style 	0)
+			(object RoleView "$UNNAMED$26" @81
+			    Parent_View 	@79
+			    location   	(7, 247)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96831200B6"
+			    client     	@79
+			    supplier   	@75
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$30" @82
+		    location   	(1824, 679)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C96B1E3002E"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$31" @83
+			    Parent_View 	@82
+			    location   	(0, 343)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B1E30203"
+			    client     	@82
+			    supplier   	@72
+			    line_style 	0)
+			(object RoleView "$UNNAMED$32" @84
+			    Parent_View 	@82
+			    location   	(0, 343)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B1E30204"
+			    client     	@82
+			    supplier   	@75
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$42" @85
+		    location   	(2034, 553)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C96B7820096"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$43" @86
+			    Parent_View 	@85
+			    location   	(210, 217)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B78202B9"
+			    client     	@85
+			    supplier   	@73
+			    line_style 	0)
+			(object RoleView "$UNNAMED$44" @87
+			    Parent_View 	@85
+			    location   	(210, 217)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C96B78202C8"
+			    client     	@85
+			    supplier   	@75
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$54" @88
+		    location   	(2295, 567)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9BA5550150"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$55" @89
+			    Parent_View 	@88
+			    location   	(471, 231)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9BA55502C7"
+			    client     	@88
+			    supplier   	@74
+			    line_style 	0)
+			(object RoleView "$UNNAMED$56" @90
+			    Parent_View 	@88
+			    location   	(471, 231)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9BA55502C8"
+			    client     	@88
+			    supplier   	@75
+			    line_style 	0)))
+		(object CategoryView "Logical View::View::Sound Rendering System::Sound Resource Management" @91
+		    location   	(608, 2464)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@91
+			location   	(377, 2377)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	462
+			justify    	0
+			label      	"Sound Resource Management")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CAF827000EE"
+		    width      	474
+		    height     	187)
+		(object CategoryView "Logical View::View::Sound Rendering System::Sound Tuner" @92
+		    location   	(2448, 2464)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@92
+			location   	(2304, 2380)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	288
+			justify    	0
+			label      	"Sound Tuner")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CAF834003A1"
+		    width      	300
+		    height     	180)
+		(object CategoryView "Logical View::View::Sound Rendering System::Interactive Sound" @93
+		    location   	(2944, 2464)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@93
+			location   	(2800, 2380)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	288
+			justify    	0
+			label      	"Interactive Sound")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CAF83A000B5"
+		    width      	300
+		    height     	180)))))

@@ -1,0 +1,123 @@
+################################################################################
+#
+#  Files specific: This files specified the location of the generated 
+#		   library/executable file and where to gather source & header 
+#		   files  for compilation.
+################################################################################
+
+####################
+# General defines
+####################
+
+ROOTDIR = ../../..
+LIBRARYDIR	= ../../lib
+SOURCEDIR	= ../../src
+INCLUDEDIR	= ../../inc \
+			../../src/pch \
+			../../src/rad1394 \
+			../../src/rad1394/ps2iop \
+			../../src/radcontroller \
+			../../src/raddebugcommunication \
+			../../src/raddebugconsole \
+			../../src/raddebugwatch \
+			../../src/raddispatch \
+			../../src/radfile/common \
+			../../src/radfile/ps2 \
+			../../src/radmemory \
+			../../src/radobjectbtree \
+			../../src/radremotecommand \
+			../../src/radstats \
+			../../src/radtextdisplay \
+			../../src/radtime \
+			../../src/radthread \
+			../../../sdks/sntcpip/inc \
+			../../Src/radmemorymonitor \
+			../../Src/radprofiler \
+			../../../../code \
+
+
+TARGET		= $(LIBRARYDIR)/radcore
+
+TARGETTYPE	= LIBRARY
+
+include $(ROOTDIR)/radbuild/config.ps2mw
+
+#####################################
+# source files included in project
+#####################################
+
+SOURCEFILES += \
+	raddebug/debug \
+	radobject/object \
+	raddispatch/dispatcher \
+	radtime/time \
+	radtime/stopwatch \
+	radmemory/dlheap \
+	radmemory/align \
+	radmemory/binallocator \
+	radmemory/externalmemoryheap \
+	radmemory/externalmemoryobject \
+	radmemory/memorymanager \
+	radmemory/memoryobject \
+        radmemory/memoryspaceps2 \
+	radmemory/memorypool \
+	radmemory/platalloc \
+	radmemory/staticheap \
+	radmemory/trackingheap \
+	radmemory/twowayallocator \
+	radstring/string \
+	radobjectbtree/objectbtree \
+	radobjectbtree/objectavltree \
+	radobjectlist/dynamicarray \
+	radobjectlist/objectlist \
+	radobjectlist/weakcallbackwrapper \
+	radobjectlist/weakinterfacewrapper \
+	raddebugcommunication/targetx \
+	raddebugcommunication/targetsocketchannel \
+	raddebugcommunication/targetdecichannel \
+	raddebugcommunication/targetconnection \
+	raddebugcommunication/target1394socket \
+	raddebugconsole/consoleclient \
+	raddebugwatch/watchclient \
+	radremotecommand/functionlist \
+	radremotecommand/remotecommandserver \
+	radremotecommand/remotecommandtarget \
+	radcontroller/controllerbuffer \
+	radcontroller/ps2controller \
+	radkey/radkey \
+	radfile/common/requests \
+	radfile/common/file \
+	radfile/common/instancedrive \
+	radfile/common/drive \
+	radfile/common/filesystem \
+	radfile/common/platformdrives \
+	radfile/common/radfile \
+	radfile/common/buffereddrive \
+	radfile/common/drivethread \
+	radfile/common/signeddrive \
+	radfile/common/remotedrive \
+	radfile/common/cementer \
+	radfile/common/filecache \
+	radfile/ps2/ps2cddrive \
+	radfile/ps2/ps2hostdrive \
+	radfile/ps2/ps2memcarddrive \
+	radplatform/platform \
+	radstacktrace/ps2/stacktrace \
+	radstacktrace/ps2/stacktrace_asm \
+	rad1394/ps2iop/rad1394client \
+	radstats/simplestat \
+	radstats/statmanager \
+	radtextdisplay/textdisplay \
+	radthread/system \
+	radthread/mutex \
+	radthread/semaphore \
+	radthread/thread \
+	radmemorymonitor/memmonitorclient \
+	radmemorymonitor/memmonitorclienthelp \
+	radprofiler/profiler \
+	radprofiler/profiler2 \
+	radprofiler/profilesample \
+
+
+
+

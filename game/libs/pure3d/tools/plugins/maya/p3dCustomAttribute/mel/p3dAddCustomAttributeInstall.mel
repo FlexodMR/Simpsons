@@ -1,0 +1,66 @@
+//add "Add Custom Attribute" button to the tool bar
+
+global proc p3dCustomAttrInstallCommand()
+{
+   source p3dAddCustomAttributeProcs;
+
+   // BUG FIX: Do NOT create Shelf if Shelf UI is hidden!
+   //          The Shelf may already exist in Maya's Preferences
+   //          but be deferred until the Shelf UI is visible,
+   //          and a clash will result if a duplicate is made.
+   // BUG FIX: Do NOT attempt if without UI.
+   if ( !`about -batch` && isUIComponentVisible( "Shelf" ) )
+   {
+       string $SHELF = "P3DCustomAttribute";
+
+       int $exists = `shelfLayout -exists $SHELF`;
+
+       if (!$exists)
+       {
+          addNewShelfTab $SHELF;
+       }
+
+       string $buttons[] = `shelfLayout -q -ca $SHELF`;
+       int $custom_attr_exists = 0;
+       int $define_attr_exists = 0;
+
+       int $i;
+       for ($i = 0; ( $i < size($buttons) ) && (($custom_attr_exists == 0) || ($define_attr_exists == 0)); $i++)
+       {
+          string $command = `shelfButton -q -c $buttons[$i]`;
+
+          if ($command == "P3DAddCustomAttribute")
+          {
+             $custom_attr_exists = 1;
+          }
+          if ($command == "P3DDefineCustomAttribute")
+          {
+             $define_attr_exists = 1;
+          }
+
+       }
+
+       if (!$custom_attr_exists)
+       {
+          shelfButton -c   "P3DAddCustomAttribute" 
+                      -p   "P3DCustomAttribute"
+                      -i1  "p3dAddCustomAttribute.bmp" 
+                      -ann "Add a Custom Attribute"
+                      -l   "P3DAddCustomAttributeButton";
+       }
+       if (!$define_attr_exists)
+       {
+          shelfButton -c    "P3DDefineCustomAttribute"
+                      -p    "P3DCustomAttribute"
+                      -i1   "p3dDefineCustomAttribute.bmp"
+                      -ann  "Define a new type of attribute"
+                      -l    "P3DDefineCustomAttributeButton";
+       }
+    }
+}
+
+
+global proc p3dAddCustomAttributeInstall()
+{
+   evalDeferred "p3dCustomAttrInstallCommand";
+}

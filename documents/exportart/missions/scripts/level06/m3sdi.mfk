@@ -1,0 +1,55 @@
+SelectMission("m3sd");
+
+SetMissionResetPlayerOutCar("m3_bart_start","m3_carstart");
+SetDynaLoadData("l6z3.p3d;l6r2.p3d;l6r3.p3d;");
+
+SetMissionStartCameraName( "mission3camShape" );
+SetMissionStartMulticontName( "mission3cam" );
+SetAnimatedCameraName( "mission3camShape" );
+SetAnimCamMulticontName( "mission3cam" );
+
+AddStage(5);
+	SetMaxTraffic(4);
+	SetStageMessageIndex(191);
+	SetHUDIcon("krusty");
+	AddObjective("talkto");
+		AddNPC("krusty", "m3_krusty_sd");
+		AddObjectiveNPCWaypoint( "krusty", "m3_krusty_walk1" );
+		AddObjectiveNPCWaypoint( "krusty", "m3_krusty_walk2" );
+		SetTalkToTarget("krusty", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis06_03.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_near" );
+		SetConversationCam( 2, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_cross_arms" );
+		SetCamBestSide( "m3_bestside" );
+		SetDialogueInfo("bart","krusty","massacre",0);
+		SetDialoguePositions("bart_krustytalk","m3_krusty_sd","m3_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

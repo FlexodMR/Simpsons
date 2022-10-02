@@ -1,0 +1,725 @@
+// Copyright (C) 1997-2000 Alias|Wavefront,
+// a division of Silicon Graphics Limited.
+//
+// The information in this file is provided for the exclusive use of the
+// licensees of Alias|Wavefront.  Such users have the right to use, modify,
+// and incorporate this code into other products for purposes authorized
+// by the Alias|Wavefront license agreement, without fee.
+//
+// ALIAS|WAVEFRONT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+// INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+// EVENT SHALL ALIAS|WAVEFRONT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+// DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+// TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+//
+//  Alias|Wavefront Script File
+//
+//  Creation Date:	May 1, 1997
+//
+//
+//  Procedure Name:
+//	AEtransformMain
+//
+//  Description:
+//	Creates  attribute editor controls in separate files for the 
+// 	transform Node
+//
+//  Input Value:
+//	nodeName
+//
+//  Output Value:
+//	None
+//
+
+//
+//  Procedure Name:
+//	AEtransformMain
+//
+//
+
+global proc AEtransformMain ( string $nodeName )
+{
+    editorTemplate -beginLayout "Transform Attributes" -collapse 0;
+        editorTemplate -addControl "translate";
+        editorTemplate -addControl "rotate";
+        editorTemplate -addControl "scale";
+        if (`objectType $nodeName` == "joint")
+        {
+            editorTemplate -suppress "shear";
+        } else {
+            editorTemplate -addControl "shear";
+        }
+        editorTemplate -addControl "rotateOrder";
+        editorTemplate -addControl "rotateAxis";
+        editorTemplate -addControl "inheritsTransform";
+    editorTemplate -endLayout;
+
+    // Start Pure3D
+
+    editorTemplate -beginLayout "Pure 3D Exporter attributes" -collapse 0;
+
+        editorTemplate -suppress "p3dBooleanAttributes";
+        editorTemplate -callCustom "p3dBooleanNew" "p3dBooleanReplace" "p3dBooleanAttributes";
+        editorTemplate -addControl "p3dExtraJointSortOrder";
+//        editorTemplate -addControl "p3dMappedJoint";  // Deprecated 08 Oct 2002
+
+        // Always called (not associated with an attribute)
+        editorTemplate -callCustom "AEtransformP3DEventNew" "AEtransformP3DEventReplace" "message";
+
+    editorTemplate -endLayout;
+
+    AEp3dPhysicsTemplate $nodeName true;                // 'true' == is transform
+    AEp3dRenderStatsTemplate $nodeName;
+
+    AEp3dAnimationOptimizationTemplate $nodeName true;  // 'true' == is transform
+
+    editorTemplate -suppress "p3dUseCustomAnimOptimization";
+    editorTemplate -suppress "p3dAnimOptThresholdPos";
+    editorTemplate -suppress "p3dAnimOptThresholdRot";
+    editorTemplate -suppress "rotateQuaternion";
+    
+    // END Pure3D
+}
+
+//===========================================================================
+// AEtransformP3DEventNew
+//===========================================================================
+// Description: Creates the Event Anim UI controls.
+//
+// Constraints: Calls AEtransformP3DEventReplace() to populate the controls.
+//
+// Parameters:  string $attr: The '.message' attribute for the current node.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc AEtransformP3DEventNew( string $attr )
+{
+	setUITemplate -pushTemplate attributeEditorTemplate;
+
+    // The "AEtransformMain" function is called for EVERY transform type.
+    // Consequently, instances of these Attribute Editor controls are created
+    // for EVERY transform type.  In order to maintain communication with
+    // the AE panel it is necessary to prefix the control names with the
+    // nodeType currently displayed.
+    string $tokens[];
+    tokenize $attr "." $tokens;
+    string $nodeType = `nodeType $tokens[0]`;
+
+    string $eventLabelUI = ( $nodeType + "p3dEventLabelUI" );
+    string $eventFieldUI = ( $nodeType + "p3dEventFieldUI" );
+    string $eventLinkUI  = ( $nodeType + "p3dEventLinkUI" );
+    string $eventPopupMenu = ( $nodeType + "p3dEventPopupMenu" );
+
+    rowLayout -nc 3;
+
+        text -label "Event Anim" -align "right" $eventLabelUI;
+        textField -editable false $eventFieldUI;
+        symbolButton -image "navButtonUnconnected.xpm" -width 24 -height 24 $eventLinkUI;
+//            popupMenu -button 3 $eventPopupMenu;
+ 
+    setUITemplate -popTemplate;
+
+    AEtransformP3DEventReplace $attr;
+}
+
+//===========================================================================
+// AEtransformP3DEventReplace
+//===========================================================================
+// Description: Populates the Event Anim UI controls.
+//
+// Constraints: Called by AEtransformP3DEventNew().
+//
+// Parameters:  string $attr: The '.message' attribute for the current node.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc AEtransformP3DEventReplace( string $attr )
+{
+    // The "AEtransformMain" function is called for EVERY transform type.
+    // Consequently, instances of these Attribute Editor controls are created
+    // for EVERY transform type.  In order to maintain communication with
+    // the AE panel it is necessary to prefix the control names with the
+    // nodeType currently displayed.
+    string $tokens[];
+    tokenize $attr "." $tokens;
+    string $nodeType = `nodeType $tokens[0]`;
+
+    string $eventLabelUI = ( $nodeType + "p3dEventLabelUI" );
+    string $eventFieldUI = ( $nodeType + "p3dEventFieldUI" );
+    string $eventLinkUI  = ( $nodeType + "p3dEventLinkUI" );
+    string $eventPopupMenu = ( $nodeType + "p3dEventPopupMenu" );
+
+    // Check to see if '.message' attribute is connected to a p3dEventAnim node.
+    string $validConnection = "";
+    string $connections[] = `listConnections $attr`;
+
+    for ( $connect in $connections )
+    {
+        if ( `nodeType $connect` == "p3dEventAnim" )
+        {
+            $validConnection = $connect;
+            break;
+        }
+    }
+
+    string $image = "navButtonUnconnected.xpm";
+    int $linkMode = 1;      // unconnected
+    if ( $validConnection != "" )
+    {
+        $image = "navButtonConnected.xpm";
+        $linkMode = 0;      // connected
+    }
+
+    textField -e
+        -text $validConnection
+            $eventFieldUI;
+
+    symbolButton -e
+        -image $image
+        -c ( "AEtransformP3DEventLink " + $attr + " " + $linkMode )
+            $eventLinkUI;     
+}
+
+//===========================================================================
+// AEtransformP3DEventLink
+//===========================================================================
+// Description: Creates or navigates the link from the specified '.message'
+//              attribute to a p3dEventAnim node.
+//
+// Constraints: 
+//
+// Parameters:  string $attr: The '.message' attribute for the current node.
+//              int $linkMode: 0 (zero) if link to p3dEventAnim node already
+//                             exists and should be navigated; 1 (non-zero)
+//                             if p3dEventAnim should be created and connected
+//                             to the specified '.message' attribute.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc AEtransformP3DEventLink( string $attr, int $linkMode )
+{
+    if ( $linkMode )
+    // Create p3dEventAnim node and link.
+    {
+        string $p3dEventAnim = `createNode p3dEventAnim`;
+        connectAttr $attr ( $p3dEventAnim + ".connect" );
+    }
+    else
+    // Navigate to p3dEventAnim node.
+    {
+        string $connections[] = `listConnections $attr`;
+        // Navigate to first p3dEventAnim node connected to
+        // the specified '.message' attribute.
+        for ( $connect in $connections )
+        {
+            if ( `nodeType $connect` == "p3dEventAnim" )
+            {
+                select $connect;
+                break;
+            }
+        }
+    }
+    
+    AEtransformP3DEventReplace( $attr );
+}
+
+//===========================================================================
+// p3dBooleanNew
+//===========================================================================
+// Description: Creates the Attribute Editor UI controls that represent
+//              the individual bitflags in '.p3dBooleanAttributes'
+//
+// Constraints: 
+//
+// Parameters:  string $attrName: <node.attr> name, provided by Maya.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc p3dBooleanNew( string $attrName )
+{
+    string $tokens[];
+    tokenize $attrName "." $tokens;
+
+    // The "AEtransformMain" function is called for EVERY transform type.
+    // Consequently, instances of these Attribute Editor controls are created
+    // for EVERY transform type.  In order to maintain communication with
+    // the AE panel it is necessary to prefix the control names with the
+    // nodeType currently displayed.
+    string $nodeType = `nodeType $tokens[0]`;
+
+    setUITemplate -pst attributeEditorTemplate;
+
+   string $control;
+
+   $control = `checkBoxGrp
+      -numberOfCheckBoxes 1
+      -label "Scene Graph Root"
+      ( $nodeType + "p3dScenegraphRootCheckboxGroup" )`;
+    rowLayout -nc 2;
+//        $control = `checkBoxGrp
+//          -numberOfCheckBoxes 1
+//          -label "Skeleton Root"
+//          p3dSkeletonRootCheckboxGroup`;
+
+        text -label "Skeleton Root";
+
+        $control = `checkBox
+          -label "(a.k.a. Is Composite Drawable)"
+          -align "left"
+          ( $nodeType + "p3dSkeletonRootCheckboxGroup" )`;
+
+          setParent ..;
+
+    $control = `checkBoxGrp
+        -numberOfCheckBoxes 1
+        -label "Animated Object Factory"
+            ( $nodeType + "p3dCreateAnimatedObjectFactory" )`;
+
+//    $control = `checkBoxGrp
+//        -numberOfCheckBoxes 1
+//        -label "Animated Object"
+//            p3dCreateAnimatedObject`;
+
+   $control = `checkBoxGrp
+      -numberOfCheckBoxes 1
+      -label "Not in Skeleton"
+      ( $nodeType + "p3dNotInSkeletonCheckboxGroup" )`;
+
+   $control = `checkBoxGrp
+      -numberOfCheckBoxes 1
+      -label "Traversal Stop"
+      ( $nodeType + "p3dTraversalStopCheckboxGroup" )`;
+
+   $control = `checkBoxGrp
+      -numberOfCheckBoxes 1
+      -label "No Cull"
+      ( $nodeType + "p3dNoCullCheckboxGroup" )`;
+
+   $control = `checkBoxGrp
+      -numberOfCheckBoxes 1
+      -label "Preserve Bone Length"
+      ( $nodeType + "p3dPreserveBoneLengthCheckboxGroup" )`;
+
+   $control = `checkBoxGrp
+      -numberOfCheckBoxes 1
+      -label "Cyclic Animation"
+      ( $nodeType + "p3dCyclicAnimationCheckboxGroup" )`;
+
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//    $control = `checkBoxGrp
+//        -numberOfCheckBoxes 3
+//        -label "Axis Mirror"
+//        -label1 "X"
+//        -label2 "Y"
+//        -label3 "Z"
+//        ( $nodeType + "p3dAxisCheckboxGroup" )`;
+
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//   $control = `checkBoxGrp
+//      -numberOfCheckBoxes 1
+//      -label "High Precision Angles"
+//      ( $nodeType + "p3dHighPrecisionAngleCheckboxGroup" )`;
+
+	setUITemplate -ppt;
+
+    // Now simply call p3dBooleanReplace to handle
+    // the configuration for all the controls.
+    p3dBooleanReplace $attrName;
+}
+
+//===========================================================================
+// p3dBooleanReplace
+//===========================================================================
+// Description: Configures the Attribute Editor UI controls that represent
+//              the individual bitflags in '.p3dBooleanAttributes'.
+//
+// Constraints: Also called from p3dBooleanNew().
+//
+// Parameters:  string $attrName: <node.attr> name, provided by Maya.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc p3dBooleanReplace( string $attrName )
+{
+   string $control;
+
+    p3dGetBoolean( $attrName );
+
+    string $tokens[];
+    tokenize $attrName "." $tokens;
+
+    // The "AEtransformMain" function is called for EVERY transform type.
+    // Consequently, instances of these Attribute Editor controls are created
+    // for EVERY transform type.  In order to maintain communication with
+    // the AE panel it is necessary to prefix the control names with the
+    // nodeType currently displayed.
+    string $nodeType = `nodeType $tokens[0]`;
+
+    int $enable = `attributeQuery -node $tokens[0] -exists $tokens[1]`;
+
+    if ( $enable )
+    {
+        // p3dScenegraphRoot
+        $control = `checkBoxGrp -edit
+            -enable true
+            -changeCommand ("p3dSetBoolean " + $attrName )
+                ( $nodeType + "p3dScenegraphRootCheckboxGroup" )`;
+
+       scriptJob
+          -replacePrevious
+          -parent $control
+          -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+        // p3dSkeletonRoot
+        $control = `checkBox -edit
+            -enable true
+            -changeCommand ("p3dSetBoolean " + $attrName)
+                ( $nodeType + "p3dSkeletonRootCheckboxGroup" )`;
+
+        scriptJob
+            -replacePrevious
+            -parent $control
+            -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+        // p3dCreateAnimatedObjectFactory
+        $control = `checkBoxGrp -edit
+            -enable true
+            -changeCommand ("p3dSetBoolean " + $attrName)
+                ( $nodeType + "p3dCreateAnimatedObjectFactory" )`;
+
+        scriptJob
+            -replacePrevious
+            -parent $control
+            -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+//        // p3dCreateAnimatedObject
+//        $control = `checkBoxGrp -edit
+//            -enable true
+//            -changeCommand ("p3dSetBoolean " + $attrName)
+//                p3dCreateAnimatedObject`;
+//
+//        scriptJob
+//            -replacePrevious
+//            -parent $control
+//            -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+        // p3dTraversalStop
+       $control = `checkBoxGrp -edit 
+            -enable true
+            -changeCommand ("p3dSetBoolean " + $attrName)
+              ( $nodeType + "p3dTraversalStopCheckboxGroup" )`;
+
+       scriptJob
+          -replacePrevious
+          -parent $control
+          -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+       $control = `checkBoxGrp -edit
+            -enable true
+            -changeCommand ("p3dSetBoolean " + $attrName)
+              ( $nodeType + "p3dNoCullCheckboxGroup" )`;
+
+       scriptJob
+          -replacePrevious
+          -parent $control
+          -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+       $control = `checkBoxGrp -edit
+            -enable true
+            -changeCommand ("p3dSetBoolean " + $attrName)
+              ( $nodeType + "p3dPreserveBoneLengthCheckboxGroup" )`;
+
+       scriptJob
+          -replacePrevious
+          -parent $control
+          -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+       $control = `checkBoxGrp -edit
+            -enable true
+            -changeCommand ("p3dSetBoolean " + $attrName)
+              ( $nodeType + "p3dCyclicAnimationCheckboxGroup" )`;
+
+       scriptJob
+          -replacePrevious
+          -parent $control
+          -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//       $control = `checkBoxGrp -edit
+//            -enable true
+//            -changeCommand ("p3dSetBoolean " + $attrName)
+//              ( $nodeType + "p3dAxisCheckboxGroup" )`;
+//
+//       scriptJob
+//          -replacePrevious
+//          -parent $control
+//          -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+       $control = `checkBoxGrp -edit
+            -enable true
+            -changeCommand ("p3dSetBoolean " + $attrName)
+              ( $nodeType + "p3dNotInSkeletonCheckboxGroup" )`;
+
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//       $control = `checkBoxGrp -edit
+//            -enable true
+//            -changeCommand ("p3dSetBoolean " + $attrName)
+//              ( $nodeType + "p3dHighPrecisionAngleCheckboxGroup" )`;
+
+       scriptJob
+          -replacePrevious
+          -parent $control
+          -attributeChange $attrName ("p3dGetBoolean " + $attrName);
+
+       p3dGetBoolean $attrName;
+    }
+    else
+    // If the '.p3dBooleanAttributes' attribute does not exist
+    // on the current node, ghost all controls to avoid UI
+    // errors and disallow editing.
+    {
+        $control = `checkBoxGrp -edit
+          -enable false
+	        ( $nodeType + "p3dScenegraphRootCheckboxGroup" )`;
+
+        $control = `checkBox -edit
+          -enable false
+          ( $nodeType + "p3dSkeletonRootCheckboxGroup" )`;
+
+        $control = `checkBoxGrp -edit
+          -enable false
+          ( $nodeType + "p3dCreateAnimatedObjectFactory" )`;
+
+//        $control = `checkBoxGrp -edit
+//          -enable false
+//          p3dCreateAnimatedObject`;
+
+        $control = `checkBoxGrp -edit 
+          -enable false
+          ( $nodeType + "p3dTraversalStopCheckboxGroup" )`;
+
+        $control = `checkBoxGrp -edit
+          -enable false
+          ( $nodeType + "p3dNoCullCheckboxGroup" )`;
+
+        $control = `checkBoxGrp -edit
+          -enable false
+          ( $nodeType + "p3dPreserveBoneLengthCheckboxGroup" )`;
+
+        $control = `checkBoxGrp -edit
+          -enable false
+          ( $nodeType + "p3dCyclicAnimationCheckboxGroup" )`;
+
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//        $control = `checkBoxGrp -edit
+//          -enable false
+//          ( $nodeType + "p3dAxisCheckboxGroup" )`;
+
+        $control = `checkBoxGrp -edit
+          -enable false
+          ( $nodeType + "p3dNotInSkeletonCheckboxGroup" )`;
+
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//        $control = `checkBoxGrp -edit
+//          -enable false
+//          ( $nodeType + "p3dHighPrecisionAngleCheckboxGroup" )`;
+    }
+
+    p3dSetBoolean( $attrName );
+}
+
+global proc p3dSetBoolean( string $attrName)
+{
+    // The "AEtransformMain" function is called for EVERY transform type.
+    // Consequently, instances of these Attribute Editor controls are created
+    // for EVERY transform type.  In order to maintain communication with
+    // the AE panel it is necessary to prefix the control names with the
+    // nodeType currently displayed.
+    string $tokens[];
+    tokenize $attrName "." $tokens;
+    string $nodeType = `nodeType $tokens[0]`;
+
+    int $enableAnimatedObject = `checkBoxGrp -q -value1 ( $nodeType + "p3dCreateAnimatedObjectFactory" )`;
+    int $sceneGraphValue = `checkBoxGrp -q -value1 ( $nodeType + "p3dScenegraphRootCheckboxGroup" )`;
+    int $skeletonRootValue = `checkBox -q -value ( $nodeType + "p3dSkeletonRootCheckboxGroup" )`;
+
+//    checkBoxGrp -e
+//        -enable $enableAnimatedObject
+//            ( $nodeType + "p3dCreateAnimatedObject" );
+
+    checkBox -e
+        -enable ( !$enableAnimatedObject )
+        -value ( $skeletonRootValue || $enableAnimatedObject )
+            ( $nodeType + "p3dSkeletonRootCheckboxGroup" );
+
+    checkBoxGrp -e
+        -enable ( !$enableAnimatedObject )
+        -value1 ( $sceneGraphValue && (!$enableAnimatedObject) )
+            ( $nodeType + "p3dScenegraphRootCheckboxGroup" );
+
+   int $value = 0;
+	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dScenegraphRootCheckboxGroup" )`) {
+		$value += 1;
+	}
+	if (`checkBox -query -value ( $nodeType + "p3dSkeletonRootCheckboxGroup" )`) {
+		$value += 2;
+	}
+	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dTraversalStopCheckboxGroup" )`) {
+		$value += 4;
+	}
+	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dNoCullCheckboxGroup" )`) {
+		$value += 8;
+	}
+	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dPreserveBoneLengthCheckboxGroup" )`) {
+		$value += 16;
+	}
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dAxisCheckboxGroup" )`) {
+//		$value += 32;
+//	}
+//	if (`checkBoxGrp -query -value2 ( $nodeType + "p3dAxisCheckboxGroup" )`) {
+//		$value += 64;
+//	}
+//	if (`checkBoxGrp -query -value3 ( $nodeType + "p3dAxisCheckboxGroup" )`) {
+//		$value += 128;
+//	}
+	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dCyclicAnimationCheckboxGroup" )`) {
+		$value += 256;
+	}
+	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dNotInSkeletonCheckboxGroup" )`) {
+		$value += 512;
+	}
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dHighPrecisionAngleCheckboxGroup" )`) {
+//		$value += 1024;
+//	}
+	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dCreateAnimatedObjectFactory" )`) {
+		$value += 2048;
+	}
+
+//	if (`checkBoxGrp -query -value1 ( $nodeType + "p3dCreateAnimatedObject" )`) {
+//		$value += 4096;
+//	}
+
+   setAttr $attrName $value;
+}
+
+global proc p3dGetBoolean(string $attrName)
+{
+    // The "AEtransformMain" function is called for EVERY transform type.
+    // Consequently, instances of these Attribute Editor controls are created
+    // for EVERY transform type.  In order to maintain communication with
+    // the AE panel it is necessary to prefix the control names with the
+    // nodeType currently displayed.
+    string $tokens[];
+    tokenize $attrName "." $tokens;
+    string $nodeType = `nodeType $tokens[0]`;
+
+   // We don't have bitwise ops in mel, so we
+   // check bits by modulo and integer divide by 2
+
+   int $value = `getAttr $attrName`;
+
+   if($value % 2) {
+      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dScenegraphRootCheckboxGroup" );
+   } else {
+      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dScenegraphRootCheckboxGroup" );
+   }
+   $value /= 2;
+
+   if($value % 2) {
+      checkBox -edit -value 1 ( $nodeType + "p3dSkeletonRootCheckboxGroup" );
+   } else {
+      checkBox -edit -value 0 ( $nodeType + "p3dSkeletonRootCheckboxGroup" );
+   }
+   $value /= 2;
+
+   if($value % 2) {
+      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dTraversalStopCheckboxGroup" );
+   } else {
+      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dTraversalStopCheckboxGroup" );
+   }
+   $value /= 2;
+
+   if($value % 2) {
+      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dNoCullCheckboxGroup" );
+   } else {
+      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dNoCullCheckboxGroup" );
+   }
+   $value /= 2;
+
+   if($value % 2) {
+      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dPreserveBoneLengthCheckboxGroup" );
+   } else {
+      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dPreserveBoneLengthCheckboxGroup" );
+   }
+   $value /= 2;
+
+// Added by Bryan Ewert on 01 Apr 2002
+//   if($value % 2) {
+//      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dAxisCheckboxGroup" );
+//   } else {
+//      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dAxisCheckboxGroup" );
+//   }
+   $value /= 2;
+//
+//   if($value % 2) {
+//      checkBoxGrp -edit -value2 1 ( $nodeType + "p3dAxisCheckboxGroup" );
+//   } else {
+//      checkBoxGrp -edit -value2 0 ( $nodeType + "p3dAxisCheckboxGroup" );
+//   }
+   $value /= 2;
+//
+//   if($value % 2) {
+//      checkBoxGrp -edit -value3 1 ( $nodeType + "p3dAxisCheckboxGroup" );
+//   } else {
+//      checkBoxGrp -edit -value3 0 ( $nodeType + "p3dAxisCheckboxGroup" );
+//   }
+   $value /= 2;
+
+   if($value % 2) {
+      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dCyclicAnimationCheckboxGroup" );
+   } else {
+      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dCyclicAnimationCheckboxGroup" );
+   }
+   $value /= 2;
+
+   if($value % 2) {
+      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dNotInSkeletonCheckboxGroup" );
+   } else {
+      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dNotInSkeletonCheckboxGroup" );
+   }
+   $value /= 2;
+
+// Deprecated - 01 Apr 2002 - Exporter v16.14
+//   if($value % 2) {
+//      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dHighPrecisionAngleCheckboxGroup" );
+//   } else {
+//      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dHighPrecisionAngleCheckboxGroup" );
+//   }
+   $value /= 2;
+
+   if($value % 2) {
+      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dCreateAnimatedObjectFactory" );
+   } else {
+      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dCreateAnimatedObjectFactory" );
+   }
+   $value /= 2;
+
+//   if($value % 2) {
+//      checkBoxGrp -edit -value1 1 ( $nodeType + "p3dCreateAnimatedObject" );
+//   } else {
+//      checkBoxGrp -edit -value1 0 ( $nodeType + "p3dCreateAnimatedObject" );
+//   }
+   $value /= 2;
+
+}
+

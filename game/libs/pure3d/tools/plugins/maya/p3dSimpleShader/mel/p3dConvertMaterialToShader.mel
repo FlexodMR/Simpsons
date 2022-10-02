@@ -1,0 +1,85 @@
+global proc p3dConvertMaterialToShader()
+{
+   string $materials[] = `ls -type lambert`;
+
+   for ($material in $materials)
+   { 
+      if (strcmp($material,"lambert1")==0)
+      {
+         continue;
+      }      
+
+      rename $material p3dTempConversionMaterial;
+      createNode pure3dSimpleShader -name $material;
+
+      //copy all the attribute values
+      float $colour[3] = `getAttr p3dTempConversionMaterial.color`;
+      setAttr -type float3 ($material+".color") $colour[0] $colour[1] $colour[2];
+
+      float $ambient[3] = `getAttr p3dTempConversionMaterial.ambientColor`;
+      setAttr -type float3 ($material+".ambient") $ambient[0] $ambient[1] $ambient[2];
+      
+      float $diffuse = `getAttr p3dTempConversionMaterial.diffuse`;
+      if (size(`listConnections p3dTempConversionMaterial.color`)==0)
+      {         
+         setAttr -type float3 ($material+".diffuse") ($diffuse*$colour[0]) ($diffuse*$colour[1]) ($diffuse*$colour[2]);
+      }
+      else
+      {
+         setAttr -type float3 ($material+".diffuse") $diffuse $diffuse $diffuse;
+      }
+
+      setAttr ($material+".dynamicallyLit") `getAttr p3dTempConversionMaterial.p3dLit`;
+      setAttr ($material+".shadeMode") `getAttr p3dTempConversionMaterial.p3dShadeMode`;
+      setAttr ($material+".blendMode") `getAttr p3dTempConversionMaterial.p3dBlendMode`;
+      setAttr ($material+".uvMode") `getAttr p3dTempConversionMaterial.p3dUVMode`;
+      setAttr ($material+".filterMode") `getAttr p3dTempConversionMaterial.p3dFilterMode`;
+      setAttr ($material+".alphaTest") `getAttr p3dTempConversionMaterial.p3dAlphaTest`;
+      setAttr ($material+".alphaCompare") `getAttr p3dTempConversionMaterial.p3dAlphaCompareMode`;
+      setAttr ($material+".proceduralXRes") `getAttr p3dTempConversionMaterial.p3dProceduralTexXRes`;
+      setAttr ($material+".proceduralYRes") `getAttr p3dTempConversionMaterial.p3dProceduralTexYRes`;
+
+      string $sourceConnections[] = `listConnections -connections true -plugs true -source true -destination false p3dTempConversionMaterial`;
+      string $destConnections[] = `listConnections -connections true -plugs true -source false -destination true p3dTempConversionMaterial`;
+      delete p3dTempConversionMaterial;
+
+      int $current;
+
+      for ($current = 0; $current < size($sourceConnections); $current+=2)
+      {
+         string $buffer[];
+         tokenize $sourceConnections[$current] "." $buffer;
+         string $attr = $buffer[1];
+
+         if (`attributeQuery -exists -type pure3dSimpleShader $attr`==1)
+         {
+            if (`strcmp $attr "diffuse"`!=0)
+            {
+               if (`isConnected $sourceConnections[$current+1] ($material+"."+$attr)`==0)
+               {
+                  connectAttr $sourceConnections[$current+1] ($material+"."+$attr); 
+               }
+            }
+         }
+      }
+
+      for ($current = 0; $current < size($destConnections); $current+=2)
+      {
+         string $buffer[];
+         tokenize $destConnections[$current] "." $buffer;
+         string $attr = $buffer[1];
+
+         if (`attributeQuery -exists -type pure3dSimpleShader $attr`==1)
+         {
+            if (`strcmp $attr "diffuse"`!=0)
+            {
+               if (`isConnected ($material+"."+$attr) $destConnections[$current+1]`==0)
+               {
+                  connectAttr ($material+"."+$attr) $destConnections[$current+1]; 
+               }
+            }
+         }
+      }
+   }
+}
+

@@ -1,0 +1,145 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTML::AsSubs - functions that construct a HTML syntax tree
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#ACKNOWLEDGEMENT">ACKNOWLEDGEMENT</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTML::AsSubs - functions that construct a 
+<FONT SIZE=-1>HTML</FONT> syntax tree
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use HTML::AsSubs;
+ $h = body(
+           h1(&quot;This is the heading&quot;),
+           p(&quot;This is the first paragraph which contains a &quot;,
+             a({href=&gt;'link.html'}, &quot;link&quot;),
+             &quot; and an &quot;,
+             img({src=&gt;'img.gif', alt=&gt;'image'}),
+             &quot;.&quot;
+            ),
+          );
+ print $h-&gt;as_HTML;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module exports functions that can be used to construct various 
+<FONT SIZE=-1>HTML</FONT> elements. The functions are named after the tags of the correponding 
+<FONT SIZE=-1>HTML</FONT> element and are all written in lower case. If the first argument is a
+ <EM>hash</EM> then it will be used to initialize the attributes of this element. The
+remaining arguments are regarded as content.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ACKNOWLEDGEMENT">ACKNOWLEDGEMENT
+
+</A></H1>
+This module was inspired by the following message:
+
+
+<P>
+
+<PRE> Date: Tue, 4 Oct 1994 16:11:30 +0100
+ Subject: Wow! I have a large lightbulb above my head!
+</PRE>
+
+<P>
+
+<PRE> Take a moment to consider these lines:
+</PRE>
+
+<P>
+
+<PRE> %OVERLOAD=( '&quot;&quot;' =&gt; sub { join(&quot;&quot;, @{$_[0]}) } );
+</PRE>
+
+<P>
+
+<PRE> sub html { my($type)=shift; bless [&quot;&lt;$type&gt;&quot;, @_, &quot;&lt;/$type&gt;&quot;]; }
+</PRE>
+
+<P>
+
+<PRE> :-)  I *love* Perl 5!  Thankyou Larry and Ilya.
+</PRE>
+
+<P>
+
+<PRE> Regards,
+ Tim Bunce.
+</PRE>
+
+<P>
+
+<PRE> p.s. If you didn't get it, think about recursive data types: html(html())
+ p.p.s. I'll turn this into a much more practical example in a day or two.
+ p.p.p.s. It's a pity that overloads are not inherited. Is this a bug?
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+The exported <CODE>link()</CODE> function overrides the builtin
+<CODE>link()</CODE> function. The exported <CODE>tr()</CODE> function must
+be called using &amp;tr(...) syntax because it clashes with the builtin
+tr/../../ operator.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/HTML/Element.html">Element</A>
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

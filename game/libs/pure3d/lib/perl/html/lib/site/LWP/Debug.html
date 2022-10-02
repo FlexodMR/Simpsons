@@ -1,0 +1,147 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>LWP::Debug - debug routines for the libwww-perl library
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#FUNCTIONS">FUNCTIONS</A>
+	<UL>
+
+		<LI><A HREF="#level_">level(...)</A>
+		<LI><A HREF="#trace_msg_">trace($msg)</A>
+		<LI><A HREF="#debug_msg_">debug($msg)</A>
+		<LI><A HREF="#conns_msg_">conns($msg)</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+LWP::Debug - debug routines for the libwww-perl library
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use LWP::Debug qw(+ -conns);
+</PRE>
+
+<P>
+
+<PRE> # Used internally in the library
+ LWP::Debug::trace('send()');
+ LWP::Debug::debug('url ok');
+ LWP::Debug::conns(&quot;read $n bytes: $data&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+LWP::Debug provides tracing facilities. The <CODE>trace(),</CODE>
+<CODE>debug()</CODE> and <CODE>conns()</CODE> function are called within
+the library and they log information at increasing levels of detail. Which
+level of detail is actually printed is controlled with the <CODE>level()</CODE> function.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="FUNCTIONS">FUNCTIONS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="level_">level(...)
+
+</A></H2>
+The <CODE>level()</CODE> function controls the level of detail being logged. Passing '+' or '-'
+indicates full and no logging respectively. Inidividual levels can switched
+on and of by passing the name of the level with a '+' or '-' prepended. The
+levels are:
+
+
+<P>
+
+<PRE>  trace   : trace function calls
+  debug   : print debug messages
+  conns   : show all data transfered over the connections
+</PRE>
+
+<P>
+
+The LWP::Debug module provide a special <CODE>import()</CODE> method that
+allows you to pass the <CODE>level()</CODE> arguments with initial use
+statement. If a use argument start with '+' or '-' then it is passed to the
+level function, else the name is exported as usual. The following two
+statements are thus equivalent (if you ignore that the second pollutes your
+namespace):
+
+
+<P>
+
+<PRE>  use LWP::Debug qw(+);
+  use LWP::Debug qw(level); level('+');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="trace_msg_">trace($msg)
+
+</A></H2>
+The <CODE>trace()</CODE> function is used for tracing function calls. The package and calling
+subroutine name is printed along with the passed argument. This should be
+called at the start of every major function.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="debug_msg_">debug($msg)
+
+</A></H2>
+The <A HREF="#item_debug">debug()</A> function is used for high-granularity reporting of state in functions.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="conns_msg_">conns($msg)
+
+</A></H2>
+The <CODE>conns()</CODE> function is used to show data being transferred over the connections. This
+may generate considerable output.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

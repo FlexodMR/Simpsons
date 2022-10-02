@@ -1,0 +1,76 @@
+SelectMission("m3");
+
+SetMissionResetPlayerInCar("m3_cbgcar_sd");
+SetDynaLoadData("l2z4.p3d;l2r3.p3d;l2r4.p3d;");
+InitLevelPlayerVehicle("comic_v","m3_cbgcar_sd","OTHER");
+
+//This is a forced car mission
+SetForcedCar();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetMaxTraffic(3);
+	SetStageMessageIndex(106);
+	SetHUDIcon( "java" );
+	AddStageVehicle("cNerd","m3_AI_start","race","Missions\level02\M3race.con", "teen");
+
+	StartCountdown(count);
+	AddToCountdownSequence( "3", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "2", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "1",  1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "GO",  1000 ); // duration time in milliseconds
+
+//	SetStageAIRaceCatchupParams( "cNerd", 80 ); // when we'll apply max catchup (speed up!)
+	SetStageAIRaceCatchupParams("cNerd", 80, 0.8, 1.5, 2.3); 
+
+	AddStageWaypoint( "m3_AI_path4" );
+	AddObjective( "race" );
+		AddCollectible("m3_AI_path4","finish_line");
+		SetCollectibleEffect("finish_line_col");
+	CloseObjective();
+	AddCondition("race");
+		SetCondTargetVehicle("cNerd");
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "comic_v" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	//SetCompletionDialog("futile", "cbg");
+	SetFadeOut( 0.1 );
+	SwapInDefaultCar();
+	SetSwapDefaultCarLocator("m3_car_end");
+	SetSwapForcedCarLocator("m3_cbg_car_end");
+	SetSwapPlayerLocator("m3_bart_end");
+CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(54);
+//	SetHUDIcon( "cbg" );
+//	AddObjective("talkto");
+//		AddNPC("cbg", "m3_cbg_end");
+//		SetTalkToTarget("cbg", 0, 0);
+//	CloseObjective();
+//CloseStage();
+
+AddStage(1);
+	AddObjective("timer");
+		AddNPC("cbg", "m3_cbg_end");
+		SetDurationTime(1);
+	CloseObjective();
+CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+		//SetPresentationBitmap( "art/frontend/dynaload/images/mis02_03.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetCamBestSide("m3_bestside");
+		SetDialogueInfo("bart","cbg","futile",0);
+		SetDialoguePositions("m3_bart_end","m3_cbg_end","m3_car_end");
+	CloseObjective();
+CloseStage();
+
+CloseMission();

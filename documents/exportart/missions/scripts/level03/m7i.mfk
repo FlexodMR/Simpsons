@@ -1,0 +1,136 @@
+SelectMission("m7");
+
+SetMissionResetPlayerInCar("m7_carstart");
+SetDynaLoadData("l3z3.p3d;l3r2.p3d;l3r3.p3d;");
+
+AddStage(0); 
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageTime(120);
+	SetStageMessageIndex(98);
+	SetHUDIcon( "blimo_v" );
+	SetMaxTraffic(2); 
+	AddStageVehicle("cLimo","m7_limo_carstart","target","Missions\level03\M7dest.con", "eddie");
+	SetVehicleAIParams( "cLimo", -10, -9 );   // very dumb - no shortcuts
+	AddStageWaypoint( "m7_AI_path_3" );
+	AddStageWaypoint( "m7_AI_path_5" );
+	AddStageWaypoint( "m7_AI_path_6" );
+	AddStageWaypoint( "m7_AI_path_8a" );
+	AddObjective("destroy");
+		SetObjTargetVehicle("cLimo");
+	CloseObjective();
+	AddCondition("timeout");
+	CloseCondition();
+	StageStartMusicEvent("M7_drama");
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(196);
+	SetHUDIcon( "chum" );
+	AddObjective("goto");
+		AddNPC("captain", "m6_captain_sd");
+		SetDestination("m6_fishstore_sd", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	StageStartMusicEvent("M7_start");
+	ShowStageComplete();
+CloseStage();
+
+AddStage(5);
+	SetStageMessageIndex(197);
+	SetHUDIcon( "scaptain" );
+	AddObjective("talkto");
+		AddNPC("captain", "m6_captain_sd");
+		AddObjectiveNPCWaypoint( "captain", "m6_captain_walk1_sd" );
+		SetTalkToTarget("captain", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide( "m6_bestside" );
+		SetDialogueInfo("lisa","captain","destroy",0);
+		SetDialoguePositions("m6_lisa_loc","m6_captain_walk1_sd","m7_carstart");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(198);
+	SetHUDIcon( "ship" );
+	AddObjective("goto");
+		AddNPC("bart", "m7_bart");
+		SetDestination("m7_ship", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	ShowStageComplete();
+	SetStageTime(75);
+	AddCondition("timeout");
+	CloseCondition();
+CloseStage();
+
+AddStage(5);
+	SetStageMessageIndex(199);
+	SetHUDIcon( "bart" );
+	AddObjective("talkto");
+		AddNPC("bart", "m7_bart");
+		SetTalkToTarget("bart", 0, -0.5);
+	CloseObjective();
+	SetStageTime(120);
+	AddCondition("timeout");
+	CloseCondition();
+CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_thinking" );
+		SetCamBestSide( "m7_bestside" );
+		SetDialogueInfo("lisa","bart","found",0);
+		SetDialoguePositions("m7_lisa_loc2","m7_bart","m7_carstart");
+	CloseObjective();
+CloseStage();
+
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

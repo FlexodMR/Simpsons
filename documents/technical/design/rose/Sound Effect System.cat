@@ -1,0 +1,940 @@
+
+(object Petal
+    version    	44
+    _written   	"Rose 7.0.9420.17"
+    charSet    	0)
+
+(object Class_Category "Sound Effect System"
+    is_unit    	TRUE
+    is_loaded  	TRUE
+    attributes 	(list Attribute_Set
+	(object Attribute
+	    tool       	"sc"
+	    name       	"SourceControlSpec"
+	    value      	"-- using Perforce --"))
+    quid       	"3CA8CFD00308"
+    exportControl 	"Public"
+    logical_models 	(list unit_reference_list
+	(object Class "SoundEffectPlayer"
+	    quid       	"3C9A70E701D0"
+	    documentation 	"This is a fairly light class, since I expect a lot of differentiation in sound effect logic between game modes.  It contains a set of logic objects, one of which is used in any given game mode, and is responsible for making the appropriate object active."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3C9A70F90394"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E"))
+	    operations 	(list Operations
+		(object Operation "InitializeFrontEnd"
+		    quid       	"3C9BB12B03BE"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "OnCollision"
+		    quid       	"3CACCB760014"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "SoundFXFrontEndLogic"
+	    quid       	"3C9BB06F02E5"
+	    documentation 	"SoundFXLogic subclass with logic specific to front-end sound effects."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3C9BB08B0268"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E")
+		(object Inheritance_Relationship
+		    quid       	"3C9BB1C2037D"
+		    supplier   	"Logical View::Model::Sound Manager::Sound Effect System::SoundFXLogic"
+		    quidu      	"3C9BB1AB0310")))
+	(object Class "SoundFXGameplayLogic"
+	    quid       	"3C9BB09F0016"
+	    documentation 	"SoundFXLogic subclass with logic specific to gameplay sound effects."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3C9BB0C00267"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E")
+		(object Inheritance_Relationship
+		    quid       	"3C9BB1C4035E"
+		    supplier   	"Logical View::Model::Sound Manager::Sound Effect System::SoundFXLogic"
+		    quidu      	"3C9BB1AB0310"))
+	    operations 	(list Operations
+		(object Operation "OnCollision"
+		    quid       	"3CACCBC10311"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "SoundFXLogic"
+	    quid       	"3C9BB1AB0310"
+	    documentation 	"Abstract base class for sound effect game mode logic.  Contains the basic structure for listening for game events that would trigger sounds (which is why it inherits from EventListener) and for sound playback (which is why it owns SimpsonsSoundPlayer objects)."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3C9BB1C7011C"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E")
+		(object Inheritance_Relationship
+		    quid       	"3CA10A490268"
+		    supplier   	"Logical View::Model::Sound Manager::Sound Effect System::SimpsonsSoundPlayerCallbackObj"
+		    quidu      	"3CA10A3402C6"))
+	    operations 	(list Operations
+		(object Operation "LoadClips"
+		    quid       	"3C9BB1F30031"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0))
+	    abstract   	TRUE)
+	(object Class "SimpsonsSoundPlayerCallbackObj"
+	    quid       	"3CA10A3402C6"
+	    operations 	(list Operations
+		(object Operation "OnPlaybackDone"
+		    quid       	"3CA10A740277"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "SoundFXPauseLogic"
+	    quid       	"3CB238E20368"
+	    documentation 	"SoundFXLogic subclass with logic specific to pause-menu sound effects."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CB238F303B6"
+		    supplier   	"Logical View::Model::Sound Manager::Sound Effect System::SoundFXLogic"
+		    quidu      	"3C9BB1AB0310")))
+	(object Association "$UNNAMED$0"
+	    quid       	"3CB238FD00A9"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$1"
+		    quid       	"3CB238FD028D"
+		    supplier   	"Logical View::Model::Sound Manager::Sound Effect System::SoundFXPauseLogic"
+		    quidu      	"3CB238E20368"
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$2"
+		    quid       	"3CB238FD029D"
+		    supplier   	"Logical View::Model::Sound Manager::Sound Effect System::SoundEffectPlayer"
+		    quidu      	"3C9A70E701D0"
+		    is_aggregate 	TRUE)))
+	(object Mechanism @1
+	    logical_models 	(list unit_reference_list
+		(object Object "$UNNAMED$3"
+		    quid       	"3CB4E61F02AA"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB4E64F002A"
+			    supplier   	"$UNNAMED$4"
+			    quidu      	"3CB4E62B0077"
+			    messages   	(list Messages
+				(object Message "HandleEvent( )"
+				    quid       	"3CB4E64F002B"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1"
+				    ordinal    	0
+				    quidu      	"3CA108DD00A8"))))
+		    class      	"Logical View::Model::Event Manager::EventManager"
+		    quidu      	"3C9A480000F5"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$4"
+		    quid       	"3CB4E62B0077"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB4E6B701C2"
+			    supplier   	"$UNNAMED$5"
+			    quidu      	"3CB4E6AB03B6"
+			    messages   	(list Messages
+				(object Message "Play(SoundID)"
+				    quid       	"3CB4E6B701C3"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.2"
+				    ordinal    	2
+				    quidu      	"3CA106380331")
+				(object Message "CreatePlayer( )"
+				    quid       	"3CB4EDCB02CF"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1"
+				    ordinal    	1
+				    quidu      	"3CA10612019B")
+				(object Message "OnPlaybackDone( )"
+				    quid       	"3CB4EDD7032D"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"ToClientFromSupplier"
+				    sequence   	"2"
+				    ordinal    	3
+				    quidu      	"3CA10A740277")
+				(object Message "ReleasePlayer( )"
+				    quid       	"3CB4EDDF0291"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"2.1"
+				    ordinal    	4
+				    quidu      	"3CA109CE0112"))))
+		    class      	"Logical View::Model::Sound Manager::Sound Effect System::SoundFXFrontEndLogic"
+		    quidu      	"3C9BB06F02E5"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$5"
+		    quid       	"3CB4E6AB03B6"
+		    class      	"Logical View::Model::Sound Manager::SimpsonsSoundPlayer"
+		    quidu      	"3CA102FB00FA"
+		    persistence 	"Transient"
+		    multi      	FALSE))))
+    logical_presentations 	(list unit_reference_list
+	(object ClassDiagram "Main"
+	    quid       	"3CA8D0320048"
+	    title      	"Main"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	1697
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object ClassView "Class" "Logical View::Model::Event Manager::EventListener" @2
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1200, 176)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@2
+			location   	(1005, 96)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	390
+			justify    	0
+			label      	"EventListener")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A4819020E"
+		    width      	408
+		    height     	184
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::SimpsonsSoundPlayer" @3
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1936, 512)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@3
+			location   	(1712, 432)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	448
+			justify    	0
+			label      	"SimpsonsSoundPlayer")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CA102FB00FA"
+		    width      	466
+		    height     	184
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Sound Effect System::SoundFXLogic" @4
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1200, 512)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@4
+			location   	(1053, 460)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	294
+			justify    	0
+			label      	"SoundFXLogic")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9BB1AB0310"
+		    width      	312
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @5
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9BB1C7011C"
+		    client     	@4
+		    supplier   	@2
+		    line_style 	0)
+		(object AssociationViewNew "" @6
+		    location   	(1529, 512)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CA10A5903CF"
+		    roleview_list 	(list RoleViews
+			(object RoleView "" @7
+			    Parent_View 	@6
+			    location   	(-1943, -176)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CA10A5A00B3"
+			    client     	@6
+			    supplier   	@3
+			    line_style 	0
+			    label      	(object SegLabel @8
+				Parent_View 	@7
+				location   	(1653, 566)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"n"
+				pctDist    	0.716763
+				height     	54
+				orientation 	1))
+			(object RoleView "" @9
+			    Parent_View 	@6
+			    location   	(-1943, -176)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CA10A5A00B4"
+			    client     	@6
+			    supplier   	@4
+			    line_style 	0)))
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Sound Effect System::SoundFXGameplayLogic" @10
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1184, 864)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@10
+			location   	(948, 812)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	472
+			justify    	0
+			label      	"SoundFXGameplayLogic")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9BB09F0016"
+		    width      	490
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @11
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9BB1C4035E"
+		    client     	@10
+		    supplier   	@4
+		    line_style 	0)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Sound Effect System::SoundFXFrontEndLogic" @12
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(672, 864)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@12
+			location   	(446, 812)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	452
+			justify    	0
+			label      	"SoundFXFrontEndLogic")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9BB06F02E5"
+		    width      	470
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @13
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9BB1C2037D"
+		    client     	@12
+		    supplier   	@4
+		    line_style 	0)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Sound Effect System::SoundFXPauseLogic" @14
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1680, 864)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@14
+			location   	(1467, 811)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	426
+			justify    	0
+			label      	"SoundFXPauseLogic")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB238E20368"
+		    width      	444
+		    height     	131
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @15
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB238F303B6"
+		    client     	@14
+		    supplier   	@4
+		    line_style 	0)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Sound Effect System::SoundEffectPlayer" @16
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1184, 1200)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@16
+			location   	(999, 1148)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	370
+			justify    	0
+			label      	"SoundEffectPlayer")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A70E701D0"
+		    width      	388
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "" @17
+		    location   	(1184, 1031)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9BB0B900A2"
+		    roleview_list 	(list RoleViews
+			(object RoleView "" @18
+			    Parent_View 	@17
+			    location   	(-1136, 295)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9BB0B902D5"
+			    client     	@17
+			    supplier   	@10
+			    line_style 	0)
+			(object RoleView "" @19
+			    Parent_View 	@17
+			    location   	(-1136, 295)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9BB0B902D6"
+			    client     	@17
+			    supplier   	@16
+			    line_style 	0)))
+		(object AssociationViewNew "" @20
+		    location   	(928, 1031)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9BB09101CC"
+		    roleview_list 	(list RoleViews
+			(object RoleView "" @21
+			    Parent_View 	@20
+			    location   	(-1312, 343)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9BB0920055"
+			    client     	@20
+			    supplier   	@12
+			    line_style 	0)
+			(object RoleView "" @22
+			    Parent_View 	@20
+			    location   	(-1312, 343)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9BB0920056"
+			    client     	@20
+			    supplier   	@16
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$0" @23
+		    location   	(1430, 1032)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB238FD00A9"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$1" @24
+			    Parent_View 	@23
+			    location   	(246, -168)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB238FD028D"
+			    client     	@23
+			    supplier   	@14
+			    line_style 	0)
+			(object RoleView "$UNNAMED$2" @25
+			    Parent_View 	@23
+			    location   	(246, -168)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB238FD029D"
+			    client     	@23
+			    supplier   	@16
+			    line_style 	0)))))
+	(object InteractionDiagram "Front End Menu Selection"
+	    mechanism_ref 	@1
+	    quid       	"3CB4E14B01D6"
+	    title      	"Front End Menu Selection"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	0
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object InterObjView "$UNNAMED$3" @26
+		    location   	(240, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@26
+			location   	(240, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	282
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB4E61F02AA"
+		    width      	300
+		    height     	1021
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @27
+			location   	(240, 416)
+			line_color 	3342489
+			InterObjView 	@26
+			height     	372
+			y_coord    	312
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$4" @28
+		    location   	(672, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@28
+			location   	(672, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	450
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB4E62B0077"
+		    width      	468
+		    height     	1021
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @29
+			location   	(672, 416)
+			line_color 	3342489
+			InterObjView 	@28
+			height     	312
+			y_coord    	252
+			Nested     	FALSE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @30
+			location   	(672, 832)
+			line_color 	3342489
+			InterObjView 	@28
+			height     	264
+			y_coord    	204
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$5" @31
+		    location   	(1200, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@31
+			location   	(1200, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	436
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB4E6AB03B6"
+		    width      	454
+		    height     	1021
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @32
+			location   	(1200, 464)
+			line_color 	3342489
+			InterObjView 	@31
+			height     	60
+			y_coord    	0
+			Nested     	FALSE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @33
+			location   	(1200, 608)
+			line_color 	3342489
+			InterObjView 	@31
+			height     	60
+			y_coord    	0
+			Nested     	FALSE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @34
+			location   	(1200, 832)
+			line_color 	3342489
+			InterObjView 	@31
+			height     	324
+			y_coord    	264
+			Nested     	FALSE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @35
+			location   	(1200, 976)
+			line_color 	3342489
+			InterObjView 	@31
+			height     	60
+			y_coord    	0
+			Nested     	TRUE))
+		(object InterMessView "" @36
+		    location   	(16, 416)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @37
+			Parent_View 	@36
+			location   	(448, 368)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB4E64F002B"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	273
+			justify    	0
+			label      	"HandleEvent( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@26
+		    supplier   	@28
+		    Focus_Src  	@27
+		    Focus_Entry 	@29
+		    origin     	(255, 416)
+		    terminus   	(656, 416)
+		    ordinal    	0)
+		(object InterMessView "" @38
+		    location   	(928, 608)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @39
+			Parent_View 	@38
+			location   	(928, 560)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB4E6B701C3"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	269
+			justify    	0
+			label      	"Play(SoundID)"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@28
+		    supplier   	@31
+		    Focus_Src  	@29
+		    Focus_Entry 	@33
+		    origin     	(687, 608)
+		    terminus   	(1184, 608)
+		    ordinal    	2)
+		(object InterMessView "" @40
+		    location   	(16, 464)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @41
+			Parent_View 	@40
+			location   	(928, 416)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB4EDCB02CF"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	282
+			justify    	0
+			label      	"CreatePlayer( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@28
+		    supplier   	@31
+		    Focus_Src  	@29
+		    Focus_Entry 	@32
+		    origin     	(687, 464)
+		    terminus   	(1184, 464)
+		    ordinal    	1)
+		(object InterMessView "" @42
+		    location   	(16, 832)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @43
+			Parent_View 	@42
+			location   	(944, 784)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB4EDD7032D"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	363
+			justify    	0
+			label      	"OnPlaybackDone( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	1)
+		    line_color 	3342489
+		    client     	@31
+		    supplier   	@28
+		    Focus_Src  	@34
+		    Focus_Entry 	@30
+		    origin     	(1184, 832)
+		    terminus   	(688, 832)
+		    ordinal    	3)
+		(object InterMessView "" @44
+		    location   	(928, 976)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @45
+			Parent_View 	@44
+			location   	(928, 928)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB4EDDF0291"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	310
+			justify    	0
+			label      	"ReleasePlayer( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@28
+		    supplier   	@31
+		    Focus_Src  	@30
+		    Focus_Entry 	@35
+		    origin     	(687, 976)
+		    terminus   	(1184, 976)
+		    ordinal    	4)))))

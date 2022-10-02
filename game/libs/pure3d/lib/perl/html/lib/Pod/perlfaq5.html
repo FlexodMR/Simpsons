@@ -1,0 +1,1537 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlfaq5 - Files and Formats ($Revision: 1.22 $, $Date: 1997/04/24 22:44:02 $)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#How_do_I_flush_unbuffer_a_fileha">How do I flush/unbuffer a filehandle?  Why must I do this?</A>
+		<LI><A HREF="#How_do_I_change_one_line_in_a_fi">How do I change one line in a file/delete a line in a file/insert a line in the middle of a file/append to the beginning of a file?</A>
+		<LI><A HREF="#How_do_I_count_the_number_of_lin">How do I count the number of lines in a file?</A>
+		<LI><A HREF="#How_do_I_make_a_temporary_file_n">How do I make a temporary file name?</A>
+		<LI><A HREF="#How_can_I_manipulate_fixed_recor">How can I manipulate fixed-record-length files?</A>
+		<LI><A HREF="#How_can_I_make_a_filehandle_loca">How can I make a filehandle local to a subroutine?  How do I pass filehandles between subroutines?  How do I make an array of filehandles?</A>
+		<LI><A HREF="#How_can_I_set_up_a_footer_format">How can I set up a footer format to be used with write()?</A>
+		<LI><A HREF="#How_can_I_write_into_a_string_">How can I write() into a string?</A>
+		<LI><A HREF="#How_can_I_output_my_numbers_with">How can I output my numbers with commas added?</A>
+		<LI><A HREF="#How_can_I_translate_tildes_i">How can I translate tildes (~) in a filename?</A>
+		<LI><A HREF="#How_come_when_I_open_the_file_re">How come when I open the file read-write it wipes it out?</A>
+		<LI><A HREF="#Why_do_I_sometimes_get_an_Argum">Why do I sometimes get an "Argument list too long" when I use <*>?</A>
+		<LI><A HREF="#Is_there_a_leak_bug_in_glob_">Is there a leak/bug in glob()?</A>
+		<LI><A HREF="#How_can_I_open_a_file_with_a_lea">How can I open a file with a leading "&gt;" or trailing blanks?</A>
+		<LI><A HREF="#How_can_I_reliably_rename_a_file">How can I reliably rename a file?</A>
+		<LI><A HREF="#How_can_I_lock_a_file_">How can I lock a file?</A>
+		<LI><A HREF="#What_can_t_I_just_open_FH_fil">What can't I just open(FH, ">file.lock")?</A>
+		<LI><A HREF="#I_still_don_t_get_locking_I_jus">I still don't get locking.  I just want to increment the number in the file.  How can I do this?</A>
+		<LI><A HREF="#How_do_I_randomly_update_a_binar">How do I randomly update a binary file?</A>
+		<LI><A HREF="#How_do_I_get_a_file_s_timestamp_">How do I get a file's timestamp in perl?</A>
+		<LI><A HREF="#How_do_I_set_a_file_s_timestamp_">How do I set a file's timestamp in perl?</A>
+		<LI><A HREF="#How_do_I_print_to_more_than_one_">How do I print to more than one file at once?</A>
+		<LI><A HREF="#How_can_I_read_in_a_file_by_para">How can I read in a file by paragraphs?</A>
+		<LI><A HREF="#How_can_I_read_a_single_characte">How can I read a single character from a file?  From the keyboard?</A>
+		<LI><A HREF="#How_can_I_tell_if_there_s_a_char">How can I tell if there's a character waiting on a filehandle?</A>
+		<LI><A HREF="#How_do_I_open_a_file_without_blo">How do I open a file without blocking?</A>
+		<LI><A HREF="#How_do_I_create_a_file_only_if_i">How do I create a file only if it doesn't exist?</A>
+		<LI><A HREF="#How_do_I_do_a_C_tail_f_in_perl">How do I do a <CODE>tail -f</CODE> in perl?</A>
+		<LI><A HREF="#How_do_I_dup_a_filehandle_in_P">How do I dup() a filehandle in Perl?</A>
+		<LI><A HREF="#How_do_I_close_a_file_descriptor">How do I close a file descriptor by number?</A>
+		<LI><A HREF="#Why_can_t_I_use_C_temp_foo_in">Why can't I use "C:\temp\foo" in DOS paths?  What doesn't `C:\temp\foo.exe` work?</A>
+		<LI><A HREF="#Why_doesn_t_glob_get_all_">Why doesn't glob("*.*") get all the files?</A>
+		<LI><A HREF="#Why_does_Perl_let_me_delete_read">Why does Perl let me delete read-only files?  Why does <CODE>-i</CODE> clobber protected files?  Isn't this a bug in Perl?</A>
+		<LI><A HREF="#How_do_I_select_a_random_line_fr">How do I select a random line from a file?</A>
+	</UL>
+
+	<LI><A HREF="#AUTHOR_AND_COPYRIGHT">AUTHOR AND COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlfaq5 - Files and Formats ($Revision: 1.22 $, $Date: 1997/04/24 22:44:02
+$)
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This section deals with 
+<FONT SIZE=-1>I/O</FONT> and the ``f'' issues: filehandles, flushing,
+formats, and footers.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_flush_unbuffer_a_fileha">How do I flush/unbuffer a filehandle?  Why must I do this?
+
+</A></H2>
+The 
+<FONT SIZE=-1>C</FONT> standard 
+<FONT SIZE=-1>I/O</FONT> library (stdio) normally buffers characters sent to devices. This is done for efficiency reasons, so that there isn't a system call for each byte. Any time you use <CODE>print()</CODE> or <CODE>write()</CODE> in Perl, you go though this buffering. <CODE>syswrite()</CODE> circumvents stdio and buffering.
+
+
+
+<P>
+
+In most stdio implementations, the type of buffering and the size of the
+buffer varies according to the type of device. Disk files are block
+buffered, often with a buffer size of more than 2k. Pipes and sockets are
+often buffered with a buffer size between 1/2 and 2k. Serial devices (e.g.
+modems, terminals) are normally line-buffered, and stdio sends the entire
+line when it gets the newline.
+
+
+<P>
+
+Perl does not support truly unbuffered output (except insofar as you can
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_syswrite">syswrite(OUT, $char, 1)</A>). What it does instead support is ``command buffering'', in which a
+physical write is performed after every output command. This isn't as hard
+on your system as unbuffering, but does get the output where you want it
+when you want it.
+
+
+<P>
+
+If you expect characters to get to your device when you print them there,
+you'll want to autoflush its handle, as in the older:
+
+
+<P>
+
+<PRE>    use FileHandle;
+    open(DEV, &quot;&lt;+/dev/tty&quot;);      # ceci n'est pas une pipe
+    DEV-&gt;autoflush(1);
+</PRE>
+
+<P>
+
+or the newer 
+<FONT SIZE=-1>IO::*</FONT> modules:
+
+
+<P>
+
+<PRE>    use IO::Handle;
+    open(DEV, &quot;&gt;/dev/printer&quot;);   # but is this?
+    DEV-&gt;autoflush(1);
+</PRE>
+
+<P>
+
+or even this:
+
+
+<P>
+
+<PRE>    use IO::Socket;               # this one is kinda a pipe?
+    $sock = IO::Socket::INET-&gt;new(PeerAddr =&gt; 'www.perl.com',
+                                  PeerPort =&gt; 'http(80)',
+                                  Proto    =&gt; 'tcp');
+    die &quot;$!&quot; unless $sock;
+</PRE>
+
+<P>
+
+<PRE>    $sock-&gt;autoflush();
+    $sock-&gt;print(&quot;GET /\015\012&quot;);
+    $document = join('', $sock-&gt;getlines());
+    print &quot;DOC IS: $document\n&quot;;
+</PRE>
+
+<P>
+
+Note the hardcoded carriage return and newline in their octal equivalents. This is the 
+<FONT SIZE=-1>ONLY</FONT> way (currently) to assure a proper flush on all platforms, including Macintosh.
+
+
+
+<P>
+
+You can use <CODE>select()</CODE> and the <CODE>$|</CODE> variable to control autoflushing (see <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#_">$|</A> and <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#select">select</A>):
+
+
+<P>
+
+<PRE>    $oldh = select(DEV);
+    $| = 1;
+    select($oldh);
+</PRE>
+
+<P>
+
+You'll also see code that does this without a temporary variable, as in
+
+
+<P>
+
+<PRE>    select((select(DEV), $| = 1)[0]);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_change_one_line_in_a_fi">How do I change one line in a file/delete a line in a file/insert a line in the middle of a file/append to the beginning of a file?
+
+</A></H2>
+Although humans have an easy time thinking of a text file as being a
+sequence of lines that operates much like a stack of playing cards -- or
+punch cards -- computers usually see the text file as a sequence of bytes.
+In general, there's no direct way for Perl to seek to a particular line of
+a file, insert text into a file, or remove text from a file.
+
+
+<P>
+
+(There are exceptions in special circumstances. Replacing a sequence of
+bytes with another sequence of the same length is one. Another is using the <CODE>$DB_RECNO</CODE> array bindings as documented in <EM>DB_File</EM>. Yet another is manipulating files with all lines the same length.)
+
+
+<P>
+
+The general solution is to create a temporary copy of the text file with
+the changes you want, then copy that over the original.
+
+
+<P>
+
+<PRE>    $old = $file;
+    $new = &quot;$file.tmp.$$&quot;;
+    $bak = &quot;$file.bak&quot;;
+</PRE>
+
+<P>
+
+<PRE>    open(OLD, &quot;&lt; $old&quot;)         or die &quot;can't open $old: $!&quot;;
+    open(NEW, &quot;&gt; $new&quot;)         or die &quot;can't open $new: $!&quot;;
+</PRE>
+
+<P>
+
+<PRE>    # Correct typos, preserving case
+    while (&lt;OLD&gt;) {
+        s/\b(p)earl\b/${1}erl/i;
+        (print NEW $_)          or die &quot;can't write to $new: $!&quot;;
+    }
+</PRE>
+
+<P>
+
+<PRE>    close(OLD)                  or die &quot;can't close $old: $!&quot;;
+    close(NEW)                  or die &quot;can't close $new: $!&quot;;
+</PRE>
+
+<P>
+
+<PRE>    rename($old, $bak)          or die &quot;can't rename $old to $bak: $!&quot;;
+    rename($new, $old)          or die &quot;can't rename $new to $old: $!&quot;;
+</PRE>
+
+<P>
+
+Perl can do this sort of thing for you automatically with the <CODE>-i</CODE>
+command-line switch or the closely-related <CODE>$^I</CODE> variable (see
+<A HREF="/n|/perl/html/./lib/Pod/perlrun.html#">the perlrun manpage</A> for more details). Note that
+<CODE>-i</CODE> may require a suffix on some non-Unix systems; see the platform-specific
+documentation that came with your port.
+
+
+<P>
+
+<PRE>    # Renumber a series of tests from the command line
+    perl -pi -e 's/(^\s+test\s+)\d+/ $1 . ++$count /e' t/op/taint.t
+</PRE>
+
+<P>
+
+<PRE>    # form a script
+    local($^I, @ARGV) = ('.bak', glob(&quot;*.c&quot;));
+    while (&lt;&gt;) {
+        if ($. == 1) {
+            print &quot;This line should appear at the top of each file\n&quot;;
+        }
+        s/\b(p)earl\b/${1}erl/i;        # Correct typos, preserving case
+        print;
+        close ARGV if eof;              # Reset $.
+    }
+</PRE>
+
+<P>
+
+If you need to seek to an arbitrary line of a file that changes
+infrequently, you could build up an index of byte positions of where the
+line ends are in the file. If the file is large, an index of every tenth or
+hundredth line end would allow you to seek and read fairly efficiently. If
+the file is sorted, try the look.pl library (part of the standard perl
+distribution).
+
+
+<P>
+
+In the unique case of deleting lines at the end of a file, you can use
+<CODE>tell()</CODE> and <CODE>truncate().</CODE> The following code snippet
+deletes the last line of a file without making a copy or reading the whole
+file into memory:
+
+
+<P>
+
+<PRE>        open (FH, &quot;+&lt; $file&quot;);
+        while ( &lt;FH&gt; ) { $addr = tell(FH) unless eof(FH) }
+        truncate(FH, $addr);
+</PRE>
+
+<P>
+
+Error checking is left as an exercise for the reader.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_count_the_number_of_lin">How do I count the number of lines in a file?
+
+</A></H2>
+One fairly efficient way is to count newlines in the file. The following
+program uses a feature of tr///, as documented in <A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A>. If your text file doesn't end with a newline, then it's not really a
+proper text file, so this may report one fewer line than you expect.
+
+
+<P>
+
+<PRE>    $lines = 0;
+    open(FILE, $filename) or die &quot;Can't open `$filename': $!&quot;;
+    while (sysread FILE, $buffer, 4096) {
+        $lines += ($buffer =~ tr/\n//);
+    }
+    close FILE;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_make_a_temporary_file_n">How do I make a temporary file name?
+
+</A></H2>
+Use the process 
+<FONT SIZE=-1>ID</FONT> and/or the current time-value. If you need to have
+many temporary files in one process, use a counter:
+
+
+<P>
+
+<PRE>    BEGIN {
+        use IO::File;
+        use Fcntl;
+        my $temp_dir = -d '/tmp' ? '/tmp' : $ENV{TMP} || $ENV{TEMP};
+        my $base_name = sprintf(&quot;%s/%d-%d-0000&quot;, $temp_dir, $$, time());
+        sub temp_file {
+            my $fh = undef;
+            my $count = 0;
+            until (defined($fh) || $count &gt; 100) {
+                $base_name =~ s/-(\d+)$/&quot;-&quot; . (1 + $1)/e;
+                $fh = IO::File-&gt;new($base_name, O_WRONLY|O_EXCL|O_CREAT, 0644)
+            }
+            if (defined($fh)) {
+                return ($fh, $base_name);
+            } else {
+                return ();
+            }
+        }
+    }
+</PRE>
+
+<P>
+
+Or you could simply use IO::Handle::new_tmpfile.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_manipulate_fixed_recor">How can I manipulate fixed-record-length files?
+
+</A></H2>
+The most efficient way is using <CODE>pack()</CODE> and
+<CODE>unpack().</CODE> This is faster than using <CODE>substr().</CODE>
+Here is a sample chunk of code to break up and put back together again some
+fixed-format input lines, in this case from the output of a normal,
+Berkeley-style ps:
+
+
+<P>
+
+<PRE>    # sample input line:
+    #   15158 p5  T      0:00 perl /home/tchrist/scripts/now-what
+    $PS_T = 'A6 A4 A7 A5 A*';
+    open(PS, &quot;ps|&quot;);
+    $_ = &lt;PS&gt;; print;
+    while (&lt;PS&gt;) {
+        ($pid, $tt, $stat, $time, $command) = unpack($PS_T, $_);
+        for $var (qw!pid tt stat time command!) {
+            print &quot;$var: &lt;$$var&gt;\n&quot;;
+        }
+        print 'line=', pack($PS_T, $pid, $tt, $stat, $time, $command),
+                &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_make_a_filehandle_loca">How can I make a filehandle local to a subroutine?  How do I pass filehandles between subroutines?  How do I make an array of filehandles?
+
+</A></H2>
+You may have some success with typeglobs, as we always had to use in days
+of old:
+
+
+<P>
+
+<PRE>    local(*FH);
+</PRE>
+
+<P>
+
+But while still supported, that isn't the best to go about getting local
+filehandles. Typeglobs have their drawbacks. You may well want to use the <CODE>FileHandle</CODE> module, which creates new filehandles for you (see <A HREF="/n|/perl/html/./lib/FileHandle.html#">the FileHandle manpage</A>):
+
+
+<P>
+
+<PRE>    use FileHandle;
+    sub findme {
+        my $fh = FileHandle-&gt;new();
+        open($fh, &quot;&lt;/etc/hosts&quot;) or die &quot;no /etc/hosts: $!&quot;;
+        while (&lt;$fh&gt;) {
+            print if /\b127\.(0\.0\.)?1\b/;
+        }
+        # $fh automatically closes/disappears here
+    }
+</PRE>
+
+<P>
+
+Internally, Perl believes filehandles to be of class IO::Handle. You may
+use that module directly if you'd like (see <A HREF="/n|/perl/html/./lib/IO/Handle.html">Handle</A>), or one of its more specific derived classes.
+
+
+<P>
+
+Once you have IO::File or FileHandle objects, you can pass them between
+subroutines or store them in hashes as you would any other scalar values:
+
+
+<P>
+
+<PRE>    use FileHandle;
+</PRE>
+
+<P>
+
+<PRE>    # Storing filehandles in a hash and array
+    foreach $filename (@names) {
+        my $fh = new FileHandle($filename)              or die;
+        $file{$filename} = $fh;
+        push(@files, $fh);
+    }
+</PRE>
+
+<P>
+
+<PRE>    # Using the filehandles in the array
+    foreach $file (@files) {
+        print $file &quot;Testing\n&quot;;
+    }
+</PRE>
+
+<P>
+
+<PRE>    # You have to do the { } ugliness when you're specifying the
+    # filehandle by anything other than a simple scalar variable.
+    print { $files[2] } &quot;Testing\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    # Passing filehandles to subroutines
+    sub debug {
+        my $filehandle = shift;
+        printf $filehandle &quot;DEBUG: &quot;, @_;
+    }
+</PRE>
+
+<P>
+
+<PRE>    debug($fh, &quot;Testing\n&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_set_up_a_footer_format">How can I set up a footer format to be used with write()?
+
+</A></H2>
+There's no builtin way to do this, but <A HREF="/n|/perl/html/./lib/Pod/perlform.html#">the perlform manpage</A> has a couple of techniques to make it possible for the intrepid hacker.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_write_into_a_string_">How can I write() into a string?
+
+</A></H2>
+See <A HREF="/n|/perl/html/./lib/Pod/perlform.html#">the perlform manpage</A> for an <CODE>swrite()</CODE> function.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_output_my_numbers_with">How can I output my numbers with commas added?
+
+</A></H2>
+This one will do it for you:
+
+
+<P>
+
+<PRE>    sub commify {
+        local $_  = shift;
+        1 while s/^(-?\d+)(\d{3})/$1,$2/;
+        return $_;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $n = 23659019423.2331;
+    print &quot;GOT: &quot;, commify($n), &quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    GOT: 23,659,019,423.2331
+</PRE>
+
+<P>
+
+You can't just:
+
+
+<P>
+
+<PRE>    s/^(-?\d+)(\d{3})/$1,$2/g;
+</PRE>
+
+<P>
+
+because you have to put the comma in and then recalculate your position.
+
+
+<P>
+
+Alternatively, this commifies all numbers in a line regardless of whether
+they have decimal portions, are preceded by + or -, or whatever:
+
+
+<P>
+
+<PRE>    # from Andrew Johnson &lt;ajohnson@gpu.srv.ualberta.ca&gt;
+    sub commify {
+       my $input = shift;
+        $input = reverse $input;
+        $input =~ s&lt;(\d\d\d)(?=\d)(?!\d*\.)&gt;&lt;$1,&gt;g;
+        return reverse $input;
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_translate_tildes_i">How can I translate tildes (~) in a filename?
+
+</A></H2>
+Use the &lt;&gt; (glob()) operator, documented in <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>. This requires that you have a shell installed that groks tildes, meaning csh or tcsh or (some versions of) ksh, and thus may have portability problems. The Glob::KGlob module (available from 
+<FONT SIZE=-1>CPAN)</FONT> gives more portable glob functionality.
+
+
+
+<P>
+
+Within Perl, you may use this directly:
+
+
+<P>
+
+<PRE>        $filename =~ s{
+          ^ ~             # find a leading tilde
+          (               # save this in $1
+              [^/]        # a non-slash character
+                    *     # repeated 0 or more times (0 means me)
+          )
+        }{
+          $1
+              ? (getpwnam($1))[7]
+              : ( $ENV{HOME} || $ENV{LOGDIR} )
+        }ex;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_come_when_I_open_the_file_re">How come when I open the file read-write it wipes it out?
+
+</A></H2>
+Because you're using something like this, which truncates the file and
+<EM>then</EM> gives you read-write access:
+
+
+<P>
+
+<PRE>    open(FH, &quot;+&gt; /path/name&quot;);  # WRONG
+</PRE>
+
+<P>
+
+Whoops. You should instead use this, which will fail if the file doesn't
+exist.
+
+
+<P>
+
+<PRE>    open(FH, &quot;+&lt; /path/name&quot;);  # open for update
+</PRE>
+
+<P>
+
+If this is an issue, try:
+
+
+<P>
+
+<PRE>    sysopen(FH, &quot;/path/name&quot;, O_RDWR|O_CREAT, 0644);
+</PRE>
+
+<P>
+
+Error checking is left as an exercise for the reader.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Why_do_I_sometimes_get_an_Argum">Why do I sometimes get an "Argument list too long" when I use <*>?
+
+</A></H2>
+The <CODE>&lt;&gt;</CODE> operator performs a globbing operation (see above). By default
+<CODE>glob()</CODE> forks <CODE>csh(1)</CODE> to do the actual glob
+expansion, but csh can't handle more than 127 items and so gives the error
+message
+<CODE>Argument list too long</CODE>. People who installed tcsh as csh won't have this problem, but their users
+may be surprised by it.
+
+
+<P>
+
+To get around this, either do the glob yourself with <CODE>Dirhandle</CODE>s and patterns, or use a module like Glob::KGlob, one that doesn't use the
+shell to do globbing.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Is_there_a_leak_bug_in_glob_">Is there a leak/bug in glob()?
+
+</A></H2>
+Due to the current implementation on some operating systems, when you use
+the <CODE>glob()</CODE> function or its angle-bracket alias in a scalar
+context, you may cause a leak and/or unpredictable behavior. It's best
+therefore to use <CODE>glob()</CODE> only in list context.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_open_a_file_with_a_lea">How can I open a file with a leading "&gt;" or trailing blanks?
+
+</A></H2>
+Normally perl ignores trailing blanks in filenames, and interprets certain
+leading characters (or a trailing ``|'') to mean something special. To
+avoid this, you might want to use a routine like this. It makes incomplete
+pathnames into explicit relative ones, and tacks a trailing null byte on
+the name to make perl leave it alone:
+
+
+<P>
+
+<PRE>    sub safe_filename {
+        local $_  = shift;
+        return m#^/#
+                ? &quot;$_\0&quot;
+                : &quot;./$_\0&quot;;
+    }
+</PRE>
+
+<P>
+
+<PRE>    $fn = safe_filename(&quot;&lt;&lt;&lt;something really wicked   &quot;);
+    open(FH, &quot;&gt; $fn&quot;) or &quot;couldn't open $fn: $!&quot;;
+</PRE>
+
+<P>
+
+You could also use the <CODE>sysopen()</CODE> function (see <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#sysopen">sysopen</A>).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_reliably_rename_a_file">How can I reliably rename a file?
+
+</A></H2>
+Well, usually you just use Perl's <CODE>rename()</CODE> function. But that
+may not work everywhere, in particular, renaming files across file systems.
+If your operating system supports a <CODE>mv(1)</CODE> program or its moral
+equivalent, this works:
+
+
+<P>
+
+<PRE>    rename($old, $new) or system(&quot;mv&quot;, $old, $new);
+</PRE>
+
+<P>
+
+It may be more compelling to use the File::Copy module instead. You just
+copy to the new file to the new name (checking return values), then delete
+the old one. This isn't really the same semantics as a real
+<CODE>rename(),</CODE> though, which preserves metainformation like
+permissions, timestamps, inode info, etc.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_lock_a_file_">How can I lock a file?
+
+</A></H2>
+Perl's builtin <CODE>flock()</CODE> function (see <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A> for details) will call <CODE>flock(2)</CODE> if that exists,
+<CODE>fcntl(2)</CODE> if it doesn't (on perl version 5.004 and later), and
+<CODE>lockf(3)</CODE> if neither of the two previous system calls exists.
+On some systems, it may even use a different form of native locking. Here
+are some gotchas with Perl's <CODE>flock():</CODE>
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+Produces a fatal error if none of the three system calls (or their close
+equivalent) exists.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+<CODE>lockf(3)</CODE> does not provide shared locking, and requires that
+the filehandle be open for writing (or appending, or read/writing).
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+Some versions of <CODE>flock()</CODE> can't lock files over a network (e.g. on 
+<FONT SIZE=-1>NFS</FONT> file systems), so you'd need to force the use of <CODE>fcntl(2)</CODE> when you build Perl. See the flock entry of
+ <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>, and the <EM>INSTALL</EM>
+file in the source distribution for information on building Perl to do
+this.
+
+
+<P>
+
+</OL>
+The 
+<FONT SIZE=-1>CPAN</FONT> module File::Lock offers similar functionality
+and (if you have dynamic loading) won't require you to rebuild perl if your
+<CODE>flock()</CODE> can't lock network files.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="What_can_t_I_just_open_FH_fil">What can't I just open(FH, ">file.lock")?
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> common bit of code <STRONG>NOT TO USE</STRONG> is this:
+
+
+<P>
+
+<PRE>    sleep(3) while -e &quot;file.lock&quot;;      # PLEASE DO NOT USE
+    open(LCK, &quot;&gt; file.lock&quot;);           # THIS BROKEN CODE
+</PRE>
+
+<P>
+
+This is a classic race condition: you take two steps to do something which
+must be done in one. That's why computer hardware provides an atomic
+test-and-set instruction. In theory, this ``ought'' to work:
+
+
+<P>
+
+<PRE>    sysopen(FH, &quot;file.lock&quot;, O_WRONLY|O_EXCL|O_CREAT, 0644)
+                or die &quot;can't open  file.lock: $!&quot;:
+</PRE>
+
+<P>
+
+except that lamentably, file creation (and deletion) is not atomic over 
+<FONT SIZE=-1>NFS,</FONT> so this won't work (at least, not every time)
+over the net. Various schemes involving involving <CODE>link()</CODE> have
+been suggested, but these tend to involve busy-wait, which is also
+subdesirable.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="I_still_don_t_get_locking_I_jus">I still don't get locking.  I just want to increment the number in the file.  How can I do this?
+
+</A></H2>
+Didn't anyone ever tell you web-page hit counters were useless?
+
+
+<P>
+
+Anyway, this is what to do:
+
+
+<P>
+
+<PRE>    use Fcntl;
+    sysopen(FH, &quot;numfile&quot;, O_RDWR|O_CREAT, 0644) or die &quot;can't open numfile: $!&quot;;
+    flock(FH, 2)                                 or die &quot;can't flock numfile: $!&quot;;
+    $num = &lt;FH&gt; || 0;
+    seek(FH, 0, 0)                               or die &quot;can't rewind numfile: $!&quot;;
+    truncate(FH, 0)                              or die &quot;can't truncate numfile: $!&quot;;
+    (print FH $num+1, &quot;\n&quot;)                      or die &quot;can't write numfile: $!&quot;;
+    # DO NOT UNLOCK THIS UNTIL YOU CLOSE
+    close FH                                     or die &quot;can't close numfile: $!&quot;;
+</PRE>
+
+<P>
+
+Here's a much better web-page hit counter:
+
+
+<P>
+
+<PRE>    $hits = int( (time() - 850_000_000) / rand(1_000) );
+</PRE>
+
+<P>
+
+If the count doesn't impress your friends, then the code might. :-)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_randomly_update_a_binar">How do I randomly update a binary file?
+
+</A></H2>
+If you're just trying to patch a binary, in many cases something as simple
+as this works:
+
+
+<P>
+
+<PRE>    perl -i -pe 's{window manager}{window mangler}g' /usr/bin/emacs
+</PRE>
+
+<P>
+
+However, if you have fixed sized records, then you might do something more
+like this:
+
+
+<P>
+
+<PRE>    $RECSIZE = 220; # size of record, in bytes
+    $recno   = 37;  # which record to update
+    open(FH, &quot;+&lt;somewhere&quot;) || die &quot;can't update somewhere: $!&quot;;
+    seek(FH, $recno * $RECSIZE, 0);
+    read(FH, $record, $RECSIZE) == $RECSIZE || die &quot;can't read record $recno: $!&quot;;
+    # munge the record
+    seek(FH, $recno * $RECSIZE, 0);
+    print FH $record;
+    close FH;
+</PRE>
+
+<P>
+
+Locking and error checking are left as an exercise for the reader. Don't
+forget them, or you'll be quite sorry.
+
+
+<P>
+
+Don't forget to set <CODE>binmode()</CODE> under DOS-like platforms when
+operating on files that have anything other than straight text in them. See
+the docs on <CODE>open()</CODE> and on <CODE>binmode()</CODE> for more
+details.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_get_a_file_s_timestamp_">How do I get a file's timestamp in perl?
+
+</A></H2>
+If you want to retrieve the time at which the file was last read, written,
+or had its meta-data (owner, etc) changed, you use the <STRONG>-M</STRONG>,
+<STRONG>-A</STRONG>, or <STRONG>-C</STRONG> filetest operations as documented in <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#">the perlfunc manpage</A>. These retrieve the age of the file (measured against the start-time of
+your program) in days as a floating point number. To retrieve the ``raw''
+time in seconds since the epoch, you would call the stat function, then use
+<CODE>localtime(),</CODE> <CODE>gmtime(),</CODE> or POSIX::strftime() to
+convert this into human-readable form.
+
+
+<P>
+
+Here's an example:
+
+
+<P>
+
+<PRE>    $write_secs = (stat($file))[9];
+    print &quot;file $file updated at &quot;, scalar(localtime($file)), &quot;\n&quot;;
+</PRE>
+
+<P>
+
+If you prefer something more legible, use the File::stat module (part of
+the standard distribution in version 5.004 and later):
+
+
+<P>
+
+<PRE>    use <A HREF="File::stat">File::stat</A>;
+    use Time::localtime;
+    $date_string = ctime(stat($file)-&gt;mtime);
+    print &quot;file $file updated at $date_string\n&quot;;
+</PRE>
+
+<P>
+
+Error checking is left as an exercise for the reader.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_set_a_file_s_timestamp_">How do I set a file's timestamp in perl?
+
+</A></H2>
+You use the <CODE>utime()</CODE> function documented in <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#utime">utime</A>. By way of example, here's a little program that copies the read and write
+times from its first argument to all the rest of them.
+
+
+<P>
+
+<PRE>    if (@ARGV &lt; 2) {
+        die &quot;usage: cptimes timestamp_file other_files ...\n&quot;;
+    }
+    $timestamp = shift;
+    ($atime, $mtime) = (stat($timestamp))[8,9];
+    utime $atime, $mtime, @ARGV;
+</PRE>
+
+<P>
+
+Error checking is left as an exercise for the reader.
+
+
+<P>
+
+Note that <CODE>utime()</CODE> currently doesn't work correctly with Win95/NT ports. 
+<FONT SIZE=-1>A</FONT> bug has been reported. Check it carefully before using it on those platforms.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_print_to_more_than_one_">How do I print to more than one file at once?
+
+</A></H2>
+If you only have to do this once, you can do this:
+
+
+<P>
+
+<PRE>    for $fh (FH1, FH2, FH3) { print $fh &quot;whatever\n&quot; }
+</PRE>
+
+<P>
+
+To connect up to one filehandle to several output filehandles, it's easiest
+to use the <CODE>tee(1)</CODE> program if you have it, and let it take care
+of the multiplexing:
+
+
+<P>
+
+<PRE>    open (FH, &quot;| tee file1 file2 file3&quot;);
+</PRE>
+
+<P>
+
+Otherwise you'll have to write your own multiplexing print function -- or
+your own tee program -- or use Tom Christiansen's, at <A
+HREF="http://www.perl.com/CPAN/authors/id/TOMC/scripts/tct.gz,">http://www.perl.com/CPAN/authors/id/TOMC/scripts/tct.gz,</A>
+which is written in Perl.
+
+
+<P>
+
+In theory a IO::Tee class could be written, but to date we haven't seen
+such.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_read_in_a_file_by_para">How can I read in a file by paragraphs?
+
+</A></H2>
+Use the <CODE>$\</CODE> variable (see <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#">the perlvar manpage</A> for details). You can either set it to <CODE>""</CODE> to eliminate empty paragraphs (<CODE>"abc\n\n\n\ndef"</CODE>, for instance, gets treated as two paragraphs and not three), or
+<CODE>"\n\n"</CODE> to accept empty paragraphs.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_read_a_single_characte">How can I read a single character from a file?  From the keyboard?
+
+</A></H2>
+You can use the builtin <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_getc">getc()</A> function for most filehandles, but it won't (easily) work on a terminal device. For 
+<FONT SIZE=-1>STDIN,</FONT> either use the Term::ReadKey module from 
+<FONT SIZE=-1>CPAN,</FONT> or use the sample code in
+
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#getc">getc</A>.
+
+
+<P>
+
+If your system supports 
+<FONT SIZE=-1>POSIX,</FONT> you can use the following code, which you'll
+note turns off echo processing as well.
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl -w
+    use strict;
+    $| = 1;
+    for (1..4) {
+        my $got;
+        print &quot;gimme: &quot;;
+        $got = getone();
+        print &quot;--&gt; $got\n&quot;;
+    }
+    exit;
+</PRE>
+
+<P>
+
+<PRE>    BEGIN {
+        use POSIX qw(:termios_h);
+</PRE>
+
+<P>
+
+<PRE>        my ($term, $oterm, $echo, $noecho, $fd_stdin);
+</PRE>
+
+<P>
+
+<PRE>        $fd_stdin = fileno(STDIN);
+</PRE>
+
+<P>
+
+<PRE>        $term     = POSIX::Termios-&gt;new();
+        $term-&gt;getattr($fd_stdin);
+        $oterm     = $term-&gt;getlflag();
+</PRE>
+
+<P>
+
+<PRE>        $echo     = ECHO | ECHOK | ICANON;
+        $noecho   = $oterm &amp; ~$echo;
+</PRE>
+
+<P>
+
+<PRE>        sub cbreak {
+            $term-&gt;setlflag($noecho);
+            $term-&gt;setcc(VTIME, 1);
+            $term-&gt;setattr($fd_stdin, TCSANOW);
+        }
+</PRE>
+
+<P>
+
+<PRE>        sub cooked {
+            $term-&gt;setlflag($oterm);
+            $term-&gt;setcc(VTIME, 0);
+            $term-&gt;setattr($fd_stdin, TCSANOW);
+        }
+</PRE>
+
+<P>
+
+<PRE>        sub getone {
+            my $key = '';
+            cbreak();
+            sysread(STDIN, $key, 1);
+            cooked();
+            return $key;
+        }
+</PRE>
+
+<P>
+
+<PRE>    }
+</PRE>
+
+<P>
+
+<PRE>    END { cooked() }
+</PRE>
+
+<P>
+
+The Term::ReadKey module from 
+<FONT SIZE=-1>CPAN</FONT> may be easier to use:
+
+
+<P>
+
+<PRE>    use Term::ReadKey;
+    open(TTY, &quot;&lt;/dev/tty&quot;);
+    print &quot;Gimme a char: &quot;;
+    ReadMode &quot;raw&quot;;
+    $key = ReadKey 0, *TTY;
+    ReadMode &quot;normal&quot;;
+    printf &quot;\nYou said %s, char number %03d\n&quot;,
+        $key, ord $key;
+</PRE>
+
+<P>
+
+For 
+<FONT SIZE=-1>DOS</FONT> systems, Dan Carson <A
+HREF="MAILTO:<dbc@tc.fluke.COM>"><dbc@tc.fluke.COM></A> reports the
+following:
+
+
+<P>
+
+To put the 
+<FONT SIZE=-1>PC</FONT> in ``raw'' mode, use ioctl with some magic numbers
+gleaned from msdos.c (Perl source file) and Ralf Brown's interrupt list
+(comes across the net every so often):
+
+
+<P>
+
+<PRE>    $old_ioctl = ioctl(STDIN,0,0);     # Gets device info
+    $old_ioctl &amp;= 0xff;
+    ioctl(STDIN,1,$old_ioctl | 32);    # Writes it back, setting bit 5
+</PRE>
+
+<P>
+
+Then to read a single character:
+
+
+<P>
+
+<PRE>    sysread(STDIN,$c,1);               # Read a single character
+</PRE>
+
+<P>
+
+And to put the 
+<FONT SIZE=-1>PC</FONT> back to ``cooked'' mode:
+
+
+<P>
+
+<PRE>    ioctl(STDIN,1,$old_ioctl);         # Sets it back to cooked mode.
+</PRE>
+
+<P>
+
+So now you have $c. If <CODE>ord($c) == 0</CODE>, you have a two byte code, which means you hit a special key. Read another
+byte with <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_sysread">sysread(STDIN,$c,1)</A>, and that value tells you what combination it was according to this table:
+
+
+<P>
+
+<PRE>    # PC 2-byte keycodes = ^@ + the following:
+</PRE>
+
+<P>
+
+<PRE>    # HEX     KEYS
+    # ---     ----
+    # 0F      SHF TAB
+    # 10-19   ALT QWERTYUIOP
+    # 1E-26   ALT ASDFGHJKL
+    # 2C-32   ALT ZXCVBNM
+    # 3B-44   F1-F10
+    # 47-49   HOME,UP,PgUp
+    # 4B      LEFT
+    # 4D      RIGHT
+    # 4F-53   END,DOWN,PgDn,Ins,Del
+    # 54-5D   SHF F1-F10
+    # 5E-67   CTR F1-F10
+    # 68-71   ALT F1-F10
+    # 73-77   CTR LEFT,RIGHT,END,PgDn,HOME
+    # 78-83   ALT 1234567890-=
+    # 84      CTR PgUp
+</PRE>
+
+<P>
+
+This is all trial and error 
+<FONT SIZE=-1>I</FONT> did a long time ago, 
+<FONT SIZE=-1>I</FONT> hope I'm reading the file that worked.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_tell_if_there_s_a_char">How can I tell if there's a character waiting on a filehandle?
+
+</A></H2>
+You should check out the Frequently Asked Questions list in comp.unix.* for things like this: the answer is essentially the same. It's very system dependent. Here's one solution that works on 
+<FONT SIZE=-1>BSD</FONT> systems:
+
+
+
+<P>
+
+<PRE>    sub key_ready {
+        my($rin, $nfd);
+        vec($rin, fileno(STDIN), 1) = 1;
+        return $nfd = select($rin,undef,undef,0);
+    }
+</PRE>
+
+<P>
+
+You should look into getting the Term::ReadKey extension from 
+<FONT SIZE=-1>CPAN.</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_open_a_file_without_blo">How do I open a file without blocking?
+
+</A></H2>
+You need to use the 
+<FONT SIZE=-1>O_NDELAY</FONT> or 
+<FONT SIZE=-1>O_NONBLOCK</FONT> flag from the Fcntl module in conjunction with <CODE>sysopen():</CODE>
+
+
+
+<P>
+
+<PRE>    use Fcntl;
+    sysopen(FH, &quot;/tmp/somefile&quot;, O_WRONLY|O_NDELAY|O_CREAT, 0644)
+    or die &quot;can't open /tmp/somefile: $!&quot;:
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_create_a_file_only_if_i">How do I create a file only if it doesn't exist?
+
+</A></H2>
+You need to use the 
+<FONT SIZE=-1>O_CREAT</FONT> and 
+<FONT SIZE=-1>O_EXCL</FONT> flags from the Fcntl module in conjunction with <CODE>sysopen():</CODE>
+
+
+
+<P>
+
+<PRE>    use Fcntl;
+    sysopen(FH, &quot;/tmp/somefile&quot;, O_WRONLY|O_EXCL|O_CREAT, 0644)
+                or die &quot;can't open /tmp/somefile: $!&quot;:
+</PRE>
+
+<P>
+
+Be warned that neither creation nor deletion of files is guaranteed to be an atomic operation over 
+<FONT SIZE=-1>NFS.</FONT> That is, two processes might both successful create or unlink the same file!
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_do_a_C_tail_f_in_perl">How do I do a <CODE>tail -f</CODE> in perl?
+
+</A></H2>
+First try
+
+
+<P>
+
+<PRE>    seek(GWFILE, 0, 1);
+</PRE>
+
+<P>
+
+The statement <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_seek">seek(GWFILE, 0, 1)</A> doesn't change the current position, but it does clear the end-of-file condition on the handle, so that the next 
+<FONT SIZE=-1>&lt;GWFILE&gt;</FONT> makes Perl try again to read something.
+
+
+
+<P>
+
+If that doesn't work (it relies on features of your stdio implementation),
+then you need something more like this:
+
+
+<P>
+
+<PRE>        for (;;) {
+          for ($curpos = tell(GWFILE); &lt;GWFILE&gt;; $curpos = tell(GWFILE)) {
+            # search for some stuff and put it into files
+          }
+          # sleep for a while
+          seek(GWFILE, $curpos, 0);  # seek to where we had been
+        }
+</PRE>
+
+<P>
+
+If this still doesn't work, look into the 
+<FONT SIZE=-1>POSIX</FONT> module. 
+<FONT SIZE=-1>POSIX</FONT> defines the <CODE>clearerr()</CODE> method, which can remove the end of file condition on a filehandle. The method: read until end of file, <CODE>clearerr(),</CODE> read some more. Lather, rinse, repeat.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_dup_a_filehandle_in_P">How do I dup() a filehandle in Perl?
+
+</A></H2>
+If you check <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#open">open</A>, you'll see that several of the ways to call <CODE>open()</CODE> should do
+the trick. For example:
+
+
+<P>
+
+<PRE>    open(LOG, &quot;&gt;&gt;/tmp/logfile&quot;);
+    open(STDERR, &quot;&gt;&amp;LOG&quot;);
+</PRE>
+
+<P>
+
+Or even with a literal numeric descriptor:
+
+
+<P>
+
+<PRE>   $fd = $ENV{MHCONTEXTFD};
+   open(MHCONTEXT, &quot;&lt;&amp;=$fd&quot;);   # like fdopen(3S)
+</PRE>
+
+<P>
+
+Error checking has been left as an exercise for the reader.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_close_a_file_descriptor">How do I close a file descriptor by number?
+
+</A></H2>
+This should rarely be necessary, as the Perl <CODE>close()</CODE> function is to be used for things that Perl opened itself, even if it was a dup of a numeric descriptor, as with 
+<FONT SIZE=-1>MHCONTEXT</FONT> above. But if you really have to, you may be able to do this:
+
+
+
+<P>
+
+<PRE>    require 'sys/syscall.ph';
+    $rc = syscall(&amp;SYS_close, $fd + 0);  # must force numeric
+    die &quot;can't sysclose $fd: $!&quot; unless $rc == -1;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Why_can_t_I_use_C_temp_foo_in">Why can't I use "C:\temp\foo" in DOS paths?  What doesn't `C:\temp\foo.exe` work?
+
+</A></H2>
+Whoops! You just put a tab and a formfeed into that filename! Remember that
+within double quoted strings (``like\this''), the backslash is an escape
+character. The full list of these is in
+<A HREF="/n|/perl/html/./lib/Pod/perlop.html#Quote_and_Quote_like_Operators">Quote and Quote-like Operators</A>. Unsurprisingly, you don't have a file called ``c:(tab)emp(formfeed)oo'' or ``c:(tab)emp(formfeed)oo.exe'' on your 
+<FONT SIZE=-1>DOS</FONT> filesystem.
+
+
+
+<P>
+
+Either single-quote your strings, or (preferably) use forward slashes. Since all 
+<FONT SIZE=-1>DOS</FONT> and Windows versions since something like 
+<FONT SIZE=-1>MS-DOS</FONT> 2.0 or so have treated
+ <CODE>/</CODE> and <CODE>\</CODE> the same in a path, you might as well use the one that doesn't clash with Perl -- or the 
+<FONT SIZE=-1>POSIX</FONT> shell, 
+<FONT SIZE=-1>ANSI</FONT> 
+<FONT SIZE=-1>C</FONT> and 
+<FONT SIZE=-1>C++,</FONT> awk, Tcl, Java, or Python, just to mention a few.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Why_doesn_t_glob_get_all_">Why doesn't glob("*.*") get all the files?
+
+</A></H2>
+Because even on non-Unix ports, Perl's glob function follows standard Unix
+globbing semantics. You'll need <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_glob">glob("*")</A> to get all (non-hidden) files.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Why_does_Perl_let_me_delete_read">Why does Perl let me delete read-only files?  Why does <CODE>-i</CODE> clobber protected files?  Isn't this a bug in Perl?
+
+</A></H2>
+This is elaborately and painstakingly described in the ``Far More Than You
+Every Wanted To Know'' in <A
+HREF="http://www.perl.com/CPAN/doc/FMTEYEWTK/file-dir-perms">http://www.perl.com/CPAN/doc/FMTEYEWTK/file-dir-perms</A>
+.
+
+
+<P>
+
+The executive summary: learn how your filesystem works. The permissions on
+a file say what can happen to the data in that file. The permissions on a
+directory say what can happen to the list of files in that directory. If
+you delete a file, you're removing its name from the directory (so the
+operation depends on the permissions of the directory, not of the file). If
+you try to write to the file, the permissions of the file govern whether
+you're allowed to.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_select_a_random_line_fr">How do I select a random line from a file?
+
+</A></H2>
+Here's an algorithm from the Camel Book:
+
+
+<P>
+
+<PRE>    srand;
+    rand($.) &lt; 1 &amp;&amp; ($line = $_) while &lt;&gt;;
+</PRE>
+
+<P>
+
+This has a significant advantage in space over reading the whole file in.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR_AND_COPYRIGHT">AUTHOR AND COPYRIGHT
+
+</A></H1>
+Copyright (c) 1997 Tom Christiansen and Nathan Torkington. All rights
+reserved. See <A HREF="/n|/perl/html/./lib/Pod/perlfaq.html#">the perlfaq manpage</A> for distribution information.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,58 @@
+SelectMission("m5sd");
+
+SetMissionResetPlayerOutCar("m5_homer_start", "m5_carstart");
+SetDynaLoadData("l7z6.p3d;l7r6.p3d;");
+
+SetMissionStartCameraName( "mission5camShape" );
+SetMissionStartMulticontName( "mission5cam" );
+SetAnimatedCameraName( "mission5camShape" );
+SetAnimCamMulticontName( "mission5cam" );
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(19);
+	SetHUDIcon("burns");
+	AddObjective( "talkto" );
+		AddNPC("burns", "m5_burns_sd");
+		SetTalkToTarget("burns", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis07_05.p3d" );
+		SetCamBestSide( "m5_bestside" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		SetDialogueInfo("homer","burns","barrel",0);
+		SetDialoguePositions("m5_homertalk","m5_burns_sd","m5_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

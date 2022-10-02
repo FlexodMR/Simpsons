@@ -1,0 +1,811 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>CPAN - query, download and build perl modules from CPAN sites
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Interactive_Mode">Interactive Mode</A>
+		<LI><A HREF="#CPAN_Shell">CPAN::Shell</A>
+		<LI><A HREF="#autobundle">autobundle</A>
+		<LI><A HREF="#recompile">recompile</A>
+		<LI><A HREF="#The_4_C_CPAN_Classes_Author">The 4 <A HREF="#item_CPAN_">CPAN::*</A> Classes: Author, Bundle, Module, Distribution</A>
+		<LI><A HREF="#ProgrammerE_39_s_interface">Programmer&39;s interface</A>
+		<LI><A HREF="#Methods_in_the_four">Methods in the four</A>
+		<LI><A HREF="#Cache_Manager">Cache Manager</A>
+		<LI><A HREF="#Bundles">Bundles</A>
+		<LI><A HREF="#Prerequisites">Prerequisites</A>
+		<LI><A HREF="#Debugging">Debugging</A>
+		<LI><A HREF="#Floppy_Zip_and_all_that_Jazz">Floppy, Zip, and all that Jazz</A>
+	</UL>
+
+	<LI><A HREF="#CONFIGURATION">CONFIGURATION</A>
+	<LI><A HREF="#SECURITY">SECURITY</A>
+	<LI><A HREF="#EXPORT">EXPORT</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+
+<FONT SIZE=-1>CPAN</FONT> - query, download and build perl modules from 
+<FONT SIZE=-1>CPAN</FONT> sites
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+Interactive mode:
+
+
+<P>
+
+<PRE>  perl -MCPAN -e shell;
+</PRE>
+
+<P>
+
+Batch mode:
+
+
+<P>
+
+<PRE>  use CPAN;
+</PRE>
+
+<P>
+
+<PRE>  autobundle, clean, install, make, recompile, test
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The 
+<FONT SIZE=-1>CPAN</FONT> module is designed to automate the make and install of perl modules and extensions. It includes some searching capabilities and knows how to use Net::FTP or 
+<FONT SIZE=-1>LWP</FONT> (or lynx or an external ftp client) to fetch the raw data from the net.
+
+
+
+<P>
+
+Modules are fetched from one or more of the mirrored 
+<FONT SIZE=-1>CPAN</FONT> (Comprehensive Perl Archive Network) sites and
+unpacked in a dedicated directory.
+
+
+<P>
+
+The 
+<FONT SIZE=-1>CPAN</FONT> module also supports the concept of named and versioned 'bundles' of modules. Bundles simplify the handling of sets of related modules. See 
+<FONT SIZE=-1>BUNDLES</FONT> below.
+
+
+
+<P>
+
+The package contains a session manager and a cache manager. There is no status retained between sessions. The session manager keeps track of what has been fetched, built and installed in the current session. The cache manager keeps track of the disk space occupied by the make processes and deletes excess space according to a simple 
+<FONT SIZE=-1>FIFO</FONT> mechanism.
+
+
+
+<P>
+
+All methods provided are accessible in a programmer style and in an
+interactive shell style.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Interactive_Mode">Interactive Mode
+
+</A></H2>
+The interactive mode is entered by running
+
+
+<P>
+
+<PRE>    perl -MCPAN -e shell
+</PRE>
+
+<P>
+
+which puts you into a readline interface. You will have most fun if you
+install Term::ReadKey and Term::ReadLine to enjoy both history and
+completion.
+
+
+<P>
+
+Once you are on the command line, type 'h' and the rest should be
+self-explanatory.
+
+
+<P>
+
+The most common uses of the interactive modes are
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Searching">Searching for authors, bundles, distribution files and modules
+
+</A></STRONG><DD>
+There are corresponding one-letter commands <A HREF="#item_a">a</A>, <A HREF="#item_b">b</A>, <A HREF="#item_d">d</A>, and <A HREF="#item_m">m</A>
+for each of the four categories and another, <A HREF="#item_i">i</A> for any of the mentioned four. Each of the four entities is implemented as
+a class with slightly differing methods for displaying an object.
+
+
+<P>
+
+Arguments you pass to these commands are either strings matching exact the
+identification string of an object or regular expressions that are then
+matched case-insensitively against various attributes of the objects. The
+parser recognizes a regualar expression only if you enclose it between two
+slashes.
+
+
+<P>
+
+The principle is that the number of found objects influences how an item is
+displayed. If the search finds one item, we display the result of object-&gt;as_string, but if we find more than one, we display each as object-&gt;as_glimpse. E.g.
+
+
+<P>
+
+<PRE>    cpan&gt; a ANDK
+    Author id = ANDK
+        EMAIL        a.koenig@franz.ww.TU-Berlin.DE
+        FULLNAME     Andreas König
+</PRE>
+
+<P>
+
+<PRE>    cpan&gt; a /andk/
+    Author id = ANDK
+        EMAIL        a.koenig@franz.ww.TU-Berlin.DE
+        FULLNAME     Andreas König
+</PRE>
+
+<P>
+
+<PRE>    cpan&gt; a /and.*rt/
+    Author          ANDYD (Andy Dougherty)
+    Author          MERLYN (Randal L. Schwartz)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_make">make, test, install, clean  modules or distributions
+
+</A></STRONG><DD>
+These commands do indeed exist just as written above. Each of them takes any number of arguments and investigates for each what it might be. Is it a distribution file (recognized by embedded slashes), this file is being processed. Is it a module, 
+<FONT SIZE=-1>CPAN</FONT> determines the distribution file where this module is included and processes that.
+
+
+
+<P>
+
+Any <A HREF="#item_make">make</A>, <A HREF="#item_test">test</A>, and <A HREF="#item_readme">readme</A> are run unconditionally. 
+<FONT SIZE=-1>A</FONT>
+
+
+<P>
+
+<PRE>  install &lt;distribution_file&gt;
+</PRE>
+
+<P>
+
+also is run unconditionally. But for
+
+
+<P>
+
+<PRE>  install &lt;module&gt;
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>CPAN</FONT> checks if an install is actually needed for it
+and prints
+<EM>Foo up to date</EM> in case the module doesn&39;t need to be updated.
+
+
+<P>
+
+
+<FONT SIZE=-1>CPAN</FONT> also keeps track of what it has done within the
+current session and doesn&39;t try to build a package a second time regardless if it succeeded or not.
+The <A HREF="#item_force">force </A> command takes as first argument the method to invoke (currently: make,
+test, or install) and executes the command from scratch.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>    cpan&gt; install OpenGL
+    OpenGL is up to date.
+    cpan&gt; force install OpenGL
+    Running make
+    OpenGL-0.4/
+    OpenGL-0.4/COPYRIGHT
+    [...]
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_readme">readme, look module or distribution
+
+</A></STRONG><DD>
+These two commands take only one argument, be it a module or a distribution
+file. <A HREF="#item_readme">readme</A> displays the 
+<FONT SIZE=-1>README</FONT> of the associated distribution file. <CODE>Look</CODE> gets and untars (if not yet done) the distribution file, changes to the
+appropriate directory and opens a subshell process in that directory.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="CPAN_Shell">CPAN::Shell
+
+</A></H2>
+The commands that are available in the shell interface are methods in the
+package CPAN::Shell. If you enter the shell command, all your input is
+split by the Text::ParseWords::shellwords() routine which acts like most
+shells do. The first word is being interpreted as the method to be called
+and the rest of the words are treated as arguments to this method.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="autobundle">autobundle
+
+</A></H2>
+<A HREF="#item_autobundle">autobundle</A> writes a bundle file into the
+<CODE>$CPAN::Config-&gt;{cpan_home}/Bundle</CODE> directory. The file contains a list of all modules that are both available from 
+<FONT SIZE=-1>CPAN</FONT> and currently installed within 
+<FONT SIZE=-1>@INC.</FONT> The name of the bundle file is based on the current date and a counter.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="recompile">recompile
+
+</A></H2>
+<CODE>recompile()</CODE> is a very special command in that it takes no argument and runs the make/test/install cycle with brute force over all installed dynamically loadable extensions (aka 
+<FONT SIZE=-1>XS</FONT> modules) with 'force' in effect. Primary purpose of this command is to finish a network installation. Imagine, you have a common source tree for two different architectures. You decide to do a completely independent fresh installation. You start on one architecture with the help of a Bundle file produced earlier. 
+<FONT SIZE=-1>CPAN</FONT> installs the whole Bundle for you, but when you try to repeat the job on the second architecture, 
+<FONT SIZE=-1>CPAN</FONT> responds with a
+ <CODE>"Foo up to date"</CODE> message for all modules. So you will be glad to run recompile in the second
+architecture and you&39;re done.
+
+
+<P>
+
+Another popular use for <A HREF="#item_recompile">recompile</A> is to act as a rescue in case your perl breaks binary compatibility. If one of the modules that 
+<FONT SIZE=-1>CPAN</FONT> uses is in turn depending on binary compatibility (so you cannot run 
+<FONT SIZE=-1>CPAN</FONT> commands), then you should try the CPAN::Nox module for recovery.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="The_4_C_CPAN_Classes_Author">The 4 <A HREF="#item_CPAN_">CPAN::*</A> Classes: Author, Bundle, Module, Distribution
+
+</A></H2>
+Although it may be considered internal, the class hierarchie does matter for both users and programmer. CPAN.pm deals with above mentioned four classes, and all those classes share a set of methods. It is a classical single polymorphism that is in effect. 
+<FONT SIZE=-1>A</FONT> metaclass object registers all objects of all kinds and indexes them with a string. The strings referencing objects have a separated namespace (well, not completely separated):
+
+
+
+<P>
+
+<PRE>         Namespace                         Class
+</PRE>
+
+<P>
+
+<PRE>   words containing a &quot;/&quot; (slash)      Distribution
+    words starting with Bundle::          Bundle
+          everything else            Module or Author
+</PRE>
+
+<P>
+
+Modules know their associated Distribution objects. They always refer to the most recent official release. Developers may mark their releases as unstable development versions (by inserting an underbar into the visible version number), so not always is the default distribution for a given module the really hottest and newest. If a module Foo circulates on 
+<FONT SIZE=-1>CPAN</FONT> in both version 1.23 and 1.23_90, CPAN.pm offers a convenient way to install version 1.23 by saying
+
+
+
+<P>
+
+<PRE>    install Foo
+</PRE>
+
+<P>
+
+This would install the complete distribution file (say BAR/Foo-1.23.tar.gz) with all accompanying material in there. But if you would like to install version 1.23_90, you need to know where the distribution file resides on 
+<FONT SIZE=-1>CPAN</FONT> relative to the authors/id/ directory. If the author is 
+<FONT SIZE=-1>BAR,</FONT> this might be BAR/Foo-1.23_90.tar.gz, so he would have to say
+
+
+
+<P>
+
+<PRE>    install BAR/Foo-1.23_90.tar.gz
+</PRE>
+
+<P>
+
+The first example will be driven by an object of the class CPAN::Module,
+the second by an object of class Distribution.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="ProgrammerE_39_s_interface">Programmer&39;s interface
+
+</A></H2>
+If you do not enter the shell, the available shell commands are both
+available as methods (<CODE>CPAN::Shell-&gt;install(...)</CODE>) and as functions in the calling package (<A HREF="#item_install">install(...)</A>).
+
+
+<P>
+
+There's currently only one class that has a stable interface, CPAN::Shell. All commands that are available in the 
+<FONT SIZE=-1>CPAN</FONT> shell are methods of the class CPAN::Shell. Each of the commands that produce listings of modules (
+<CODE>r</CODE>, <A HREF="#item_autobundle">autobundle</A>, <CODE>u</CODE>) returns a list of the IDs of all modules within the list.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_expand">expand($type,@things)
+
+</A></STRONG><DD>
+The IDs of all objects available within a program are strings that can be
+expanded to the corresponding real objects with the
+<CODE>CPAN::Shell-&gt;expand("Module",@things)</CODE> method. Expand returns a list of CPAN::Module objects according to the <CODE>@things</CODE> arguments given. In scalar context it only returns the first element of the
+list.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Programming">Programming Examples
+
+</A></STRONG><DD>
+This enables the programmer to do operations that combine functionalities
+that are available in the shell.
+
+
+<P>
+
+<PRE>    # install everything that is outdated on my disk:
+    perl -MCPAN -e 'CPAN::Shell-&gt;install(CPAN::Shell-&gt;r)'
+</PRE>
+
+<P>
+
+<PRE>    # install my favorite programs if necessary:
+    for $mod (qw(Net::FTP MD5 Data::Dumper)){
+        my $obj = CPAN::Shell-&gt;expand('Module',$mod);
+        $obj-&gt;install;
+    }
+</PRE>
+
+<P>
+
+<PRE>    # list all modules on my disk that have no VERSION number
+    for $mod (CPAN::Shell-&gt;expand(&quot;Module&quot;,&quot;/./&quot;)){
+        next unless $mod-&gt;inst_file;
+        next if $mod-&gt;inst_version;
+        print &quot;No VERSION in &quot;, $mod-&gt;id, &quot;\n&quot;;
+    }
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Methods_in_the_four">Methods in the four
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="Cache_Manager">Cache Manager
+
+</A></H2>
+Currently the cache manager only keeps track of the build directory ($CPAN::Config-&gt;{build_dir}). It is a simple 
+<FONT SIZE=-1>FIFO</FONT> mechanism that deletes complete directories below
+ <CODE>build_dir</CODE> as soon as the size of all directories there gets bigger than $CPAN::Config-&gt;{build_cache} (in 
+<FONT SIZE=-1>MB).</FONT> The contents of this cache may be used for later re-installations that you intend to do manually, but will never be trusted by 
+<FONT SIZE=-1>CPAN</FONT> itself. This is due to the fact that the user might use these directories for building modules on different architectures.
+
+
+
+<P>
+
+There is another directory ($CPAN::Config-&gt;{keep_source_where}) where
+the original distribution files are kept. This directory is not covered by
+the cache manager and must be controlled by the user. If you choose to have
+the same directory as build_dir and as keep_source_where directory, then
+your sources will be deleted with the same fifo mechanism.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Bundles">Bundles
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> bundle is just a perl module in the namespace
+Bundle:: that does not define any functions or methods. It usually only
+contains documentation.
+
+
+<P>
+
+It starts like a perl module with a package declaration and a <A
+HREF="#item__VERSION">$VERSION</A> variable. After that the pod section
+looks like any other pod with the only difference, that <EM>one special pod section</EM> exists starting with (verbatim):
+
+
+<P>
+
+<PRE>        =head1 CONTENTS
+</PRE>
+
+<P>
+
+In this pod section each line obeys the format
+
+
+<P>
+
+<PRE>        Module_Name [Version_String] [- optional text]
+</PRE>
+
+<P>
+
+The only required part is the first field, the name of a module (eg.
+Foo::Bar, ie. <EM>not</EM> the name of the distribution file). The rest of the line is optional. The
+comment part is delimited by a dash just as in the man page header.
+
+
+<P>
+
+The distribution of a bundle should follow the same convention as other
+distributions.
+
+
+<P>
+
+Bundles are treated specially in the 
+<FONT SIZE=-1>CPAN</FONT> package. If you say 'install Bundle::Tkkit' (assuming such a bundle exists), 
+<FONT SIZE=-1>CPAN</FONT> will install all the modules in the 
+<FONT SIZE=-1>CONTENTS</FONT> section of the pod. You can install your own Bundles locally by placing a conformant Bundle file somewhere into your <A HREF="#item__INC">@INC</A> path. The <CODE>autobundle()</CODE> command which is available in the shell interface does that for you by including all currently installed modules in a snapshot bundle file.
+
+
+
+<P>
+
+There is a meaningless Bundle::Demo available on 
+<FONT SIZE=-1>CPAN.</FONT> Try to install it, it usually does no harm, just
+demonstrates what the Bundle interface looks like.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Prerequisites">Prerequisites
+
+</A></H2>
+If you have a local mirror of 
+<FONT SIZE=-1>CPAN</FONT> and can access all files with ``file:'' URLs, then you only need a perl better than perl5.003 to run this module. Otherwise Net::FTP is strongly recommended. 
+<FONT SIZE=-1>LWP</FONT> may be required for non-UNIX systems or if your nearest 
+<FONT SIZE=-1>CPAN</FONT> site is associated with an 
+<FONT SIZE=-1>URL</FONT> that is not
+ <CODE>ftp:</CODE>.
+
+
+<P>
+
+If you have neither Net::FTP nor 
+<FONT SIZE=-1>LWP,</FONT> there is a fallback mechanism implemented for an
+external ftp command or for an external lynx command.
+
+
+<P>
+
+This module presumes that all packages on 
+<FONT SIZE=-1>CPAN</FONT>
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+declare their <A HREF="#item__VERSION">$VERSION</A> variable in an easy to
+parse manner. This prerequisite can hardly be relaxed because it consumes
+by far too much memory to load all packages into the running program just
+to determine the <A HREF="#item__VERSION">$VERSION</A> variable . Currently
+all programs that are dealing with version use something like this
+
+
+<P>
+
+<PRE>    perl -MExtUtils::MakeMaker -le \
+        'print MM-&gt;parse_version($ARGV[0])' filename
+</PRE>
+
+<P>
+
+If you are author of a package and wonder if your <A
+HREF="#item__VERSION">$VERSION</A> can be parsed, please try the above
+method.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+come as compressed or gzipped tarfiles or as zip files and contain a
+Makefile.PL (well we try to handle a bit more, but without much
+enthusiasm).
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H2><A NAME="Debugging">Debugging
+
+</A></H2>
+The debugging of this module is pretty difficult, because we have interferences of the software producing the indices on 
+<FONT SIZE=-1>CPAN,</FONT> of the mirroring process on 
+<FONT SIZE=-1>CPAN,</FONT> of packaging, of configuration, of synchronicity, and of bugs within CPAN.pm.
+
+
+
+<P>
+
+In interactive mode you can try ``o debug'' which will list options for
+debugging the various parts of the package. The output may not be very
+useful for you as it's just a byproduct of my own testing, but if you have
+an idea which part of the package may have a bug, it's sometimes worth to
+give it a try and send me more specific output. You should know that ``o
+debug'' has built-in completion support.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Floppy_Zip_and_all_that_Jazz">Floppy, Zip, and all that Jazz
+
+</A></H2>
+CPAN.pm works nicely without network too. If you maintain machines that are not networked at all, you should consider working with file: URLs. Of course, you have to collect your modules somewhere first. So you might use CPAN.pm to put together all you need on a networked machine. Then copy the $CPAN::Config-&gt;{keep_source_where} (but not $CPAN::Config-&gt;{build_dir}) directory on a floppy. This floppy is kind of a personal 
+<FONT SIZE=-1>CPAN.</FONT> CPAN.pm on the non-networked machines works nicely with this floppy.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONFIGURATION">CONFIGURATION
+
+</A></H1>
+When the 
+<FONT SIZE=-1>CPAN</FONT> module is installed a site wide configuration file is created as CPAN/Config.pm. The default values defined there can be overridden in another configuration file: CPAN/MyConfig.pm. You can store this file in $HOME/.cpan/CPAN/MyConfig.pm if you want, because $HOME/.cpan is added to the search path of the 
+<FONT SIZE=-1>CPAN</FONT> module before the <CODE>use()</CODE> or <CODE>require()</CODE> statements.
+
+
+
+<P>
+
+Currently the following keys in the hash reference $CPAN::Config are
+defined:
+
+
+<P>
+
+<PRE>  build_cache        size of cache for directories to build modules
+  build_dir          locally accessible directory to build modules
+  index_expire       after how many days refetch index files
+  cpan_home          local directory reserved for this package
+  gzip               location of external program gzip
+  inactivity_timeout breaks interactive Makefile.PLs after that
+                     many seconds inactivity. Set to 0 to never break.
+  inhibit_startup_message
+                     if true, does not print the startup message
+  keep_source        keep the source in a local directory?
+  keep_source_where  where keep the source (if we do)
+  make               location of external program make
+  make_arg           arguments that should always be passed to 'make'
+  make_install_arg   same as make_arg for 'make install'
+  makepl_arg         arguments passed to 'perl Makefile.PL'
+  pager              location of external program more (or any pager)
+  tar                location of external program tar
+  unzip              location of external program unzip
+  urllist            arrayref to nearby CPAN sites (or equivalent locations)
+</PRE>
+
+<P>
+
+You can set and query each of these options interactively in the cpan shell
+with the command set defined within the <CODE>o conf</CODE> command:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_o">o conf ltscalar optiongt
+
+</A></STRONG><DD>
+prints the current value of the <EM>scalar option</EM>
+
+
+
+
+<P>
+
+<DT><STRONG>o conf ltscalar optiongt ltvaluegt
+
+</A></STRONG><DD>
+Sets the value of the <EM>scalar option</EM> to <EM>value</EM>
+
+
+
+
+<P>
+
+<DT><STRONG>o conf ltlist optiongt
+
+</A></STRONG><DD>
+prints the current value of the <EM>list option</EM> in MakeMaker's neatvalue format.
+
+
+<P>
+
+<DT><STRONG>o conf ltlist optiongt [shift|pop]
+
+</A></STRONG><DD>
+shifts or pops the array in the <EM>list option</EM> variable
+
+
+<P>
+
+<DT><STRONG>o conf ltlist optiongt [unshift|push|splice] ltlistgt
+
+</A></STRONG><DD>
+works like the corresponding perl commands.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SECURITY">SECURITY
+
+</A></H1>
+There's no strong security layer in CPAN.pm. CPAN.pm helps you to install foreign, unmasked, unsigned code on your machine. We compare to a checksum that comes from the net just as the distribution file itself. If somebody has managed to tamper with the distribution file, they may have as well tampered with the 
+<FONT SIZE=-1>CHECKSUMS</FONT> file. Future development will go towards strong authentification.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXPORT">EXPORT
+
+</A></H1>
+Most functions in package 
+<FONT SIZE=-1>CPAN</FONT> are exported per default. The reason for this is
+that the primary use is intended for the cpan shell or for oneliners.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+we should give coverage for _all_ of the 
+<FONT SIZE=-1>CPAN</FONT> and not just the 
+<FONT SIZE=-1>__PAUSE__</FONT> part, right? In this discussion 
+<FONT SIZE=-1>CPAN</FONT> and 
+<FONT SIZE=-1>PAUSE</FONT> have become equal -- but they are not. 
+<FONT SIZE=-1>PAUSE</FONT> is authors/ and modules/. 
+<FONT SIZE=-1>CPAN</FONT> is 
+<FONT SIZE=-1>PAUSE</FONT> plus the clpa/, doc/, misc/, ports/, src/, scripts/.
+
+
+
+<P>
+
+Future development should be directed towards a better intergration of the
+other parts.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Andreas König &lt;<A HREF="MAILTO:a.koenig@mind.de">a.koenig@mind.de</A>&gt;
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<CODE>perl(1),</CODE> CPAN::Nox(3)
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,162 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>File::CounterFile - Persistent counter class
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#INSTALLATION">INSTALLATION</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+File::CounterFile - Persistent counter class
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use <A HREF="File::CounterFile">File::CounterFile</A>;
+ $c = new <A HREF="File::CounterFile">File::CounterFile</A> &quot;COUNTER&quot;, &quot;aa00&quot;;
+</PRE>
+
+<P>
+
+<PRE> $id = $c-&gt;inc;
+ open(F, &quot;&gt;F$id&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module implements a persistent counter class. Each counter is
+represented by a separate file in the file system. File locking is applied,
+so multiple processes might try to access the same counters at the same
+time without risk of counter destruction.
+
+
+<P>
+
+You give the file name as the first parameter to the object constructor (<A HREF="#item_new">new</A>). The file is created if it does not exist.
+
+
+<P>
+
+If the file name does not start with ``/'' or ``.'', then it is interpreted
+as a file relative to <CODE>$File::CounterFile::DEFAULT_DIR</CODE>. The default value for this variable is initialized from the environment
+variable <CODE>TMPDIR</CODE>, or <EM>/usr/tmp</EM> is no environment variable is defined. You may want to assign a different
+value to this variable before creating counters.
+
+
+<P>
+
+If you pass a second parameter to the constructor, that sets the initial
+value for a new counter. This parameter only takes effect when the file is
+created (i.e. it does not exist before the call).
+
+
+<P>
+
+When you call the <CODE>inc()</CODE> method, you increment the counter value by one. When you call <CODE>dec()</CODE> the counter value is decrementd. In both cases the new value is returned.
+The <CODE>dec()</CODE> method only works for numerical counters (digits only).
+
+
+<P>
+
+You can peek at the value of the counter (without incrementing it) by using
+the <CODE>value()</CODE> method.
+
+
+<P>
+
+The counter can be locked and unlocked with the <CODE>lock()</CODE> and
+<CODE>unlock()</CODE> methods. Incrementing and value retrieval is faster when the counter is
+locked, because we do not have to update the counter file all the time. You
+can query whether the counter is locked with the <CODE>locked()</CODE> method.
+
+
+<P>
+
+There is also an operator overloading interface to the File::CounterFile
+object. This means that you might use the <CODE>++</CODE>
+operator for incrementing the counter, <CODE>--</CODE> operator for decrementing and you can interpolate counters diretly into
+strings.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+It uses <CODE>flock(2)</CODE> to lock the counter file. This does not work
+on all systems. Perhaps we should use the File::Lock module?
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="INSTALLATION">INSTALLATION
+
+</A></H1>
+Copy this file to the <EM>File</EM> subdirectory of your Perl 5 library directory (often <EM>/usr/local/lib/perl5</EM>).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1996 Gisle Aas. All rights reserved.
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gisle Aas <A HREF="MAILTO:<aas@sn.no>"><aas@sn.no></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

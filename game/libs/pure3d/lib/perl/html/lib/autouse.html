@@ -1,0 +1,176 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>autouse - postpone load of modules until a function is used
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#WARNING">WARNING</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+autouse - postpone load of modules until a function is used
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use autouse 'Carp' =&gt; qw(carp croak);
+  carp &quot;this carp was predeclared and autoused &quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+If the module <A HREF="#item_Module">Module</A> is already loaded, then the declaration
+
+
+<P>
+
+<PRE>  use autouse 'Module' =&gt; qw(func1 func2($;$) Module::func3);
+</PRE>
+
+<P>
+
+is equivalent to
+
+
+<P>
+
+<PRE>  use Module qw(func1 func2);
+</PRE>
+
+<P>
+
+if <A HREF="#item_Module">Module</A> defines <CODE>func2()</CODE> with prototype <CODE>($;$)</CODE>, and <CODE>func1()</CODE> and <CODE>func3()</CODE> have no prototypes. (At
+least if <A HREF="#item_Module">Module</A> uses <A HREF="#item_Exporter">Exporter</A>'s
+<A HREF="#item_import">import</A>, otherwise it is a fatal error.)
+
+
+<P>
+
+If the module <A HREF="#item_Module">Module</A> is not loaded yet, then the above declaration declares functions
+<CODE>func1()</CODE> and <CODE>func2()</CODE> in the current package, and
+declares a function Module::func3(). When these functions are called, they
+load the package <A HREF="#item_Module">Module</A> if needed, and substitute themselves with the correct definitions.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="WARNING">WARNING
+
+</A></H1>
+Using <CODE>autouse</CODE> will move important steps of your program's execution from compile time to
+runtime. This can
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+Break the execution of your program if the module you <CODE>autouse</CODE>d has some initialization which it expects to be done early.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+hide bugs in your code since important checks (like correctness of
+prototypes) is moved from compile time to runtime. In particular, if the
+prototype you specified on <CODE>autouse</CODE> line is wrong, you will not find it out until the corresponding function is
+executed. This will be very unfortunate for functions which are not always
+called (note that for such functions <CODE>autouse</CODE>ing gives biggest win, for a workaround see below).
+
+
+<P>
+
+</UL>
+To alleviate the second problem (partially) it is advised to write your
+scripts like this:
+
+
+<P>
+
+<PRE>  use Module;
+  use autouse Module =&gt; qw(carp($) croak(&amp;$));
+  carp &quot;this carp was predeclared and autoused &quot;;
+</PRE>
+
+<P>
+
+The first line ensures that the errors in your argument specification are
+found early. When you ship your application you should comment out the
+first line, since it makes the second one useless.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+If Module::func3() is autoused, and the module is loaded between the
+<CODE>autouse</CODE> directive and a call to Module::func3(), warnings about redefinition would
+appear if warnings are enabled.
+
+
+<P>
+
+If Module::func3() is autoused, warnings are disabled when loading the
+module via autoused functions.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Ilya Zakharevich <A
+HREF="MAILTO:(ilya@math.ohio-state.edu)">(ilya@math.ohio-state.edu)</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<CODE>perl(1).</CODE>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

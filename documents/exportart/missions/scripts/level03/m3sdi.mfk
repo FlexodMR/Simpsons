@@ -1,0 +1,55 @@
+SelectMission("m3sd");
+
+SetAnimatedCameraName( "mission3camShape" );
+SetAnimCamMulticontName( "mission3cam" );
+SetMissionStartCameraName( "mission3camShape" );
+SetMissionStartMulticontName( "mission3cam" );
+
+SetMissionResetPlayerOutCar("m3_lisa_start", "m3_carstart");
+SetDynaLoadData("l3z1.p3d;l3r1.p3d;l3r5.p3d;l3r5_dam.p3d;");
+
+AddStage(0);
+	SetStageMessageIndex(180);
+	SetHUDIcon( "kburger" );
+	SetMaxTraffic(3);
+	AddObjective("goto");
+		AddNPC("apu", "m3_apu_sd");
+		AddStageVehicle("apu_v","m3_apucarstart_sd","NULL","EasyRace\AI_5th.con");
+		SetDestination("m3_krustyburger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(5);
+	RESET_TO_HERE();
+	SetStageMessageIndex(157);
+	SetHUDIcon( "apu" );
+	AddObjective("talkto");
+		AddNPC("apu", "m3_apu_sd");
+		AddObjectiveNPCWaypoint( "apu", "m3_apu_walk2" );
+		AddObjectiveNPCWaypoint( "apu", "m3_apu_walk3" );
+		AddObjectiveNPCWaypoint( "apu", "m3_apu_walk2" );
+		AddObjectiveNPCWaypoint( "apu", "m3_apu_walk4" );
+		AddObjectiveNPCWaypoint( "apu", "m3_apu_walk5" );
+		AddObjectiveNPCWaypoint( "apu", "m3_apu_walk6" );
+		AddObjectiveNPCWaypoint( "apu", "m3_apu_walk5" );
+		AddObjectiveNPCWaypoint( "apu", "m3_apu_walk4" );
+		SetTalkToTarget("apu", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis03_03.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "npc_far" );
+		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide( "m3_bestside" );
+		SetDialogueInfo("apu","lisa","burger",0);
+		SetDialoguePositions("m3_lisa_loc","m3_apu_sd","m3_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();

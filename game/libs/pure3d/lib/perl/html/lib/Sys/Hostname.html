@@ -1,0 +1,79 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Sys::Hostname - Try every conceivable way to get hostname
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Sys::Hostname - Try every conceivable way to get hostname
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Sys::Hostname;
+    $host = hostname;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Attempts several methods of getting the system hostname and then caches the
+result. It tries <A HREF="#item_syscall">syscall(SYS_gethostname)</A>,
+<A HREF="#item__hostname_">`hostname`</A>, <CODE>`uname -n`</CODE>, and the file <EM>/com/host</EM>. If all that fails it <A HREF="#item_croak">croak</A>s.
+
+
+<P>
+
+All nulls, returns, and newlines are removed from the result.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+David Sundstrom &lt;<EM>sunds@asictest.sc.ti.com</EM>&gt;
+
+
+
+
+<P>
+
+Texas Instruments
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

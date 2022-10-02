@@ -1,0 +1,93 @@
+global proc string FloatUpDownBox( string $parent, float $min, float $max, float $default, string $name )
+{
+   setParent $parent;
+   string $ctlName = `formLayout $name`;
+   string $floatField = `floatField -min $min -max $max -value $default -step 0.001`;
+   string $floatScrollBar = `floatScrollBar -hr true -min $min -max $max -width 32 -height 32 -s 0.001 -ls 0.001`;
+   
+   setParent ..;
+
+   
+
+   formLayout -e
+    -af   $floatField     top     0
+    -af   $floatField     left    0
+    -af   $floatField     bottom  0
+    -af   $floatScrollBar top     0
+    -ac   $floatScrollBar left    0   $floatField
+    -af   $floatScrollBar right   0
+    -af   $floatScrollBar bottom  0
+      $ctlName;
+
+   FloatUpDownBox_changeCommand( $ctlName, "" );   // Set default callbacks
+
+   return $ctlName;
+
+}
+
+
+proc string[] FloatUpDownBox_getControls( string $rollo )
+{
+  string $controls[2];
+
+  if ( `formLayout -q -exists $rollo` )
+  {
+    string $childs[] = `formLayout -q -ca $rollo`;
+
+    if ( size( $childs ) > 0 )
+    {
+      if ( `floatField -q -exists $childs[0]` )
+        $controls[0] = $childs[0];
+      if ( `floatScrollBar -q -exists $childs[1]` )
+        $controls[1] = $childs[1];
+    }
+  }
+
+  return $controls;
+}
+
+global proc float FloatUpDownBox_changeCommand( string $ctlName, string $command )
+{
+  float $success = 0;
+
+  string $controls[2] = FloatUpDownBox_getControls( $ctlName );
+
+  if ( "" != $controls[0] && "" != $controls[1] )
+  {
+    if ( "" != $command )
+      $command += ( "(\"" + $ctlName + "\")" );
+
+    float $min = `floatField -q -min $controls[0]`;
+    float $max = `floatField -q -max $controls[0]`;
+
+    string $floatFieldCallback = ( "float $fValue = (#1); floatScrollBar -e -value ( $fValue ) " + $controls[1] + ";" + $command ) ;
+    string $floatScrollBarCallback = ( "float $fValue = (#1); floatField -e -value ( $fValue ) " + $controls[0] + ";" + $command );
+
+    floatField -e -cc $floatFieldCallback $controls[0];
+    floatScrollBar -e -cc $floatScrollBarCallback $controls[1];
+    $success = 1;
+  }
+  
+  return $success;
+}
+
+global proc float FloatUpDownBox_getValue(string $ctlName)
+{
+   string $controls[2] = FloatUpDownBox_getControls( $ctlName );
+   float $ret = `floatField -q -v $controls[0]`;
+   return $ret;
+}
+global proc int FloatUpDownBox_Exists(string $ctlName)
+{
+   if (`formLayout -exists $ctlName`)
+      return true;
+   else return false;
+}
+
+global proc FloatUpDownBox_Destroy(string $ctlName)
+{
+   if (`formLayout -exists $ctlName`)
+      deleteUI -layout $ctlName;
+
+
+}

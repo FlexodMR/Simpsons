@@ -1,0 +1,338 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Math::Trig - trigonometric functions
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#TRIGONOMETRIC_FUNCTIONS">TRIGONOMETRIC FUNCTIONS</A>
+	<UL>
+
+		<LI><A HREF="#ERRORS_DUE_TO_DIVISION_BY_ZERO">ERRORS DUE TO DIVISION BY ZERO</A>
+		<LI><A HREF="#SIMPLE_REAL_ARGUMENTS_COMPLEX">SIMPLE (REAL) ARGUMENTS, COMPLEX RESULTS</A>
+	</UL>
+
+	<LI><A HREF="#ANGLE_CONVERSIONS">ANGLE CONVERSIONS</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Math::Trig - trigonometric functions
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use Math::Trig;
+        
+        $x = tan(0.9);
+        $y = acos(3.7);
+        $z = asin(2.4);
+        
+        $halfpi = pi/2;
+</PRE>
+
+<P>
+
+<PRE>        $rad = deg2rad(120);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>Math::Trig</CODE> defines many trigonometric functions not defined by the core Perl which
+defines only the <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_sin">sin()</A> and <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_cos">cos()</A>. The constant
+<STRONG>pi</STRONG> is also defined as are a few convenience functions for angle conversions.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="TRIGONOMETRIC_FUNCTIONS">TRIGONOMETRIC FUNCTIONS
+
+</A></H1>
+The tangent
+
+
+<P>
+
+<PRE>        tan
+</PRE>
+
+<P>
+
+The cofunctions of the sine, cosine, and tangent (cosec/csc and cotan/cot
+are aliases)
+
+
+<P>
+
+<PRE>        csc cosec sec cot cotan
+</PRE>
+
+<P>
+
+The arcus (also known as the inverse) functions of the sine, cosine, and
+tangent
+
+
+<P>
+
+<PRE>        asin acos atan
+</PRE>
+
+<P>
+
+The principal value of the arc tangent of y/x
+
+
+<P>
+
+<PRE>        atan2(y, x)
+</PRE>
+
+<P>
+
+The arcus cofunctions of the sine, cosine, and tangent (acosec/acsc and
+acotan/acot are aliases)
+
+
+<P>
+
+<PRE>        acsc acosec asec acot acotan
+</PRE>
+
+<P>
+
+The hyperbolic sine, cosine, and tangent
+
+
+<P>
+
+<PRE>        sinh cosh tanh
+</PRE>
+
+<P>
+
+The cofunctions of the hyperbolic sine, cosine, and tangent (cosech/csch
+and cotanh/coth are aliases)
+
+
+<P>
+
+<PRE>        csch cosech sech coth cotanh
+</PRE>
+
+<P>
+
+The arcus (also known as the inverse) functions of the hyperbolic sine,
+cosine, and tangent
+
+
+<P>
+
+<PRE>        asinh acosh atanh
+</PRE>
+
+<P>
+
+The arcus cofunctions of the hyperbolic sine, cosine, and tangent
+(acsch/acosech and acoth/acotanh are aliases)
+
+
+<P>
+
+<PRE>        acsch acosech asech acoth acotanh
+</PRE>
+
+<P>
+
+The trigonometric constant <STRONG>pi</STRONG> is also defined.
+
+
+<P>
+
+<PRE>        $pi2 = 2 * pi;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="ERRORS_DUE_TO_DIVISION_BY_ZERO">ERRORS DUE TO DIVISION BY ZERO
+
+</A></H2>
+The following functions
+
+
+<P>
+
+<PRE>        tan
+        sec
+        csc
+        cot
+        asec
+        acsc
+        tanh
+        sech
+        csch
+        coth
+        atanh
+        asech
+        acsch
+        acoth
+</PRE>
+
+<P>
+
+cannot be computed for all arguments because that would mean dividing by
+zero. These situations cause fatal runtime errors looking like this
+
+
+<P>
+
+<PRE>        cot(0): Division by zero.
+        (Because in the definition of cot(0), the divisor sin(0) is 0)
+        Died at ...
+</PRE>
+
+<P>
+
+For the <CODE>csc</CODE>, <CODE>cot</CODE>, <CODE>asec</CODE>, <CODE>acsc</CODE>, <CODE>csch</CODE>, <CODE>coth</CODE>, <CODE>asech</CODE>,
+<CODE>acsch</CODE>, the argument cannot be <CODE></CODE> (zero). For the <CODE>atanh</CODE>,
+<CODE>acoth</CODE>, the argument cannot be <CODE>1</CODE> (one). For the <CODE>tan</CODE>, <CODE>sec</CODE>,
+<CODE>tanh</CODE>, <CODE>sech</CODE>, the argument cannot be <EM>pi/2 + k * pi</EM>, where <EM>k</EM> is any integer.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="SIMPLE_REAL_ARGUMENTS_COMPLEX">SIMPLE (REAL) ARGUMENTS, COMPLEX RESULTS
+
+</A></H2>
+Please note that some of the trigonometric functions can break out from the <STRONG>real axis</STRONG> into the <STRONG>complex plane</STRONG>. For example
+<CODE>asin(2)</CODE> has no definition for plain real numbers but it has definition for complex
+numbers.
+
+
+<P>
+
+In Perl terms this means that supplying the usual Perl numbers (also known
+as scalars, please see <A HREF="/n|/perl/html/./lib/Pod/perldata.html#">the perldata manpage</A>) as input for the trigonometric functions might produce as output results
+that no more are simple real numbers: instead they are complex numbers.
+
+
+<P>
+
+The <CODE>Math::Trig</CODE> handles this by using the <CODE>Math::Complex</CODE> package which knows how to handle complex numbers, please see <A HREF="/n|/perl/html/./lib/Math/Complex.html">Complex</A>
+for more information. In practice you need not to worry about getting
+complex numbers as results because the <CODE>Math::Complex</CODE> takes care of details like for example how to display complex numbers. For
+example:
+
+
+<P>
+
+<PRE>        print asin(2), &quot;\n&quot;;
+    
+should produce something like this (take or leave few last decimals):
+</PRE>
+
+<P>
+
+<PRE>        1.5707963267949-1.31695789692482i
+</PRE>
+
+<P>
+
+That is, a complex number with the real part of approximately <CODE>1.571</CODE>
+and the imaginary part of approximately <CODE>-1.317</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ANGLE_CONVERSIONS">ANGLE CONVERSIONS
+
+</A></H1>
+(Plane, 2-dimensional) angles may be converted with the following
+functions.
+
+
+<P>
+
+<PRE>        $radians  = deg2rad($degrees);
+        $radians  = grad2rad($gradians);
+        
+        $degrees  = rad2deg($radians);
+        $degrees  = grad2deg($gradians);
+        
+        $gradians = deg2grad($degrees);
+        $gradians = rad2grad($radians);
+</PRE>
+
+<P>
+
+The full circle is 2 <EM>pi</EM> radians or <EM>360</EM> degrees or <EM>400</EM> gradians.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Saying <CODE>use Math::Trig;</CODE> exports many mathematical routines in the caller environment and even
+overrides some (<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_sin">sin</A>, <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_cos">cos</A>). This is construed as a feature by the Authors, actually... ;-)
+
+
+<P>
+
+The code is not optimized for speed, especially because we use
+<CODE>Math::Complex</CODE> and thus go quite near complex numbers while doing the computations even
+when the arguments are not. This, however, cannot be completely avoided if
+we want things like <CODE>asin(2)</CODE> to give an answer instead of giving a fatal runtime error.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+Jarkko Hietaniemi &lt;<EM>jhi@iki.fi</EM>&gt; and Raphael Manfredi &lt;<EM>Raphael_Manfredi@grenoble.hp.com</EM>&gt;.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

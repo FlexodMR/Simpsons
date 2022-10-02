@@ -1,0 +1,168 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformInstall.mel
+// Author: Bryan Brandt
+//
+// Description: Skin Deformation tool install script.
+//
+
+
+global proc p3dDeformInstallCommand()
+{
+   source p3dDeformCallbackMgr; //load the callmgr procedure before loading buttons
+
+   string $SHELF = "P3DDeformerTools";
+
+   // BUG FIX: Do NOT create Shelf if Shelf UI is hidden!
+   //          The Shelf may already exist in Maya's Preferences
+   //          but be deferred until the Shelf UI is visible,
+   //          and a clash will result if a duplicate is made.
+   // BUG FIX: Do NOT attempt if without UI.
+   if ( !`about -batch` && isUIComponentVisible( "Shelf" ) )
+   {
+       int $exists = `shelfLayout -exists $SHELF`;
+
+       if (!$exists)
+       {
+          addNewShelfTab $SHELF;
+       }
+
+       string $buttons[] = `shelfLayout -q -ca $SHELF`;
+
+       // the four buttons included with the deformer
+       // the first three are for deformer tools and the last
+       // one is for the deformer itself
+       // the draggerCtxWindow button draws the floating dragger tool window
+       int $snap_button_exists = 0;
+       int $convert_button_exists = 0;
+       int $copy_button_exists = 0;
+       int $main_button_exists = 0;
+       int $prune_button_exists = 0;
+       int $draggerCtxWindow_button_exists = 0;
+       int $clean_button_exists = 0;
+  
+       int $i;
+       for ($i = 0; $i < size($buttons); $i++)
+       {
+          string $command = `shelfButton -q -c $buttons[$i]`;
+          string $label = `shelfButton -q -label $buttons[$i]`;
+
+          if ( $label == "Pure3D Snap To Reference Mesh" ) //  ($command == "p3dDeformCallbackMgr(\"SnapToRef\", {})")
+          {
+             $snap_button_exists = 1;
+          }
+          else if ( $label == "Pure3D Expression Deformer" )  // ($command == ("p3dDeformCallbackMgr(\"DrawUI\", {})"))
+          {
+             $main_button_exists = 1;
+          }
+          else if ( $label == "Pure3D Deformer Art Conversion Tool" )      // ($command == ("p3dDeformCallbackMgr(\"ConvArt\",{})"))
+          {
+             $convert_button_exists = 1;
+          }
+          else if ( $label == "Copy Vertex Offsets to Target Mesh" )      // ($command == "p3dDeformCallbackMgr(\"CopyOffsets\",{})")
+          {
+             $copy_button_exists = 1;
+          }
+          else if ( $label == "Remove vertices less than tolerance" )      // ($command == "p3dDeformCallbackMgr(\"PruneExpr\",{})")
+          {
+             $prune_button_exists = 1;
+          }
+	      else if ( $label == "Displays dragger context command window" )      // ($command == "p3dDeformCreateDraggerWindow()")			
+	      {	
+		    $draggerCtxWindow_button_exists = 1;
+	      }
+	      else if ( $label == "Removes any unconnected deformer expressions from the scene" )      // ($command == "p3dDeformRemoveBrokenStates()")			
+	      {	
+		    $clean_button_exists = 1;
+	      }
+		    
+	      //remove shelfbuttons for features that are no longer used
+          else if ($command == ("p3dDeformExpressionUI") ||
+                   $command == ("p3dDeformPresetUI")     ||
+                   $command == ("p3dDeformJoint")        ||
+                   $command == ("p3dDeformSetup"))
+          {
+             deleteUI $buttons[$i];
+          }
+       }
+
+       if (!$snap_button_exists)
+       {
+	      source p3dDeformSnapToReferenceMesh;
+          shelfButton -c ("p3dDeformCallbackMgr(\"SnapToRef\", {})")
+                      -p $SHELF
+                      -i1 "p3dDeformSnapToReferenceMesh.bmp"
+                      -l "Pure3D Snap To Reference Mesh";
+       }
+   
+       if (!$main_button_exists)
+       {
+          source p3dDeformAnimationUI;
+          source p3dDeformAnimationFuncs;
+	      source p3dDeformAnimSliders;
+	      source p3dDeformConvert;
+          source p3dDeformCreateTabbedUI;
+	      source p3dDeformGeneral;
+	      source p3dDeformModellingUI;
+	      source p3dDeformModellingFuncs;
+	      source p3dDeformHotKeys;
+
+          shelfButton -c ("p3dDeformCallbackMgr(\"DrawUI\", {})")
+                      -p $SHELF
+                      -i1 "p3dDeformSetup.bmp"
+                      -l "Pure3D Expression Deformer";
+       }
+
+       if (!$convert_button_exists)
+       {
+          source p3dDeformConvert;
+          shelfButton -c ("p3dDeformCallbackMgr(\"ConvArt\",{})")
+                      -p $SHELF
+                      -i1 "p3dDeformConvert.bmp"
+                      -l "Pure3D Deformer Art Conversion Tool";
+       }
+
+       if (!$copy_button_exists)
+       {
+          source p3dDeformSnapToReferenceMesh;
+          shelfButton -c ("p3dDeformCallbackMgr(\"CopyOffsets\",{})")
+                      -p $SHELF
+                      -i1 "p3dDeformCopy.bmp"
+                      -l "Copy Vertex Offsets to Target Mesh";
+       }
+       if (!$prune_button_exists)
+       {
+          source p3dDeformPruneExpression;
+          shelfButton -c ("p3dDeformCallbackMgr(\"PruneExpr\",{})")
+                      -p $SHELF
+                      -i1 "p3dDeformPrune.bmp"
+                      -l "Remove vertices less than tolerance";
+       }
+       if (!$draggerCtxWindow_button_exists)
+       {
+          source p3dDeformDraggerCtxWindowLayout.mel;
+	      source p3dDeformDraggerCtx.mel;
+          shelfButton -c "p3dDeformCreateDraggerWindow()"
+                      -p $SHELF
+                      -i1 "p3dDeformDragCtx.bmp"
+                      -l "Displays dragger context command window";
+       }
+
+       if (!$clean_button_exists)
+       {
+          shelfButton -c "p3dDeformRemoveBrokenStates()"
+                      -p $SHELF
+                      -i1 "p3dDeformCleanExprs.bmp"
+                      -l "Removes any unconnected deformer expressions from the scene";
+       }
+    }
+}
+
+
+global proc p3dDeformInstall()
+{
+   evalDeferred "p3dDeformInstallCommand";
+}
+
+
+// End of file.

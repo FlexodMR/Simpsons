@@ -1,0 +1,71 @@
+SelectMission("m2sd");
+	
+SetMissionStartCameraName( "mission2camShape" );
+SetMissionStartMulticontName( "mission2cam" );
+SetAnimatedCameraName( "mission2camShape" );
+SetAnimCamMulticontName( "mission2cam" );
+
+SetMissionResetPlayerOutCar("m2_marge_start","m2_carstart");
+SetDynaLoadData("l4z7.p3d;l4r6.p3d;l4r7.p3d;");
+
+UsePedGroup(6);
+
+AddStage(0);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(215);
+	SetHUDIcon( "cletushs" );
+	AddObjective("goto");
+		AddNPC("cletus","m2_cletus");
+		AddObjectiveNPCWaypoint( "cletus", "m2_cletus_walk1" );
+		AddObjectiveNPCWaypoint( "cletus", "m2_cletus" );
+		AddStageVehicle("cletu_v","m2_cletustruck_sd","NULL","Missions\level04\M2chase.con");
+		SetDestination("m2_locator_sd", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(25);
+	SetHUDIcon( "cletus" );
+	AddObjective("talkto");
+		AddNPC("cletus","m2_cletus");
+		AddStageVehicle("cletu_v","m2_cletustruck_sd","NULL","Missions\level04\M2chase.con");
+		AddObjectiveNPCWaypoint( "cletus", "m2_cletus_walk1" );
+		SetTalkToTarget( "cletus", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis04_02.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		SetCamBestSide("m2_bestside");
+		SetDialogueInfo("marge","cletus","decrapitude",0);
+		SetDialoguePositions("m2_marge","m2_cletus_walk1","m2_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air
+

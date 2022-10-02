@@ -1,0 +1,69 @@
+//===========================================================================
+// p3dFixShaderForDA
+//===========================================================================
+// Description: Sets .dynamicallyLit and .prelightMode to DA specs based 
+//              on original .isLit and .isLightMapped attributes, as follows:
+//
+//  OLD SETTINGS                   NEW SETTINGS                      ADDITIONAL DA CHANGES                 
+//  is lit     lightmapped       dynamically lit    prelight mode     dynamically lit    prelight mode
+//  ------     -----------       ---------------    -------------     ---------------    -------------
+//  false      false         ->   false              none         
+//  false      true          ->   false              lightmapped 
+//  true       false         ->   true               none          ->    false             cbv        
+//  true       true          ->   true               lightmapped   ->    false             lightmapped 
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc p3dFixShaderForDA()
+{
+    string $shaders[] = `ls -type "pure3dSimpleShader" -type "pure3dLayeredShader"`;
+    
+    for ( $shader in $shaders )
+    {
+        int $isLit, $lightMapped, $dynamicallyLit, $prelightMode;
+        
+        $isLit = 0;
+        $isLightMapped = 0;
+        $dynamicallyLit = 0;
+        $prelightMode = 0;
+        
+        if ( `attributeQuery -node $shader -exists "isLit"` )
+        {
+            $isLit = `getAttr ( $shader + ".isLit" )`;
+        }
+        if ( `attributeQuery -node $shader -exists "isLightMapped"` )
+        {
+            $isLightMapped = `getAttr ( $shader + ".isLightMapped" )`;
+        }
+        if ( `attributeQuery -node $shader -exists "dynamicallyLit"` )
+        {
+            $dynamicallyLit = `getAttr ( $shader + ".dynamicallyLit" )`;
+        }
+        if ( `attributeQuery -node $shader -exists "prelightMode"` )
+        {
+            $prelightMode = `getAttr ( $shader + ".prelightMode" )`;
+        }
+        
+        if ( ( $isLit == true ) && ( $isLightMapped == false ) &&
+             ( $dynamicallyLit == true ) && ( $prelightMode == 0 )
+           )
+        {
+            print ( "Adjusting \"" + $shader + "\" to 'Not Dynamically Lit' with 'CBV Prelight Mode'\n" );
+            setAttr ( $shader + ".dynamicallyLit" ) false;
+            setAttr ( $shader + ".prelightMode" ) 1;
+        }
+        
+        if ( ( $isLit == true ) && ( $isLightMapped == true ) &&
+             ( $dynamicallyLit == true ) && ( $prelightMode == 2 )
+           )
+        {
+            print ( "Adjusting \"" + $shader + "\" to 'Not Dynamically Lit' with 'Lightmapped Prelight Mode'\n" );
+            setAttr ( $shader + ".dynamicallyLit" ) false;
+        }
+    }
+}

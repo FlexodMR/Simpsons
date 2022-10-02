@@ -1,0 +1,120 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Win32::Mutex - create mutex objects in perl.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS_AND_CONSTRUCTORS">METHODS AND CONSTRUCTORS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Win32::Mutex - create mutex objects in perl.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use Win32::Mutex;
+</PRE>
+
+<P>
+
+<PRE>        Win32::Mutex::Create($MutObj,$Initial,$Name);
+        $MutObj-&gt;Wait(INFINITE);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module creates access to the Win32 mutex objects. The Wait and
+WaitForMultipleObjects calls are inherited from the Win32::IPC module.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS_AND_CONSTRUCTORS">METHODS AND CONSTRUCTORS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_Create">Create($MutObj,$Initial,$Name)
+
+</A></STRONG><DD>
+Creates a mutex object in $MutObj.
+
+
+<P>
+
+<PRE>   Args:
+        $Initial        Flags to decide initial ownership.(TRUE = I own it).
+        $Name           String to name the mutex.
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Open">Open($MutObj,$Name)
+
+</A></STRONG><DD>
+Create a mutex object from an already created mutex
+
+
+<P>
+
+<PRE>    Args:
+        $MutObj         Container for mutex object.
+        $Name           name of already created mutex.
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__MutObj_Release_">$MutObj->Release()
+
+</A></STRONG><DD>
+Release ownership of a mutex.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__MutObj_Wait_Timeout_">$MutObj->Wait($Timeout)
+
+</A></STRONG><DD>
+Wait for ownership of a mutex.
+
+
+<P>
+
+<PRE>    Args:
+        $Timeout        amount of time you will wait.forever = INFINITE;
+</PRE>
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

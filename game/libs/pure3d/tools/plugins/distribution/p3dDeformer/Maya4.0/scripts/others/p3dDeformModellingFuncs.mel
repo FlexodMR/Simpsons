@@ -1,0 +1,1251 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformModellingFuncs.mel
+// Author: Bryan Brandt, Senta Kaiser
+//
+// Description: Callback functions required for UI components in Modelling tab
+// 
+// Contents:
+// global proc p3dDeformSetupNoCreate()
+// global proc p3dDeformSetPoseKey(int $frameNum)
+// global proc int p3dDeformSetPoseKeyFunc(string $state, float $keyVal)
+// global proc p3dDeformRemovePoseKey(int $frameNum)
+// global proc p3dDeformRemovePoseKeyFunc(string $state, float $keyValues[])
+// global proc p3dDeformChangePoseKey(int $frameNum)
+// global proc p3dDeformChangePoseKeyFunc(string $state, float $newVal, float $oldVal)
+// global proc p3dDeformRenameGroupLayoutCallback(string $group, string $actual_name)
+// global proc p3dDeformRenameGroup(int $frameNum)
+// global proc p3dDeformDeleteGroupFunc(string $group, int $mode)
+// global proc p3dDeformDeleteGroup(int $frameNum)
+// global proc p3dDeformRenameState(int $frameNum)
+// global proc p3dDeformCreateState(int $frameNum)
+// global proc p3dDeformUpdateAllOptionBoxes()
+// global proc p3dDeformDeleteState(int $frameNum)
+// global proc int p3dDeformFindLayout(string $group)
+// global proc p3dDeformUpdateAllOptionBoxes()
+// global proc p3dDeformUpdateAllOptionBoxesCheck(string $state)
+// global proc p3dDeformUpdateOptionBox(string $exprListName, string $group)
+// global proc p3dDeformSortTextScrollList(string $keyListName, string $listBoxValues[])
+// global proc p3dDeformBlendStageUpdate(int $frameNum, int $list_update)
+// global proc p3dDeformListBoxUpdate(int $frameNum)
+// global proc p3dDeformUpdateScrollSelection(int $frameNum)
+// global proc p3dDeformResetState(int $frameNum)
+// global proc p3dDeformUpdateVertices(int $frameNum, int $mode)
+// global proc p3dDeformUpdateTestState(int $i)
+// global proc int p3dDeformWriteToFile(string $mesh, string $filename)
+// global proc int p3dDeformReadFromFile(string $mesh, string $filename)
+//
+// 
+
+
+global proc p3dDeformSetupNoCreate()
+{
+    string $winUI = "p3dDeformerUI";
+    if (!`window -exists $winUI`)
+    {
+        return;
+    }
+    p3dDeformModellingUI p3dDeformTabLayout;
+}
+
+
+global proc p3dDeformSetPoseKey(int $frameNum)
+{
+   string $exprListName = "p3dDeformExpressionMenu_"+$frameNum;
+   string $sliderName = "p3dDeformSetupKeyPoseSlider_"+$frameNum;
+   string $keyListName = "p3dDeformSetupTextScrollList_"+$frameNum;
+   
+   string $sortedList[];
+   string $keyNames[];
+   string $tempStr;
+   int $numKeys;
+   if (`optionMenu -q -ni $exprListName` == 0)
+   {
+      confirmDialog -title "Confirm" -message "You need to create an expression before you can set a key." -button "OK" -defaultButton "OK";
+      return;
+   }
+
+   string $stateName = `optionMenu -q -v $exprListName`;
+   
+   float $keyVal = `floatSliderButtonGrp -q -v $sliderName`;
+   if ($keyVal == 0.0)
+   {
+      confirmDialog -title "Error" -message "You can\'t set key at 0.0." -button "OK" -defaultButton "OK";
+      return;
+   }
+   else if($keyVal < -1.0 || $keyVal > 1.0)
+   {
+      confirmDialog -title "Error" -message "You can\'t set keys less than -1 or greater than 1." -button "OK" -defaultButton "OK";
+      return;
+   }
+
+
+   
+   //get list of all keys
+   $keyNames = `textScrollList -query -allItems $keyListName`;
+   $numKeys = `size $keyNames`;
+   
+   int $duplicate = 0;
+	 //search for duplicates - are we overwriting a key?
+	 //
+   for ($tempStr in $keyNames)
+   {
+      float $floatTemp = $tempStr;
+      if (abs($keyVal - $floatTemp) < 0.001)
+         $duplicate = 1;
+   }
+   
+   if ($duplicate)
+   {
+      string $msg = "Do you want to overwrite the existing key?";
+      string $yesno = `confirmDialog -title "Confirm" -message $msg
+                                          -button "Yes" -button "No" -defaultButton "Yes"
+                                          -cancelButton "No" -dismissString "No"`;
+         
+      if ($yesno == "No")
+      {
+         return;
+      }
+   }
+   waitCursor -state on;
+   int $success = `p3dDeformSetPoseKeyFunc $stateName $keyVal`;
+   if ($success == 1)
+   {
+      $keyNames[$numKeys] = $keyVal;
+      p3dDeformSortTextScrollList($keyListName, $keyNames);
+   
+   }
+
+   waitCursor -state off;
+}
+
+global proc int p3dDeformSetPoseKeyFunc(string $state, float $keyVal)
+{
+   p3dDeformExpressionStateSetKey $state $keyVal;
+   p3dDeformExpressionStateAddExtraKeys $state $keyVal;
+   
+   return 1;
+}
+
+global proc p3dDeformRemovePoseKey(int $frameNum)
+{
+   string $exprListName = "p3dDeformExpressionMenu_"+$frameNum;
+   string $keyListName = "p3dDeformSetupTextScrollList_"+$frameNum;
+
+   if (`optionMenu -q -ni $exprListName` == 0) //the option box has 0 items
+      return;
+   string $state = `optionMenu -q -v $exprListName`;
+   if ($state == "")
+      return;
+   
+   string $selectedKey[];
+   float $keyValues[];
+   string $keyNames[];
+   int $numSel;
+   int $i;
+   $selectedKey = `textScrollList -query -selectItem $keyListName`;
+   $numSel = `size $selectedKey`;
+   if ($numSel > 0)
+   {
+      for ($i=0; $i < $numSel; $i++)
+      {
+         $keyValues[$i] = $selectedKey[$i];
+         if ($keyValues[$i] != 0.0)
+            textScrollList -edit -removeItem $selectedKey[$i] $keyListName;
+      }
+      //so we remove it from the list box
+   
+      $keyNames = `textScrollList -query -allItems $keyListName`;
+      p3dDeformSortTextScrollList($keyListName, $keyNames);
+   
+
+   //and then do the real removal stuff
+   //...
+
+	  //debug
+	  p3dDeformDebugFloatArray("Selected Keys:",$keyValues );
+	  //debug
+      p3dDeformRemovePoseKeyFunc($state, $keyValues);
+   }
+}
+
+global proc p3dDeformRemovePoseKeyFunc(string $state, float $keyValues[])
+{
+   int $keyValSize = `size $keyValues`;
+   //debug
+   p3dDeformDebugInt("$keyValSize =",$keyValSize);
+   //debug
+   int $i;
+   float $invalidKeyVal = -2.0;
+   string $stateKeyIndices = $state + ".keyIndices";
+   string $stateVtxOffsets = $state + ".vertexOffsetsArray";
+   string $stateVtxIndices = $state + ".vertexIndicesArray";
+   
+
+   for ($i =0 ; $i < $keyValSize; $i++)
+   {
+      if ($keyValues[$i] == 0.0)
+         continue;
+      int $keyIndex = `p3dDeformFindKeyIndex $stateKeyIndices $keyValues[$i]`;
+	//debug
+	p3dDeformDebugFloat("$keyValues[$i] =",$keyValues[$i]);
+	p3dDeformDebugInt("$keyIndex =", $keyIndex);
+	//debug
+
+      if ($keyIndex == -1)
+      {
+         error "Error finding key.";
+         return;
+      }
+      eval("setAttr " + $stateKeyIndices + "[" + $keyIndex + "] " + $invalidKeyVal);
+      eval("setAttr -type Int32Array " + $stateVtxIndices + "[" + $keyIndex + "]" + " " + 0);
+      eval("setAttr -type vectorArray " + $stateVtxOffsets + "[" + $keyIndex + "]" + " " + 0);
+   }
+
+}
+
+
+global proc p3dDeformChangePoseKey(int $frameNum)
+{
+   string $exprListName = "p3dDeformExpressionMenu_"+$frameNum;
+   string $keyListName = "p3dDeformSetupTextScrollList_"+$frameNum;
+   string $sliderName = "p3dDeformSetupKeyPoseSlider_"+$frameNum;
+
+   string $retStr;
+   if (`optionMenu -q -ni $exprListName` == 0)
+      return;
+   string $stateName = `optionMenu -q -v $exprListName`;
+
+   string $keyNames[];
+   int $curIdx[] = `textScrollList -query -selectIndexedItem $keyListName`;
+   string $oldValArr[] = `textScrollList -query -selectItem $keyListName`;
+   string $initialArray[] = `textScrollList -query -allItems $keyListName`;
+   
+   //debug
+   //p3dDeformDebugStrArray("Selected Keys = ",$oldValArr);
+   //debug
+   if (size($curIdx) > 0)
+   {
+      
+      float $oldVal = $oldValArr[0];
+      if ($oldVal == 0.0)
+         return;
+      
+      promptDialog -message "Enter new value:" -button "OK" -button "Cancel"
+         -defaultButton "OK" -cancelButton "Cancel"
+         -dismissString "Cancel";
+   
+      $retStr = `promptDialog -query`;
+      
+      if (($retStr != "Cancel") && ($retStr != "") )
+      {
+         
+         float $actualVal = $retStr;
+		 //debug
+		 p3dDeformDebugStr("New Key Val = ",$actualVal);
+		 //debug
+         
+         if ($actualVal == 0)
+         {
+            confirmDialog -title "Confirm" -message "You can\'t key a value of zero." -button "OK" -defaultButton "OK";
+            return;
+         }
+
+         
+         if ($actualVal > 1.0 || $actualVal < -1.0)
+            return;
+
+         int $duplicate = 0;
+         //search for duplicates - are we overwriting a key?
+         //
+         for ($tempStr in $initialArray)
+         {
+            float $floatTemp = $tempStr;
+            if (abs($actualVal - $floatTemp) < 0.001)
+               $duplicate = 1;
+         }
+
+         if ($duplicate == 1)//ask for confirmation- we found a duplicate
+         {
+            
+            string $msg;
+            $msg = "Do you want to overwrite the existing key?";
+            
+            string $yesno = `confirmDialog -title "Confirm" -message $msg
+                                          -button "Yes" -button "No" -defaultButton "Yes"
+                                          -cancelButton "No" -dismissString "No"`;
+         
+            if ($yesno == "No")
+            {
+               return;
+            }
+         
+         }
+         
+
+
+         textScrollList -edit -removeIndexedItem $curIdx[0] $keyListName;
+         textScrollList -edit -appendPosition $curIdx[0] $actualVal $keyListName; 
+         $keyNames = `textScrollList -query -allItems $keyListName`;
+         
+         p3dDeformSortTextScrollList($keyListName, $keyNames);
+         
+         //now move the slider to the appropriate position
+         floatSliderButtonGrp -edit -value $actualVal $sliderName;
+         
+         p3dDeformChangePoseKeyFunc $stateName $actualVal $oldVal;  
+      }
+   }
+}
+
+global proc p3dDeformChangePoseKeyFunc(string $state, float $newVal, float $oldVal)
+{
+   string $state_keyIndices = $state + ".keyIndices";
+   float $keyVals[];
+   int $numKeys = `getAttr -size $state_keyIndices`;
+   int $i;
+   for ($i = 0; $i < $numKeys; $i++)
+   {
+      $keyVals[$i] = eval("getAttr " + $state_keyIndices + "[" + $i + "]");
+   }
+
+   int $keyPos;
+   float $curKey;
+   for ($i = 0; $i < $numKeys; $i++)
+   {
+      
+      if (abs($oldVal - $keyVals[$i]) < 0.001)
+      {
+         eval("setAttr " + $state_keyIndices + "[" + $i + "] " + $newVal);
+      }
+
+   }
+}
+
+
+/*************************************************************************
+// Description:	Ugly function that finds the frameLayout that belongs to
+// the group whose name is to be changed. Then, it changes the label and
+// annotation attributes for the frameLayout.
+//
+// Parameters: $group - the current group name 
+//             $actual_name - the new name for this group
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformRenameGroupLayoutCallback(string $group, string $actual_name)
+{
+   if ($group == $actual_name)
+   {
+      //bit of a weird situation
+      //if this func gets called by the API it's probably because something was renamed via the hypergraph
+      //but there are other possibilities: e.g. on CreateGroup
+      //so we need to go through and find which group name is 'missing' from the annotations.  argh.
+      string $frameName;
+      string $allLayouts[] = `lsUI -type controlLayout`;
+      string $annName;
+      string $allAnnNames[];
+      string $allGroups[] = `ls -type p3dDeformExpressionGroup`;
+      for ($frameName in $allLayouts)
+      {
+         if (`frameLayout -exists $frameName`)
+         {
+            string $curAnnName = `frameLayout -q -ann $frameName`;
+            if (gmatch($frameName, "p3dDeformSetupFrameLayout_*"))
+               $allAnnNames[size($allAnnNames)] =$curAnnName;
+         }
+      }
+      int $j = 0;
+      //this takes the annotation string array and sets the ones that 'used' to exist to an invalid string, "!"
+      //this leaves us with only the newly renamed group name
+      for ($annName in $allAnnNames)
+      {
+         int $i = 0;
+         for ($curGroup in $allGroups)
+         {
+            if ($curGroup == $annName)
+            {
+               $allGroups[$i] = "!";
+               $allAnnNames[$j] = "!";
+            }
+            $i++;
+         }
+
+         $j++;
+      }
+
+      for ($annName in $allAnnNames)
+      {
+         if ($annName != "!")
+         {
+            $group = $annName;
+         }
+      }
+   }
+
+   string $groupExists[] = `ls $actual_name`;
+   if (size($groupExists) == 0)
+      return;
+   
+   string $frameName;
+   string $allLayouts[] = `lsUI -type controlLayout`;
+   string $annName;
+   for ($frameName in $allLayouts)
+   {
+      if (`frameLayout -exists $frameName`)
+      {
+         $annName = `frameLayout -q -ann $frameName`;
+      }
+      if ($annName == $group)
+      {
+         frameLayout -e -ann $actual_name $frameName;
+         frameLayout -e -label $actual_name $frameName;
+         break;
+      }
+   }
+}
+
+
+
+/*************************************************************************
+// Description:	Prompts user to enter a new group name. Checks that the group
+// name is unique.
+//
+// Parameters: $frameNum is an integer ordinal associated a deformer group.
+// On the modelling tab, every deformer group has a frameLayout. The ordinal
+// is the frameLayout position. 
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformRenameGroup(int $frameNum)
+{
+   string $group;
+   string $frameName = "p3dDeformSetupFrameLayout_" + $frameNum; 
+   
+   if (`frameLayout -exists $frameName`)
+   {
+      $group = `frameLayout -q -ann $frameName`; //Each frameLayout on the modelling tab is annotated with the group name.
+   }
+   
+   // get group name from user input or auto-generate if no input
+   string $result = `promptDialog -t "Rename Group"
+                                  -m "Please enter a new name for the group"
+                                  -b "Accept"
+                                  -b "Cancel"
+                                  -db "Accept"
+                                  -cb "Cancel"
+                                  -ds "Cancel"
+                                  -tx $group`;
+   if ($result == "Cancel")
+   {
+      return;
+   }
+
+   string $new_group_name = `promptDialog -q -tx`;
+
+   if ($new_group_name == $group)
+   {
+      return;
+   }
+   string $group_list[] = `ls -type p3dDeformExpressionGroup`;
+   int $group_count = size($group_list);  
+
+   
+
+   int $i;
+   for ($i = 0; $i < $group_count; $i++)
+   {
+      if ($group_list[$i] == $new_group_name)
+      {
+         string $error = "A group with the name " + $new_group_name + " already exists";
+         error $error;
+      }
+   }
+   string $actual_name = `rename $group $new_group_name`;
+
+   p3dDeformRenameGroupLayoutCallback $group $actual_name;
+}
+
+global proc p3dDeformDeleteGroupFunc(string $group, int $mode)
+{
+   // must delete all expressions in the group
+   string $allControls[] = `lsUI -type controlLayout`;
+   string $frameName;
+   for ($frameName in $allControls)
+   {
+      if (`frameLayout -exists $frameName`)
+      {
+         string $annName = `frameLayout -q -ann $frameName`;
+         if ($annName == $group)
+         {
+            deleteUI -layout $frameName;
+         }
+      }
+
+   }
+   
+   // if this is the last group for this object then
+   // we want to delete the neutral mesh for the object
+   // as well
+   string $objectBeingDeformed[] = `deformer -q -g $group`;
+
+   string $groupList[] = `ls -type p3dDeformExpressionGroup`;
+   int $numGroups = 0;
+   
+   // count the number of groups for the current object
+   for($currGroup in $groupList)
+   {
+      string $deformedObject[] = `deformer -q -g $currGroup`;
+      if(`gmatch $deformedObject[0] $objectBeingDeformed[0]` == 1)
+      {
+         $numGroups++;
+      }
+   }
+
+   if($numGroups == 1)
+   {
+      //we can't trust the connections to be maintained between the group and the neutral mesh
+      //so find the related mesh, then find its neutral mesh
+      
+      string $mesh = p3dDeformFindInHistory("mesh", true, $group);
+      
+      string $neutralMesh = p3dDeformFindInHistory("p3dDeformMeshNeutral", false, $mesh);
+      string $exists[] = `ls $neutralMesh`;
+
+      if (size($exists) > 0)   // delete the neutral mesh
+      delete $neutralMesh;
+   }
+   
+   if (($mode == 1) && ($group != "") && (size(`ls $group`)>0) )
+   {
+      delete $group;
+   }
+}
+
+
+
+// Callback for deleting a group
+//
+global proc p3dDeformDeleteGroup(int $frameNum)
+{
+   string $group;
+   string $frameName = "p3dDeformSetupFrameLayout_" + $frameNum;
+   if (`frameLayout -exists $frameName`)
+   {
+      $group = `frameLayout -q -ann $frameName`;
+   }
+
+   string $message = "Delete " + $group + "?";
+   string $result = `confirmDialog -title "Confirm Deletion"
+                                   -message $message
+                                   -button "Yes"
+                                   -button "No"
+                                   -defaultButton "Yes"
+                                   -cancelButton "No"
+                                   -dismissString "No"`;
+   if ($result == "No")
+   {
+      return;
+   }
+   
+
+   p3dDeformDeleteGroupFunc($group, 1);
+
+}
+
+
+global proc p3dDeformRenameState(int $frameNum)
+{
+   string $exprListName = "p3dDeformExpressionMenu_"+$frameNum;
+
+   //need to get selected state from optionMenu
+   if (`optionMenu -q -ni $exprListName` == 0)
+   {
+      confirmDialog -title "Confirm" -message "No states exist to be renamed" -button "OK" -defaultButton "OK";
+      return;
+   }
+      
+   int $curIndex = `optionMenu -q -sl $exprListName`;
+   string $state = `optionMenu -q -v $exprListName`;
+   string $state_list[] = `ls -type p3dDeformExpressionState`;
+   int $state_count = size($state_list);  
+
+   // get state name from user input or auto-generate if no input
+   string $result = `promptDialog -t "Rename State"
+                                  -m "Please enter a new name for the state"
+                                  -b "Accept"
+                                  -b "Cancel"
+                                  -db "Accept"
+                                  -cb "Cancel"
+                                  -ds "Cancel"
+                                  -tx $state`;
+   if ($result == "Cancel")
+   {
+      return;
+   }
+
+   string $new_state_name = `promptDialog -q -tx`;
+
+   if ($new_state_name == $state)
+   {
+      return;
+   }
+
+   int $i;
+   for ($i = 0; $i < $state_count; $i++)
+   {
+      if ($state_list[$i] == $new_state_name)
+      {
+         confirmDialog -t "Error"
+                       -m ("An expression with the name " + $new_state_name + " already exists")
+                       -b "OK"
+                       -db "OK";
+         return;
+      }
+   }
+
+   //this renames the menuItem that corresponds to the state
+   string $actual_name = `rename $state $new_state_name`;
+}
+
+
+global proc p3dDeformCreateState(int $frameNum)
+{
+   string $group;
+   string $frameName = "p3dDeformSetupFrameLayout_" + $frameNum;
+   if (`frameLayout -exists $frameName`)
+   {
+      $group = `frameLayout -q -ann $frameName`;
+   }
+
+   
+   string $state_list[] = `ls -type p3dDeformExpressionState`;
+   int $state_count = size($state_list);
+   int $nextStateNum = 1;
+   
+   //generate a default name for the next expression- default names are of the form "p3dExpression#"
+   //so find the next available #
+   for ($st in $state_list)
+   {
+      if (gmatch($st, "p3dExpression*") == 1)
+      {
+         int $thisStateNum = substring($st, size("p3dExpression")+1, size($st));
+         if ($thisStateNum == $nextStateNum)
+         {
+            $nextStateNum = $thisStateNum + 1;
+         }
+         else
+         {
+            break;
+         }
+
+      }
+   }
+
+   string $next_state = "p3dExpression" + $nextStateNum;
+
+   // get state name from user input or auto-generate if no input
+   string $result = `promptDialog -t "Create State"
+                                  -m "Please enter a name for the state"
+                                  -b "Accept"
+                                  -b "Cancel"
+                                  -db "Accept"
+                                  -cb "Cancel"
+                                  -ds "Cancel"
+                                  -tx $next_state`;
+   if ($result == "Cancel")
+   {
+      return;
+   }
+
+   string $new_state_name = `promptDialog -q -tx`;
+   
+   int $i;
+   for ($i = 0; $i < $state_count; $i++)
+   {
+      if ($state_list[$i] == $new_state_name)
+      {
+         confirmDialog -t "Error"
+                      -m ("An expression with the name " + $new_state_name + " already exists")
+                      -b "OK"
+                      -db "OK";
+         return;
+
+            
+      }
+   }
+   // calls into API to create new state / passes group name
+   //debug
+   p3dDeformDebugStr("$group", $group);
+   p3dDeformDebugStr("$new_state_name", $new_state_name);
+   //debug
+   string $state = `p3dDeformExpressionStateCreate $group $new_state_name`;
+}
+
+
+global proc p3dDeformDeleteState(int $frameNum)
+{
+   string $exprListName = "p3dDeformExpressionMenu_"+$frameNum;
+
+   if ($exprListName == "")
+      return;
+   if (`optionMenu -q -ni $exprListName` == 0) //the option box has 0 items
+      return;
+   string $state = `optionMenu -q -v $exprListName`;
+   string $group = p3dDeformFindInHistory("p3dDeformExpressionGroup", true, $state);
+   int $curIdx = `optionMenu -q -sl $exprListName`;
+   if ($state == "")
+      return;
+   
+   string $message = "Delete " + $state + "?";
+   string $result = `confirmDialog -title "Confirm Deletion"
+                                   -message $message
+                                   -button "Yes"
+                                   -button "No"
+                                   -defaultButton "Yes"
+                                   -cancelButton "No"
+                                   -dismissString "No"`;
+   if ($result == "No")
+   {
+      return;
+   }
+   
+   delete $state;
+}
+
+//this function searches all the framelayouts to find which one is associated with a group, and returns its number
+//this is because the frame name is something like p3dDeformSetupFrameLayout_1
+//so if the frame's annotation matches the specified group, we want to return the number appended to the frame's Name
+global proc int p3dDeformFindLayout(string $group)
+{
+   int $i = 0;
+   string $allControls[] = `lsUI -type controlLayout`;
+   string $frameName;
+   int $curNum;
+   string $tmpArr[];
+   for ($frameName in $allControls)
+   {
+      if (`frameLayout -exists $frameName`)
+      {
+         string $annName = `frameLayout -q -ann $frameName`;
+         if ($annName == $group)
+         {
+            tokenize $frameName "_" $tmpArr;       //figure out which frameLayout # is the current group's
+            if (size($tmpArr) > 1 && ($tmpArr[0] == "p3dDeformSetupFrameLayout") )
+               $curNum = $tmpArr[size($tmpArr)-1];
+            $group_found = 1;
+            $i = $curNum;
+            break;
+         }   
+      }
+   }
+   return $i;
+}
+
+//this gets called by the API when a node is deleted or renamed.  
+global proc p3dDeformUpdateAllOptionBoxes()
+{
+   string $groupList[] = `ls -type p3dDeformExpressionGroup`;
+   int $i = 0;
+   for ($group in $groupList)
+   {
+      //we need to find the layout whose annotation matches the group name
+      
+      $i = p3dDeformFindLayout($group);
+
+      string $obName = "p3dDeformExpressionMenu_" + $i;
+      p3dDeformUpdateOptionBox $obName $group;
+      p3dDeformListBoxUpdate $i;
+   }
+
+}
+
+global proc p3dDeformUpdateAllOptionBoxesCheck(string $state)
+{
+   int $exists = `objExists $state`;
+   
+   if (!$exists)
+      return;
+   string $output = $state + ".output";
+   int $connected = `connectionInfo -is $output`;
+   
+   if ($connected)
+      p3dDeformUpdateAllOptionBoxes;
+}
+
+global proc p3dDeformUpdateOptionBox(string $exprListName, string $group)
+{
+   if ($exprListName == "")
+      return;
+   if (`optionMenu -exists $exprListName`)
+   {
+      int $curSel = `optionMenu -q -sl $exprListName`;
+
+      string $menuItems[] = `optionMenu -q -ils $exprListName`;
+      string $oldMenuItemLabels[];
+      for ($curMenu in $menuItems)
+      {
+         $oldMenuItemLabels[size($oldMenuItemLabels)] = `menuItem -q -label $curMenu`;
+         deleteUI $curMenu;
+      }
+      
+      int $numConnectedStates = 0;
+      string $state_list[] = `ls -type p3dDeformExpressionState`;
+      string $activeStateList[];
+      for ($cur_state in $state_list)
+      {
+         if (`connectionInfo -isSource ($cur_state + ".output")`)
+         {
+            string $destination_list[];
+
+            $destination_list = `connectionInfo -dfs ($cur_state + ".output")`;
+            for ($destination in $destination_list)
+            {
+               string $tmpArr[];
+               tokenize $destination "." $tmpArr;
+               if ($tmpArr[0] == $group)
+               {
+                  $numConnectedStates++;
+                  menuItem -parent $exprListName -label $cur_state -ann $cur_state;
+                  $activeStateList[size($activeStateList)] = $cur_state;
+               }
+            }
+         }
+      }
+   
+      if ($numConnectedStates == 0)
+      {
+         optionMenu -edit -en false $exprListName;
+         return;
+      }
+      //this is all to select the appropriate state in the dropdown list box.  if a state is deleted, select its nearest neighbour.
+      //if a state is renamed, we still want to select it.
+      else if (size($oldMenuItemLabels) > $numConnectedStates)   //one or more states have been deleted
+      {
+         int $exists = `optionMenu -q -ni $exprListName`;
+         if ($exists < $curSel)
+            optionMenu -edit -sl $exists $exprListName;
+         else
+            optionMenu -edit -sl $curSel $exprListName;
+      }
+      else if (size($oldMenuItemLabels) < $numConnectedStates)    //one or more states have been added
+      {
+         sort $oldMenuItemLabels;
+         sort $activeStateList;
+         for ($i=0;$i < size($activeStateList); $i++)
+         {
+            if ($activeStateList[$i] != $oldMenuItemLabels[$i])
+               break;
+         }
+         
+         int $exists = `optionMenu -q -ni $exprListName`;
+         if (($i+1) <= $exists)
+            optionMenu -edit -sl ($i+1) $exprListName;
+         else
+            optionMenu -edit -sl $exists $exprListName;
+      }
+      else  //same number of states- one was renamed
+      {
+         //go through the list of oldmenuItemLabels and the list of connected states.  which one does not belong?
+         sort $oldMenuItemLabels;
+         sort $activeStateList;
+         int $i;
+         int $foundNew = 0;
+         for ($i=0; $i < size($activeStateList); $i++)
+         {
+            
+            if ($oldMenuItemLabels[$i] != $activeStateList[$i])
+               //we've found a label that doesn't match
+            {
+               optionMenu -edit -v $activeStateList[$i] $exprListName;
+               $foundNew = 1;break;
+            }
+         }
+         if ($foundNew == 0)
+         {
+            optionMenu -edit -sl $curSel $exprListName;
+         }
+
+         
+
+      }
+
+      optionMenu -edit -en true $exprListName;
+   
+   }
+}
+
+// this function gets a textscrolllist control
+// and a bunch of values that should be added to it
+// we sort them, remove duplicates, and add them to the control
+global proc p3dDeformSortTextScrollList(string $keyListName, string $listBoxValues[])
+{
+   //debug
+   p3dDeformDebugStrArray("Keys before sorting",$listBoxValues);
+   //debug
+   
+   string $tmpStr;
+   string $sortedList[];
+   int $i;
+   $sortedList = `sort $listBoxValues`;   //we've sorted the list
+   int $numVal = `size $sortedList`;
+   
+   //debug
+   p3dDeformDebugStrArray("Keys after sorting:", $sortedList);
+   //debug
+      
+   //now check for duplicates- since it's sorted we can just check its neighbour
+   for ($i =0; $i < ($numVal-1); $i++)
+   {
+      if ($sortedList[$i] == $sortedList[$i+1])
+      {
+         $sortedList[$i+1] = "";
+      }
+
+   }
+
+   //remove everything from our control
+   textScrollList -edit -removeAll $keyListName;
+
+   //and add back the new strings
+   for ($tmpStr in $sortedList)
+   {
+      if ($tmpStr != "")
+      {
+		 if (`gmatch $tmpStr "-*"`)// test if string is a negative number
+			$tmpStr = `substring $tmpStr 1 6`;
+         else $tmpStr = `substring $tmpStr 1 5`;
+         textScrollList -edit -append $tmpStr $keyListName;
+      }
+   }
+
+}
+
+
+// here we update the blend stage slider.  this works in two ways -
+// one, $list_update is false, meaning that the radio button was clicked
+// two, a different expression in the group has been selected,
+// so that we have to query it for the value rather than set it to the value of the radio group
+global proc p3dDeformBlendStageUpdate(int $frameNum, int $list_update)
+{
+   string $exprListName = "p3dDeformExpressionMenu_"+$frameNum;
+   string $stage_grp = "p3dDeformSetupRadioButtonGrp_"+$frameNum;
+
+   if ( ($exprListName == "") || ($stage_grp == "") )
+      return;
+   if (`optionMenu -q -ni $exprListName` == 0) //the option box has 0 items
+      return;
+   string $state = `optionMenu -q -v $exprListName`;
+   if ($state == "")
+      return;
+      
+   string $attr_stage = $state + ".blendStage";
+   
+   string $state_list[] = `ls -type p3dDeformExpressionState`;
+   string $tempStr;
+   int $found = 0;
+   for ($tempStr in $state_list)
+   {
+      if ($state == $tempStr)
+      {
+         $found = 1;
+         break;
+      }
+      
+   }
+   if ($found == 0)
+      return;
+   
+   if ($list_update)       //here we query the expression for its blend stage
+   {
+      int $curValue = `getAttr $attr_stage`;
+      radioButtonGrp -edit -sl ($curValue + 1) $stage_grp;
+   }
+
+   else                 //we've set a new blend stage, so set the attribute
+   {
+      int $idx = `radioButtonGrp -q -sl $stage_grp`;  //which radio button is selected?
+      int $value = -1;     //sentinel
+      if ($idx == 1)       
+         $value = 0;
+      else if ($idx == 2)
+         $value = 1;
+      else if ($idx == 3)
+         $value = 2;
+   
+      if ($value != -1)
+         setAttr $attr_stage $value;         //a valid radio button is selected
+   }
+   connectControl $stage_grp $attr_stage;    //everything is synced- now connect the controls
+}
+
+
+// we get the name of the selected state from the option box, 
+// and we write to the list box we are also responsible for 
+// updating the blend stage at this point...we call the update fcn
+// and pass in a bool indicating that the expression has changed
+global proc p3dDeformListBoxUpdate(int $frameNum)
+{
+   string $exprListName = "p3dDeformExpressionMenu_"+$frameNum;
+   string $keyListName = "p3dDeformSetupTextScrollList_"+$frameNum;
+   string $stage_grp = "p3dDeformSetupRadioButtonGrp_"+$frameNum;
+
+   if (!`optionMenu -exists $exprListName`)
+      return;
+   if (!`textScrollList -exists $keyListName`)
+      return;
+   if (!`radioButtonGrp -exists $stage_grp`)
+      return;
+   if (`optionMenu -q -ni $exprListName` == 0) //the option box has 0 items
+      return;
+   //the keys have to be stored somewhere else- when i update i need to query some object
+   //for the key values
+   string $keyValues[];
+   textScrollList -edit -removeAll $keyListName;
+   string $state = `optionMenu -q -v $exprListName`;
+   if ($state == "")
+      return;
+   
+   string $state_list[] = `ls -type p3dDeformExpressionState`;
+   string $tempStr;
+   int $found = 0;
+   for ($tempStr in $state_list)
+   {
+      if ($state == $tempStr)
+      {
+         $found = 1;
+         break;
+      }
+      
+   }
+   if ($found == 0)
+      return;
+   
+   string $state_keyIndices = $state + ".keyIndices";
+   int $i = 0;
+   int $numKeyIndices = `getAttr -size $state_keyIndices`;
+   string $tmpKeyVal;
+   for ($i = 0; $i < $numKeyIndices; $i++)
+   {
+      $tmpKeyVal = eval("getAttr " + $state_keyIndices + "[" + $i + "]");
+	  if($tmpKeyVal != "-2") //ignore invalid key values
+		$keyValues[$i] = $tmpKeyVal;
+   }
+   
+   
+   //append a dummy zero key to the list
+   $keyValues[$i] = "0.0";
+   for ($iter in $keyValues)
+      textScrollList -edit -append $iter $keyListName;
+
+   p3dDeformSortTextScrollList($keyListName, $keyValues);
+   p3dDeformBlendStageUpdate( $frameNum, 1);
+}
+
+
+// the list box has been selected - so set the geometry 
+// to whatever key corresponds to this choice
+global proc p3dDeformUpdateScrollSelection(int $frameNum)
+{
+   string $exprListName = "p3dDeformExpressionMenu_"+$frameNum;
+   string $keyListName = "p3dDeformSetupTextScrollList_"+$frameNum;
+   string $sliderName = "p3dDeformSetupKeyPoseSlider_"+$frameNum;
+
+   if (($keyListName == "") || ($sliderName == "") || ($exprListName == ""))
+   {
+      return;
+   }
+   
+   if (`optionMenu -q -ni $exprListName` == 0) //the option box has 0 items
+      return;
+   
+   string $state = `optionMenu -q -v $exprListName`;   
+   string $keyList[] = `textScrollList -query -selectItem $keyListName`;
+   
+   //jump the slider to whatever key has been selected
+   float $actualVal;
+   int $i;
+   
+   string $tempNames[];
+   int $numTokens = `tokenize $sliderName "_" $tempNames`;
+   int $frameNum = $tempNames[$numTokens-1];
+   string $testSliderName = "p3dTestSlider_"+$frameNum;
+   select -cl;
+   
+   for ($i=0; $i < size($keyList); $i++)
+   {
+      $actualVal = $keyList[$i];
+      floatSliderButtonGrp -edit -value $actualVal $sliderName;
+
+      //call into the API to set the geometry as we want it
+      //- you can't do this in MEL because of the 'array of arrays' nature of the attributes
+      waitCursor -state on;
+      
+      floatSliderGrp -e -v $actualVal $testSliderName;
+	  
+	  //debug
+	  p3dDeformDebugTrace("Calling p3dDeformExpressionStateSetPose with");
+	  p3dDeformDebugFloat("$actualVal",$actualVal);
+	  p3dDeformDebugStr("$state",$state);
+	  //debug
+      
+	  p3dDeformExpressionStateSetPose $state $actualVal;
+      waitCursor -state off;
+   }   
+}
+
+
+
+global proc p3dDeformResetState(int $frameNum)
+{ 
+   string $group;
+   string $frameName = "p3dDeformSetupFrameLayout_" + $frameNum;
+   if (`frameLayout -exists $frameName`)
+   {
+      $group = `frameLayout -q -ann $frameName`;
+   }
+   
+   waitCursor -state on;
+   
+   string $testSliderName = "p3dTestSlider_"+$frameNum;
+   floatSliderGrp -e -v 0.0 $testSliderName;
+   //this is a call using the API that sets every vertex in the mesh to its neutral position
+   string $mesh = p3dDeformFindInHistory("mesh", 1, $group);
+   p3dDeformExpressionGroupResetPose $mesh;
+   waitCursor -state off;
+}
+
+global proc p3dDeformUpdateVertices(int $frameNum, int $mode)
+{
+   string $exprListName = "p3dDeformExpressionMenu_"+ $frameNum;
+
+   if ($exprListName == "")
+      return;
+
+   if (`optionMenu -q -ni $exprListName` == 0) //the option box has 0 items
+   {
+      confirmDialog -title "Confirm" 
+                    -message "You need to create an expression before you can update its vertices." 
+                    -button "OK" 
+                    -defaultButton "OK";
+      return;
+   }
+      
+   string $state = `optionMenu -q -v $exprListName`;
+
+   string $keyListName = "p3dDeformSetupTextScrollList_" + $frameNum;
+   string $selectedKey[];
+   float $keyValues[];
+   string $keyNames[];
+   int $numSel;
+   int $i;
+   $selectedKey = `textScrollList -query -selectItem $keyListName`;
+   $numSel = `size $selectedKey`;
+   if ($numSel > 0)
+   {
+      for ($i=0; $i < $numSel; $i++)
+      {
+         $keyValues[$i] = $selectedKey[$i];
+      }
+      
+   
+      waitCursor -state on;
+      for ($i=0; $i  < $numSel; $i++)
+      {
+         if ($keyValues[$i] != 0.0)
+            p3dDeformUpdateExpression($state, $keyValues[$i], $mode);
+      }
+      waitCursor -state off;
+   }
+}
+
+//not called
+global proc p3dDeformRemoveBrokenStates()
+{
+   string $allStates[] = `ls -type p3dDeformExpressionState`;
+   string $state;
+   int $counter = 0;
+   for ($state in $allStates)
+   {
+	   string $state_plug = $state + ".output";
+	   if (!`connectionInfo -is $state_plug`)
+	   {
+		   delete $state;
+         $counter++;
+	   }
+   }
+
+   print("\nRemoved " + $counter + " disconnected states.");
+}
+
+global proc p3dDeformUpdateTestState(int $i)
+{
+   string $slider = "p3dTestSlider_" + $i;
+   string $keyPoseSlider = "p3dDeformSetupKeyPoseSlider_" + $i;
+   string $menu = "p3dDeformExpressionMenu_" + $i;
+   if ((!`floatSliderGrp -exists $slider`) || (!`optionMenu -exists $menu`))
+      return;
+   if (`optionMenu -q -ni $menu` == 0)
+      return;
+
+   float $weight = `floatSliderGrp -q -v $slider`;
+   string $state = `optionMenu -q -v $menu`;
+   string $mesh = p3dDeformFindInHistory("mesh", 1, $state);
+   if (`floatSliderGrp -exists $keyPoseSlider`)
+      floatSliderGrp -e -v $weight $keyPoseSlider;
+   p3dDeformTestState $state $weight;
+}
+
+
+
+global proc int p3dDeformWriteToFile(string $mesh, string $filename)
+{
+   string $allGroups[] = `ls -type p3dDeformExpressionGroup`;
+   if (size($allGroups) > 0)
+   {
+      string $allConnectedGroups[];
+      for ($tstG in $allGroups)
+      {
+         string $history = p3dDeformFindInHistory("mesh", true, $tstG);
+         if (gmatch($history,"*" + $mesh + "*") == 1)
+         {
+            $allConnectedGroups[size($allConnectedGroups)] = $tstG;
+         }
+      }
+
+      int $fileId = `fopen $filename "w"`;
+      if ($fileId == 0)
+      {
+         print("Error opening file " + $filename + " for writing.");
+         return -1;
+      }
+      else
+      {
+         int $connectedGroups = size($allConnectedGroups);
+         string $numGroups = "NumGroups " + $connectedGroups + "\n";
+         fprint $fileId $numGroups;
+         fclose $fileId;
+      }
+   
+      
+      
+      for ($g in $allConnectedGroups)
+      {  
+         p3dDeformExpressionGroupSave $g $filename;
+      }
+   }
+   return 0;
+}
+
+global proc int p3dDeformReadFromFile(string $mesh, string $filename)
+{
+   int $retVal = `p3dDeformExpressionGroupRead $mesh $filename`;
+   return $retVal;
+}
+
+
+

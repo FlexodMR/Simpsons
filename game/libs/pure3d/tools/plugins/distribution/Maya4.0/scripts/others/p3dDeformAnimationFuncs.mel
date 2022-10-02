@@ -1,0 +1,253 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformAnimationFuncs.mel
+// Author: Bryan Brandt, Senta Kaiser
+//
+// Description: Callback functions for buttons on the Animation tab UI
+//
+// Contents:
+// global proc p3dDeformKeyAll(string $group)
+// global proc p3dDeformCopyAll(string $group)
+// global proc p3dDeformPasteAll(string $group)
+// global proc p3dDeformZeroAll(string $group)
+// global proc p3dDeformSelectNone(string $group)
+
+
+
+// Keys all attached states to a given group
+// - arguments:
+//      group - group whose states need to be keyed
+//
+global proc p3dDeformKeyAll(string $group)
+{
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[];
+         $destinations = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression;
+
+               // key state slider
+               string $state_state = $state + ".state";
+               
+               setKeyframe $state_state;
+
+               // key weight slider, if not connected to state
+               int $state_weight_connected = eval("isConnected " + $state + ".state " +
+                                                                   $state + ".weight");
+               
+               if (!$state_weight_connected)
+               {
+                  string $state_weight = $state + ".weight";
+                  setKeyframe $state_weight;
+               
+               }
+            
+            }
+         }
+      }
+   }
+}
+
+/*************************************************************************
+// Description: Copies all animation keys of a group to the clipboard.	
+//
+// Parameters: $group is the name of the deformer group node.
+//
+// Returns:
+//
+***************************************************************************/
+global proc p3dDeformCopyAll(string $group)
+{
+   int $numExp = 0;
+   string $oldSelList[] = `ls -sl`;
+   select -cl;
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[];
+         $destinations = `connectionInfo -dfs ($expression + ".output")`;
+
+		 //put expressions for this group on the active sel list
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {  
+               select -add $expression;
+               $numExp++;  
+            }
+            
+            
+         }
+      }
+   }
+   if ($numExp > 0)
+      copyKey;
+   select $oldSelList;
+}
+
+/*************************************************************************
+// Description: Applies the animation keys from the clipboard to the specified
+// deformer group node. Has no effect if p3dDeformCopyAll was not
+// called first. 
+//
+// Parameters: $group is the name of the deformer group node.
+//
+// Returns:
+//
+***************************************************************************/
+global proc p3dDeformPasteAll(string $group)
+{
+   string $oldSelList[] = `ls -sl`;
+   int $numExp = 0;
+   select -cl;
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[];
+         $destinations = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {  
+               select -add $expression;
+               $numExp++;
+               
+            }
+            
+            
+         }
+      }
+   }
+   if ($numExp > 0)
+      pasteKey;
+   select $oldSelList;
+}
+
+
+// Zeros out all attached states to a given group
+// - arguments:
+//      group - group whose states need to be zeroed
+//
+global proc p3dDeformZeroAll(string $group)
+{
+	//debug
+   p3dDeformDebugStr( "Name of group to zero all: ", $group);
+   //debug
+
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[] = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression;
+
+               // set state slider
+               eval("setAttr " + $state + ".state 0");
+
+               // set weight slider, if not connected to state
+               int $state_weight_connected = eval("isConnected " + $state + ".state " +
+                                                                   $state + ".weight");
+               if (!$state_weight_connected)
+               {
+                  eval("setAttr " + $state + ".weight 0");
+               }
+               
+            }
+         }
+      }
+   }
+}
+
+
+/*************************************************************************
+// Description: Selects all the state nodes (aka. expressions) connected to a given
+// deformer group node.
+//
+// Parameters: $group is the name of a deformer group node.
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformSelectAll(string $group)
+{
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[] = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression;
+               select -add $state;
+            }
+         }
+      }
+   }
+}
+
+
+
+
+/*************************************************************************
+// Description:	Removes all state nodes connected to a deformer group
+// from the Active selection list.
+//
+// Parameters:$group is the name of a deformer group node.
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformSelectNone(string $group)
+{
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[] = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression;
+               select -d $state;
+            }
+         }
+      }
+   }
+}
+// End of file.

@@ -1,0 +1,122 @@
+SelectMission("m3");
+
+SetMissionResetPlayerInCar("m3_apucarstart_sd");
+SetDynaLoadData("l3z1.p3d;l3r1.p3d;l3r5.p3d;l3r5_dam.p3d;");
+InitLevelPlayerVehicle("apu_v","m3_apucarstart_sd","OTHER");
+
+SetNumValidFailureHints( 5 );
+
+UsePedGroup(0);
+
+SetForcedCar();
+
+AddStage(16); 
+	RESET_TO_HERE();
+	SetMaxTraffic(3);
+	SetStageMessageIndex(118);
+	SetHUDIcon( "flatmeat" );
+	AddStageVehicle("cletu_v","m3_cletus_carstart","target","Missions\level03\M3dump.con", "cletus");
+	SetVehicleAIParams( "cletu_v", -10, -9 );   // very dumb - no shortcuts
+	AddStageWaypoint( "m3_cletus_path5" );
+	AddStageWaypoint( "m3_cletus_path9" );
+	AddStageWaypoint( "m3_cletus_path1" );
+
+	StartCountdown(count);
+	AddToCountdownSequence( "3", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "2", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "1", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "GO", 400 ); // duration time in milliseconds
+
+	AddObjective("dump", "neither");
+		SetObjTargetVehicle("cletu_v");
+		AddNPC("apu", "m3_apu_hide");
+		AddCollectible("m3_flatmeat_1","roadkill");
+		AddCollectible("m3_flatmeat_2","roadkill");
+		AddCollectible("m3_flatmeat_3","roadkill");
+		AddCollectible("m3_flatmeat_4","roadkill");
+		AddCollectible("m3_flatmeat_5","roadkill");
+		AddCollectible("m3_flatmeat_6","roadkill");
+		AddCollectible("m3_flatmeat_7","roadkill");
+		AddCollectible("m3_flatmeat_8","roadkill");
+		AddCollectible("m3_flatmeat_9","roadkill");
+		AddCollectible("m3_flatmeat_10","roadkill");
+		AddCollectible("m3_flatmeat_11","roadkill");
+		AddCollectible("m3_flatmeat_12","roadkill");
+		AddCollectible("m3_flatmeat_13","roadkill");
+		AddCollectible("m3_flatmeat_14","roadkill");
+		AddCollectible("m3_flatmeat_15","roadkill");
+	CloseObjective();
+	SetStageTime(120);
+	AddCondition("timeout");
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "apu_v" );
+	CloseCondition();
+	SetCompletionDialog("jerkwater","apu");
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(181);
+	SetHUDIcon( "observ" );
+	AddObjective("goto", "both");
+		SetDestination("m3_observatory", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "apu_v" );
+	CloseCondition();
+	SetStageTime(80);
+	AddCondition("timeout");
+	CloseCondition();
+	SetFadeOut( 1.0 );
+	SwapInDefaultCar();
+	SetSwapDefaultCarLocator("m3_carend");
+	SetSwapForcedCarLocator("m3_apu_carend");
+	SetSwapPlayerLocator("m3_lisa_observatory");
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(182);
+	SetHUDIcon( "observ" );
+	AddObjective("interior");
+		AddNPC("frink", "m3_frink");
+		SetDestination("Observatory", "obsv_mission_doorstar");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(66);
+	SetHUDIcon( "frink" );
+	AddObjective("talkto", "neither");
+		AddNPC("frink", "m3_frink");
+		AddObjectiveNPCWaypoint( "frink", "m3_frink_walk_1" );
+		SetTalkToTarget("frink", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0, "final");
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_near" );
+		SetConversationCam( 2, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		SetDialogueInfo("lisa","frink","conspiracy",0);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+

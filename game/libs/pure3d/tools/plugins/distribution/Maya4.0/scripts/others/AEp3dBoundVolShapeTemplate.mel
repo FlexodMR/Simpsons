@@ -1,0 +1,103 @@
+global proc AEp3dBoundVolShapeTemplate( string $nodeName )
+{
+   editorTemplate -beginScrollLayout;
+
+      //now you can i.e. hide some of every Maya nodes default attributes
+      editorTemplate -suppress "input";
+      editorTemplate -suppress "caching";
+      editorTemplate -suppress "nodeState";
+      editorTemplate -suppress "controlPoints";
+      editorTemplate -suppress "weights";
+      editorTemplate -suppress "tweak";
+      editorTemplate -suppress "relativeTweak";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "compInstObjGroups";
+      editorTemplate -suppress "castsShadows";
+      editorTemplate -suppress "motionBlur";
+      editorTemplate -suppress "primaryVisibility";
+      editorTemplate -suppress "visibleInReflections";
+      editorTemplate -suppress "visibleInRefractions";
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "geometryAntialiasingOverride";
+      editorTemplate -suppress "antialiasingLevel";
+      editorTemplate -suppress "shadingSamplesOverride";
+      editorTemplate -suppress "shadingSamples";
+      editorTemplate -suppress "maxShadingSamples";
+      editorTemplate -suppress "volumeSamplesOverride";
+      editorTemplate -suppress "volumeSamples";
+      editorTemplate -suppress "maxVisibilitySamplesOverride";
+      editorTemplate -suppress "maxVisibilitySamples";
+      editorTemplate -suppress "boundingBoxScale"; 
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "smoothShading";
+      editorTemplate -suppress "drawOverride";
+      editorTemplate -suppress "useObjectColor";
+      editorTemplate -suppress "objectColor";
+      editorTemplate -suppress "intermediateObject";
+//      editorTemplate -suppress "visibility";
+      editorTemplate -suppress "lodVisibility";
+      editorTemplate -suppress "template";
+
+      editorTemplate -beginLayout "Bounding Volume Attributes";
+      editorTemplate -addControl    "boundingType";
+      editorTemplate -addControl    "radius";
+      editorTemplate -addControl    "length";
+      editorTemplate -addControl    "width";
+      editorTemplate -addControl    "height";
+      editorTemplate -addControl    "max";
+      editorTemplate -addControl    "med";
+      editorTemplate -addControl    "scaleInput";
+     
+      editorTemplate -endLayout; 
+
+    editorTemplate -beginLayout "Object Display" -collapse 1; 
+
+        editorTemplate -addControl "visibility";
+        editorTemplate -addControl "template";
+
+    editorTemplate -endLayout;
+
+    editorTemplate -suppress "intermediateObject";
+    editorTemplate -suppress "caching";
+    editorTemplate -suppress "nodeState";
+    editorTemplate -suppress "useObjectColor";
+    editorTemplate -suppress "objectColor";
+    editorTemplate -suppress "drawOverride";
+    editorTemplate -suppress "lodVisibility";
+    editorTemplate -suppress "renderInfo";
+    editorTemplate -suppress "motionBlur";
+    editorTemplate -suppress "visibleInReflections";
+    editorTemplate -suppress "visibleInRefractions";
+    editorTemplate -suppress "castsShadows";
+    editorTemplate -suppress "receiveShadows";
+    editorTemplate -suppress "maxVisibilitySamplesOverride";
+    editorTemplate -suppress "maxVisibilitySamples";
+    editorTemplate -suppress "geometryAntialiasingOverride";
+    editorTemplate -suppress "antialiasingLevel";
+    editorTemplate -suppress "shadingSamplesOverride";
+    editorTemplate -suppress "shadingSamples";
+    editorTemplate -suppress "maxShadingSamples";
+    editorTemplate -suppress "volumeSamplesOverride";
+    editorTemplate -suppress "volumeSamples";
+    editorTemplate -suppress "depthJitter";
+    editorTemplate -suppress "primaryVisibility";
+    editorTemplate -suppress "compInstObjGroups";
+    editorTemplate -suppress "instObjGroups";
+    editorTemplate -suppress "localPosition";
+    editorTemplate -suppress "inWorldMatrix";
+
+    editorTemplate -suppress "ghosting";
+    editorTemplate -suppress "uvSet";
+    editorTemplate -suppress "currentUVSet";
+    editorTemplate -suppress "featureDisplacement";
+    editorTemplate -suppress "initialSampleRate";
+    editorTemplate -suppress "extraSampleRate";
+    editorTemplate -suppress "textureThreshold";
+    editorTemplate -suppress "normalThreshold";
+
+   	editorTemplate -addExtraControls;
+
+   editorTemplate -endScrollLayout;
+}

@@ -1,0 +1,125 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Math::BigFloat - Arbitrary length float math package
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Math::BigFloat - Arbitrary length float math package
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use Math::BogFloat;
+  $f = Math::BigFloat-&gt;new($string);
+</PRE>
+
+<P>
+
+<PRE>  $f-&gt;fadd(NSTR) return NSTR            addition
+  $f-&gt;fsub(NSTR) return NSTR            subtraction
+  $f-&gt;fmul(NSTR) return NSTR            multiplication
+  $f-&gt;fdiv(NSTR[,SCALE]) returns NSTR   division to SCALE places
+  $f-&gt;fneg() return NSTR                negation
+  $f-&gt;fabs() return NSTR                absolute value
+  $f-&gt;fcmp(NSTR) return CODE            compare undef,&lt;0,=0,&gt;0
+  $f-&gt;fround(SCALE) return NSTR         round to SCALE digits
+  $f-&gt;ffround(SCALE) return NSTR        round at SCALEth place
+  $f-&gt;fnorm() return (NSTR)             normalize
+  $f-&gt;fsqrt([SCALE]) return NSTR        sqrt to SCALE places
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+All basic math operations are overloaded if you declare your big floats as
+
+
+<P>
+
+<PRE>    $float = new Math::BigFloat &quot;2.123123123123123123123123123123123&quot;;
+</PRE>
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_number">number format
+
+</A></STRONG><DD>
+canonical strings have the form /[+-]\d+E[+-]\d+/ . Input values can have
+inbedded whitespace.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Error">Error returns 'NaN'
+
+</A></STRONG><DD>
+An input parameter was ``Not a Number'' or divide by zero or sqrt of
+negative number.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Division">Division is computed to 
+
+</A></STRONG><DD>
+<CODE>max($div_scale,length(dividend)+length(divisor))</CODE> digits by default. Also used for default sqrt scale.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+The current version of this module is a preliminary version of the real
+thing that is currently (as of perl5.002) under development.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Mark Biggar
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

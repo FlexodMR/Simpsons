@@ -1,0 +1,179 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>File::DosGlob - DOS like globbing and then some
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXPORTS_by_request_only_">EXPORTS (by request only)</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#HISTORY">HISTORY</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+File::DosGlob - 
+<FONT SIZE=-1>DOS</FONT> like globbing and then some
+
+
+<P>
+
+perlglob.bat - a more capable perlglob.exe replacement
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    require 5.004;
+    use <A HREF="File::DosGlob">File::DosGlob</A> 'glob';  # override CORE::glob
+    @perlfiles = glob  &quot;..\\pe?l/*.p?&quot;;
+    print &lt;..\\pe?l/*.p?&gt;;
+    
+    # from the command line
+    &gt; perl -MFile::DosGlob=glob -e &quot;print &lt;../pe*/*p?&gt;&quot;
+    
+    &gt; perlglob ../pe*/*p?
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> module that implements DOS-like globbing with a few enhancements. This file is also a portable replacement for perlglob.exe. It is largely compatible with perlglob.exe (the 
+<FONT SIZE=-1>M$</FONT> setargv.obj version) in all but one respect--it understands wildcards in directory components.
+
+
+
+<P>
+
+For example, <CODE><..\\l*b\\file/*glob.p?</CODE>&gt; will work as expected (in that it will find something like
+'..\lib\File/DosGlob.pm' alright). Note that all path components are
+case-insensitive, and that backslashes and forward slashes are both
+accepted, and preserved. You may have to double the backslashes if you are
+putting them in literally, due to double-quotish parsing of the pattern by
+perl.
+
+
+<P>
+
+When invoked as a program, it will print null-separated filenames to
+standard output.
+
+
+<P>
+
+While one may replace perlglob.exe with this, usage by overriding
+CORE::glob via importation should be much more efficient, because it avoids
+launching a separate process, and is therefore strongly recommended.
+
+
+<P>
+
+Extending it to csh patterns is left as an exercise to the reader.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXPORTS_by_request_only_">EXPORTS (by request only)
+
+</A></H1>
+<CODE>glob()</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Should probably be built into the core, and needs to stop pandering to 
+<FONT SIZE=-1>DOS</FONT> habits. Needs a dose of optimizium too.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Gurusamy Sarathy <A HREF="MAILTO:<gsar@umich.edu>"><gsar@umich.edu></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="HISTORY">HISTORY
+
+</A></H1>
+<UL>
+<LI><STRONG></STRONG>
+
+<FONT SIZE=-1>A</FONT> few dir-vs-file optimizations result in glob importation being 10 times faster than using perlglob.exe, and using perlglob.bat is only twice as slow as perlglob.exe 
+<FONT SIZE=-1>(GSAR</FONT> 
+<FONT SIZE=-1>28-MAY-97)</FONT>
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Several cleanups prompted by lack of compatible perlglob.exe under Borland 
+<FONT SIZE=-1>(GSAR</FONT> 
+<FONT SIZE=-1>27-MAY-97)</FONT>
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Initial version 
+<FONT SIZE=-1>(GSAR</FONT> 
+<FONT SIZE=-1>20-FEB-97)</FONT>
+
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+perl
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

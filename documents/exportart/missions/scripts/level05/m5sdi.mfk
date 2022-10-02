@@ -1,0 +1,68 @@
+SelectMission("m5sd");
+
+SetMissionResetPlayerOutCar("m5_apu_start","m5_carstart");
+SetDynaLoadData("l5z3.p3d;l5r2.p3d;l5r3.p3d;");
+
+SetMissionStartCameraName( "mission5camShape" );
+SetMissionStartMulticontName( "mission5cam" );
+SetAnimatedCameraName( "mission5camShape" );
+SetAnimCamMulticontName( "mission5cam" );
+
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(192);
+	SetHUDIcon( "dmv" );
+	AddObjective("interior");
+		AddNPC("snake", "m5_snake_sd");
+		SetDestination("dmv", "dmv_mission_doorstar");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(60);
+	SetHUDIcon( "snake" );
+	AddObjective("talkto", "neither");
+		AddNPC("snake", "m5_snake_sd");
+		AddObjectiveNPCWaypoint( "snake", "m5_snake_walk1" );
+		SetTalkToTarget("snake", 0, -0.2);
+	CloseObjective();
+CloseStage();
+
+AddStage(1);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis05_05.p3d" );
+			AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+			AmbientAnimationRandomize( 0, 0 );
+			AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientNpcAnimation( "dialogue_scratch_head" );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientNpcAnimation( "dialogue_thinking" );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+			AddAmbientNpcAnimation( "none" );
+			AddAmbientPcAnimation( "none" );
+			AddAmbientPcAnimation( "dialogue_hands_in_air" );
+			AddAmbientPcAnimation( "none" );
+			AddAmbientPcAnimation( "dialogue_yes" );
+			AddAmbientPcAnimation( "none" );
+			AddAmbientPcAnimation( "dialogue_yes" );
+			AddAmbientPcAnimation( "none" );
+			AddAmbientPcAnimation( "dialogue_yes" );
+		SetDialogueInfo("apu","snake","mugging",0);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

@@ -1,0 +1,87 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Text::Tabs -- expand and unexpand tabs per the unix expand(1) and unexpand(1)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Text::Tabs -- expand and unexpand tabs per the unix <CODE>expand(1)</CODE>
+and <CODE>unexpand(1)</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+use Text::Tabs;
+
+
+<P>
+
+<CODE>$tabstop</CODE> = 4; <CODE>@lines_without_tabs</CODE> =
+<CODE>expand(@lines_with_tabs);</CODE> <CODE>@lines_with_tabs</CODE> =
+<CODE>unexpand(@lines_without_tabs);</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Text::Tabs does about what the unix utilities <CODE>expand(1)</CODE> and
+<CODE>unexpand(1)</CODE> do. Given a line with tabs in it, expand will
+replace the tabs with the appropriate number of spaces. Given a line with
+or without tabs in it, unexpand will add tabs when it can save bytes by
+doing so. Invisible compression with plain ascii!
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+expand doesn't handle newlines very quickly -- do not feed it an entire
+document in one string. Instead feed it an array of lines.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+David Muir Sharnoff <A HREF="MAILTO:<muir@idiom.com>"><muir@idiom.com></A>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,241 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     15 July, 2002 (approx)
+//
+// Component:   
+//
+// Description: Occasionally Maya will connect a shading network in such
+//              a way that the API's MFnMesh::getConnectedShaders() will
+//              fail and throw an exception. Sometimes it's possible to
+//              put things back in order by reassigning the object to the
+//              defaultShadingGroup and then restore the desired shaders.
+//              This script automates this potentially tedious task.
+//
+// Constraints: No guarantees that this will fix all cases where Maya's
+//              shading networks get buggered up.
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+//===========================================================================
+// getSGsFromShape
+//===========================================================================
+// Description: Returns an array of the Shading Groups (shadingEngine 
+//              nodes) responsible for shading the specified shape node.
+//
+// Constraints: 
+//
+//  Parameters: string $shape: The shape from which to derive the Shading
+//                             Groups.
+//
+//      Return: (string[]): Array of Shading Groups assigned to the specified
+//                          shape.
+//
+//===========================================================================
+proc string[] getSGsFromShape( string $shape )
+{
+    string $shadingEngines[];
+
+    if ( `objExists $shape` )
+    {
+        string $dest[] = `listConnections -destination true -source false -plugs false -type "shadingEngine" $shape`;
+
+        // listConnections can return duplicates within its list.
+        // The select below is a quick trick to avoid dupes in the 
+        // returned array.
+        if ( size( $dest ) )
+        {
+            string $select[] = `ls -sl`;
+            select -r -ne $dest;
+            $shadingEngines = `ls -sl`;
+            select -r $select;
+        }
+    }
+
+    return $shadingEngines;
+}
+
+//===========================================================================
+// getShape
+//===========================================================================
+// Description: Returns the shape node, if any, for the specified transform.
+//
+// Constraints: Considers only a single shape.
+//
+//  Parameters: string $xform: The transform node.
+//
+//      Return: (string): The shape node.
+//
+//===========================================================================
+proc string getShape( string $xform )
+{
+    string $shapes[];
+
+    $shapes[0] = $xform;
+
+    if ( "transform" == `nodeType $xform` )
+    // If given node is not a transform, assume it is a shape 
+    // and pass it through
+    {
+        $shapes = `listRelatives -fullPath -shapes $xform`;
+    }
+
+    return $shapes[0];
+}
+
+//===========================================================================
+// getSelectedMeshes
+//===========================================================================
+// Description: Returns an array for the selected polymesh objects.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (string[]): The selected polymesh objects. Shape nodes only.
+//
+//===========================================================================
+proc string[]  getSelectedMeshes()
+{
+    string $meshes[];
+
+    // Can I shorten this to `ls -sl -dag -leaf -type "mesh"` ??
+    string $select[] = `ls -sl -dag -leaf`;
+    for ( $node in $select )
+    {
+        string $shape = getShape( $node );
+        if ( `nodeType $shape` == "mesh" )
+        {
+            $meshes[`size $meshes`] = $shape;
+        }
+    }
+  
+  return $meshes;
+}
+
+//===========================================================================
+// getFacetSG
+//===========================================================================
+// Description: Returns the index for the Shading Group that is assigned
+//              to the specified face component. The index is a zero-based
+//              element in the specified array.
+//
+// Constraints: $facet is intended as a face component, but I suppose it
+//              could be an object as well.
+//
+//  Parameters: string $facet: The face component (e.g. "pCube1.f[0]") for
+//                             which to query the shading assignment.
+//              string $shadingGroups[]: An array of Shading Group set names
+//                             for which the specified face component is
+//                             potentially a member.
+//
+//      Return: (int): Zero-based index for the Shading Group. A value of (-1)
+//                     is returned if no Shading Group matched.
+//
+//===========================================================================
+proc int getFacetSG( string $facet, string $shadingGroups[] )
+{
+    int $facetSGIndex = 0;
+
+    for ( $facetSGIndex = 0; $facetSGIndex < `size $shadingGroups`; $facetSGIndex++ )
+    {
+        if ( `sets -isMember $shadingGroups[$facetSGIndex] $facet` ) return $facetSGIndex;
+    }
+
+    return -1;
+}
+
+proc assignDefaultShadingGroup( string $mesh )
+{
+    sets -e -forceElement "initialShadingGroup" $mesh;
+}
+
+proc assignShadingGroup( string $mesh, string $sg )
+{
+    sets -e -forceElement $sg $mesh;
+}
+
+//===========================================================================
+// fixShadingAssignments
+//===========================================================================
+// Description: Occasionally Maya will connect a shading network in such
+//              a way that the API's MFnMesh::getConnectedShaders() will
+//              fail and throw an exception. Sometimes it's possible to
+//              put things back in order by reassigning the object to the
+//              defaultShadingGroup and then restore the desired shaders.
+//              This script automates this potentially tedious task.
+//
+// Constraints: No guarantees that this will fix all cases where Maya's
+//              shading networks get buggered up.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc fixShadingAssignments()
+{
+  string $meshes[] = getSelectedMeshes();
+  
+  waitCursor -state on;
+  
+  for ( $mesh in $meshes )
+  {
+    string $sg[] = getSGsFromShape( $mesh );
+    
+    // If only one SG assigned then we can shortcut this.
+    if ( `size $sg` == 1 )
+    {
+        assignDefaultShadingGroup( $mesh );
+        assignShadingGroup( $mesh, $sg[0] );
+    }
+    else
+    {
+        // Build an array that indexes, for each face, which
+        // of the above shading groups is assigned.
+        int $faceToSG[];
+        
+        int $numFacesA[] = `polyEvaluate -f $mesh`;
+        int $numFaces = $numFacesA[0];
+        int $f;
+        
+        for ( $f = 0; $f < $numFaces; $f++ )
+        {
+            string $component = ( $mesh + ".f[" + $f + "]" );
+            $faceToSG[$f] = getFacetSG( $component, $sg );
+        }
+        
+        // assign to default shading group
+        assignDefaultShadingGroup( $mesh );
+
+        int $hasError = false;
+        
+        // And re-assign to original
+        for ( $f = 0; $f < $numFaces; $f++ )
+        {
+            if ( $faceToSG[$f] != -1 )
+            {
+                string $component = ( $mesh + ".f[" + $f + "]" );
+                assignShadingGroup( $component, $sg[ $faceToSG[$f] ] );
+            }
+            else
+            {
+                $hasError = true;
+            }
+        }
+        
+        if ( $hasError )
+        {
+            warning ( "Failed to assign one or more faces on mesh: " + $mesh );
+        }
+    }    
+  }
+  
+  waitCursor -state off;
+}
+
+/*
+source fixShadingAssignments; fixShadingAssignments;
+*/

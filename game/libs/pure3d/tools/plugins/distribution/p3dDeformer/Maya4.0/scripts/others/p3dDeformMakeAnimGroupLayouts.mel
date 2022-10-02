@@ -1,0 +1,56 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformGenProcs.mel
+// Author: Senta Kaiser
+// Modified: Pamela Chow (Sept 2001)
+//
+// Description: Procedures not specific to a particular tab
+
+// Callback when "Create Group" button is clicked
+//
+global proc p3dDeformExpressionUICreateGroup()
+{
+   string $sel[] = `ls -sl`;
+   int $sel_count = size($sel);
+
+   if($sel_count < 1)
+   {
+      error "No mesh selected";
+   }  
+   else if($sel_count >1)
+   {
+      error "Only one mesh should be selected";
+   }
+   
+   p3dDeformExpressionGroupCreate;
+   p3dDeformSetupNoCreate;
+}
+
+// Callback when "Set Neutral" button is clicked
+//
+global proc p3dDeformExpressionUISetNeutral()
+{
+   string $sel[] = `ls -sl -tr -s`; //only allow setting neutral on shapes or transform nodes
+   int $sel_count = size($sel);
+
+   if($sel_count < 1)
+   {
+      error "No mesh selected";
+   }  
+   else if($sel_count >1)
+   {
+      error "Only one mesh should be selected";
+   }
+   
+   string $msg = "Do you want to change the neutral shape for the mesh?";
+   string $yesno = `confirmDialog -title "Confirm" -message $msg
+                      -button "Yes" -button "No" -defaultButton "Yes"
+                      -cancelButton "No" -dismissString "No"`;
+         
+   if ($yesno == "No")
+   {
+      return;
+   }
+
+   p3dDeformMeshNeutralUpdate $sel[0];
+}

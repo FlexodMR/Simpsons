@@ -1,0 +1,491 @@
+//---------------------------------------------------------------------------
+// cpd
+//---------------------------------------------------------------------------
+
+// skeleton rig
+rig "childpedestrianRig"
+{
+    skeleton "Motion_Root";
+
+    // roots
+    jointIndex_AIRoot 0;
+    jointIndex_OrientationRoot 0;
+    joint_MotionRoot "Motion_Root";
+    joint_BalanceRoot "Balance_Root";
+    joint_CharacterRoot "Character_Root";
+
+    // balance root
+    maxBalanceRootCompress 0.25;
+
+    // legs
+    leg "left"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 1;
+
+        joint_FKMin "Hip_L";
+        joint_FKMax "Ball_L";
+
+        joint_Thigh "Hip_L";
+        joint_Knee "Knee_L";
+        joint_Ankle "Ankle_L";
+
+        //joint_Effector "Left_Foot";
+        //joint_PoleVector "Left_Knee";
+        //joint_OrientOffset "L_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+
+    leg "right"
+    {
+        jointIndex_FootPlant 1;
+        footPlantChannelIndex 0;
+
+        joint_FKMin "Hip_R";
+        joint_FKMax "Ball_R";
+
+        joint_Thigh "Hip_R";
+        joint_Knee "Knee_R";
+        joint_Ankle "Ankle_R";
+
+        //joint_Effector "Right_Foot";
+        //joint_PoleVector "Right_Knee";
+        //joint_OrientOffset "R_Foot_O_Off";
+
+        isIKRigged 0;
+    };
+};
+
+// bank
+bank "childpedestrianBank"
+{
+    // reference to skeleton configuration
+    rig "childpedestrianRig";
+
+	default animation.blendOutTime 0.1;
+	default animation.blendInTime 0.1;
+
+	//animation "turn_180_CW"
+	//{
+	//	animation "cpd_turn_180_CW";
+	//};
+
+	//animation "idle0"
+	//{
+	//	animation "cpd_idle_yoga";
+	//};
+
+	animation "hit_by_car_front"
+	{
+		animation "cpd_hit_by_car_front";
+	};
+
+	animation "fall_land"
+	{
+		animation "cpd_fall_land";
+	};
+	
+	animation "flail"
+	{
+		animation "cpd_flail";
+	};
+
+	animation "get_up"
+	{
+		animation "cpd_get_up";
+	};
+
+	animation "hit_by_car_back"
+	{
+		animation "cpd_hit_by_car_back";
+	};
+
+	//animation "idle1"
+	//{
+	//	animation "cpd_idle_pants";
+	//};
+
+	animation "run_into_object"
+	{
+		animation "cpd_run_into_object";
+	};
+
+	animation "run_into_person"
+	{
+		animation "cpd_run_into_person";
+	};
+
+	//animation "turn_180_CCW"
+	//{
+	//	animation "cpd_turn_180_CCW";
+	//};
+
+	//animation "turn_45_CCW"
+	//{
+	//	animation "cpd_turn_45_CCW";
+	//};
+
+	//animation "turn_45_CW"
+	//{
+	//	animation "cpd_turn_45_CW";
+	//};
+
+	//animation "get_into_car"
+	//{
+	//	animation "cpd_get_into_car";
+	//};
+
+	//animation "get_into_car_open_door"
+	//{
+	//	animation "cpd_get_into_car_open_door";
+	//};
+
+	//animation "get_into_car_close_door"
+	//{
+	//	animation "cpd_get_into_car_close_door";
+	//};
+
+	//animation "get_out_of_car_open_door"
+	//{
+	//	animation "cpd_get_out_of_car_open_door";
+	//};
+
+	//animation "get_out_of_car"
+	//{
+	//	animation "cpd_get_out_of_car";
+	//};
+
+	//animation "get_out_of_car_close_door"
+	//{
+	//	animation "cpd_get_out_of_car_close_door";
+	//};
+
+	//animation "get_into_car_open_door_high"
+	//{
+	//	animation "cpd_get_into_car_open_door_high";
+	//};
+
+	//animation "get_into_car_high"
+	//{
+	//	animation "cpd_get_into_car_high";
+	//};
+
+	//animation "get_into_car_close_door_high"
+	//{
+	//	animation "cpd_get_into_car_close_door_high";
+	//};
+
+	//animation "get_out_of_car_open_door_high"
+	//{
+	//	animation "cpd_get_out_of_car_open_door_high";
+	//};
+
+	//animation "get_out_of_car_high"
+	//{
+	//	animation "cpd_get_out_of_car_high";
+	//};
+
+	//animation "get_out_of_car_close_door_high"
+	//{
+	//	animation "cpd_get_out_of_car_close_door_high";
+	//};
+
+	//animation "hit_switch"
+	//{
+	//	animation "cpd_hit_switch";
+	//};
+
+	//animation "point_left"
+	//{
+	//	animation "cpd_point_left";
+	//};
+
+	//animation "point_right"
+	//{
+	//	animation "cpd_point_right";
+	//};
+
+	//animation "point_straight_ahead"
+	//{
+	//	animation "cpd_point_straight_ahead";
+	//};
+
+	//animation "look_back"
+	//{
+	//	animation "cpd_look_back";
+	//};
+
+	//animation "look_left"
+	//{
+	//	animation "cpd_look_left";
+	//};
+
+	//animation "look_right"
+	//{
+	//	animation "cpd_look_right";
+	//};
+
+	//animation "sway_right"
+	//{
+	//	animation "cpd_sway_right";
+	//};
+
+	//animation "sway_left"
+	//{
+	//	animation "cpd_sway_left";
+	//};
+
+	//animation "cheer"
+	//{
+	//	animation "cpd_cheer";
+	//};
+
+	//animation "jump_idle_complete"
+	//{
+	//	animation "cpd_jump_idle_all";
+	//};
+
+	//animation "jump_idle_launch"
+	//{
+	//	animation "cpd_jump_idle_take_off";
+	//};
+
+	//animation "jump_idle_in_air"
+	//{
+	//	animation "cpd_jump_idle_in_air";
+	//};
+
+	//animation "jump_idle_land"
+	//{
+	//	animation "cpd_jump_idle_land";
+	//};
+
+	//animation "jump_run_launch"
+	//{
+	//	animation "cpd_jump_run_take_off";
+	//};
+
+	//animation "jump_run_in_air"
+	//{
+	//	animation "cpd_jump_run_in_air";
+	//};
+
+	//animation "jump_run_land"
+	//{
+	//	animation "cpd_jump_run_land";
+	//};
+
+	//animation "jump_dash_launch"
+	//{
+	//	animation "cpd_jump_dash_take_off";
+	//};
+
+	//animation "jump_dash_in_air"
+	//{
+	//	animation "cpd_jump_dash_in_air";
+	//};
+
+	//animation "jump_dash_land"
+	//{
+	//	animation "cpd_jump_dash_land";
+	//};
+
+	//animation "jump_run_complete"
+	//{
+	//	animation "cpd_jump_run_all";
+	//};
+
+	//animation "jump_dash_complete"
+	//{
+	//	animation "cpd_jump_dash_all";
+	//};
+
+	//animation "break"
+	//{
+	//	animation "cpd_break";
+	//};
+
+	//animation "phone_complete"
+	//{
+	//	animation "cpd_phone_all";
+	//};
+
+	//animation "phone_pick_up"
+	//{
+	//	animation "cpd_phone_pick_up";
+	//};
+
+	//animation "phone_hold"
+	//{
+	//	animation "cpd_phone_hold";
+	//};
+
+	//animation "phone_put_down"
+	//{
+	//	animation "cpd_phone_put_down";
+	//};
+
+	//animation "dash_complete"
+	//{
+	//	animation "cpd_dash_all";
+	//};
+
+	//animation "dash_skid"
+	//{
+	//	animation "cpd_dash_skid";
+	//};
+
+	//animation "get_into_car_driver"
+	//{
+	//	animation "cpd_get_into_car_driver";
+	//};
+
+	//animation "get_into_car_open_door_driver"
+	//{
+	//	animation "cpd_get_into_car_open_door_driver";
+	//};
+
+	//animation "get_into_car_close_door_driver"
+	//{
+	//	animation "cpd_get_into_car_close_door_driver";
+	//};
+
+	//animation "get_out_of_car_open_door_driver"
+	//{
+	//	animation "cpd_get_out_of_car_open_door_driver";
+	//};
+
+	//animation "get_out_of_car_driver"
+	//{
+	//	animation "cpd_get_out_of_car_driver";
+	//};
+
+	//animation "get_out_of_car_close_door_driver"
+	//{
+	//	animation "cpd_get_out_of_car_close_door_driver";
+	//};
+
+	//animation "get_into_car_open_door_high_driver"
+	//{
+	//	animation "cpd_get_into_car_open_door_high_driver";
+	//};
+
+	//animation "get_into_car_high_driver"
+	//{
+	//	animation "cpd_get_into_car_high_driver";
+	//};
+
+	//animation "get_into_car_close_door_high_driver"
+	//{
+	//	animation "cpd_get_into_car_close_door_high_driver";
+	//};
+
+	//animation "get_out_of_car_open_door_high_driver"
+	//{
+	//	animation "cpd_get_out_of_car_open_door_high_driver";
+	//};
+
+	//animation "get_out_of_car_high_driver"
+	//{
+	//	animation "cpd_get_out_of_car_high_driver";
+	//};
+
+	//animation "get_out_of_car_close_door_high_driver"
+	//{
+	//	animation "cpd_get_out_of_car_close_door_high_driver";
+	//};
+
+	animation "dodge"
+	{
+		animation "cpd_dodge";
+	};
+
+    locomotion4 "cpdLoco"
+    {
+        idle "cpd_loco_idle_rest";
+        blendInTime 0.1;
+        blendOutTime 0.1;
+
+        priority 1;
+
+        acceleration 50;
+        //turningAcceleration 1440;
+        turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        animation "n" 0 "cpd_loco_walk";
+        animation "w" 0 "cpd_loco_walk";
+        animation "s" 0 "cpd_loco_walk";
+        animation "e" 0 "cpd_loco_walk";
+
+	animation "n" 1 "cpd_loco_run";
+        animation "w" 1 "cpd_loco_run";
+        animation "s" 1 "cpd_loco_run";
+        animation "e" 1 "cpd_loco_run";
+
+	//animation "n" 2 "cpd_loco_dash";
+        //animation "w" 2 "cpd_loco_dash";
+        //animation "s" 2 "cpd_loco_dash";
+        //animation "e" 2 "cpd_loco_dash";
+    };
+    locomotion4 "carLoco"
+    {
+        idle "cpd_in_car_idle";
+
+        blendInTime 0.1;
+        blendOutTime 0.1;
+
+        priority 1;
+
+        //acceleration 50;
+        //turningAcceleration 1440;
+        //turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        animation "n" 0 "cpd_in_car_idle";
+        animation "w" 0 "cpd_in_car_idle";
+        animation "s" 0 "cpd_in_car_idle";
+        animation "e" 0 "cpd_in_car_idle";
+
+        animation "n" 1 "cpd_in_car_idle";
+        animation "w" 1 "cpd_in_car_idle";
+        animation "s" 1 "cpd_in_car_idle";
+        animation "e" 1 "cpd_in_car_idle";
+    };
+    //locomotion4 "carHighLoco"
+    //{
+        //idle "cpd_in_car_idle_high";
+
+        //blendInTime 0.1;
+        //blendOutTime 0.1;
+
+        //priority 1;
+
+        //acceleration 50;
+        //turningAcceleration 1440;
+        //turningVelocity 720;
+        //turningAngleThreshold 360;
+        //turningTimeThreshold 0.01;
+	
+        //animation "n" 0 "cpd_in_car_idle_high";
+        //animation "w" 0 "cpd_in_car_idle_high";
+        //animation "s" 0 "cpd_in_car_idle_high";
+        //animation "e" 0 "cpd_in_car_idle_high";
+
+        //animation "n" 1 "cpd_in_car_idle_high";
+        //animation "w" 1 "cpd_in_car_idle_high";
+        //animation "s" 1 "cpd_in_car_idle_high";
+        //animation "e" 1 "cpd_in_car_idle_high";
+    //};
+};
+
+puppet "childpedestrianPuppet"
+{
+    bank "childpedestrianBank";
+};
+
+
+// End of file.

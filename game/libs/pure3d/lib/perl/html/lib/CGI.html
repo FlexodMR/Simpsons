@@ -1,0 +1,4007 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>CGI - Simple Common Gateway Interface Class
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#ABSTRACT">ABSTRACT</A>
+	<LI><A HREF="#INSTALLATION">INSTALLATION</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#CREATING_A_NEW_QUERY_OBJECT_">CREATING A NEW QUERY OBJECT:</A>
+		<LI><A HREF="#CREATING_A_NEW_QUERY_OBJECT_FROM">CREATING A NEW QUERY OBJECT FROM AN INPUT FILE</A>
+		<LI><A HREF="#FETCHING_A_LIST_OF_KEYWORDS_FROM">FETCHING A LIST OF KEYWORDS FROM THE QUERY:</A>
+		<LI><A HREF="#FETCHING_THE_NAMES_OF_ALL_THE_PA">FETCHING THE NAMES OF ALL THE PARAMETERS PASSED TO YOUR SCRIPT:</A>
+		<LI><A HREF="#FETCHING_THE_VALUE_OR_VALUES_OF_">FETCHING THE VALUE OR VALUES OF A SINGLE NAMED PARAMETER:</A>
+		<LI><A HREF="#SETTING_THE_VALUE_S_OF_A_NAMED_">SETTING THE VALUE(S) OF A NAMED PARAMETER:</A>
+		<LI><A HREF="#APPENDING_ADDITIONAL_VALUES_TO_A">APPENDING ADDITIONAL VALUES TO A NAMED PARAMETER:</A>
+		<LI><A HREF="#IMPORTING_ALL_PARAMETERS_INTO_A_">IMPORTING ALL PARAMETERS INTO A NAMESPACE:</A>
+		<LI><A HREF="#DELETING_A_PARAMETER_COMPLETELY_">DELETING A PARAMETER COMPLETELY:</A>
+		<LI><A HREF="#DELETING_ALL_PARAMETERS_">DELETING ALL PARAMETERS:</A>
+		<LI><A HREF="#SAVING_THE_STATE_OF_THE_FORM_TO_">SAVING THE STATE OF THE FORM TO A FILE:</A>
+		<LI><A HREF="#CREATING_A_SELF_REFERENCING_URL_">CREATING A SELF-REFERENCING URL THAT PRESERVES STATE INFORMATION:</A>
+		<LI><A HREF="#COMPATIBILITY_WITH_CGI_LIB_PL">COMPATIBILITY WITH CGI-LIB.PL</A>
+		<LI><A HREF="#CALLING_CGI_FUNCTIONS_THAT_TAKE_">CALLING CGI FUNCTIONS THAT TAKE MULTIPLE ARGUMENTS</A>
+		<LI><A HREF="#CREATING_THE_HTTP_HEADER_">CREATING THE HTTP HEADER:</A>
+		<LI><A HREF="#GENERATING_A_REDIRECTION_INSTRUC">GENERATING A REDIRECTION INSTRUCTION</A>
+		<LI><A HREF="#CREATING_THE_HTML_HEADER_">CREATING THE HTML HEADER:</A>
+		<LI><A HREF="#ENDING_THE_HTML_DOCUMENT_">ENDING THE HTML DOCUMENT:</A>
+	</UL>
+
+	<LI><A HREF="#CREATING_FORMS">CREATING FORMS</A>
+	<UL>
+
+		<LI><A HREF="#CREATING_AN_ISINDEX_TAG">CREATING AN ISINDEX TAG</A>
+		<LI><A HREF="#STARTING_AND_ENDING_A_FORM">STARTING AND ENDING A FORM</A>
+		<LI><A HREF="#CREATING_A_TEXT_FIELD">CREATING A TEXT FIELD</A>
+		<LI><A HREF="#CREATING_A_BIG_TEXT_FIELD">CREATING A BIG TEXT FIELD</A>
+		<LI><A HREF="#CREATING_A_PASSWORD_FIELD">CREATING A PASSWORD FIELD</A>
+		<LI><A HREF="#CREATING_A_FILE_UPLOAD_FIELD">CREATING A FILE UPLOAD FIELD</A>
+		<LI><A HREF="#CREATING_A_POPUP_MENU">CREATING A POPUP MENU</A>
+		<LI><A HREF="#CREATING_A_SCROLLING_LIST">CREATING A SCROLLING LIST</A>
+		<LI><A HREF="#CREATING_A_GROUP_OF_RELATED_CHEC">CREATING A GROUP OF RELATED CHECKBOXES</A>
+		<LI><A HREF="#CREATING_A_STANDALONE_CHECKBOX">CREATING A STANDALONE CHECKBOX</A>
+		<LI><A HREF="#CREATING_A_RADIO_BUTTON_GROUP">CREATING A RADIO BUTTON GROUP</A>
+		<LI><A HREF="#CREATING_A_SUBMIT_BUTTON">CREATING A SUBMIT BUTTON </A>
+		<LI><A HREF="#CREATING_A_RESET_BUTTON">CREATING A RESET BUTTON</A>
+		<LI><A HREF="#CREATING_A_DEFAULT_BUTTON">CREATING A DEFAULT BUTTON</A>
+		<LI><A HREF="#CREATING_A_HIDDEN_FIELD">CREATING A HIDDEN FIELD</A>
+		<LI><A HREF="#CREATING_A_CLICKABLE_IMAGE_BUTTO">CREATING A CLICKABLE IMAGE BUTTON</A>
+		<LI><A HREF="#CREATING_A_JAVASCRIPT_ACTION_BUT">CREATING A JAVASCRIPT ACTION BUTTON</A>
+	</UL>
+
+	<LI><A HREF="#NETSCAPE_COOKIES">NETSCAPE COOKIES</A>
+	<LI><A HREF="#WORKING_WITH_NETSCAPE_FRAMES">WORKING WITH NETSCAPE FRAMES</A>
+	<LI><A HREF="#LIMITED_SUPPORT_FOR_CASCADING_ST">LIMITED SUPPORT FOR CASCADING STYLE SHEETS</A>
+	<LI><A HREF="#DEBUGGING">DEBUGGING</A>
+	<UL>
+
+		<LI><A HREF="#DUMPING_OUT_ALL_THE_NAME_VALUE_P">DUMPING OUT ALL THE NAME/VALUE PAIRS</A>
+	</UL>
+
+	<LI><A HREF="#FETCHING_ENVIRONMENT_VARIABLES">FETCHING ENVIRONMENT VARIABLES</A>
+	<LI><A HREF="#CREATING_HTML_ELEMENTS">CREATING HTML ELEMENTS</A>
+	<UL>
+
+		<LI><A HREF="#PROVIDING_ARGUMENTS_TO_HTML_SHOR">PROVIDING ARGUMENTS TO HTML SHORTCUTS</A>
+		<LI><A HREF="#Generating_new_HTML_tags">Generating new HTML tags</A>
+	</UL>
+
+	<LI><A HREF="#IMPORTING_CGI_METHOD_CALLS_INTO_">IMPORTING CGI METHOD CALLS INTO YOUR NAME SPACE</A>
+	<LI><A HREF="#USING_NPH_SCRIPTS">USING NPH SCRIPTS</A>
+	<LI><A HREF="#AUTHOR_INFORMATION">AUTHOR INFORMATION</A>
+	<LI><A HREF="#CREDITS">CREDITS</A>
+	<LI><A HREF="#A_COMPLETE_EXAMPLE_OF_A_SIMPLE_F">A COMPLETE EXAMPLE OF A SIMPLE FORM-BASED SCRIPT</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+
+<FONT SIZE=-1>CGI</FONT> - Simple Common Gateway Interface Class
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use CGI;
+  # the rest is too complicated for a synopsis; keep reading
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ABSTRACT">ABSTRACT
+
+</A></H1>
+This perl library uses perl5 objects to make it easy to create Web fill-out forms and parse their contents. This package defines 
+<FONT SIZE=-1>CGI</FONT> objects, entities that contain the values of the current query string and other state variables. Using a 
+<FONT SIZE=-1>CGI</FONT> object's methods, you can examine keywords and parameters passed to your script, and create forms whose initial values are taken from the current query (thereby preserving state information).
+
+
+
+<P>
+
+The current version of CGI.pm is available at
+
+
+<P>
+
+<PRE>  <A HREF="http://www.genome.wi.mit.edu/ftp/pub/software/WWW/cgi_docs.html">http://www.genome.wi.mit.edu/ftp/pub/software/WWW/cgi_docs.html</A>
+  <A HREF="ftp://ftp-genome.wi.mit.edu/pub/software/WWW/">ftp://ftp-genome.wi.mit.edu/pub/software/WWW/</A>
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="INSTALLATION">INSTALLATION
+
+</A></H1>
+
+<FONT SIZE=-1>CGI</FONT> is a part of the base Perl installation. However,
+you may need to install a newer version someday. Therefore:
+
+
+<P>
+
+To install this package, just change to the directory in which this file is
+found and type the following:
+
+
+<P>
+
+<PRE>        perl Makefile.PL
+        make
+        make install
+</PRE>
+
+<P>
+
+This will copy CGI.pm to your perl library directory for use by all perl scripts. You probably must be root to do this. Now you can load the 
+<FONT SIZE=-1>CGI</FONT> routines in your Perl scripts with the line:
+
+
+
+<P>
+
+<PRE>        use CGI;
+</PRE>
+
+<P>
+
+If you don't have sufficient privileges to install CGI.pm in the Perl
+library directory, you can put CGI.pm into some convenient spot, such as
+your home directory, or in cgi-bin itself and prefix all Perl scripts that
+call it with something along the lines of the following preamble:
+
+
+<P>
+
+<PRE>        use lib '/home/davis/lib';
+        use CGI;
+</PRE>
+
+<P>
+
+If you are using a version of perl earlier than 5.002 (such as 
+<FONT SIZE=-1>NT</FONT> perl), use this instead:
+
+
+<P>
+
+<PRE>        BEGIN {
+                unshift(@INC,'/home/davis/lib');
+        }
+        use CGI;
+</PRE>
+
+<P>
+
+The 
+<FONT SIZE=-1>CGI</FONT> distribution also comes with a cute module called <A HREF="/n|/perl/html/./lib/CGI/Carp.html">Carp</A>. It redefines the <CODE>die(),</CODE> <CODE>warn(),</CODE> <CODE>confess()</CODE> and <CODE>croak()</CODE> error routines so that they write nicely formatted error messages into the server's error log (or to the output stream of your choice). This avoids long hours of groping through the error and access logs, trying to figure out which 
+<FONT SIZE=-1>CGI</FONT> script is generating error messages. If you choose, you can even have fatal error messages echoed to the browser to avoid the annoying and uninformative ``Server Error'' message.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="CREATING_A_NEW_QUERY_OBJECT_">CREATING A NEW QUERY OBJECT:
+
+</A></H2>
+<PRE>     $query = new CGI;
+</PRE>
+
+<P>
+
+This will parse the input (from both 
+<FONT SIZE=-1>POST</FONT> and 
+<FONT SIZE=-1>GET</FONT> methods) and store it into a perl5 object called $query.
+  
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_NEW_QUERY_OBJECT_FROM">CREATING A NEW QUERY OBJECT FROM AN INPUT FILE
+
+</A></H2>
+<PRE>     $query = new CGI(INPUTFILE);
+</PRE>
+
+<P>
+
+If you provide a file handle to the <CODE>new()</CODE> method, it will read parameters from the file (or 
+<FONT SIZE=-1>STDIN,</FONT> or whatever). The file can be in any of the forms describing below under debugging (i.e. a series of newline delimited 
+<FONT SIZE=-1>TAG=VALUE</FONT> pairs will work). Conveniently, this type of file is created by the <CODE>save()</CODE> method (see below). Multiple records can be saved and restored.
+
+
+
+<P>
+
+Perl purists will be pleased to know that this syntax accepts references to
+file handles, or even references to filehandle globs, which is the
+``official'' way to pass a filehandle:
+
+
+<P>
+
+<PRE>    $query = new CGI(\*STDIN);
+</PRE>
+
+<P>
+
+You can also initialize the query object from an associative array
+reference:
+
+
+<P>
+
+<PRE>    $query = new CGI( {'dinosaur'=&gt;'barney',
+                       'song'=&gt;'I love you',
+                       'friends'=&gt;[qw/Jessica George Nancy/]}
+                    );
+</PRE>
+
+<P>
+
+or from a properly formatted, URL-escaped query string:
+
+
+<P>
+
+<PRE>    $query = new CGI('dinosaur=barney&amp;color=purple');
+</PRE>
+
+<P>
+
+To create an empty query, initialize it from an empty string or hash:
+
+
+<P>
+
+<PRE>        $empty_query = new CGI(&quot;&quot;);
+             -or-
+        $empty_query = new CGI({});
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="FETCHING_A_LIST_OF_KEYWORDS_FROM">FETCHING A LIST OF KEYWORDS FROM THE QUERY:
+
+</A></H2>
+<PRE>     @keywords = $query-&gt;keywords
+</PRE>
+
+<P>
+
+If the script was invoked as the result of an 
+<FONT SIZE=-1>&lt;ISINDEX&gt;</FONT> search, the parsed keywords can be
+obtained as an array using the <CODE>keywords()</CODE> method.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="FETCHING_THE_NAMES_OF_ALL_THE_PA">FETCHING THE NAMES OF ALL THE PARAMETERS PASSED TO YOUR SCRIPT:
+
+</A></H2>
+<PRE>     @names = $query-&gt;param
+</PRE>
+
+<P>
+
+If the script was invoked with a parameter list (e.g. ``name1=value1&amp;name2=value2&amp;name3=value3''), the <CODE>param()</CODE> method will return the parameter names as a list. If the script was invoked as an 
+<FONT SIZE=-1>&lt;ISINDEX&gt;</FONT> script, there will be a single parameter named 'keywords'.
+
+
+
+<P>
+
+
+<FONT SIZE=-1>NOTE:</FONT> As of version 1.5, the array of parameter names
+returned will be in the same order as they were submitted by the browser.
+Usually this order is the same as the order in which the parameters are
+defined in the form (however, this isn't part of the spec, and so isn't
+guaranteed).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="FETCHING_THE_VALUE_OR_VALUES_OF_">FETCHING THE VALUE OR VALUES OF A SINGLE NAMED PARAMETER:
+
+</A></H2>
+<PRE>    @values = $query-&gt;param('foo');
+</PRE>
+
+<P>
+
+<PRE>              -or-
+</PRE>
+
+<P>
+
+<PRE>    $value = $query-&gt;param('foo');
+</PRE>
+
+<P>
+
+Pass the <CODE>param()</CODE> method a single argument to fetch the value
+of the named parameter. If the parameter is multivalued (e.g. from multiple
+selections in a scrolling list), you can ask to receive an array. Otherwise
+the method will return a single value.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="SETTING_THE_VALUE_S_OF_A_NAMED_">SETTING THE VALUE(S) OF A NAMED PARAMETER:
+
+</A></H2>
+<PRE>    $query-&gt;param('foo','an','array','of','values');
+</PRE>
+
+<P>
+
+This sets the value for the named parameter 'foo' to an array of values. This is one way to change the value of a field 
+<FONT SIZE=-1>AFTER</FONT> the script has been invoked once before. (Another way is with the -override parameter accepted by all methods that generate form elements.)
+
+
+
+<P>
+
+<CODE>param()</CODE> also recognizes a named parameter style of calling
+described in more detail later:
+
+
+<P>
+
+<PRE>    $query-&gt;param(-name=&gt;'foo',-values=&gt;['an','array','of','values']);
+</PRE>
+
+<P>
+
+<PRE>                              -or-
+</PRE>
+
+<P>
+
+<PRE>    $query-&gt;param(-name=&gt;'foo',-value=&gt;'the value');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="APPENDING_ADDITIONAL_VALUES_TO_A">APPENDING ADDITIONAL VALUES TO A NAMED PARAMETER:
+
+</A></H2>
+<PRE>   $query-&gt;append(-name=&gt;;'foo',-values=&gt;['yet','more','values']);
+</PRE>
+
+<P>
+
+This adds a value or list of values to the named parameter. The values are
+appended to the end of the parameter if it already exists. Otherwise the
+parameter is created. Note that this method only recognizes the named
+argument calling syntax.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="IMPORTING_ALL_PARAMETERS_INTO_A_">IMPORTING ALL PARAMETERS INTO A NAMESPACE:
+
+</A></H2>
+<PRE>   $query-&gt;import_names('R');
+</PRE>
+
+<P>
+
+This creates a series of variables in the 
+<FONT SIZE=-1>'R'</FONT> namespace. For example, $R::foo, @R:foo. For keyword lists, a variable @R::keywords will appear. If no namespace is given, this method will assume 
+<FONT SIZE=-1>'Q'.</FONT> 
+<FONT SIZE=-1>WARNING:</FONT> don't import anything into 'main'; this is a major security risk!!!!
+
+
+
+<P>
+
+In older versions, this method was called <STRONG>import()</STRONG>. As of version 2.20, this name has been removed completely to avoid
+conflict with the built-in Perl module <STRONG>import</STRONG> operator.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="DELETING_A_PARAMETER_COMPLETELY_">DELETING A PARAMETER COMPLETELY:
+
+</A></H2>
+<PRE>    $query-&gt;delete('foo');
+</PRE>
+
+<P>
+
+This completely clears a parameter. It sometimes useful for resetting
+parameters that you don't want passed down between script invocations.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="DELETING_ALL_PARAMETERS_">DELETING ALL PARAMETERS:
+
+</A></H2>
+$query-&gt;delete_all();
+
+
+<P>
+
+This clears the 
+<FONT SIZE=-1>CGI</FONT> object completely. It might be useful to ensure
+that all the defaults are taken when you create a fill-out form.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="SAVING_THE_STATE_OF_THE_FORM_TO_">SAVING THE STATE OF THE FORM TO A FILE:
+
+</A></H2>
+<PRE>    $query-&gt;save(FILEHANDLE)
+</PRE>
+
+<P>
+
+This will write the current state of the form to the provided filehandle.
+You can read it back in by providing a filehandle to the <CODE>new()</CODE>
+method. Note that the filehandle can be a file, a pipe, or whatever!
+
+
+<P>
+
+The format of the saved file is:
+
+
+<P>
+
+<PRE>        NAME1=VALUE1
+        NAME1=VALUE1'
+        NAME2=VALUE2
+        NAME3=VALUE3
+        =
+</PRE>
+
+<P>
+
+Both name and value are 
+<FONT SIZE=-1>URL</FONT> escaped. Multi-valued 
+<FONT SIZE=-1>CGI</FONT> parameters are represented as repeated names. 
+<FONT SIZE=-1>A</FONT> session record is delimited by a single = symbol. You can write out multiple records and read them back in with several calls to
+ <STRONG>new</STRONG>. You can do this across several sessions by opening the file in append
+mode, allowing you to create primitive guest books, or to keep a history of
+users' queries. Here's a short example of creating multiple session
+records:
+
+
+<P>
+
+<PRE>   use CGI;
+</PRE>
+
+<P>
+
+<PRE>   open (OUT,&quot;&gt;&gt;test.out&quot;) || die;
+   $records = 5;
+   foreach (0..$records) {
+       my $q = new CGI;
+       $q-&gt;param(-name=&gt;'counter',-value=&gt;$_);
+       $q-&gt;save(OUT);
+   }
+   close OUT;
+</PRE>
+
+<P>
+
+<PRE>   # reopen for reading
+   open (IN,&quot;test.out&quot;) || die;
+   while (!eof(IN)) {
+       my $q = new CGI(IN);
+       print $q-&gt;param('counter'),&quot;\n&quot;;
+   }
+</PRE>
+
+<P>
+
+The file format used for save/restore is identical to that used by the
+Whitehead Genome Center's data exchange format ``Boulderio'', and can be
+manipulated and even databased using Boulderio utilities. See <A
+HREF="http://www.genome.wi.mit.edu/genome_software/other/boulder.html">http://www.genome.wi.mit.edu/genome_software/other/boulder.html</A>
+
+
+
+<P>
+
+for further details.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_SELF_REFERENCING_URL_">CREATING A SELF-REFERENCING URL THAT PRESERVES STATE INFORMATION:
+
+</A></H2>
+<PRE>    $myself = $query-&gt;self_url;
+    print &quot;&lt;A HREF=$myself&gt;I'm talking to myself.&lt;/A&gt;&quot;;
+</PRE>
+
+<P>
+
+<CODE>self_url()</CODE> will return a 
+<FONT SIZE=-1>URL,</FONT> that, when selected, will reinvoke this script
+with all its state information intact. This is most useful when you want to
+jump around within the document using internal anchors but you don't want
+to disrupt the current contents of the <CODE>form(s).</CODE> Something like
+this will do the trick.
+
+
+<P>
+
+<PRE>     $myself = $query-&gt;self_url;
+     print &quot;&lt;A HREF=$myself#table1&gt;See table 1&lt;/A&gt;&quot;;
+     print &quot;&lt;A HREF=$myself#table2&gt;See table 2&lt;/A&gt;&quot;;
+     print &quot;&lt;A HREF=$myself#yourself&gt;See for yourself&lt;/A&gt;&quot;;
+</PRE>
+
+<P>
+
+If you don't want to get the whole query string, call the method <CODE>url()</CODE> to return just the 
+<FONT SIZE=-1>URL</FONT> for the script:
+
+
+
+<P>
+
+<PRE>    $myself = $query-&gt;url;
+    print &quot;&lt;A HREF=$myself&gt;No query string in this baby!&lt;/A&gt;\n&quot;;
+</PRE>
+
+<P>
+
+You can also retrieve the unprocessed query string with
+<CODE>query_string():</CODE>
+
+
+<P>
+
+<PRE>    $the_string = $query-&gt;query_string;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="COMPATIBILITY_WITH_CGI_LIB_PL">COMPATIBILITY WITH CGI-LIB.PL
+
+</A></H2>
+To make it easier to port existing programs that use cgi-lib.pl the
+compatibility routine ``ReadParse'' is provided. Porting is simple:
+
+
+<P>
+
+
+<FONT SIZE=-1>OLD</FONT> 
+<FONT SIZE=-1>VERSION</FONT> require ``cgi-lib.pl''; &amp;ReadParse; print ``The value of the antique is $in{antique}.\n'';
+
+
+
+<P>
+
+
+<FONT SIZE=-1>NEW</FONT> 
+<FONT SIZE=-1>VERSION</FONT> use 
+<FONT SIZE=-1>CGI;</FONT> CGI::ReadParse print ``The value of the antique is $in{antique}.\n'';
+
+
+
+<P>
+
+CGI.pm's <CODE>ReadParse()</CODE> routine creates a tied variable named
+%in, which can be accessed to obtain the query variables. Like ReadParse,
+you can also provide your own variable. Infrequently used features of
+ReadParse, such as the creation of <CODE>@in</CODE> and <CODE>$in</CODE>
+variables, are not supported.
+
+
+<P>
+
+Once you use ReadParse, you can retrieve the query object itself this way:
+
+
+<P>
+
+<PRE>    $q = $in{CGI};
+    print $q-&gt;textfield(-name=&gt;'wow',
+                        -value=&gt;'does this really work?');
+</PRE>
+
+<P>
+
+This allows you to start using the more interesting features of CGI.pm
+without rewriting your old scripts from scratch.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CALLING_CGI_FUNCTIONS_THAT_TAKE_">CALLING CGI FUNCTIONS THAT TAKE MULTIPLE ARGUMENTS
+
+</A></H2>
+In versions of CGI.pm prior to 2.0, it could get difficult to remember the proper order of arguments in 
+<FONT SIZE=-1>CGI</FONT> function calls that accepted five or six different arguments. As of 2.0, there's a better way to pass arguments to the various 
+<FONT SIZE=-1>CGI</FONT> functions. In this style, you pass a series of name=&gt;argument pairs, like this:
+
+
+
+<P>
+
+<PRE>   $field = $query-&gt;radio_group(-name=&gt;'OS',
+                                -values=&gt;[Unix,Windows,Macintosh],
+                                -default=&gt;'Unix');
+</PRE>
+
+<P>
+
+The advantages of this style are that you don't have to remember the exact order of the arguments, and if you leave out a parameter, in most cases it will default to some reasonable value. If you provide a parameter that the method doesn't recognize, it will usually do something useful with it, such as incorporating it into the 
+<FONT SIZE=-1>HTML</FONT> form tag. For example if Netscape decides next week to add a new 
+<FONT SIZE=-1>JUSTIFICATION</FONT> parameter to the text field tags, you can start using the feature without waiting for a new version of CGI.pm:
+
+
+
+<P>
+
+<PRE>   $field = $query-&gt;textfield(-name=&gt;'State',
+                              -default=&gt;'gaseous',
+                              -justification=&gt;'RIGHT');
+</PRE>
+
+<P>
+
+This will result in an 
+<FONT SIZE=-1>HTML</FONT> tag that looks like this:
+
+
+<P>
+
+<PRE>        &lt;INPUT TYPE=&quot;textfield&quot; NAME=&quot;State&quot; VALUE=&quot;gaseous&quot;
+               JUSTIFICATION=&quot;RIGHT&quot;&gt;
+</PRE>
+
+<P>
+
+Parameter names are case insensitive: you can use -name, or -Name or 
+<FONT SIZE=-1>-NAME.</FONT> You don't have to use the hyphen if you don't want to. After creating a 
+<FONT SIZE=-1>CGI</FONT> object, call the
+ <STRONG>use_named_parameters()</STRONG> method with a nonzero value. This will tell CGI.pm that you intend to use
+named parameters exclusively:
+
+
+<P>
+
+<PRE>   $query = new CGI;
+   $query-&gt;use_named_parameters(1);
+   $field = $query-&gt;radio_group('name'=&gt;'OS',
+                                'values'=&gt;['Unix','Windows','Macintosh'],
+                                'default'=&gt;'Unix');
+</PRE>
+
+<P>
+
+Actually, CGI.pm only looks for a hyphen in the first parameter. So you can
+leave it off subsequent parameters if you like. Something to be wary of is
+the potential that a string constant like ``values'' will collide with a
+keyword (and in fact it does!) While Perl usually figures out when you're
+referring to a function and when you're referring to a string, you probably
+should put quotation marks around all string constants just to play it
+safe.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_THE_HTTP_HEADER_">CREATING THE HTTP HEADER:
+
+</A></H2>
+<PRE>        print $query-&gt;header;
+</PRE>
+
+<P>
+
+<PRE>             -or-
+</PRE>
+
+<P>
+
+<PRE>        print $query-&gt;header('image/gif');
+</PRE>
+
+<P>
+
+<PRE>             -or-
+</PRE>
+
+<P>
+
+<PRE>        print $query-&gt;header('text/html','204 No response');
+</PRE>
+
+<P>
+
+<PRE>             -or-
+</PRE>
+
+<P>
+
+<PRE>        print $query-&gt;header(-type=&gt;'image/gif',
+                             -nph=&gt;1,
+                             -status=&gt;'402 Payment required',
+                             -expires=&gt;'+3d',
+                             -cookie=&gt;$cookie,
+                             -Cost=&gt;'$2.00');
+</PRE>
+
+<P>
+
+<CODE>header()</CODE> returns the Content-type: header. You can provide your own 
+<FONT SIZE=-1>MIME</FONT> type if you choose, otherwise it defaults to text/html. An optional second parameter specifies the status code and a human-readable message. For example, you can specify 204, ``No response'' to create a script that tells the browser to do nothing at all. If you want to add additional fields to the header, just tack them on to the end:
+
+
+
+<P>
+
+<PRE>    print $query-&gt;header('text/html','200 OK','Content-Length: 3002');
+</PRE>
+
+<P>
+
+The last example shows the named argument style for passing arguments to the 
+<FONT SIZE=-1>CGI</FONT> methods using named parameters. Recognized parameters are
+
+<STRONG>-type</STRONG>, <STRONG>-status</STRONG>, <STRONG>-expires</STRONG>, and <STRONG>-cookie</STRONG>. Any other parameters will be stripped of their initial hyphens and turned into header fields, allowing you to specify any 
+<FONT SIZE=-1>HTTP</FONT> header you desire.
+
+
+
+<P>
+
+Most browsers will not cache the output from 
+<FONT SIZE=-1>CGI</FONT> scripts. Every time the browser reloads the page,
+the script is invoked anew. You can change this behavior with the <STRONG>-expires</STRONG> parameter. When you specify an absolute or relative expiration interval
+with this parameter, some browsers and proxy servers will cache the
+script's output until the indicated expiration date. The following forms
+are all valid for the -expires field:
+
+
+<P>
+
+<PRE>        +30s                              30 seconds from now
+        +10m                              ten minutes from now
+        +1h                               one hour from now
+        -1d                               yesterday (i.e. &quot;ASAP!&quot;)
+        now                               immediately
+        +3M                               in three months
+        +10y                              in ten years time
+        Thursday, 25-Apr-96 00:40:33 GMT  at the indicated time &amp; date
+</PRE>
+
+<P>
+
+(CGI::expires() is the static function call used internally that turns relative time intervals into 
+<FONT SIZE=-1>HTTP</FONT> dates. You can call it directly if you wish.)
+
+
+
+<P>
+
+The <STRONG>-cookie</STRONG> parameter generates a header that tells the browser to provide a ``magic
+cookie'' during all subsequent transactions with your script. Netscape
+cookies have a special format that includes interesting attributes such as
+expiration time. Use the <CODE>cookie()</CODE> method to create and
+retrieve session cookies.
+
+
+<P>
+
+The <STRONG>-nph</STRONG> parameter, if set to a true value, will issue the correct headers to work with a 
+<FONT SIZE=-1>NPH</FONT> (no-parse-header) script. This is important to use with certain servers, such as Microsoft Internet Explorer, which expect all their scripts to be 
+<FONT SIZE=-1>NPH.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="GENERATING_A_REDIRECTION_INSTRUC">GENERATING A REDIRECTION INSTRUCTION
+
+</A></H2>
+<PRE>   print $query-&gt;redirect('<A HREF="http://somewhere.else/in/movie/land">http://somewhere.else/in/movie/land</A>');
+</PRE>
+
+<P>
+
+redirects the browser elsewhere. If you use redirection like this, you
+should <STRONG>not</STRONG> print out a header as well. As of version 2.0, we produce both the unofficial Location: header and the official 
+<FONT SIZE=-1>URI:</FONT> header. This should satisfy most servers and browsers.
+
+
+
+<P>
+
+One hint 
+<FONT SIZE=-1>I</FONT> can offer is that relative links may not work correctly when you generate a redirection to another document on your site. This is due to a well-intentioned optimization that some servers use. The solution to this is to use the full 
+<FONT SIZE=-1>URL</FONT> (including the http: part) of the document you are redirecting to.
+
+
+
+<P>
+
+You can use named parameters:
+
+
+<P>
+
+<PRE>    print $query-&gt;redirect(-uri=&gt;'<A HREF="http://somewhere.else/in/movie/land">http://somewhere.else/in/movie/land</A>',
+                           -nph=&gt;1);
+</PRE>
+
+<P>
+
+The <STRONG>-nph</STRONG> parameter, if set to a true value, will issue the correct headers to work with a 
+<FONT SIZE=-1>NPH</FONT> (no-parse-header) script. This is important to use with certain servers, such as Microsoft Internet Explorer, which expect all their scripts to be 
+<FONT SIZE=-1>NPH.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_THE_HTML_HEADER_">CREATING THE HTML HEADER:
+
+</A></H2>
+<PRE>   print $query-&gt;start_html(-title=&gt;'Secrets of the Pyramids',
+                            -author=&gt;'fred@capricorn.org',
+                            -base=&gt;'true',
+                            -target=&gt;'_blank',
+                            -meta=&gt;{'keywords'=&gt;'pharaoh secret mummy',
+                                    'copyright'=&gt;'copyright 1996 King Tut'},
+                            -style=&gt;{'src'=&gt;'/styles/style1.css'},
+                            -BGCOLOR=&gt;'blue');
+</PRE>
+
+<P>
+
+<PRE>   -or-
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;start_html('Secrets of the Pyramids',
+                            'fred@capricorn.org','true',
+                            'BGCOLOR=&quot;blue&quot;');
+</PRE>
+
+<P>
+
+This will return a canned 
+<FONT SIZE=-1>HTML</FONT> header and the opening 
+<FONT SIZE=-1>&lt;BODY&gt;</FONT> tag. All parameters are optional. In the named parameter form, recognized parameters are -title, -author, -base, -xbase and -target (see below for the explanation). Any additional parameters you provide, such as the Netscape unofficial 
+<FONT SIZE=-1>BGCOLOR</FONT> attribute, are added to the 
+<FONT SIZE=-1>&lt;BODY&gt;</FONT> tag.
+
+
+
+<P>
+
+The argument <STRONG>-xbase</STRONG> allows you to provide an 
+<FONT SIZE=-1>HREF</FONT> for the 
+<FONT SIZE=-1>&lt;BASE&gt;</FONT> tag different from the current location, as in
+
+
+
+<P>
+
+<PRE>    -xbase=&gt;&quot;<A HREF="http://home.mcom.com/&quot">http://home.mcom.com/&quot</A>;
+</PRE>
+
+<P>
+
+All relative links will be interpreted relative to this tag.
+
+
+<P>
+
+The argument <STRONG>-target</STRONG> allows you to provide a default target frame for all the links and fill-out
+forms on the page. See the Netscape documentation on frames for details of
+how to manipulate this.
+
+
+<P>
+
+<PRE>    -target=&gt;&quot;answer_window&quot;
+</PRE>
+
+<P>
+
+All relative links will be interpreted relative to this tag. You add
+arbitrary meta information to the header with the <STRONG>-meta</STRONG>
+argument. This argument expects a reference to an associative array containing name/value pairs of meta information. These will be turned into a series of header 
+<FONT SIZE=-1>&lt;META&gt;</FONT> tags that look something like this:
+
+
+
+<P>
+
+<PRE>    &lt;META NAME=&quot;keywords&quot; CONTENT=&quot;pharaoh secret mummy&quot;&gt;
+    &lt;META NAME=&quot;description&quot; CONTENT=&quot;copyright 1996 King Tut&quot;&gt;
+</PRE>
+
+<P>
+
+There is no support for the 
+<FONT SIZE=-1>HTTP-EQUIV</FONT> type of &lt;
+<FONT SIZE=-1>META&gt;</FONT> tag. This is because you can modify the 
+<FONT SIZE=-1>HTTP</FONT> header directly with the
+ <STRONG>header()</STRONG>
+method. For example, if you want to send the Refresh: header, do it in the
+<CODE>header()</CODE> method:
+
+
+<P>
+
+<PRE>    print $q-&gt;header(-Refresh=&gt;'10; URL=<A HREF="http://www.capricorn.com">http://www.capricorn.com</A>');
+</PRE>
+
+<P>
+
+The <STRONG>-style</STRONG> tag is used to incorporate cascading stylesheets into your code. See the section on 
+<FONT SIZE=-1>CASCADING</FONT> 
+<FONT SIZE=-1>STYLESHEETS</FONT> for more information.
+
+
+
+<P>
+
+You can place other arbitrary 
+<FONT SIZE=-1>HTML</FONT> elements to the &lt;
+<FONT SIZE=-1>HEAD&gt;</FONT> section with the
+<STRONG>-head</STRONG> tag. For example, to place the rarely-used 
+<FONT SIZE=-1>&lt;LINK&gt;</FONT> element in the head section, use this:
+
+
+<P>
+
+<PRE>    print $q-&gt;header(-head=&gt;link({-rel=&gt;'next',
+                                  -href=&gt;'<A HREF="http://www.capricorn.com/s2.html">http://www.capricorn.com/s2.html</A>'}));
+</PRE>
+
+<P>
+
+To incorporate multiple 
+<FONT SIZE=-1>HTML</FONT> elements into the 
+<FONT SIZE=-1>&lt;HEAD&gt;</FONT> section, just pass an array reference:
+
+
+
+<P>
+
+<PRE>    print $q-&gt;header(-head=&gt;[ link({-rel=&gt;'next',
+                                    -href=&gt;'<A HREF="http://www.capricorn.com/s2.html">http://www.capricorn.com/s2.html</A>'}),
+                              link({-rel=&gt;'previous',
+                                    -href=&gt;'<A HREF="http://www.capricorn.com/s1.html">http://www.capricorn.com/s1.html</A>'})
+                             ]
+                     );
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> The <STRONG>-script</STRONG>, <STRONG>-noScript</STRONG>, <STRONG>-onLoad</STRONG> and <STRONG>-onUnload</STRONG> parameters are used to add Netscape JavaScript calls to your pages.  <STRONG>-script</STRONG>
+should point to a block of text containing JavaScript function definitions. This block will be placed within a 
+<FONT SIZE=-1>&lt;SCRIPT&gt;</FONT> block inside the 
+<FONT SIZE=-1>HTML</FONT> (not 
+<FONT SIZE=-1>HTTP)</FONT> header. The block is placed in the header in order to give your page a fighting chance of having all its JavaScript functions in place even if the user presses the stop button before the page has loaded completely. CGI.pm attempts to format the script in such a way that JavaScript-naive browsers will not choke on the code: unfortunately there are some browsers, such as Chimera for Unix, that get confused by it nevertheless.
+
+
+
+<P>
+
+The <STRONG>-onLoad</STRONG> and <STRONG>-onUnload</STRONG> parameters point to fragments of JavaScript code to execute when the page
+is respectively opened and closed by the browser. Usually these parameters
+are calls to functions defined in the
+<STRONG>-script</STRONG> field:
+
+
+<P>
+
+<PRE>      $query = new CGI;
+      print $query-&gt;header;
+      $JSCRIPT=&lt;&lt;END;
+      // Ask a silly question
+      function riddle_me_this() {
+         var r = prompt(&quot;What walks on four legs in the morning, &quot; +
+                       &quot;two legs in the afternoon, &quot; +
+                       &quot;and three legs in the evening?&quot;);
+         response(r);
+      }
+      // Get a silly answer
+      function response(answer) {
+         if (answer == &quot;man&quot;)
+            alert(&quot;Right you are!&quot;);
+         else
+            alert(&quot;Wrong!  Guess again.&quot;);
+      }
+      END
+      print $query-&gt;start_html(-title=&gt;'The Riddle of the Sphinx',
+                               -script=&gt;$JSCRIPT);
+</PRE>
+
+<P>
+
+Use the <STRONG>-noScript</STRONG> parameter to pass some 
+<FONT SIZE=-1>HTML</FONT> text that will be displayed on browsers that do
+not have JavaScript (or browsers where JavaScript is turned off).
+
+
+<P>
+
+Netscape 3.0 recognizes several attributes of the &lt;
+<FONT SIZE=-1>SCRIPT&gt;</FONT> tag, including 
+<FONT SIZE=-1>LANGUAGE</FONT> and 
+<FONT SIZE=-1>SRC.</FONT> The latter is particularly interesting, as it allows you to keep the JavaScript code in a file or 
+<FONT SIZE=-1>CGI</FONT> script rather than cluttering up each page with the source. To use these attributes pass a 
+<FONT SIZE=-1>HASH</FONT> reference in the
+ <STRONG>-script</STRONG> parameter containing one or more of -language, -src, or -code:
+
+
+<P>
+
+<PRE>    print $q-&gt;start_html(-title=&gt;'The Riddle of the Sphinx',
+                         -script=&gt;{-language=&gt;'JAVASCRIPT',
+                                   -src=&gt;'/javascript/sphinx.js'}
+                         );
+</PRE>
+
+<P>
+
+<PRE>    print $q-&gt;(-title=&gt;'The Riddle of the Sphinx',
+               -script=&gt;{-language=&gt;'PERLSCRIPT'},
+                         -code=&gt;'print &quot;hello world!\n;&quot;'
+               );
+</PRE>
+
+<P>
+
+See
+
+
+<P>
+
+<PRE>   <A HREF="http://home.netscape.com/eng/mozilla/2.0/handbook/javascript/">http://home.netscape.com/eng/mozilla/2.0/handbook/javascript/</A>
+</PRE>
+
+<P>
+
+for more information about JavaScript.
+
+
+<P>
+
+The old-style positional parameters are as follows:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Parameters">Parameters:
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The title
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The author's e-mail address (will create a 
+<FONT SIZE=-1>&lt;LINK</FONT> 
+<FONT SIZE=-1>REV=``MADE''&gt;</FONT> tag if present
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+
+<FONT SIZE=-1>A</FONT> 'true' flag if you want to include a 
+<FONT SIZE=-1>&lt;BASE&gt;</FONT> tag in the header. This helps resolve relative addresses to absolute ones when the document is moved, but makes the document hierarchy non-portable. Use with care!
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item__5_6_">, 5, 6...
+
+</A></STRONG>
+Any other parameters you want to include in the 
+<FONT SIZE=-1>&lt;BODY&gt;</FONT> tag. This is a good place to put Netscape
+extensions, such as colors and wallpaper patterns.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="ENDING_THE_HTML_DOCUMENT_">ENDING THE HTML DOCUMENT:
+
+</A></H2>
+<PRE>        print $query-&gt;end_html
+</PRE>
+
+<P>
+
+This ends an 
+<FONT SIZE=-1>HTML</FONT> document by printing the 
+<FONT SIZE=-1>&lt;/BODY&gt;&lt;/HTML&gt;</FONT> tags.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CREATING_FORMS">CREATING FORMS
+
+</A></H1>
+<EM>General note</EM>  The various form-creating methods all return strings to the caller,
+containing the tag or tags that will create the requested form element. You
+are responsible for actually printing out these strings. It's set up this
+way so that you can place formatting tags around the form elements.
+
+
+<P>
+
+<EM>Another note</EM> The default values that you specify for the forms are only used the <STRONG>first</STRONG> time the script is invoked (when there is no query string). On subsequent
+invocations of the script (when there is a query string), the former values
+are used even if they are blank.  
+
+
+<P>
+
+If you want to change the value of a field from its previous value, you
+have two choices:
+
+
+<P>
+
+(1) call the <CODE>param()</CODE> method to set it.
+
+
+<P>
+
+(2) use the -override (alias -force) parameter (a new feature in version
+2.15). This forces the default value to be used, regardless of the previous
+value:
+
+
+<P>
+
+<PRE>   print $query-&gt;textfield(-name=&gt;'field_name',
+                           -default=&gt;'starting value',
+                           -override=&gt;1,
+                           -size=&gt;50,
+                           -maxlength=&gt;80);
+</PRE>
+
+<P>
+
+<EM>Yet another note</EM> By default, the text and labels of form elements are escaped according to 
+<FONT SIZE=-1>HTML</FONT> rules. This means that you can safely use 
+<FONT SIZE=-1>``&lt;CLICK</FONT> 
+<FONT SIZE=-1>ME&gt;''</FONT> as the label for a button. However, it also interferes with your ability to incorporate special 
+<FONT SIZE=-1>HTML</FONT> character sequences, such as &amp;Aacute;, into your fields. If you wish to turn off automatic escaping, call the <CODE>autoEscape()</CODE> method with a false value immediately after creating the 
+<FONT SIZE=-1>CGI</FONT> object:
+
+
+
+<P>
+
+<PRE>   $query = new CGI;
+   $query-&gt;autoEscape(undef);
+                             
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_AN_ISINDEX_TAG">CREATING AN ISINDEX TAG
+
+</A></H2>
+<PRE>   print $query-&gt;isindex(-action=&gt;$action);
+</PRE>
+
+<P>
+
+<PRE>         -or-
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;isindex($action);
+</PRE>
+
+<P>
+
+Prints out an 
+<FONT SIZE=-1>&lt;ISINDEX&gt;</FONT> tag. Not very exciting. The parameter -action specifies the 
+<FONT SIZE=-1>URL</FONT> of the script to process the query. The default is to process the query with the current script.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="STARTING_AND_ENDING_A_FORM">STARTING AND ENDING A FORM
+
+</A></H2>
+<PRE>    print $query-&gt;startform(-method=&gt;$method,
+                            -action=&gt;$action,
+                            -encoding=&gt;$encoding);
+      &lt;... various form stuff ...&gt;
+    print $query-&gt;endform;
+</PRE>
+
+<P>
+
+<PRE>        -or-
+</PRE>
+
+<P>
+
+<PRE>    print $query-&gt;startform($method,$action,$encoding);
+      &lt;... various form stuff ...&gt;
+    print $query-&gt;endform;
+</PRE>
+
+<P>
+
+<CODE>startform()</CODE> will return a 
+<FONT SIZE=-1>&lt;FORM&gt;</FONT> tag with the optional method, action and form encoding that you specify. The defaults are: method: 
+<FONT SIZE=-1>POST</FONT> action: this script encoding: application/x-www-form-urlencoded
+
+
+
+<P>
+
+<CODE>endform()</CODE> returns the closing 
+<FONT SIZE=-1>&lt;/FORM&gt;</FONT> tag.  
+
+
+<P>
+
+<CODE>Startform()'s</CODE> encoding method tells the browser how to package
+the various fields of the form before sending the form to the server. Two
+values are possible:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_application">application/x-www-form-urlencoded
+
+</A></STRONG><DD>
+This is the older type of encoding used by all browsers prior to Netscape 2.0. It is compatible with many 
+<FONT SIZE=-1>CGI</FONT> scripts and is suitable for short fields containing text data. For your convenience, CGI.pm stores the name of this encoding type in
+ <STRONG>$CGI::URL_ENCODED</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_multipart">multipart/form-data
+
+</A></STRONG><DD>
+This is the newer type of encoding introduced by Netscape 2.0. It is
+suitable for forms that contain very large fields or that are intended for
+transferring binary data. Most importantly, it enables the ``file upload''
+feature of Netscape 2.0 forms. For your convenience, CGI.pm stores the name
+of this encoding type in <STRONG>$CGI::MULTIPART</STRONG>
+
+
+
+
+<P>
+
+Forms that use this type of encoding are not easily interpreted by 
+<FONT SIZE=-1>CGI</FONT> scripts unless they use CGI.pm or another library
+designed to handle them.
+
+
+<P>
+
+</DL>
+For compatibility, the <CODE>startform()</CODE> method uses the older form
+of encoding by default. If you want to use the newer form of encoding by
+default, you can call <STRONG>start_multipart_form()</STRONG> instead of
+<STRONG>startform()</STRONG>.
+
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> The <STRONG>-name</STRONG> and <STRONG>-onSubmit</STRONG> parameters are provided for use with JavaScript. The -name parameter gives
+the form a name so that it can be identified and manipulated by JavaScript
+functions. -onSubmit should point to a JavaScript function that will be
+executed just before the form is submitted to your server. You can use this
+opportunity to check the contents of the form for consistency and
+completeness. If you find something wrong, you can put up an alert box or
+maybe fix things up yourself. You can abort the submission by returning
+false from this function.  
+
+
+<P>
+
+Usually the bulk of JavaScript functions are defined in a 
+<FONT SIZE=-1>&lt;SCRIPT&gt;</FONT> block in the 
+<FONT SIZE=-1>HTML</FONT> header and -onSubmit points to one of these function call. See <CODE>start_html()</CODE> for details.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_TEXT_FIELD">CREATING A TEXT FIELD
+
+</A></H2>
+<PRE>    print $query-&gt;textfield(-name=&gt;'field_name',
+                            -default=&gt;'starting value',
+                            -size=&gt;50,
+                            -maxlength=&gt;80);
+        -or-
+</PRE>
+
+<P>
+
+<PRE>    print $query-&gt;textfield('field_name','starting value',50,80);
+</PRE>
+
+<P>
+
+<CODE>textfield()</CODE> will return a text input field.  
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Parameters">Parameters
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The first parameter is the required name for the field (-name).  
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional second parameter is the default starting value for the field
+contents (-default).  
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional third parameter is the size of the field in characters
+(-size).
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fourth parameter is the maximum number of characters the field
+will accept (-maxlength).
+
+
+<P>
+
+</DL>
+As with all these methods, the field will be initialized with its previous
+contents from earlier invocations of the script. When the form is
+processed, the value of the text field can be retrieved with:
+
+
+<P>
+
+<PRE>       $value = $query-&gt;param('foo');
+</PRE>
+
+<P>
+
+If you want to reset it from its initial value after the script has been
+called once, you can do so like this:
+
+
+<P>
+
+<PRE>       $query-&gt;param('foo',&quot;I'm taking over this value!&quot;);
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>NEW</FONT> 
+<FONT SIZE=-1>AS</FONT> 
+<FONT SIZE=-1>OF</FONT> 
+<FONT SIZE=-1>VERSION</FONT> 2.15: If you don't want the field to take on its previous value, you can force its current value by using the -override (alias -force) parameter:
+
+
+
+<P>
+
+<PRE>    print $query-&gt;textfield(-name=&gt;'field_name',
+                            -default=&gt;'starting value',
+                            -override=&gt;1,
+                            -size=&gt;50,
+                            -maxlength=&gt;80);
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> You can also provide <STRONG>-onChange</STRONG>, <STRONG>-onFocus</STRONG>, <STRONG>-onBlur</STRONG>
+and <STRONG>-onSelect</STRONG> parameters to register JavaScript event handlers. The onChange handler will
+be called whenever the user changes the contents of the text field. You can
+do text validation if you like. onFocus and onBlur are called respectively
+when the insertion point moves into and out of the text field. onSelect is
+called when the user changes the portion of the text that is selected.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_BIG_TEXT_FIELD">CREATING A BIG TEXT FIELD
+
+</A></H2>
+<PRE>   print $query-&gt;textarea(-name=&gt;'foo',
+                          -default=&gt;'starting value',
+                          -rows=&gt;10,
+                          -columns=&gt;50);
+</PRE>
+
+<P>
+
+<PRE>        -or
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;textarea('foo','starting value',10,50);
+</PRE>
+
+<P>
+
+<CODE>textarea()</CODE> is just like textfield, but it allows you to
+specify rows and columns for a multiline text entry box. You can provide a
+starting value for the field, which can be long and contain multiple lines.
+
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> The <STRONG>-onChange</STRONG>, <STRONG>-onFocus</STRONG>, <STRONG>-onBlur</STRONG>
+and <STRONG>-onSelect</STRONG> parameters are recognized. See <CODE>textfield().</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_PASSWORD_FIELD">CREATING A PASSWORD FIELD
+
+</A></H2>
+<PRE>   print $query-&gt;password_field(-name=&gt;'secret',
+                                -value=&gt;'starting value',
+                                -size=&gt;50,
+                                -maxlength=&gt;80);
+        -or-
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;password_field('secret','starting value',50,80);
+</PRE>
+
+<P>
+
+<CODE>password_field()</CODE> is identical to <CODE>textfield(),</CODE>
+except that its contents will be starred out on the web page.
+
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> The <STRONG>-onChange</STRONG>, <STRONG>-onFocus</STRONG>, <STRONG>-onBlur</STRONG>
+and <STRONG>-onSelect</STRONG> parameters are recognized. See <CODE>textfield().</CODE>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_FILE_UPLOAD_FIELD">CREATING A FILE UPLOAD FIELD
+
+</A></H2>
+<PRE>    print $query-&gt;filefield(-name=&gt;'uploaded_file',
+                            -default=&gt;'starting value',
+                            -size=&gt;50,
+                            -maxlength=&gt;80);
+        -or-
+</PRE>
+
+<P>
+
+<PRE>    print $query-&gt;filefield('uploaded_file','starting value',50,80);
+</PRE>
+
+<P>
+
+<CODE>filefield()</CODE> will return a file upload field for Netscape 2.0
+browsers. In order to take full advantage of this <EM>you must use the new 
+multipart encoding scheme</EM> for the form. You can do this either by calling <STRONG>startform()</STRONG> with an encoding type of <STRONG>$CGI::MULTIPART</STRONG>, or by calling the new method <STRONG>start_multipart_form()</STRONG> instead of vanilla <STRONG>startform()</STRONG>.
+
+
+<P>
+
+<DL>
+<DT><STRONG>Parameters
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The first parameter is the required name for the field (-name).  
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional second parameter is the starting value for the field contents
+to be used as the default file name (-default).
+
+
+<P>
+
+The beta2 version of Netscape 2.0 currently doesn't pay any attention to this field, and so the starting value will always be blank. Worse, the field loses its ``sticky'' behavior and forgets its previous contents. The starting value field is called for in the 
+<FONT SIZE=-1>HTML</FONT> specification, however, and possibly later versions of Netscape will honor it.
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional third parameter is the size of the field in characters
+(-size).
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fourth parameter is the maximum number of characters the field
+will accept (-maxlength).
+
+
+<P>
+
+</DL>
+When the form is processed, you can retrieve the entered filename by
+calling <CODE>param().</CODE>
+
+
+<P>
+
+<PRE>       $filename = $query-&gt;param('uploaded_file');
+</PRE>
+
+<P>
+
+In Netscape Gold, the filename that gets returned is the full local
+filename on the <STRONG>remote user's</STRONG> machine. If the remote user is on a Unix machine, the filename will follow
+Unix conventions:
+
+
+<P>
+
+<PRE>        /path/to/the/file
+</PRE>
+
+<P>
+
+On an MS-DOS/Windows and 
+<FONT SIZE=-1>OS/2</FONT> machines, the filename will follow 
+<FONT SIZE=-1>DOS</FONT> conventions:
+
+
+
+<P>
+
+<PRE>        C:\PATH\TO\THE\FILE.MSW
+</PRE>
+
+<P>
+
+On a Macintosh machine, the filename will follow Mac conventions:
+
+
+<P>
+
+<PRE>        HD 40:Desktop Folder:Sort Through:Reminders
+</PRE>
+
+<P>
+
+The filename returned is also a file handle. You can read the contents of
+the file using standard Perl file reading calls:
+
+
+<P>
+
+<PRE>        # Read a text file and print it out
+        while (&lt;$filename&gt;) {
+           print;
+        }
+</PRE>
+
+<P>
+
+<PRE>        # Copy a binary file to somewhere safe
+        open (OUTFILE,&quot;&gt;&gt;/usr/local/web/users/feedback&quot;);
+        while ($bytesread=read($filename,$buffer,1024)) {
+           print OUTFILE $buffer;
+        }
+</PRE>
+
+<P>
+
+When a file is uploaded the browser usually sends along some information along with it in the format of headers. The information usually includes the 
+<FONT SIZE=-1>MIME</FONT> content type. Future browsers may send other information as well (such as modification date and size). To retrieve this information, call <CODE>uploadInfo().</CODE> It returns a reference to an associative array containing all the document headers.
+
+
+
+<P>
+
+<PRE>       $filename = $query-&gt;param('uploaded_file');
+       $type = $query-&gt;uploadInfo($filename)-&gt;{'Content-Type'};
+       unless ($type eq 'text/html') {
+          die &quot;HTML FILES ONLY!&quot;;
+       }
+</PRE>
+
+<P>
+
+If you are using a machine that recognizes ``text'' and ``binary'' data
+modes, be sure to understand when and how to use them (see the Camel book).
+Otherwise you may find that binary files are corrupted during file uploads.
+
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> The <STRONG>-onChange</STRONG>, <STRONG>-onFocus</STRONG>, <STRONG>-onBlur</STRONG>
+and <STRONG>-onSelect</STRONG> parameters are recognized. See <CODE>textfield()</CODE> for details. 
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_POPUP_MENU">CREATING A POPUP MENU
+
+</A></H2>
+<PRE>   print $query-&gt;popup_menu('menu_name',
+                            ['eenie','meenie','minie'],
+                            'meenie');
+</PRE>
+
+<P>
+
+<PRE>      -or-
+</PRE>
+
+<P>
+
+<PRE>   %labels = ('eenie'=&gt;'your first choice',
+              'meenie'=&gt;'your second choice',
+              'minie'=&gt;'your third choice');
+   print $query-&gt;popup_menu('menu_name',
+                            ['eenie','meenie','minie'],
+                            'meenie',\%labels);
+</PRE>
+
+<P>
+
+<PRE>        -or (named parameter style)-
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;popup_menu(-name=&gt;'menu_name',
+                            -values=&gt;['eenie','meenie','minie'],
+                            -default=&gt;'meenie',
+                            -labels=&gt;\%labels);
+</PRE>
+
+<P>
+
+<CODE>popup_menu()</CODE> creates a menu.
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The required first argument is the menu's name (-name).
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The required second argument (-values) is an array <STRONG>reference</STRONG>
+containing the list of menu items in the menu. You can pass the method an
+anonymous array, as shown in the example, or a reference to a named array,
+such as ``\@foo''.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional third parameter (-default) is the name of the default menu
+choice. If not specified, the first item will be the default. The values of
+the previous choice will be maintained across queries.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fourth parameter (-labels) is provided for people who want to
+use different values for the user-visible label inside the popup menu nd
+the value returned to your script. It's a pointer to an associative array
+relating menu values to user-visible labels. If you leave this parameter
+blank, the menu values will be displayed by default. (You can also leave a
+label undefined if you want to).
+
+
+<P>
+
+</OL>
+When the form is processed, the selected value of the popup menu can be
+retrieved using:
+
+
+<P>
+
+<PRE>      $popup_menu_value = $query-&gt;param('menu_name');
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> <CODE>popup_menu()</CODE> recognizes
+the following event handlers:
+<STRONG>-onChange</STRONG>, <STRONG>-onFocus</STRONG>, and <STRONG>-onBlur</STRONG>. See the <CODE>textfield()</CODE> section for details on when these
+handlers are called.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_SCROLLING_LIST">CREATING A SCROLLING LIST
+
+</A></H2>
+<PRE>   print $query-&gt;scrolling_list('list_name',
+                                ['eenie','meenie','minie','moe'],
+                                ['eenie','moe'],5,'true');
+      -or-
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;scrolling_list('list_name',
+                                ['eenie','meenie','minie','moe'],
+                                ['eenie','moe'],5,'true',
+                                \%labels);
+</PRE>
+
+<P>
+
+<PRE>        -or-
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;scrolling_list(-name=&gt;'list_name',
+                                -values=&gt;['eenie','meenie','minie','moe'],
+                                -default=&gt;['eenie','moe'],
+                                -size=&gt;5,
+                                -multiple=&gt;'true',
+                                -labels=&gt;\%labels);
+</PRE>
+
+<P>
+
+<CODE>scrolling_list()</CODE> creates a scrolling list.  
+
+
+<P>
+
+<DL>
+<DT><STRONG>Parameters:
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The first and second arguments are the list name (-name) and values
+(-values). As in the popup menu, the second argument should be an array
+reference.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional third argument (-default) can be either a reference to a list
+containing the values to be selected by default, or can be a single value
+to select. If this argument is missing or undefined, then nothing is
+selected when the list first appears. In the named parameter version, you
+can use the synonym ``-defaults'' for this parameter.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fourth argument is the size of the list (-size).
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fifth argument can be set to true to allow multiple
+simultaneous selections (-multiple). Otherwise only one selection will be
+allowed at a time.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional sixth argument is a pointer to an associative array containing
+long user-visible labels for the list items (-labels). If not provided, the
+values will be displayed.
+
+
+<P>
+
+When this form is processed, all selected list items will be returned as a
+list under the parameter name 'list_name'. The values of the selected items
+can be retrieved with:
+
+
+<P>
+
+<PRE>      @selected = $query-&gt;param('list_name');
+</PRE>
+
+<P>
+
+</DL>
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> <CODE>scrolling_list()</CODE>
+recognizes the following event handlers:
+<STRONG>-onChange</STRONG>, <STRONG>-onFocus</STRONG>, and <STRONG>-onBlur</STRONG>. See <CODE>textfield()</CODE> for the description of when these handlers
+are called.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_GROUP_OF_RELATED_CHEC">CREATING A GROUP OF RELATED CHECKBOXES
+
+</A></H2>
+<PRE>   print $query-&gt;checkbox_group(-name=&gt;'group_name',
+                                -values=&gt;['eenie','meenie','minie','moe'],
+                                -default=&gt;['eenie','moe'],
+                                -linebreak=&gt;'true',
+                                -labels=&gt;\%labels);
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;checkbox_group('group_name',
+                                ['eenie','meenie','minie','moe'],
+                                ['eenie','moe'],'true',\%labels);
+</PRE>
+
+<P>
+
+<PRE>   HTML3-COMPATIBLE BROWSERS ONLY:
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;checkbox_group(-name=&gt;'group_name',
+                                -values=&gt;['eenie','meenie','minie','moe'],
+                                -rows=2,-columns=&gt;2);
+    
+</PRE>
+
+<P>
+
+<CODE>checkbox_group()</CODE> creates a list of checkboxes that are related
+by the same name.
+
+
+<P>
+
+<DL>
+<DT><STRONG>Parameters:
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The first and second arguments are the checkbox name and values,
+respectively (-name and -values). As in the popup menu, the second argument
+should be an array reference. These values are used for the user-readable
+labels printed next to the checkboxes as well as for the values passed to
+your script in the query string.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional third argument (-default) can be either a reference to a list
+containing the values to be checked by default, or can be a single value to
+checked. If this argument is missing or undefined, then nothing is selected
+when the list first appears.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fourth argument (-linebreak) can be set to true to place line
+breaks between the checkboxes so that they appear as a vertical list.
+Otherwise, they will be strung together on a horizontal line.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fifth argument is a pointer to an associative array relating
+the checkbox values to the user-visible labels that will be printed next to
+them (-labels). If not provided, the values will be used as the default.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+<STRONG>HTML3-compatible browsers</STRONG> (such as Netscape) can take advantage of the optional parameters <STRONG>-rows</STRONG>, and <STRONG>-columns</STRONG>. These parameters cause <CODE>checkbox_group()</CODE> to return an 
+<FONT SIZE=-1>HTML3</FONT> compatible table containing the checkbox group
+formatted with the specified number of rows and columns. You can provide
+just the -columns parameter if you wish; checkbox_group will calculate the
+correct number of rows for you.
+
+
+<P>
+
+To include row and column headings in the returned table, you can use the <STRONG>-rowheader</STRONG> and <STRONG>-colheader</STRONG> parameters. Both of these accept a pointer to an array of headings to use.
+The headings are just decorative. They don't reorganize the interpretation
+of the checkboxes -- they're still a single named unit.
+
+
+<P>
+
+</DL>
+When the form is processed, all checked boxes will be returned as a list
+under the parameter name 'group_name'. The values of the ``on'' checkboxes
+can be retrieved with:
+
+
+<P>
+
+<PRE>      @turned_on = $query-&gt;param('group_name');
+</PRE>
+
+<P>
+
+The value returned by <CODE>checkbox_group()</CODE> is actually an array of
+button elements. You can capture them and use them within tables, lists, or
+in other creative ways:
+
+
+<P>
+
+<PRE>    @h = $query-&gt;checkbox_group(-name=&gt;'group_name',-values=&gt;\@values);
+    &amp;use_in_creative_way(@h);
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> <CODE>checkbox_group()</CODE>
+recognizes the <STRONG>-onClick</STRONG>
+parameter. This specifies a JavaScript code fragment or function call to be
+executed every time the user clicks on any of the buttons in the group. You
+can retrieve the identity of the particular button clicked on using the
+``this'' variable.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_STANDALONE_CHECKBOX">CREATING A STANDALONE CHECKBOX
+
+</A></H2>
+<PRE>    print $query-&gt;checkbox(-name=&gt;'checkbox_name',
+                           -checked=&gt;'checked',
+                           -value=&gt;'ON',
+                           -label=&gt;'CLICK ME');
+</PRE>
+
+<P>
+
+<PRE>        -or-
+</PRE>
+
+<P>
+
+<PRE>    print $query-&gt;checkbox('checkbox_name','checked','ON','CLICK ME');
+</PRE>
+
+<P>
+
+<CODE>checkbox()</CODE> is used to create an isolated checkbox that isn't
+logically related to any others.
+
+
+<P>
+
+<DL>
+<DT><STRONG>Parameters:
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The first parameter is the required name for the checkbox (-name). It will
+also be used for the user-readable label printed next to the checkbox.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional second parameter (-checked) specifies that the checkbox is
+turned on by default. Synonyms are -selected and -on.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional third parameter (-value) specifies the value of the checkbox
+when it is checked. If not provided, the word ``on'' is assumed.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fourth parameter (-label) is the user-readable label to be
+attached to the checkbox. If not provided, the checkbox name is used.
+
+
+<P>
+
+</DL>
+The value of the checkbox can be retrieved using:
+
+
+<P>
+
+<PRE>    $turned_on = $query-&gt;param('checkbox_name');
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> <CODE>checkbox()</CODE> recognizes the <STRONG>-onClick</STRONG>
+parameter. See <CODE>checkbox_group()</CODE> for further details.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_RADIO_BUTTON_GROUP">CREATING A RADIO BUTTON GROUP
+
+</A></H2>
+<PRE>   print $query-&gt;radio_group(-name=&gt;'group_name',
+                             -values=&gt;['eenie','meenie','minie'],
+                             -default=&gt;'meenie',
+                             -linebreak=&gt;'true',
+                             -labels=&gt;\%labels);
+</PRE>
+
+<P>
+
+<PRE>        -or-
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;radio_group('group_name',['eenie','meenie','minie'],
+                                          'meenie','true',\%labels);
+</PRE>
+
+<P>
+
+<PRE>   HTML3-COMPATIBLE BROWSERS ONLY:
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;radio_group(-name=&gt;'group_name',
+                             -values=&gt;['eenie','meenie','minie','moe'],
+                             -rows=2,-columns=&gt;2);
+</PRE>
+
+<P>
+
+<CODE>radio_group()</CODE> creates a set of logically-related radio buttons
+(turning one member of the group on turns the others off)
+
+
+<P>
+
+<DL>
+<DT><STRONG>Parameters:
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The first argument is the name of the group and is required (-name).
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The second argument (-values) is the list of values for the radio buttons.
+The values and the labels that appear on the page are identical. Pass an
+array <EM>reference</EM> in the second argument, either using an anonymous array, as shown, or by
+referencing a named array as in ``\@foo''.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional third parameter (-default) is the name of the default button
+to turn on. If not specified, the first item will be the default. You can
+provide a nonexistent button name, such as ``-'' to start up with no
+buttons selected.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fourth parameter (-linebreak) can be set to 'true' to put line
+breaks between the buttons, creating a vertical list.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The optional fifth parameter (-labels) is a pointer to an associative array
+relating the radio button values to user-visible labels to be used in the
+display. If not provided, the values themselves are displayed.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+<STRONG>HTML3-compatible browsers</STRONG> (such as Netscape) can take advantage of the optional parameters <STRONG>-rows</STRONG>, and <STRONG>-columns</STRONG>. These parameters cause <CODE>radio_group()</CODE> to return an 
+<FONT SIZE=-1>HTML3</FONT> compatible table containing the radio group
+formatted with the specified number of rows and columns. You can provide
+just the -columns parameter if you wish; radio_group will calculate the
+correct number of rows for you.
+
+
+<P>
+
+To include row and column headings in the returned table, you can use the <STRONG>-rowheader</STRONG> and <STRONG>-colheader</STRONG> parameters. Both of these accept a pointer to an array of headings to use.
+The headings are just decorative. They don't reorganize the interpetation
+of the radio buttons -- they're still a single named unit.
+
+
+<P>
+
+</DL>
+When the form is processed, the selected radio button can be retrieved
+using:
+
+
+<P>
+
+<PRE>      $which_radio_button = $query-&gt;param('group_name');
+</PRE>
+
+<P>
+
+The value returned by <CODE>radio_group()</CODE> is actually an array of
+button elements. You can capture them and use them within tables, lists, or
+in other creative ways:
+
+
+<P>
+
+<PRE>    @h = $query-&gt;radio_group(-name=&gt;'group_name',-values=&gt;\@values);
+    &amp;use_in_creative_way(@h);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_SUBMIT_BUTTON">CREATING A SUBMIT BUTTON 
+
+</A></H2>
+<PRE>   print $query-&gt;submit(-name=&gt;'button_name',
+                        -value=&gt;'value');
+</PRE>
+
+<P>
+
+<PRE>        -or-
+</PRE>
+
+<P>
+
+<PRE>   print $query-&gt;submit('button_name','value');
+</PRE>
+
+<P>
+
+<CODE>submit()</CODE> will create the query submission button. Every form
+should have one of these.
+
+
+<P>
+
+<DL>
+<DT><STRONG>Parameters:
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The first argument (-name) is optional. You can give the button a name if
+you have several submission buttons in your form and you want to
+distinguish between them. The name will also be used as the user-visible
+label. Be aware that a few older browsers don't deal with this correctly
+and
+<STRONG>never</STRONG> send back a value from a button.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The second argument (-value) is also optional. This gives the button a
+value that will be passed to your script in the query string.
+
+
+<P>
+
+</DL>
+You can figure out which button was pressed by using different values for
+each one:
+
+
+<P>
+
+<PRE>     $which_one = $query-&gt;param('button_name');
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> <CODE>radio_group()</CODE> recognizes
+the <STRONG>-onClick</STRONG>
+parameter. See <CODE>checkbox_group()</CODE> for further details.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_RESET_BUTTON">CREATING A RESET BUTTON
+
+</A></H2>
+<PRE>   print $query-&gt;reset
+</PRE>
+
+<P>
+
+<CODE>reset()</CODE> creates the ``reset'' button. Note that it restores the form to its value from the last time the script was called, 
+<FONT SIZE=-1>NOT</FONT> necessarily to the defaults.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_DEFAULT_BUTTON">CREATING A DEFAULT BUTTON
+
+</A></H2>
+<PRE>   print $query-&gt;defaults('button_label')
+</PRE>
+
+<P>
+
+<CODE>defaults()</CODE> creates a button that, when invoked, will cause the
+form to be completely reset to its defaults, wiping out all the changes the
+user ever made.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_HIDDEN_FIELD">CREATING A HIDDEN FIELD
+
+</A></H2>
+<PRE>        print $query-&gt;hidden(-name=&gt;'hidden_name',
+                             -default=&gt;['value1','value2'...]);
+</PRE>
+
+<P>
+
+<PRE>                -or-
+</PRE>
+
+<P>
+
+<PRE>        print $query-&gt;hidden('hidden_name','value1','value2'...);
+</PRE>
+
+<P>
+
+<CODE>hidden()</CODE> produces a text field that can't be seen by the user.
+It is useful for passing state variable information from one invocation of
+the script to the next.
+
+
+<P>
+
+<DL>
+<DT><STRONG>Parameters:
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The first argument is required and specifies the name of this field
+(-name).
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">  
+
+</A></STRONG>
+The second argument is also required and specifies its value (-default). In
+the named parameter style of calling, you can provide a single value here
+or a reference to a whole list
+
+
+<P>
+
+</DL>
+Fetch the value of a hidden field this way:
+
+
+<P>
+
+<PRE>     $hidden_value = $query-&gt;param('hidden_name');
+</PRE>
+
+<P>
+
+Note, that just like all the other form elements, the value of a hidden
+field is ``sticky''. If you want to replace a hidden field with some other
+values after the script has been called once you'll have to do it manually:
+
+
+<P>
+
+<PRE>     $query-&gt;param('hidden_name','new','values','here');
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_CLICKABLE_IMAGE_BUTTO">CREATING A CLICKABLE IMAGE BUTTON
+
+</A></H2>
+<PRE>     print $query-&gt;image_button(-name=&gt;'button_name',
+                                -src=&gt;'/source/URL',
+                                -align=&gt;'MIDDLE');      
+</PRE>
+
+<P>
+
+<PRE>        -or-
+</PRE>
+
+<P>
+
+<PRE>     print $query-&gt;image_button('button_name','/source/URL','MIDDLE');
+</PRE>
+
+<P>
+
+<CODE>image_button()</CODE> produces a clickable image. When it's clicked
+on the position of the click is returned to your script as
+``button_name.x'' and ``button_name.y'', where ``button_name'' is the name
+you've assigned to it.
+
+
+<P>
+
+
+<FONT SIZE=-1>JAVASCRIPTING:</FONT> <CODE>image_button()</CODE> recognizes
+the <STRONG>-onClick</STRONG>
+parameter. See <CODE>checkbox_group()</CODE> for further details.
+
+
+<P>
+
+<DL>
+<DT><STRONG>Parameters:
+
+</A></STRONG><DD>
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The first argument (-name) is required and specifies the name of this
+field.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_">
+
+</A></STRONG>
+The second argument (-src) is also required and specifies the 
+<FONT SIZE=-1>URL</FONT>
+
+
+<P>
+
+<LI><STRONG><A NAME="item_The_third_option_align_option">
+The third option (-align, optional) is an alignment type, and may be
+TOP, BOTTOM or MIDDLE
+
+</A></STRONG>
+</DL>
+Fetch the value of the button this way: <A HREF="#item__x">$x</A> =
+$query-&gt;param('button_name.x'); <A HREF="#item__y">$y</A> =
+$query-&gt;param('button_name.y');
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="CREATING_A_JAVASCRIPT_ACTION_BUT">CREATING A JAVASCRIPT ACTION BUTTON
+
+</A></H2>
+<PRE>     print $query-&gt;button(-name=&gt;'button_name',
+                          -value=&gt;'user visible label',
+                          -onClick=&gt;&quot;do_something()&quot;);
+</PRE>
+
+<P>
+
+<PRE>        -or-
+</PRE>
+
+<P>
+
+<PRE>     print $query-&gt;button('button_name',&quot;do_something()&quot;);
+</PRE>
+
+<P>
+
+<CODE>button()</CODE> produces a button that is compatible with Netscape
+2.0's JavaScript. When it's pressed the fragment of JavaScript code pointed
+to by the <STRONG>-onClick</STRONG> parameter will be executed. On non-Netscape browsers this form element will
+probably not even display.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NETSCAPE_COOKIES">NETSCAPE COOKIES
+
+</A></H1>
+Netscape browsers versions 1.1 and higher support a so-called ``cookie''
+designed to help maintain state within a browser session. CGI.pm has
+several methods that support cookies.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> cookie is a name=value pair much like the named parameters in a 
+<FONT SIZE=-1>CGI</FONT> query string. 
+<FONT SIZE=-1>CGI</FONT> scripts create one or more cookies and send them to the browser in the 
+<FONT SIZE=-1>HTTP</FONT> header. The browser maintains a list of cookies that belong to a particular Web server, and returns them to the 
+<FONT SIZE=-1>CGI</FONT> script during subsequent interactions.
+
+
+
+<P>
+
+In addition to the required name=value pair, each cookie has several
+optional attributes:
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item_an_expiration_time"> an expiration time
+
+</A></STRONG>
+This is a time/date string (in a special 
+<FONT SIZE=-1>GMT</FONT> format) that indicates when a cookie expires. The
+cookie will be saved and returned to your script until this expiration date
+is reached if the user exits Netscape and restarts it. If an expiration
+date isn't specified, the cookie will remain active until the user quits
+Netscape.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_a_domain"> a domain
+
+</A></STRONG>
+This is a partial or complete domain name for which the cookie is valid.
+The browser will return the cookie to any host that matches the partial
+domain name. For example, if you specify a domain name of
+``.capricorn.com'', then Netscape will return the cookie to Web servers
+running on any of the machines ``www.capricorn.com'',
+``www2.capricorn.com'', ``feckless.capricorn.com'', etc. Domain names must
+contain at least two periods to prevent attempts to match on top level
+domains like ``.edu''. If no domain is specified, then the browser will
+only return the cookie to servers on the host the cookie originated from.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_a_path"> a path
+
+</A></STRONG>
+If you provide a cookie path attribute, the browser will check it against your script's 
+<FONT SIZE=-1>URL</FONT> before returning the cookie. For example, if you specify the path ``/cgi-bin'', then the cookie will be returned to each of the scripts ``/cgi-bin/tally.pl'', ``/cgi-bin/order.pl'', and ``/cgi-bin/customer_service/complain.pl'', but not to the script ``/cgi-private/site_admin.pl''. By default, path is set to ``/'', which causes the cookie to be sent to any 
+<FONT SIZE=-1>CGI</FONT> script on your site.
+
+
+
+<P>
+
+<LI><STRONG><A NAME="item_a_secure_flag"> a "secure" flag
+
+</A></STRONG>
+If the ``secure'' attribute is set, the cookie will only be sent to your script if the 
+<FONT SIZE=-1>CGI</FONT> request is occurring on a secure channel, such as 
+<FONT SIZE=-1>SSL.</FONT>
+
+
+
+<P>
+
+</OL>
+The interface to Netscape cookies is the <STRONG>cookie()</STRONG> method:
+
+
+<P>
+
+<PRE>    $cookie = $query-&gt;cookie(-name=&gt;'sessionID',
+                             -value=&gt;'xyzzy',
+                             -expires=&gt;'+1h',
+                             -path=&gt;'/cgi-bin/database',
+                             -domain=&gt;'.capricorn.org',
+                             -secure=&gt;1);
+    print $query-&gt;header(-cookie=&gt;$cookie);
+</PRE>
+
+<P>
+
+<STRONG>cookie()</STRONG> creates a new cookie. Its parameters include:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__name">-name
+
+</A></STRONG><DD>
+The name of the cookie (required). This can be any string at all. Although
+Netscape limits its cookie names to non-whitespace alphanumeric characters,
+CGI.pm removes this restriction by escaping and unescaping cookies behind
+the scenes.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__value">-value
+
+</A></STRONG><DD>
+The value of the cookie. This can be any scalar value, array reference, or
+even associative array reference. For example, you can store an entire
+associative array into a cookie this way:
+
+
+<P>
+
+<PRE>        $cookie=$query-&gt;cookie(-name=&gt;'family information',
+                               -value=&gt;\%childrens_ages);
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__path">-path
+
+</A></STRONG><DD>
+The optional partial path for which this cookie will be valid, as described
+above.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__domain">-domain
+
+</A></STRONG><DD>
+The optional partial domain for which this cookie will be valid, as
+described above.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__expires">-expires
+
+</A></STRONG><DD>
+The optional expiration date for this cookie. The format is as described in
+the section on the <STRONG>header()</STRONG> method:
+
+
+<P>
+
+<PRE>        &quot;+1h&quot;  one hour from now
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__secure">-secure
+
+</A></STRONG><DD>
+If set to true, this cookie will only be used within a secure 
+<FONT SIZE=-1>SSL</FONT> session.
+
+
+<P>
+
+</DL>
+The cookie created by <CODE>cookie()</CODE> must be incorporated into the 
+<FONT SIZE=-1>HTTP</FONT> header within the string returned by the
+<CODE>header()</CODE> method:
+
+
+<P>
+
+<PRE>        print $query-&gt;header(-cookie=&gt;$my_cookie);
+</PRE>
+
+<P>
+
+To create multiple cookies, give <CODE>header()</CODE> an array reference:
+
+
+<P>
+
+<PRE>        $cookie1 = $query-&gt;cookie(-name=&gt;'riddle_name',
+                                  -value=&gt;&quot;The Sphynx's Question&quot;);
+        $cookie2 = $query-&gt;cookie(-name=&gt;'answers',
+                                  -value=&gt;\%answers);
+        print $query-&gt;header(-cookie=&gt;[$cookie1,$cookie2]);
+</PRE>
+
+<P>
+
+To retrieve a cookie, request it by name by calling <CODE>cookie()</CODE>
+method without the <STRONG>-value</STRONG> parameter:
+
+
+<P>
+
+<PRE>        use CGI;
+        $query = new CGI;
+        %answers = $query-&gt;cookie(-name=&gt;'answers');
+        # $query-&gt;cookie('answers') will work too!
+</PRE>
+
+<P>
+
+The cookie and 
+<FONT SIZE=-1>CGI</FONT> namespaces are separate. If you have a parameter named 'answers' and a cookie named 'answers', the values retrieved by <CODE>param()</CODE> and <CODE>cookie()</CODE> are independent of each other. However, it's simple to turn a 
+<FONT SIZE=-1>CGI</FONT> parameter into a cookie, and vice-versa:
+
+
+
+<P>
+
+<PRE>   # turn a CGI parameter into a cookie
+   $c=$q-&gt;cookie(-name=&gt;'answers',-value=&gt;[$q-&gt;param('answers')]);
+   # vice-versa
+   $q-&gt;param(-name=&gt;'answers',-value=&gt;[$q-&gt;cookie('answers')]);
+</PRE>
+
+<P>
+
+See the <STRONG>cookie.cgi</STRONG> example script for some ideas on how to use cookies effectively.
+
+
+<P>
+
+<STRONG>NOTE:</STRONG> There appear to be some (undocumented) restrictions on Netscape cookies. In Netscape 2.01, at least, 
+<FONT SIZE=-1>I</FONT> haven't been able to set more than three cookies at a time. There may also be limits on the length of cookies. If you need to store a lot of information, it's probably better to create a unique session 
+<FONT SIZE=-1>ID,</FONT> store it in a cookie, and use the session 
+<FONT SIZE=-1>ID</FONT> to locate an external file/database saved on the server's side of the connection.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="WORKING_WITH_NETSCAPE_FRAMES">WORKING WITH NETSCAPE FRAMES
+
+</A></H1>
+It's possible for CGI.pm scripts to write into several browser panels and
+windows using Netscape's frame mechanism. There are three techniques for
+defining new frames programmatically:
+
+
+<P>
+
+<OL>
+<LI><STRONG><A NAME="item_Create_a_Frameset_document"> Create a <Frameset> document
+
+</A></STRONG>
+After writing out the 
+<FONT SIZE=-1>HTTP</FONT> header, instead of creating a standard 
+<FONT SIZE=-1>HTML</FONT> document using the <CODE>start_html()</CODE> call, create a 
+<FONT SIZE=-1>&lt;FRAMESET&gt;</FONT> document that defines the frames on the page. Specify your <CODE>script(s)</CODE> (with appropriate parameters) as the 
+<FONT SIZE=-1>SRC</FONT> for each of the frames.
+
+
+
+<P>
+
+There is no specific support for creating 
+<FONT SIZE=-1>&lt;FRAMESET&gt;</FONT> sections in CGI.pm, but the 
+<FONT SIZE=-1>HTML</FONT> is very simple to write. See the frame documentation in Netscape's home pages for details
+ 
+
+
+<P>
+
+<PRE>  <A HREF="http://home.netscape.com/assist/net_sites/frames.html">http://home.netscape.com/assist/net_sites/frames.html</A>
+</PRE>
+
+<P>
+
+<LI><STRONG><A NAME="item_Specify_the_destination_for_the_"> Specify the destination for the document in the HTTP header
+
+</A></STRONG>
+You may provide a <STRONG>-target</STRONG> parameter to the <CODE>header()</CODE> method: print
+$q-&gt;header(-target=&gt;'ResultsWindow');
+
+
+<P>
+
+This will tell Netscape to load the output of your script into the frame
+named ``ResultsWindow''. If a frame of that name doesn't already exist,
+Netscape will pop up a new window and load your script's document into
+that. There are a number of magic names that you can use for targets. See
+the frame documents on Netscape's home pages for details.
+
+
+<P>
+
+<LI><STRONG><A NAME="item_Specify_the_destination_for_the_"> Specify the destination for the document in the <FORM> tag
+
+</A></STRONG>
+You can specify the frame to load in the 
+<FONT SIZE=-1>FORM</FONT> tag itself. With CGI.pm it looks like this:
+
+
+<P>
+
+<PRE>    print $q-&gt;startform(-target=&gt;'ResultsWindow');
+</PRE>
+
+<P>
+
+When your script is reinvoked by the form, its output will be loaded into
+the frame named ``ResultsWindow''. If one doesn't already exist a new
+window will be created.
+
+
+<P>
+
+</OL>
+The script ``frameset.cgi'' in the examples directory shows one way to
+create pages in which the fill-out form and the response live in
+side-by-side frames.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="LIMITED_SUPPORT_FOR_CASCADING_ST">LIMITED SUPPORT FOR CASCADING STYLE SHEETS
+
+</A></H1>
+CGI.pm has limited support for HTML3's cascading style sheets (css). To
+incorporate a stylesheet into your document, pass the
+<CODE>start_html()</CODE> method a <STRONG>-style</STRONG> parameter. The value of this parameter may be a scalar, in which case it is
+incorporated directly into a &lt;
+<FONT SIZE=-1>STYLE&gt;</FONT> section, or it may be a hash reference. In
+the latter case you should provide the hash with one or more of <STRONG>-src</STRONG> or
+<STRONG>-code</STRONG>.  <STRONG>-src</STRONG> points to a 
+<FONT SIZE=-1>URL</FONT> where an externally-defined stylesheet can be
+found.  <STRONG>-code</STRONG> points to a scalar value to be incorporated into a &lt;
+<FONT SIZE=-1>STYLE&gt;</FONT> section. Style definitions in <STRONG>-code</STRONG>
+override similarly-named ones in <STRONG>-src</STRONG>, hence the name ``cascading.''
+
+
+<P>
+
+To refer to a style within the body of your document, add the
+<STRONG>-class</STRONG> parameter to any 
+<FONT SIZE=-1>HTML</FONT> element:
+
+
+<P>
+
+<PRE>    print h1({-class=&gt;'Fancy'},'Welcome to the Party');
+</PRE>
+
+<P>
+
+Or define styles on the fly with the <STRONG>-style</STRONG> parameter:
+
+
+<P>
+
+<PRE>    print h1({-style=&gt;'Color: red;'},'Welcome to Hell');
+</PRE>
+
+<P>
+
+You may also use the new <STRONG>span()</STRONG> element to apply a style to a section of text:
+
+
+<P>
+
+<PRE>    print span({-style=&gt;'Color: red;'},
+               h1('Welcome to Hell'),
+               &quot;Where did that handbasket get to?&quot;
+               );
+</PRE>
+
+<P>
+
+Note that you must import the ``:html3'' definitions to have the
+<STRONG>span()</STRONG> method available. Here's a quick and dirty example of using CSS's. See the 
+<FONT SIZE=-1>CSS</FONT> specification at <A
+HREF="http://www.w3.org/pub/WWW/TR/Wd-css-1.html">http://www.w3.org/pub/WWW/TR/Wd-css-1.html</A>
+for more information.
+
+
+<P>
+
+<PRE>    use CGI qw/:standard :html3/;
+</PRE>
+
+<P>
+
+<PRE>    #here's a stylesheet incorporated directly into the page
+    $newStyle=&lt;&lt;END;
+    &lt;!-- 
+    P.Tip {
+        margin-right: 50pt;
+        margin-left: 50pt;
+        color: red;
+    }
+    P.Alert {
+        font-size: 30pt;
+        font-family: sans-serif;
+      color: red;
+    }
+    --&gt;
+    END
+    print header();
+    print start_html( -title=&gt;'CGI with Style',
+                      -style=&gt;{-src=&gt;'<A HREF="http://www.capricorn.com/style/st1.css">http://www.capricorn.com/style/st1.css</A>',
+                               -code=&gt;$newStyle}
+                     );
+    print h1('CGI with Style'),
+          p({-class=&gt;'Tip'},
+            &quot;Better read the cascading style sheet spec before playing with this!&quot;),
+          span({-style=&gt;'color: magenta'},
+               &quot;Look Mom, no hands!&quot;,
+               p(),
+               &quot;Whooo wee!&quot;
+               );
+    print end_html;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DEBUGGING">DEBUGGING
+
+</A></H1>
+If you are running the script from the command line or in the perl
+debugger, you can pass the script a list of keywords or parameter=value
+pairs on the command line or from standard input (you don't have to worry
+about tricking your script into reading from environment variables). You
+can pass keywords like this:
+
+
+<P>
+
+<PRE>    your_script.pl keyword1 keyword2 keyword3
+</PRE>
+
+<P>
+
+or this:
+
+
+<P>
+
+<PRE>   your_script.pl keyword1+keyword2+keyword3
+</PRE>
+
+<P>
+
+or this:
+
+
+<P>
+
+<PRE>    your_script.pl name1=value1 name2=value2
+</PRE>
+
+<P>
+
+or this:
+
+
+<P>
+
+<PRE>    your_script.pl name1=value1&amp;name2=value2
+</PRE>
+
+<P>
+
+or even as newline-delimited parameters on standard input.
+
+
+<P>
+
+When debugging, you can use quotes and backslashes to escape characters in
+the familiar shell manner, letting you place spaces and other funny
+characters in your parameter=value pairs:
+
+
+<P>
+
+<PRE>   your_script.pl &quot;name1='I am a long value'&quot; &quot;name2=two\ words&quot;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="DUMPING_OUT_ALL_THE_NAME_VALUE_P">DUMPING OUT ALL THE NAME/VALUE PAIRS
+
+</A></H2>
+The <CODE>dump()</CODE> method produces a string consisting of all the
+query's name/value pairs formatted nicely as a nested list. This is useful
+for debugging purposes:
+
+
+<P>
+
+<PRE>    print $query-&gt;dump
+    
+</PRE>
+
+<P>
+
+Produces something that looks like:
+
+
+<P>
+
+<PRE>    &lt;UL&gt;
+    &lt;LI&gt;name1
+        &lt;UL&gt;
+        &lt;LI&gt;value1
+        &lt;LI&gt;value2
+        &lt;/UL&gt;
+    &lt;LI&gt;name2
+        &lt;UL&gt;
+        &lt;LI&gt;value1
+        &lt;/UL&gt;
+    &lt;/UL&gt;
+</PRE>
+
+<P>
+
+You can pass a value of 'true' to <CODE>dump()</CODE> in order to get it to print the results out as plain text, suitable for incorporating into a 
+<FONT SIZE=-1>&lt;PRE&gt;</FONT> section.
+
+
+
+<P>
+
+As a shortcut, as of version 1.56 you can interpolate the entire 
+<FONT SIZE=-1>CGI</FONT> object into a string and it will be replaced with the a nice 
+<FONT SIZE=-1>HTML</FONT> dump shown above:
+
+
+
+<P>
+
+<PRE>    $query=new CGI;
+    print &quot;&lt;H2&gt;Current Values&lt;/H2&gt; $query\n&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="FETCHING_ENVIRONMENT_VARIABLES">FETCHING ENVIRONMENT VARIABLES
+
+</A></H1>
+Some of the more useful environment variables can be fetched through this
+interface. The methods are as follows:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_accept">accept()
+
+</A></STRONG><DD>
+Return a list of 
+<FONT SIZE=-1>MIME</FONT> types that the remote browser accepts. If you give this method a single argument corresponding to a 
+<FONT SIZE=-1>MIME</FONT> type, as in $query-&gt;accept('text/html'), it will return a floating point value corresponding to the browser's preference for this type from 0.0 (don't want) to 1.0. Glob types (e.g. text/*) in the browser's accept list are handled correctly.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_raw_cookie">raw_cookie()
+
+</A></STRONG><DD>
+Returns the 
+<FONT SIZE=-1>HTTP_COOKIE</FONT> variable, an 
+<FONT SIZE=-1>HTTP</FONT> extension implemented by Netscape browsers version 1.1 and higher. Cookies have a special format, and this method call just returns the raw form (?cookie dough). See <CODE>cookie()</CODE> for ways of setting and retrieving cooked cookies.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_user_agent">user_agent()
+
+</A></STRONG><DD>
+Returns the 
+<FONT SIZE=-1>HTTP_USER_AGENT</FONT> variable. If you give this method a
+single argument, it will attempt to pattern match on it, allowing you to do
+something like $query-&gt;user_agent(netscape);
+
+
+<P>
+
+<DT><STRONG><A NAME="item_path_info">path_info()
+
+</A></STRONG><DD>
+Returns additional path information from the script 
+<FONT SIZE=-1>URL.</FONT> 
+<FONT SIZE=-1>E.G.</FONT> fetching /cgi-bin/your_script/additional/stuff will result in $query-&gt;path_info() returning ``additional/stuff''.
+
+
+
+<P>
+
+
+<FONT SIZE=-1>NOTE:</FONT> The Microsoft Internet Information Server is broken with respect to additional path information. If you use the Perl 
+<FONT SIZE=-1>DLL</FONT> library, the 
+<FONT SIZE=-1>IIS</FONT> server will attempt to execute the additional path information as a Perl script. If you use the ordinary file associations mapping, the path information will be present in the environment, but incorrect. The best thing to do is to avoid using additional path information in 
+<FONT SIZE=-1>CGI</FONT> scripts destined for use with 
+<FONT SIZE=-1>IIS.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_path_translated">path_translated()
+
+</A></STRONG><DD>
+As per <CODE>path_info()</CODE> but returns the additional path information
+translated into a physical path, e.g.
+``/usr/local/etc/httpd/htdocs/additional/stuff''.
+
+
+<P>
+
+The Microsoft 
+<FONT SIZE=-1>IIS</FONT> is broken with respect to the translated path as
+well.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_remote_host">remote_host()
+
+</A></STRONG><DD>
+Returns either the remote host name or 
+<FONT SIZE=-1>IP</FONT> address. if the former is unavailable.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_script_name">script_name()
+Return the script name as a partial URL, for self-refering
+scripts.
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_referer">referer()
+
+</A></STRONG><DD>
+Return the 
+<FONT SIZE=-1>URL</FONT> of the page the browser was viewing prior to
+fetching your script. Not available for all browsers.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_auth_type">auth_type ()
+
+</A></STRONG><DD>
+Return the authorization/verification method in use for this script, if
+any.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_server_name">server_name ()
+
+</A></STRONG><DD>
+Returns the name of the server, usually the machine's host name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_virtual_host">virtual_host ()
+
+</A></STRONG><DD>
+When using virtual hosts, returns the name of the host that the browser
+attempted to contact
+
+
+<P>
+
+<DT><STRONG><A NAME="item_server_software">server_software ()
+
+</A></STRONG><DD>
+Returns the server software and version number.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_remote_user">remote_user ()
+
+</A></STRONG><DD>
+Return the authorization/verification name used for user verification, if
+this script is protected.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_user_name">user_name ()
+
+</A></STRONG><DD>
+Attempt to obtain the remote user's name, using a variety of different
+techniques. This only works with older browsers such as Mosaic. Netscape
+does not reliably report the user name!
+
+
+<P>
+
+<DT><STRONG><A NAME="item_request_method">request_method()
+
+</A></STRONG><DD>
+Returns the method used to access your script, usually one of 
+<FONT SIZE=-1>'POST',</FONT> 
+<FONT SIZE=-1>'GET'</FONT> or 
+<FONT SIZE=-1>'HEAD'.</FONT>
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="CREATING_HTML_ELEMENTS">CREATING HTML ELEMENTS
+
+</A></H1>
+In addition to its shortcuts for creating form elements, CGI.pm defines general 
+<FONT SIZE=-1>HTML</FONT> shortcut methods as well. 
+<FONT SIZE=-1>HTML</FONT> shortcuts are named after a single 
+<FONT SIZE=-1>HTML</FONT> element and return a fragment of 
+<FONT SIZE=-1>HTML</FONT> text that you can then print or manipulate as you like.
+
+
+
+<P>
+
+This example shows how to use the 
+<FONT SIZE=-1>HTML</FONT> methods:
+
+
+<P>
+
+<PRE>        $q = new CGI;
+        print $q-&gt;blockquote(
+                             &quot;Many years ago on the island of&quot;,
+                             $q-&gt;a({href=&gt;&quot;<A HREF="http://crete.org/&quot">http://crete.org/&quot</A>;},&quot;Crete&quot;),
+                             &quot;there lived a minotaur named&quot;,
+                             $q-&gt;strong(&quot;Fred.&quot;),
+                            ),
+               $q-&gt;hr;
+</PRE>
+
+<P>
+
+This results in the following 
+<FONT SIZE=-1>HTML</FONT> code (extra newlines have been added for
+readability):
+
+
+<P>
+
+<PRE>        &lt;blockquote&gt;
+        Many years ago on the island of
+        &lt;a HREF=&quot;<A HREF="http://crete.org/&quot">http://crete.org/&quot</A>;&gt;Crete&lt;/a&gt; there lived
+        a minotaur named &lt;strong&gt;Fred.&lt;/strong&gt; 
+        &lt;/blockquote&gt;
+        &lt;hr&gt;
+</PRE>
+
+<P>
+
+If you find the syntax for calling the 
+<FONT SIZE=-1>HTML</FONT> shortcuts awkward, you can import them into your
+namespace and dispense with the object syntax completely (see the next
+section for more details):
+
+
+<P>
+
+<PRE>        use CGI shortcuts;      # IMPORT HTML SHORTCUTS
+        print blockquote(
+                     &quot;Many years ago on the island of&quot;,
+                     a({href=&gt;&quot;<A HREF="http://crete.org/&quot">http://crete.org/&quot</A>;},&quot;Crete&quot;),
+                     &quot;there lived a minotaur named&quot;,
+                     strong(&quot;Fred.&quot;),
+                     ),
+               hr;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="PROVIDING_ARGUMENTS_TO_HTML_SHOR">PROVIDING ARGUMENTS TO HTML SHORTCUTS
+
+</A></H2>
+The 
+<FONT SIZE=-1>HTML</FONT> methods will accept zero, one or multiple
+arguments. If you provide no arguments, you get a single tag:
+
+
+<P>
+
+<PRE>        print hr;  
+        #  gives &quot;&lt;hr&gt;&quot;
+</PRE>
+
+<P>
+
+If you provide one or more string arguments, they are concatenated together
+with spaces and placed between opening and closing tags:
+
+
+<P>
+
+<PRE>        print h1(&quot;Chapter&quot;,&quot;1&quot;); 
+        # gives &quot;&lt;h1&gt;Chapter 1&lt;/h1&gt;&quot;
+</PRE>
+
+<P>
+
+If the first argument is an associative array reference, then the keys and values of the associative array become the 
+<FONT SIZE=-1>HTML</FONT> tag's attributes:
+
+
+
+<P>
+
+<PRE>        print a({href=&gt;'fred.html',target=&gt;'_new'},
+                &quot;Open a new frame&quot;);
+        # gives &lt;a href=&quot;fred.html&quot;,target=&quot;_new&quot;&gt;Open a new frame&lt;/a&gt;
+</PRE>
+
+<P>
+
+You are free to use CGI.pm-style dashes in front of the attribute names if
+you prefer:
+
+
+<P>
+
+<PRE>        print img {-src=&gt;'fred.gif',-align=&gt;'LEFT'};
+        # gives &lt;img ALIGN=&quot;LEFT&quot; SRC=&quot;fred.gif&quot;&gt;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Generating_new_HTML_tags">Generating new HTML tags
+
+</A></H2>
+Since no mere mortal can keep up with Netscape and Microsoft as they battle it out for control of 
+<FONT SIZE=-1>HTML,</FONT> the code that generates 
+<FONT SIZE=-1>HTML</FONT> tags is general and extensible. You can create new 
+<FONT SIZE=-1>HTML</FONT> tags freely just by referring to them on the import line:
+
+
+
+<P>
+
+<PRE>        use CGI shortcuts,winkin,blinkin,nod;
+</PRE>
+
+<P>
+
+Now, in addition to the standard 
+<FONT SIZE=-1>CGI</FONT> shortcuts, you've created 
+<FONT SIZE=-1>HTML</FONT> tags named ``winkin'', ``blinkin'' and ``nod''. You can use them like this:
+
+
+
+<P>
+
+<PRE>        print blinkin {color=&gt;'blue',rate=&gt;'fast'},&quot;Yahoo!&quot;;
+        # &lt;blinkin COLOR=&quot;blue&quot; RATE=&quot;fast&quot;&gt;Yahoo!&lt;/blinkin&gt;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="IMPORTING_CGI_METHOD_CALLS_INTO_">IMPORTING CGI METHOD CALLS INTO YOUR NAME SPACE
+
+</A></H1>
+As a convenience, you can import most of the 
+<FONT SIZE=-1>CGI</FONT> method calls directly into your name space. The
+syntax for doing this is:
+
+
+<P>
+
+<PRE>        use CGI &lt;list of methods&gt;;
+</PRE>
+
+<P>
+
+The listed methods will be imported into the current package; you can call them directly without creating a 
+<FONT SIZE=-1>CGI</FONT> object first. This example shows how to import the
+ <STRONG>param()</STRONG> and <STRONG>header()</STRONG>
+methods, and then use them directly:
+
+
+<P>
+
+<PRE>        use CGI param,header;
+        print header('text/plain');
+        $zipcode = param('zipcode');
+</PRE>
+
+<P>
+
+You can import groups of methods by referring to a number of special names:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_cgi">cgi
+
+</A></STRONG><DD>
+Import all CGI-handling methods, such as <STRONG>param()</STRONG>, <STRONG>path_info()</STRONG>
+and the like.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_form">form
+
+</A></STRONG><DD>
+Import all fill-out form generating methods, such as <STRONG>textfield()</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_html2">html2
+
+</A></STRONG><DD>
+Import all methods that generate 
+<FONT SIZE=-1>HTML</FONT> 2.0 standard elements.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_html3">html3
+
+</A></STRONG><DD>
+Import all methods that generate 
+<FONT SIZE=-1>HTML</FONT> 3.0 proposed elements (such as &lt;table&gt;,
+&lt;super&gt; and &lt;sub&gt;).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_netscape">netscape
+
+</A></STRONG><DD>
+Import all methods that generate Netscape-specific 
+<FONT SIZE=-1>HTML</FONT> extensions.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_shortcuts">shortcuts
+
+</A></STRONG><DD>
+Import all HTML-generating shortcuts (i.e. 'html2' + 'html3' +
+'netscape')...
+
+
+<P>
+
+<DT><STRONG><A NAME="item_standard">standard
+
+</A></STRONG><DD>
+Import ``standard'' features, 'html2', 'form' and 'cgi'.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_all">all
+
+</A></STRONG><DD>
+Import all the available methods. For the full list, see the CGI.pm code,
+where the variable <CODE>%TAGS</CODE> is defined.
+
+
+<P>
+
+</DL>
+Note that in the interests of execution speed CGI.pm does <STRONG>not</STRONG> use the standard <A HREF="/n|/perl/html/./lib/Exporter.html#">the Exporter manpage</A> syntax for specifying load symbols. This may change in the future.
+
+
+<P>
+
+If you import any of the state-maintaining 
+<FONT SIZE=-1>CGI</FONT> or form-generating methods, a default 
+<FONT SIZE=-1>CGI</FONT> object will be created and initialized automatically the first time you use any of the methods that require one to be present. This includes
+ <STRONG>param()</STRONG>, <STRONG>textfield()</STRONG>,
+<STRONG>submit()</STRONG> and the like. (If you need direct access to the 
+<FONT SIZE=-1>CGI</FONT> object, you can find it in the global variable <STRONG>$CGI::Q</STRONG>). By importing CGI.pm methods, you can create visually elegant scripts:
+
+
+<P>
+
+<PRE>   use CGI standard,html2;
+   print 
+       header,
+       start_html('Simple Script'),
+       h1('Simple Script'),
+       start_form,
+       &quot;What's your name? &quot;,textfield('name'),p,
+       &quot;What's the combination?&quot;,
+       checkbox_group(-name=&gt;'words',
+                      -values=&gt;['eenie','meenie','minie','moe'],
+                      -defaults=&gt;['eenie','moe']),p,
+       &quot;What's your favorite color?&quot;,
+       popup_menu(-name=&gt;'color',
+                  -values=&gt;['red','green','blue','chartreuse']),p,
+       submit,
+       end_form,
+       hr,&quot;\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>    if (param) {
+       print 
+           &quot;Your name is &quot;,em(param('name')),p,
+           &quot;The keywords are: &quot;,em(join(&quot;, &quot;,param('words'))),p,
+           &quot;Your favorite color is &quot;,em(param('color')),&quot;.\n&quot;;
+    }
+    print end_html;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="USING_NPH_SCRIPTS">USING NPH SCRIPTS
+
+</A></H1>
+
+<FONT SIZE=-1>NPH,</FONT> or ``no-parsed-header'', scripts bypass the server completely by sending the complete 
+<FONT SIZE=-1>HTTP</FONT> header directly to the browser. This has slight performance benefits, but is of most use for taking advantage of 
+<FONT SIZE=-1>HTTP</FONT> extensions that are not directly supported by your server, such as server push and 
+<FONT SIZE=-1>PICS</FONT> headers.
+
+
+
+<P>
+
+Servers use a variety of conventions for designating 
+<FONT SIZE=-1>CGI</FONT> scripts as 
+<FONT SIZE=-1>NPH.</FONT> Many Unix servers look at the beginning of the script's name for the prefix ``nph-''. The Macintosh WebSTAR server and Microsoft's Internet Information Server, in contrast, try to decide whether a program is an 
+<FONT SIZE=-1>NPH</FONT> script by examining the first line of script output.
+
+
+
+<P>
+
+CGI.pm supports 
+<FONT SIZE=-1>NPH</FONT> scripts with a special 
+<FONT SIZE=-1>NPH</FONT> mode. When in this mode, CGI.pm will output the necessary extra header information when the <CODE>header()</CODE> and <CODE>redirect()</CODE> methods are called.
+
+
+
+<P>
+
+The Microsoft Internet Information Server requires 
+<FONT SIZE=-1>NPH</FONT> mode. As of version 2.30, CGI.pm will automatically detect when the script is running under 
+<FONT SIZE=-1>IIS</FONT> and put itself into this mode. You do not need to do this manually, although it won't hurt anything if you do.
+
+
+
+<P>
+
+There are a number of ways to put CGI.pm into 
+<FONT SIZE=-1>NPH</FONT> mode:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_In">In the use statement
+Simply add ":nph" to the list of symbols to be imported into your script:
+
+</A></STRONG><DD>
+<PRE>      use CGI qw(:standard :nph)
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_By">By calling the nph() method:
+
+</A></STRONG><DD>
+Call <STRONG>nph()</STRONG> with a non-zero parameter at any point after using CGI.pm in your program.
+
+
+<P>
+
+<PRE>      CGI-&gt;nph(1)
+</PRE>
+
+<P>
+
+<DT><STRONG>By using -nph parameters in the header() and redirect()  statements:
+
+</A></STRONG><DD>
+<PRE>      print $q-&gt;header(-nph=&amp;gt;1);
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="AUTHOR_INFORMATION">AUTHOR INFORMATION
+
+</A></H1>
+Copyright 1995,1996, Lincoln 
+<FONT SIZE=-1>D.</FONT> Stein. All rights reserved. It may be used and modified freely, but 
+<FONT SIZE=-1>I</FONT> do request that this copyright notice remain attached to the file. You may modify this module as you wish, but if you redistribute a modified version, please attach a note listing the modifications you have made.
+
+
+
+<P>
+
+Address bug reports and comments to: <A
+HREF="MAILTO:lstein@genome.wi.mit.edu">lstein@genome.wi.mit.edu</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CREDITS">CREDITS
+
+</A></H1>
+Thanks very much to:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Matt">Matt Heffron (heffron@falstaff.css.beckman.com)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_James">James Taylor (james.taylor@srs.gov)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Scott">Scott Anguish <sanguish@digifix.com>
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Mike">Mike Jewell (mlj3u@virginia.edu)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Timothy">Timothy Shimmin (tes@kbs.citri.edu.au)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Joergen">Joergen Haegg (jh@axis.se)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Laurent">Laurent Delfosse (delfosse@csgrad1.cs.wvu.edu)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Richard">Richard Resnick (applepi1@aol.com)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Craig">Craig Bishop (csb@barwonwater.vic.gov.au)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Tony">Tony Curtis (tc@vcpc.univie.ac.at)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Tim">Tim Bunce (Tim.Bunce@ig.co.uk)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Tom">Tom Christiansen (tchrist@convex.com)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Andreas">Andreas Koenig (k@franz.ww.TU-Berlin.DE)
+
+</A></STRONG><DD>
+<DT><STRONG>Tim MacKenzie (Tim.MacKenzie@fulcrum.com.au)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Kevin">Kevin B. Hendricks (kbhend@dogwood.tyler.wm.edu)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Stephen">Stephen Dahmen (joyfire@inxpress.net)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Ed">Ed Jordan (ed@fidalgo.net)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_David">David Alan Pisoni (david@cnation.com)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__and">...and many many more...
+
+</A></STRONG><DD>
+for suggestions and bug fixes.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="A_COMPLETE_EXAMPLE_OF_A_SIMPLE_F">A COMPLETE EXAMPLE OF A SIMPLE FORM-BASED SCRIPT
+
+</A></H1>
+<PRE>        #!/usr/local/bin/perl
+     
+        use CGI;
+ 
+        $query = new CGI;
+</PRE>
+
+<P>
+
+<PRE>        print $query-&gt;header;
+        print $query-&gt;start_html(&quot;Example CGI.pm Form&quot;);
+        print &quot;&lt;H1&gt; Example CGI.pm Form&lt;/H1&gt;\n&quot;;
+        &amp;print_prompt($query);
+        &amp;do_work($query);
+        &amp;print_tail;
+        print $query-&gt;end_html;
+ 
+        sub print_prompt {
+           my($query) = @_;
+ 
+           print $query-&gt;startform;
+           print &quot;&lt;EM&gt;What's your name?&lt;/EM&gt;&lt;BR&gt;&quot;;
+           print $query-&gt;textfield('name');
+           print $query-&gt;checkbox('Not my real name');
+ 
+           print &quot;&lt;P&gt;&lt;EM&gt;Where can you find English Sparrows?&lt;/EM&gt;&lt;BR&gt;&quot;;
+           print $query-&gt;checkbox_group(
+                                 -name=&gt;'Sparrow locations',
+                                 -values=&gt;[England,France,Spain,Asia,Hoboken],
+                                 -linebreak=&gt;'yes',
+                                 -defaults=&gt;[England,Asia]);
+ 
+           print &quot;&lt;P&gt;&lt;EM&gt;How far can they fly?&lt;/EM&gt;&lt;BR&gt;&quot;,
+                $query-&gt;radio_group(
+                        -name=&gt;'how far',
+                        -values=&gt;['10 ft','1 mile','10 miles','real far'],
+                        -default=&gt;'1 mile');
+ 
+           print &quot;&lt;P&gt;&lt;EM&gt;What's your favorite color?&lt;/EM&gt;  &quot;;
+           print $query-&gt;popup_menu(-name=&gt;'Color',
+                                    -values=&gt;['black','brown','red','yellow'],
+                                    -default=&gt;'red');
+ 
+           print $query-&gt;hidden('Reference','Monty Python and the Holy Grail');
+ 
+           print &quot;&lt;P&gt;&lt;EM&gt;What have you got there?&lt;/EM&gt;&lt;BR&gt;&quot;;
+           print $query-&gt;scrolling_list(
+                         -name=&gt;'possessions',
+                         -values=&gt;['A Coconut','A Grail','An Icon',
+                                   'A Sword','A Ticket'],
+                         -size=&gt;5,
+                         -multiple=&gt;'true');
+ 
+           print &quot;&lt;P&gt;&lt;EM&gt;Any parting comments?&lt;/EM&gt;&lt;BR&gt;&quot;;
+           print $query-&gt;textarea(-name=&gt;'Comments',
+                                  -rows=&gt;10,
+                                  -columns=&gt;50);
+ 
+           print &quot;&lt;P&gt;&quot;,$query-&gt;reset;
+           print $query-&gt;submit('Action','Shout');
+           print $query-&gt;submit('Action','Scream');
+           print $query-&gt;endform;
+           print &quot;&lt;HR&gt;\n&quot;;
+        }
+ 
+        sub do_work {
+           my($query) = @_;
+           my(@values,$key);
+</PRE>
+
+<P>
+
+<PRE>           print &quot;&lt;H2&gt;Here are the current settings in this form&lt;/H2&gt;&quot;;
+</PRE>
+
+<P>
+
+<PRE>           foreach $key ($query-&gt;param) {
+              print &quot;&lt;STRONG&gt;$key&lt;/STRONG&gt; -&gt; &quot;;
+              @values = $query-&gt;param($key);
+              print join(&quot;, &quot;,@values),&quot;&lt;BR&gt;\n&quot;;
+          }
+        }
+ 
+        sub print_tail {
+           print &lt;&lt;END;
+        &lt;HR&gt;
+        &lt;ADDRESS&gt;Lincoln D. Stein&lt;/ADDRESS&gt;&lt;BR&gt;
+        &lt;A HREF=&quot;/&quot;&gt;Home Page&lt;/A&gt;
+        END
+        }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+This module has grown large and monolithic. Furthermore it's doing many things, such as handling URLs, parsing 
+<FONT SIZE=-1>CGI</FONT> input, writing 
+<FONT SIZE=-1>HTML,</FONT> etc., that are also done in the 
+<FONT SIZE=-1>LWP</FONT> modules. It should be discarded in favor of the 
+<FONT SIZE=-1>CGI::*</FONT> modules, but somehow 
+<FONT SIZE=-1>I</FONT> continue to work on it.
+
+
+
+<P>
+
+Note that the code is truly contorted in order to avoid spurious warnings
+when programs are run with the <STRONG>-w</STRONG> switch.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/CGI/Carp.html">Carp</A>, <A HREF="/n|/perl/html/./lib/site/URI/URL.html">URL</A>, <A HREF="/n|/perl/html/./lib/CGI/Request.html">Request</A>, <A HREF="/n|/perl/html/./lib/CGI/MiniSvr.html">MiniSvr</A>,
+<A HREF="/n|/perl/html/./lib/CGI/Base.html">Base</A>, <A HREF="/n|/perl/html/./lib/CGI/Form.html">Form</A>, <A HREF="/n|/perl/html/./lib/CGI/Apache.html">Apache</A>, <A HREF="/n|/perl/html/./lib/CGI/Switch.html">Switch</A>,
+<A HREF="/n|/perl/html/./lib/CGI/Push.html">Push</A>, <A HREF="/n|/perl/html/./lib/CGI/Fast.html">Fast</A>
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

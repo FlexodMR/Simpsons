@@ -1,0 +1,172 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>UNIVERSAL - base class for ALL classes (blessed references)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+
+<FONT SIZE=-1>UNIVERSAL</FONT> - base class for 
+<FONT SIZE=-1>ALL</FONT> classes (blessed references)
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    $io = $fd-&gt;isa(&quot;IO::Handle&quot;);
+    $sub = $obj-&gt;can('print');
+</PRE>
+
+<P>
+
+<PRE>    $yes = UNIVERSAL::isa($ref, &quot;HASH&quot;);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<A HREF="#item_UNIVERSAL">UNIVERSAL</A> is the base class which all bless references will inherit from, see <A HREF="/n|/perl/html/./lib/Pod/perlobj.html#">the perlobj manpage</A>
+
+
+
+
+<P>
+
+<A HREF="#item_UNIVERSAL">UNIVERSAL</A> provides the following methods
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_isa">isa ( TYPE )
+
+</A></STRONG><DD>
+<A HREF="#item_isa">isa</A> returns <EM>true</EM> if <CODE>REF</CODE> is blessed into package <CODE>TYPE</CODE>
+or inherits from package <CODE>TYPE</CODE>.
+
+
+<P>
+
+<A HREF="#item_isa">isa</A> can be called as either a static or object method call.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_can">can ( METHOD )
+
+</A></STRONG><DD>
+<A HREF="#item_can">can</A> checks if the object has a method called <CODE>METHOD</CODE>. If it does then a reference to the sub is returned. If it does not then <EM>undef</EM>
+is returned.
+
+
+<P>
+
+<A HREF="#item_can">can</A> can be called as either a static or object method call.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_VERSION">VERSION ( [ REQUIRE ] )
+
+</A></STRONG><DD>
+<A HREF="#item_VERSION">VERSION</A> will return the value of the variable <A HREF="#item__VERSION">$VERSION</A> in the package the object is blessed into. If <CODE>REQUIRE</CODE> is given then it will do a comparison and die if the package version is not
+greater than or equal to <CODE>REQUIRE</CODE>.
+
+
+<P>
+
+<A HREF="#item_VERSION">VERSION</A> can be called as either a static or object method call.
+
+
+<P>
+
+</DL>
+The <A HREF="#item_isa">isa</A> and <A HREF="#item_can">can</A> methods can also be called as subroutines
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_UNIVERSAL">UNIVERSAL::isa ( VAL, TYPE )
+
+</A></STRONG><DD>
+<A HREF="#item_isa">isa</A> returns <EM>true</EM> if the first argument is a reference and either of the following statements
+is true.
+
+
+<P>
+
+<DL>
+<DT><STRONG></STRONG><DD>
+<CODE>VAL</CODE> is a blessed reference and is blessed into package <CODE>TYPE</CODE>
+or inherits from package <CODE>TYPE</CODE>
+
+
+
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>VAL</CODE> is a reference to a <CODE>TYPE</CODE> of perl variable (er 
+<FONT SIZE=-1>'HASH')</FONT>
+
+
+<P>
+
+</DL>
+<DT><STRONG><A NAME="item_UNIVERSAL">UNIVERSAL::can ( VAL, METHOD )
+
+</A></STRONG><DD>
+If <CODE>VAL</CODE> is a blessed reference which has a method called <CODE>METHOD</CODE>,
+<A HREF="#item_can">can</A> returns a reference to the subroutine. If <CODE>VAL</CODE> is not a blessed reference, or if it does not have a method <CODE>METHOD</CODE>,
+<EM>undef</EM> is returned.
+
+
+<P>
+
+</DL>
+These subroutines should <EM>not</EM> be imported via <CODE>use&nbsp;UNIVERSAL&nbsp;qw(...)</CODE>. If you want simple local access to them you can do
+
+
+<P>
+
+<PRE>  *isa = \&amp;UNIVERSAL::isa;
+</PRE>
+
+<P>
+
+to import isa into your package.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

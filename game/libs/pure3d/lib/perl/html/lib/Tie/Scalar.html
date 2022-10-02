@@ -1,0 +1,135 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tie::StdScalar - base class definitions for tied scalars
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#MORE_INFORMATION">MORE INFORMATION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tie::Scalar, Tie::StdScalar - base class definitions for tied scalars
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    package NewScalar;
+    require Tie::Scalar;
+     
+    @ISA = (Tie::Scalar);
+     
+    sub FETCH { ... }           # Provide a needed method
+    sub TIESCALAR { ... }       # Overrides inherited method
+         
+     
+    package NewStdScalar;
+    require Tie::Scalar;
+    
+    @ISA = (Tie::StdScalar);
+    
+    # All methods provided by default, so define only what needs be overridden
+    sub FETCH { ... }
+    
+    
+    package main;
+    
+    tie $new_scalar, 'NewScalar';
+    tie $new_std_scalar, 'NewStdScalar';
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provides some skeletal methods for scalar-tying classes. See
+<A HREF="/n|/perl/html/./lib/Pod/perltie.html#">the perltie manpage</A> for a list of the functions required in tying a scalar to a package. The
+basic <STRONG>Tie::Scalar</STRONG> package provides a <A HREF="#item_new">new</A> method, as well as methods <A HREF="#item_TIESCALAR">TIESCALAR</A>, <A HREF="#item_FETCH">FETCH</A> and <A HREF="#item_STORE">STORE</A>. The <STRONG>Tie::StdScalar</STRONG>
+package provides all the methods specified in  <A HREF="/n|/perl/html/./lib/Pod/perltie.html#">the perltie manpage</A>. It inherits from
+<STRONG>Tie::Scalar</STRONG> and causes scalars tied to it to behave exactly like the built-in scalars,
+allowing for selective overloading of methods. The <A HREF="#item_new">new</A>
+method is provided as a means of grandfathering, for classes that forget to
+provide their own <A HREF="#item_TIESCALAR">TIESCALAR</A> method.
+
+
+<P>
+
+For developers wishing to write their own tied-scalar classes, the methods
+are summarized below. The <A HREF="/n|/perl/html/./lib/Pod/perltie.html#">the perltie manpage</A> section not only documents these, but has sample code as well:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_TIESCALAR">TIESCALAR classname, LIST
+
+</A></STRONG><DD>
+The method invoked by the command <CODE>tie $scalar, classname</CODE>. Associates a new scalar instance with the specified class. <A HREF="#item_LIST">LIST</A> would represent additional arguments (along the lines of <A HREF="/n|/perl/html/./lib/AnyDBM_File.html#">the AnyDBM_File manpage</A> and compatriots) needed to complete the association.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FETCH">FETCH this
+
+</A></STRONG><DD>
+Retrieve the value of the tied scalar referenced by <EM>this</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_STORE">STORE this, value
+
+</A></STRONG><DD>
+Store data <EM>value</EM> in the tied scalar referenced by <EM>this</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DESTROY">DESTROY this
+
+</A></STRONG><DD>
+Free the storage associated with the tied scalar referenced by <EM>this</EM>. This is rarely needed, as Perl manages its memory quite well. But the
+option exists, should a class wish to perform specific actions upon the
+destruction of an instance.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="MORE_INFORMATION">MORE INFORMATION
+
+</A></H1>
+The <A HREF="/n|/perl/html/./lib/Pod/perltie.html#">the perltie manpage</A> section uses a good example of tying scalars by associating process IDs
+with priority.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

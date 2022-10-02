@@ -1,0 +1,45 @@
+VU_FOG_MT:
+
+    ; not needed, im just paranoid
+    nop[e]                           nop
+    nop                              nop
+
+#if 0
+    ; kick fog parameters to hw
+   ; nop                             ilw.z  vi01, GS_STATE_PACKET(vi00)z
+   ; nop                             xgkick vi01
+   ; nop                             nop
+
+    nop                             bal vi15,VU_LOADPRIMGROUP
+    nop[i]                          loi 128.0
+
+    nop                             ilw.z  vi01, GS_STATE_PACKET(vi00)z
+    nop                             lq vf02,3(vi01)          ; load fog colour
+
+    FOG_LOOP:
+
+    mulaw ACC,  _CTM3, vf00         lq vf01,3(vi04)          ; get vertex
+    maddaz ACC, _CTM2, vf01         nop                      ;
+    madday ACC, _CTM1, vf01         nop
+    maddx vf01, _CTM0, vf01         nop
+
+    mulw.w vf01w,vf01w,_FOGSCALE    nop
+    addw.w vf01w,vf01w,_FOGOFFSET   nop
+    minii.w vf01w, vf01w, i         nop                      ; clamp to 255
+    maxx.w vf01w, vf01w, vf00x      iaddiu vi04,vi04,4       ; clamp to 0    
+    ftoi0.w vf02w, vf01w            iaddi  vi05,vi05,-1      ; store alpha into colour
+    nop                             sq  vf02, 1(vi06)        ; store new colour
+		
+    nop                             ibgtz vi05,FOG_LOOP
+    nop                             iaddiu vi06,vi06,3       ; incr pointer
+
+    ; should adjust giftag to ignore ST!
+    nop                              xgkick _GIFTAG
+    nop                              nop
+
+    ; should clip here!
+ 
+    nop                              jr vi15
+    nop                              nop
+#endif
+

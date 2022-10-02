@@ -1,0 +1,108 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>encode_qp - Encode string using quoted-printable encoding
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+encode_qp - Encode string using quoted-printable encoding
+
+
+<P>
+
+decode_qp - Decode quoted-printable string
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use MIME::QuotedPrint;
+</PRE>
+
+<P>
+
+<PRE> $encoded = encode_qp($decoded);
+ $decoded = decode_qp($encoded);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provides functions to encode and decode strings into the Quoted-Printable encoding specified in 
+<FONT SIZE=-1>RFC</FONT> 2045 -
+ <EM>MIME (Multipurpose
+Internet Mail Extensions)</EM>. The Quoted-Printable encoding is intended to represent data that largely consists of bytes that correspond to printable characters in the 
+<FONT SIZE=-1>ASCII</FONT> character set. Non-printable characters (as defined by english americans) are represented by a triplet consisting of the character ``='' followed by two hexadecimal digits.
+
+
+
+<P>
+
+Note that the <CODE>encode_qp()</CODE> routine does not change newlines <A HREF="#item__n_">"\n"</A> to the 
+<FONT SIZE=-1>CRLF</FONT> sequence even though this might be considered the right thing to do 
+<FONT SIZE=-1>(RFC</FONT> 1521 
+<FONT SIZE=-1>(Q-P</FONT> Rule #4)).
+
+
+
+<P>
+
+If you prefer not to import these routines into your namespace you can call
+them as:
+
+
+<P>
+
+<PRE>  use MIME::QuotedPrint ();
+  $encoded = MIME::QuotedPrint::encode($decoded);
+  $decoded = MIME::QuotedPrint::decode($encoded);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1995-1997 Gisle Aas.
+
+
+<P>
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

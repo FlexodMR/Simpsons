@@ -1,0 +1,130 @@
+SelectMission("bm1");
+
+SetMissionResetPlayerOutCar("bm1_homer_start", "bm1_carstart");
+SetDynaLoadData("l7z2.p3d;l7r1.p3d;l7r2.p3d;");
+
+UsePedGroup(1);
+
+AddStage(16);
+	SetPresentationBitmap( "art/frontend/dynaload/images/mis07_08.p3d" );
+	RESET_TO_HERE();
+	SetStageMessageIndex(110);
+	SetHUDIcon( "sock" );
+	AddObjective("goto");
+		TurnGotoDialogOff();
+		SetDestination("bm1_chat","sockg");
+	CloseObjective();
+	SetStageTime(25);
+	AddCondition("timeout");
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(111);
+	SetHUDIcon( "smithers" );
+	AddObjective("talkto");
+		SetTalkToTarget("smithers", 0, 0); 
+	CloseObjective();
+	AddStageTime(0);
+	AddCondition("timeout");
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+	AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+	AmbientAnimationRandomize( 0, 0 );
+	AddAmbientNpcAnimation( "none" );
+	AddAmbientNpcAnimation( "dialogue_yes" );
+	AddAmbientNpcAnimation( "none" );
+	AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+	AddAmbientPcAnimation( "none" );
+	AddAmbientPcAnimation( "dialogue_yes" );
+	SetConversationCam( 3, "pc_far" );
+		SetDialogueInfo("homer","smithers","garters",0);
+		SetCamBestSide( "bm1_bestside" );
+	CloseObjective();
+CloseStage();
+
+AddStage(16);  
+	SetStageMessageIndex(112);
+	SetHUDIcon( "tooth" );
+	AddObjective("goto");
+		TurnGotoDialogOff();
+		SetDestination("bm1_chaps","tooth");
+	CloseObjective();
+	SetStageTime(15);
+	AddCondition("timeout");
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(111);
+	SetHUDIcon( "smithers" );
+	AddObjective("talkto");
+		SetTalkToTarget("smithers", 0, 0); 
+	CloseObjective();
+	AddStageTime(20);
+	AddCondition("timeout");
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+	AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+	AmbientAnimationRandomize( 0, 0 );
+	AddAmbientNpcAnimation( "none" );
+	AddAmbientNpcAnimation( "dialogue_yes" );
+	AddAmbientNpcAnimation( "none" );
+	AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+	AddAmbientPcAnimation( "none" );
+	AddAmbientPcAnimation( "dialogue_yes" );
+	SetConversationCam( 3, "pc_far" );
+		SetDialogueInfo("homer","smithers","tooth",0);
+		SetCamBestSide( "bm1_bestside" );
+	CloseObjective();
+CloseStage();
+
+AddStage(16);  
+	SetStageMessageIndex(113);
+	SetHUDIcon( "record" );
+	AddObjective("goto");
+		TurnGotoDialogOff();
+		SetDestination("bm1_bbook","record");
+	CloseObjective();
+	AddStageTime(45);
+	AddCondition("timeout");
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(111);
+	SetHUDIcon( "smithers" );
+	AddObjective("talkto");
+		SetTalkToTarget("smithers", 0, 0); 
+	CloseObjective();
+	AddStageTime(0);
+	AddCondition("timeout");
+	CloseCondition();
+CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+	AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+	AmbientAnimationRandomize( 0, 0 );
+	AddAmbientNpcAnimation( "none" );
+	AddAmbientNpcAnimation( "dialogue_yes" );
+	AddAmbientNpcAnimation( "none" );
+	AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+	AddAmbientPcAnimation( "none" );
+	AddAmbientPcAnimation( "dialogue_yes" );
+	SetConversationCam( 3, "pc_far" );
+		SetDialogueInfo("homer","smithers","muscles",0);
+		SetCamBestSide( "bm1_bestside" );
+	CloseObjective();
+CloseStage();
+
+CloseMission();

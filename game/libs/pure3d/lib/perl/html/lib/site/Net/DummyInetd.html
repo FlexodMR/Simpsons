@@ -1,0 +1,130 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::DummyInetd - A dummy Inetd server
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::DummyInetd - 
+<FONT SIZE=-1>A</FONT> dummy Inetd server
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Net::DummyInetd;
+    use Net::SMTP;
+    
+    $inetd = new Net::DummyInetd qw(/usr/lib/sendmail -ba -bs);
+    
+    $smtp  = Net::SMTP-&gt;new('localhost', Port =&gt; $inetd-&gt;port);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>Net::DummyInetd</CODE> is just what it's name says, it is a dummy inetd server. Creation of a <CODE>Net::DummyInetd</CODE> will cause a child process to be spawned off which will listen to a socket. When a connection arrives on this socket the specified command is fork'd and exec'd with 
+<FONT SIZE=-1>STDIN</FONT> and 
+<FONT SIZE=-1>STDOUT</FONT> file descriptors duplicated to the new socket.
+
+
+
+<P>
+
+This package was added as an example of how to use <CODE>Net::SMTP</CODE> to connect to a <CODE>sendmail</CODE> process, which is not the default, via 
+<FONT SIZE=-1>SIDIN</FONT> and 
+<FONT SIZE=-1>STDOUT.</FONT> 
+<FONT SIZE=-1>A</FONT>
+ <CODE>Net::Inetd</CODE> package will be available in the next release of <CODE>libnet</CODE>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ( CMD )
+
+</A></STRONG><DD>
+Creates a new object and spawns a child process which listens to a socket.
+<CODE>CMD</CODE> is a list, which will be passed to <A HREF="#item_exec">exec</A> when a new process needs to be created.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_port">port
+
+</A></STRONG><DD>
+Returns the port number on which the <EM>DummyInetd</EM> object is listening
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1997 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

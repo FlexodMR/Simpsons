@@ -1,0 +1,135 @@
+VU_TOON:
+   nop[e]                           nop
+   nop                              nop
+   
+   nop                              b VU_TOON
+   nop                              nop
+
+
+LIT_TOON_START:
+
+   nop                              bal vi15, VU_CHECKSKINNING_LOADPRIMGROUP
+   nop                              fcset 0 
+
+   mulaw ACC,  _CTM3, vf00          lq vf02, 2(vi04)                 ; transform vertex, load vertex xyzw
+   maddaz ACC, _CTM2, vf02          lq vf04, 1(vi04)                 ; load normal
+   madday ACC, _CTM1, vf02          nop                              ; 
+   maddx vf03, _CTM0, vf02          nop                              ; vf03 = transformed vertex
+   nop[i]                           loi 255.0                        ; load 255.0 into i register for colour clamping
+   mulax ACC,  _LVX, vf04           nop                              ; multiply normal by light direction matrix
+   madday ACC, _LVY, vf04           nop                              ;
+   maddz vf06, _LVZ, vf04           div q, vf00w, vf03w              ; vf06 = dot products(002), q = 1/w (005)
+   clipw.xyz vf03xyz, vf03w         nop                              ; compute clipping code (003)
+   mul.xyz vf03, vf03, _VPS         iaddiu vi03,vi00,0               ; viewport scale (004), clip flag
+
+LIT_TOON_LOOP:
+   nop                              lq vf05, 0(vi04)                 ;001 load st
+   maxx.xyzw vf06, vf06, vf00x      nop                              ;002 clamp dot products to 0.0
+   nop                              fcand vi01, 0x3ffff              ;003 clip test
+   mulaw ACC, _LADDITIVE, vf00w     iaddiu vi01, vi01, 0x7fff        ;004 load additive term into acc, compute ADC bit
+   mulq.xyz vf03, vf03, Q           nop                              ;005 project (009), write ADC (prim kick) bit
+   maddax ACC,  _LRGB0, vf06        mfir.w vf03w, vi01               ;006 additive + color * dot-product
+   madday ACC, _LRGB1, vf06         iaddiu vi04, vi04, 3             ;007 advance vertex pointer
+   maddaz ACC, _LRGB2, vf06         nop                              ;008
+   maddw vf06, _LRGB3, vf06         fcand vi01,0x3ffff               ;009 vf06 = unclamped lighting colour (013)
+   add.xyz vf03, vf03, _VPO         iadd vi03,vi03,vi01              ;010 viewport offset (014), update clip flag
+   mulq.xyz vf05, vf05, Q           lq vf02, 2(vi04)                 ;011 vf05 = 0 q (s/q) (t/q)st*q (015), load next normal
+   mulaw ACC, _CTM3, vf00           lq vf04, 1(vi04)                 ;012 transform next vertex, load next vertex
+   minii.xyzw vf06, vf06, i         nop                              ;013 clamp colour to 255.0 (017)
+   ftoi4.xyz  vf03, vf03            nop                              ;014 convert to 12.4 for GS (018)
+   maddaz ACC, _CTM2, vf02          sq vf05, 0(vi06)                 ;015 store stq
+   madday ACC, _CTM1, vf02          nop                              ;016 
+   ftoi0 vf06, vf06                 nop                              ;017 convert colour to int (021)   
+   maddx vf03, _CTM0, vf02          sq vf03, 2(vi06)                 ;018 vf03 (022), store transformed vertex
+   mulax ACC,  _LVX, vf04           nop                              ;019 normal * light direction
+   madday ACC, _LVY, vf04           iaddi vi05, vi05, -1             ;020 decrement vertex count
+   nop                              sq vf06, 1(vi06)                 ;021 store colour
+   maddz vf06, _LVZ, vf04           div q, vf00w, vf03w              ;022 vf06 = dot producte (002), q = 1/w (005)
+   clipw.xyz vf03xyz, vf03w         ibgtz vi05, LIT_TOON_LOOP        ;023 compute clipping code (003), loop
+   mul.xyz vf03, vf03, _VPS         iaddiu vi06, vi06, 3             ;024 viewport scale (004), increment output pointer
+
+   nop                              xgkick _GIFTAG                   ; kick prims lit pass
+   nop                              nop
+
+   ; sync drawing
+   nop                              ilwr.x vi02,(_GIFTAG)x   
+   nop                              iaddiu vi01, vi00, 0x7fff  ; 
+   nop                              iaddiu vi01, vi01, 1       ; 0x8000 for NOP giftag   
+   nop                              iswr.x vi01,(_GIFTAG)x
+   
+   ; wait 3 cycles to make sure the gifTag has been read by the GIF
+   nop                              nop
+   nop                              nop
+   nop                              nop
+   nop                              xgkick _GIFTAG             ; block until done first pass
+   
+
+   nop                              bal vi15,VU_LOADPRIMGROUP
+   nop                              nop
+
+   ; second pass - this is where we do the toon outline
+   nop                              iaddiu vi01,vi00,0x41f           ; wanna use NOP + RGBAQ + XYZF2
+   ftoi0.xyz vf06,_LSPECULAR        iswr.z vi01,(_GIFTAG)z           ; vf06 = outline colour as int
+   addw.xyz vf02,vf00,_SHININESS    fcset 0                          ; copy scale into vf02
+
+   LIT_OUTLINE_LOOP:
+   mulaw ACC,  _CTM3, vf00          lq vf01, 2(vi04)                 ; load vertex xyzw
+   nop                              lq vf04, 1(vi04)                 ; load normal
+   mul.xyz vf04,vf04,vf02           iaddiu vi04,vi04,3               ; scale normal
+   add.xyz vf01,vf01,vf04           iaddiu vi06,vi06,3               ; transform vertex, 
+   maddaz ACC, _CTM2, vf01          iaddi  vi05,vi05,-1
+   madday ACC, _CTM1, vf01          nop                              ;
+   maddx vf01, _CTM0, vf01          sq vf06,-2(vi06)                  ; store colour                              ; vf01 = transformed vertex
+
+   clipw.xyz vf01xyz, vf01w         div q, vf00w, vf01w
+   mul.xyz vf01,vf01,_VPS           nop
+   nop                              nop
+   nop                              nop
+   nop                              fcand vi01,0x3ffff
+   nop                              iaddiu vi01,vi01,0x7fff          ; vf03 = adjusted vertex position
+   nop                              mfir.w vf01w, vi01 
+   mulq.xyz  vf01,vf01,q            nop   
+   add.xyz vf01, vf01,_VPO          nop
+   ftoi4.xyz vf01,vf01              nop
+   
+   nop                              ibgtz vi05,LIT_OUTLINE_LOOP
+   nop                              sq vf01,-1(vi06)                 ; note, we dont need ST   
+ 
+   nop                              bal vi15, VU_LOADPRIMGROUP
+   nop                              fcset 0
+   
+   nop                              iaddiu vi04,vi06,0               ; BFC requires that vi04 = input buffer
+
+   nop                              bal vi15,BACKFACE_CULL
+   nop                              iaddiu _CLIPPER,vi00,4           ; set cull mode to front face
+
+   nop                              xgkick _GIFTAG                   ; kick outline pass
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+   
+   nop                              b VU_TOON
+   nop                              nop
+
+;----------------------------------------------- crap code -----------
+#if 0   
+   ; amb jul8/2002 - doesnt look good! crappy CBV interpolation.
+   ; i was hoping i could just chop off the bottom 4 bits of CBV
+   ; to get cell shading working.
+   
+   nop                              mtir vi01,vf06x
+   ;nop                              iaddiu vi01,vi01,15
+   nop                              iand vi01,vi01,vi07
+   nop                              mfir.x vf06x,vi01
+   
+   nop                              mtir vi01,vf06y
+   ;nop                              iaddiu vi01,vi01,15   
+   nop                              iand vi01,vi01,vi07
+   nop                              mfir.y vf06y,vi01
+
+   nop                              mtir vi01,vf06z
+   ;nop                              iaddiu vi01,vi01,15   
+   nop                              iand vi01,vi01,vi07
+   nop                              mfir.z vf06z,vi01
+#endif   

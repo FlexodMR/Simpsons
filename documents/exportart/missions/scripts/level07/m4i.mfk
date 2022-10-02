@@ -1,0 +1,69 @@
+SelectMission("m4");
+
+SetMissionResetPlayerOutCar("m4_homer_start", "m4_carstart");
+SetDynaLoadData("l7z3.p3d;l7r2.p3d;l7r3.p3d;l7i00.p3d@", "SpringfieldElementary");
+
+AddStage(0); 
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(8);
+	SetHUDIcon( "pwrplant" );
+	AddObjective( "goto" );
+		AddStageVehicle("cBlbart","m4_AI_carstart","NULL","Missions\level07\M4chase.con");
+		SetDestination( "m4_carspawn", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(100);
+	AddCondition( "timeout" );
+	CloseCondition();
+	SetCompletionDialog("boss");
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(48);
+	SetHUDIcon( "sports_v" );
+	ActivateVehicle( "cBlbart","NULL","chase" );
+	AddObjective( "losetail" );
+		SetObjTargetVehicle( "cBlbart" );
+		SetObjDistance(150);
+	CloseObjective();
+	AddStageTime(0);
+	AddCondition( "timeout" );
+	CloseCondition();
+	ShowStageComplete();
+	StageStartMusicEvent("L4_drama");
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(8);
+	SetHUDIcon( "pwrplant" );
+	AddObjective( "goto" );
+		SetDestination( "m4_powerplant", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	AddStageTime(0);
+	AddCondition( "timeout" );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage("final");
+	SetStageMessageIndex(148);
+	SetHUDIcon( "pwrplant" );
+	AddObjective( "goto" );
+		AddNPC("burns", "m5_burns_sd");
+		SetDestination( "m4_burns_location" );
+	CloseObjective();
+//	AddStageTime(90);
+//	AddCondition( "timeout" );
+//	CloseCondition();
+	StageStartMusicEvent("L4_puzzle");
+CloseStage();
+
+CloseMission();

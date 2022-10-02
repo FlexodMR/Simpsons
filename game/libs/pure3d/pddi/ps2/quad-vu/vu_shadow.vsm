@@ -1,0 +1,100 @@
+VU_SHADOW_VOL :
+
+         nop[e]                                                     nop
+         nop                                                        nop
+
+         nop                                                        b VU_SHADOW_VOL
+         nop                                                        nop
+         
+#if 0         
+
+         nop                                                        bal vi15,VU_LOADPRIMGROUP
+         nop                                                        nop
+         NOP                                                        lq            VF01,0(VI04)
+         nop                                                        iaddiu        vi03,vi00,0
+
+SHADOW_LOOP:
+
+         mulax         ACC,VF26,VF01x                               lq            vf02,1(vi04)
+         madday        ACC,VF27,VF01y                               lq            vf03,2(vi04)
+         maddaz        ACC,VF28,VF01z                               fcset         0
+         maddw         VF01,VF29,VF00w                              iaddiu        vi02,vi00,32 
+
+         mulax         ACC,VF26,VF02x                               nop
+         madday        ACC,VF27,VF02y                               nop
+         maddaz        ACC,VF28,VF02z                               nop
+         maddw         VF02,VF29,VF00w                              nop                                               
+
+         mulax         ACC,VF26,VF03x                               nop
+         madday        ACC,VF27,VF03y                               nop
+         maddaz        ACC,VF28,VF03z                               nop
+         maddw         VF03,VF29,VF00w                              nop
+
+         clipw.xyz     VF01xyz,VF01w                                nop
+         clipw.xyz     VF02xyz,VF02w                                nop
+         clipw.xyz     VF03xyz,VF03w                                nop
+
+         mul.xyz       VF01,VF01,VF30                               div           Q,VF00w,VF01w
+         mulq.xyz      VF01,VF01,Q                                  waitq
+         add.xyz       VF01,VF01,VF31                               nop
+
+         mul.xyz       VF02,VF02,VF30                               div           Q,VF00w,VF02w
+         mulq.xyz      VF02,VF02,Q                                  waitq
+         add.xyz       VF02,VF02,VF31                               nop
+
+         mul.xyz       VF03,VF03,VF30                               div           Q,VF00w,VF03w
+         mulq.xyz      VF03,VF03,Q                                  waitq
+         add.xyz       VF03,VF03,VF31                               nop
+
+         nop                                                        fcand         vi01,0x3ffff
+         sub.xyz vf04,vf01,vf03                                     iadd          vi03,vi03,vi01
+         sub.xyz vf05,vf02,vf03                                     iaddiu        VI01,VI01,0x7fff                
+         nop                                                        mfir.w        VF01,VI01
+         nop                                                        mfir.w        VF02,VI01   
+         opmula.xyz ACC,vf04,vf05                                   mfir.w        VF03,VI01
+         opmsub.xyz vf06,vf05,vf04                                  nop
+
+         ftoi4.xyz     VF01,VF01                                    nop
+         ftoi4.xyz     VF02,VF02                                    nop
+         ftoi4.xyz     VF03,VF03                                    nop
+
+         nop                                                        fmand vi01,vi02
+         nop                                                        ibeq  vi01,vi00,SHADOW_FRONT_FACE_TRI
+         nop[i]                                                     loi 8.0         ; front facing tri - increment
+         nop[i]                                                     loi 255.0       ; back facing tri - decrement
+
+         SHADOW_FRONT_FACE_TRI:
+         addi.xyz   vf07, vf00,i                                    iaddi         VI05,VI05,-3
+         ftoi0.xyzw vf07, vf07                                      iaddiu        VI04,VI04,3 
+
+         NOP                                                        sq            VF01,1(VI06)   ; store verts
+         NOP                                                        sq            VF02,3(VI06)
+         NOP                                                        sq            VF03,5(VI06)
+
+         nop                                                        sq            vf07,0(vi06)   ; dont really need to store these two
+         nop                                                        sq            vf07,2(vi06)
+         nop                                                        sq            vf07,4(vi06)   ; store colour into last vertex
+
+         nop                                                        lq            VF01,0(VI04)   ; next vert
+         NOP                                                        ibgtz         VI05,SHADOW_LOOP                    
+         NOP                                                        iaddiu        VI06,VI06,6
+
+
+         nop                                                        ibeq vi03,vi00,SHADOW_NO_CLIP
+         nop                                                        nop
+
+         nop                                                        bal vi15,CLIPBUFFER_SHADOW
+         nop                                                        iaddiu _CLIPPER,vi00,1
+
+SHADOW_NO_CLIP:
+
+         nop                                                        xgkick _GIFTAG                   ; kick prims and go to sleep
+         nop                                                        nop
+
+         nop[e]                                                     nop
+         nop                                                        nop
+
+         nop                                                        b VU_SHADOW_VOL
+         nop                                                        nop
+         
+#endif         

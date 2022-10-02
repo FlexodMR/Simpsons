@@ -1,0 +1,48 @@
+
+sequencer
+{
+   name eventBouncingball
+   animtarget centerSphere
+   speed 1
+
+   states
+   {
+      state
+      {
+         name centerSphereAnim
+         anim centerSphere
+         event bounceEvent
+         minframe 1
+         maxframe 30
+         loop loopforever
+
+         transitions
+         {
+            transition
+            {
+               dest stationarySphereAnim
+               command start
+            }
+         }
+      }
+
+      state
+      {
+         name stationarySphereAnim
+         anim stationarySphere
+         event deadEvent
+         minframe 1
+         maxframe 30
+         loop loopforever
+
+         transitions
+         {
+            transition
+            {
+               dest centerSphereAnim
+               command start
+            }
+         }
+      }
+   }
+}

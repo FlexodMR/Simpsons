@@ -1,0 +1,204 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>lib - manipulate @INC at compile time
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#ADDING_DIRECTORIES_TO_INC">ADDING DIRECTORIES TO @INC</A>
+		<LI><A HREF="#DELETING_DIRECTORIES_FROM_INC">DELETING DIRECTORIES FROM @INC</A>
+		<LI><A HREF="#RESTORING_ORIGINAL_INC">RESTORING ORIGINAL @INC</A>
+	</UL>
+
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+lib - manipulate <A HREF="#item__INC">@INC</A> at compile time
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use lib LIST;
+</PRE>
+
+<P>
+
+<PRE>    no lib LIST;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This is a small simple module which simplifies the manipulation of <A
+HREF="#item__INC">@INC</A> at compile time.
+
+
+<P>
+
+It is typically used to add extra directories to perl's search path so that
+later <A HREF="#item_use">use</A> or <A HREF="#item_require">require</A> statements will find modules which are not located on perl's default search
+path.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="ADDING_DIRECTORIES_TO_INC">ADDING DIRECTORIES TO @INC
+
+</A></H2>
+The parameters to <CODE>use lib</CODE> are added to the start of the perl search path. Saying
+
+
+<P>
+
+<PRE>    use lib LIST;
+</PRE>
+
+<P>
+
+is <EM>almost</EM> the same as saying
+
+
+<P>
+
+<PRE>    BEGIN { unshift(@INC, LIST) }
+</PRE>
+
+<P>
+
+For each directory in 
+<FONT SIZE=-1>LIST</FONT> (called <A HREF="#item__dir">$dir</A> here) the
+lib module also checks to see if a directory called $dir/$archname/auto
+exists. If so the $dir/$archname directory is assumed to be a corresponding
+architecture specific directory and is added to <A
+HREF="#item__INC">@INC</A> in front of $dir.
+
+
+<P>
+
+If 
+<FONT SIZE=-1>LIST</FONT> includes both <A HREF="#item__dir">$dir</A> and
+$dir/$archname then $dir/$archname will be added to <A
+HREF="#item__INC">@INC</A> twice (if $dir/$archname/auto exists).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="DELETING_DIRECTORIES_FROM_INC">DELETING DIRECTORIES FROM @INC
+
+</A></H2>
+You should normally only add directories to 
+<FONT SIZE=-1>@INC.</FONT> If you need to delete directories from <A
+HREF="#item__INC">@INC</A> take care to only delete those which you added
+yourself or which you are certain are not needed by other modules in your
+script. Other modules may have added directories which they need for
+correct operation.
+
+
+<P>
+
+By default the <CODE>no lib</CODE> statement deletes the <EM>first</EM> instance of each named directory from 
+<FONT SIZE=-1>@INC.</FONT> To delete multiple instances of the same name
+from <A HREF="#item__INC">@INC</A> you can specify the name multiple times.
+
+
+<P>
+
+To delete <EM>all</EM> instances of <EM>all</EM> the specified names from <A HREF="#item__INC">@INC</A> you can specify 
+<FONT SIZE=-1>':ALL'</FONT> as the first parameter of <CODE>no lib</CODE>. For example:
+
+
+<P>
+
+<PRE>    no lib qw(:ALL .);
+</PRE>
+
+<P>
+
+For each directory in 
+<FONT SIZE=-1>LIST</FONT> (called <A HREF="#item__dir">$dir</A> here) the lib module also checks to see if a directory called $dir/$archname/auto exists. If so the $dir/$archname directory is assumed to be a corresponding architecture specific directory and is also deleted from 
+<FONT SIZE=-1>@INC.</FONT>
+
+
+
+<P>
+
+If 
+<FONT SIZE=-1>LIST</FONT> includes both <A HREF="#item__dir">$dir</A> and
+$dir/$archname then $dir/$archname will be deleted from <A
+HREF="#item__INC">@INC</A> twice (if $dir/$archname/auto exists).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="RESTORING_ORIGINAL_INC">RESTORING ORIGINAL @INC
+
+</A></H2>
+When the lib module is first loaded it records the current value of <A
+HREF="#item__INC">@INC</A> in an array <CODE>@lib::ORIG_INC</CODE>. To restore <A HREF="#item__INC">@INC</A> to that value you can say
+
+
+<P>
+
+<PRE>    @INC = @lib::ORIG_INC;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+FindBin - optional module which deals with paths relative to the source
+file.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tim Bunce, 2nd June 1995.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

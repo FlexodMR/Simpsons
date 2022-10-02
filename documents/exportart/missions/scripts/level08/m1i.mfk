@@ -1,0 +1,40 @@
+InitLevelPlayerVehicle( "bart_v", "carstart0" );
+
+//InitVehicle( "homer_v", "carstart1" );
+//InitVehicle( "bart_v", "carstart2" );
+//InitVehicle( "famil_v", "carstart3" );
+//InitVehicle( "zombi_v", "carstart4" );
+//InitVehicle( "marge_v", "carstart5" );
+//InitVehicle( "cletu_v", "carstart6" );
+//InitVehicle( "wiggu_v", "carstart7" );
+
+
+SelectMission("m1");
+
+AddStage();
+AddObjective("goto");
+SetDestination("startclock");
+CloseObjective();
+CloseStage();
+
+AddStage();
+SetStageTime(120);
+
+AddObjective("delivery");
+AddCollectible("finish");
+AddCollectible("c0");
+AddCollectible("c1");
+AddCollectible("c2");
+AddCollectible("c3");
+AddCollectible("c4");
+AddCollectible("c5");
+AddCollectible("c6");
+CloseObjective();
+
+AddCondition("timeout");
+CloseCondition();
+
+CloseStage();
+
+CloseMission();
+

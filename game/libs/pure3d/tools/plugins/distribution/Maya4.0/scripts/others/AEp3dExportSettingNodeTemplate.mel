@@ -1,0 +1,410 @@
+//===========================================================================
+// Copyright ©2001 Radical Entertainment Ltd.  All rights reserved.
+//
+// Last Update: 19 Nov 2001
+//
+// Component:   Pure3D Exporter
+//
+// Creator:     (unknown)
+//
+// Version:      1.1
+//
+//===========================================================================
+
+//===========================================================================
+// AEp3dExportSettingNodeTemplate
+//===========================================================================
+// Description: Attribute Editor template for the p3dExportSettingNode node
+//
+// Constraints: 
+//
+// Parameters:  string $nodeName: The node to display in the AE; from Maya.
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc AEp3dExportSettingNodeTemplate( string $nodeName )
+{
+   editorTemplate -beginScrollLayout;
+
+      //now you can i.e. hide some of every Maya nodes default attributes
+      editorTemplate -suppress "input";
+      editorTemplate -suppress "caching";
+      editorTemplate -suppress "nodeState";
+      editorTemplate -suppress "controlPoints";
+      editorTemplate -suppress "weights";
+      editorTemplate -suppress "tweak";
+      editorTemplate -suppress "relativeTweak";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "compInstObjGroups";
+      editorTemplate -suppress "castsShadows";
+      editorTemplate -suppress "motionBlur";
+      editorTemplate -suppress "primaryVisibility";
+      editorTemplate -suppress "visibleInReflections";
+      editorTemplate -suppress "visibleInRefractions";
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "geometryAntialiasingOverride";
+      editorTemplate -suppress "antialiasingLevel";
+      editorTemplate -suppress "shadingSamplesOverride";
+      editorTemplate -suppress "shadingSamples";
+      editorTemplate -suppress "maxShadingSamples";
+      editorTemplate -suppress "volumeSamplesOverride";
+      editorTemplate -suppress "volumeSamples";
+      editorTemplate -suppress "maxVisibilitySamplesOverride";
+      editorTemplate -suppress "maxVisibilitySamples";
+      editorTemplate -suppress "boundingBoxScale"; 
+      editorTemplate -suppress "doubleSided";
+      editorTemplate -suppress "opposite";
+      editorTemplate -suppress "smoothShading";
+      editorTemplate -suppress "drawOverride";
+      editorTemplate -suppress "useObjectColor";
+      editorTemplate -suppress "objectColor";
+      editorTemplate -suppress "intermediateObject";
+      editorTemplate -suppress "visibility";
+      editorTemplate -suppress "lodVisibility";
+      editorTemplate -suppress "template";
+
+      editorTemplate -suppress "exportNISScenegraph";
+      editorTemplate -suppress "exportAnimations";
+      editorTemplate -suppress "exportAnimReferencesOnly";
+      editorTemplate -suppress "referenceStrip";
+      editorTemplate -suppress "exportVisAnimations";
+      editorTemplate -suppress "exportVertexOffsetAnims";
+      editorTemplate -suppress "tristripMeshes";
+      editorTemplate -suppress "deindexMeshes";
+      editorTemplate -suppress "exportMirrorAnimation";
+      editorTemplate -suppress "multicontrollerName";
+      editorTemplate -suppress "lightGroupName";
+      editorTemplate -suppress "NISScenegraphName";
+      editorTemplate -suppress "xTextureResolution";
+      editorTemplate -suppress "yTextureResolution";
+      editorTemplate -suppress "viewerScript";   
+      editorTemplate -suppress "exporterScript";   
+      editorTemplate -suppress "exportedFile";   
+      editorTemplate -suppress "postProcessScript";   
+      editorTemplate -suppress "localRules";   
+      editorTemplate -suppress "localRulesEnable";   
+      editorTemplate -suppress "animationNames";   
+      editorTemplate -suppress "prePostFixNames";   
+      editorTemplate -suppress "animRangeNameTime";
+      editorTemplate -suppress "animRangeDefault";
+      editorTemplate -suppress "verbose";
+      editorTemplate -suppress "progressInWindow";
+
+      editorTemplate -suppress "animationString";
+      editorTemplate -suppress "animationNameStyle";
+      editorTemplate -suppress "animationMirrorString";
+      editorTemplate -suppress "autoGenBoundingVolumes";
+
+// ** BEGIN OBSOLETE **
+//   editorTemplate -beginLayout "Export Setting";
+//      
+//      editorTemplate -beginNoOptimize;
+//      editorTemplate -addControl "exportNISScenegraph";
+//      editorTemplate -addControl "exportAnimations";
+//      editorTemplate -addControl "exportAnimReferencesOnly";
+//      editorTemplate -addControl "referenceStrip";
+//      editorTemplate -addControl "exportVisAnimations";
+//      editorTemplate -addControl "exportVertexOffsetAnims";
+//      editorTemplate -addControl "tristripMeshes";
+//      editorTemplate -addControl "deindexMeshes";
+//      editorTemplate -addControl "exportMirrorAnimation";
+//      editorTemplate -addControl "multicontrollerName";
+//      editorTemplate -addControl "lightGroupName";
+//      editorTemplate -addControl "NISScenegraphName";
+//      editorTemplate -addControl "xTextureResolution";
+//      editorTemplate -addControl "yTextureResolution";
+//
+//      editorTemplate -callCustom "AEp3dExportSettingNew viewerScript" "AEp3dExportSettingReplace viewerScript" "viewerScript";   
+//
+//      editorTemplate -callCustom "AEp3dExportSettingNew exporterScript" "AEp3dExportSettingReplace exporterScript" "exporterScript";   
+//
+//      editorTemplate -callCustom "AEp3dExportSettingNew exportedFile" "AEp3dExportSettingReplace exportedFile" "exportedFile";   
+//
+//      editorTemplate -callCustom "AEp3dExportSettingNew postProcess" "AEp3dExportSettingReplace postProcess" "postProcessScript";   
+//
+//      editorTemplate -endNoOptimize;
+//
+//        editorTemplate -endLayout;
+// ** END OBSOLETE **
+
+// ** BEGIN OBSOLETE **
+
+// These are obsolete but remain here to be suppressed.
+// The attributes are created for compatibility, but are not stored.
+
+    editorTemplate -suppress "exportDeformPolySkins";
+
+// ** END OBSOLETE **
+
+    editorTemplate -callCustom "AEp3dExportSettingsNew" "AEp3dExportSettingsReplace" "";
+
+    editorTemplate -addExtraControls;
+
+   editorTemplate -endScrollLayout;
+}
+
+global proc AEp3dExportSettingsNew( string $node )
+{
+    string $mainUI = "AEp3dExportSettingsUI";
+
+    columnLayout $mainUI;
+
+    // Everything's done by this one handy-dandy little command now! :)
+        P3DBuildExportSettingsGUI( $mainUI, true );
+
+        setParent ..;
+}
+
+global proc AEp3dExportSettingsReplace( string $node )
+{
+    string $mainUI = "AEp3dExportSettingsUI";
+
+    // Everything's done by this one handy-dandy little command now! :)
+    P3DUpdateExportSettingsGUI $mainUI true;
+}
+
+// **** BEGIN OBSOLETE ****
+
+//    //===========================================================================
+//    // pathpart
+//    //===========================================================================
+//    // Description: Returns the path portion from a fully qualified filepath.
+//    //
+//    // Constraints: Strips the trailing slash from the path.
+//    //
+//    // Parameters:  string $path: The fully qualified filepath.
+//    //
+//    // Return:      (string): The path portion of the filepath.
+//    //
+//    //===========================================================================
+//    proc string pathpart( string $path )
+//    {
+//        string $dir = match( "^.*/", $path );
+//
+//        int $sz = size( $dir );
+//        // Strip off trailing '/'
+//        if ( ( $sz > 1 ) && ( substring( $dir, $sz, $sz ) == "/" ) ) 
+//        {
+//            $dir = substring( $dir, 1, ($sz - 1) );
+//        }
+//
+//        return $dir;
+//    }
+//
+//    //===========================================================================
+//    // AEp3dPostProcessBrowseCallback
+//    //===========================================================================
+//    // Description: Callback from AEp3dExportSettingBrowse.  Maya invokes this
+//    //              function when the user accepts a file from the file dialog.
+//    //
+//    // Constraints: The $fileType is what you told Maya it should be.. it does
+//    //              not reflect the actual type of file that was selected.
+//    //
+//    // Parameters:  string $ui: The textField control that will echo the results
+//    //                          of the file request.
+//    //              string $attr: The string attribute that will store the results
+//    //                            of the file request.
+//    //              string $post: The selected file; provided by Maya.
+//    //              string $fileType: The filetype specified when the file dialog
+//    //                                was created.  Useless, really.
+//    //
+//    // Return:      (int): Always returns 1 (successful).
+//    //
+//    //===========================================================================
+//    global proc int AEp3dPostProcessBrowseCallback( string $ui, string $attr, string $post, string $fileType )
+//    {
+//        textField -e -text $post $ui;
+//        textField -e -editable true $ui;
+//        setAttr -lock false $attr;
+//        setAttr -type "string" $attr $post;
+//        setAttr -lock true $attr;
+//    
+//        return 1;
+//    }
+//
+//    //===========================================================================
+//    // AEp3dExportSettingsBrowse
+//    //===========================================================================
+//    // Description: This is the -changeCommand for the "Browse" buttons.
+//    //              It provides a file dialog that allows the user to browse for
+//    //              an existing file.
+//    //
+//    // Constraints: 
+//    //
+//    // Parameters:  string $ui: The textField control associated with the "Browse"
+//    //                          button for which this was called.
+//    //              string $attr: The string attribute from which the default
+//    //                            file setting will be queried, and into which the
+//    //                            results will be stored.
+//    //
+//    // Return:      (none)
+//    //
+//    //===========================================================================
+//    global proc AEp3dExportSettingBrowse( string $ui, string $attr )
+//    {
+//        // Declare GLOBALS
+//        global string $gDefaultFileBrowserDir;
+//    
+//        string $callback, $message;
+//
+//        string $defaultFile = `textField -q -text $ui`;
+//        string $startFolder = pathpart( $defaultFile );
+//        string $workspaceFolder = `workspace -q -dir`;
+//        int $saveMode = off;
+//    
+//        string $message = "Pick Post Process File";
+//
+//        $callback = ( "AEp3dPostProcessBrowseCallback " + $ui + " " + $attr );
+//
+//        string $gDefaultFileBrowserDir = $startFolder;
+//    
+//        catch ( `workspace -dir $startFolder` );
+//        fileBrowser( $callback, $message, "*.bat;*.exe", $saveMode );       // 1 == Save mode
+//        catch( `workspace -dir $workspaceFolder` );
+//    }
+//
+//    //===========================================================================
+//    // AEp3dExportSettingReflect
+//    //===========================================================================
+//    // Description: This is the -enterCommand for the textFields.  It reads the
+//    //              contents of the textField and stores the value in its 
+//    //              associated string attribute.
+//    //
+//    // Constraints: 
+//    //
+//    // Parameters:  string $ui: The textField control.
+//    //              string $attr: The string attribute into which the contents
+//    //                            will be stored.
+//    //
+//    // Return:      (none)
+//    //
+//    //===========================================================================
+//    global proc AEp3dExportSettingReflect( string $ui, string $attr )
+//    {
+//        string $reflect = `textField -q -text $ui`;
+//        setAttr -lock false $attr;
+//        setAttr -type "string" $attr $reflect;
+//        setAttr -lock true $attr;
+//    }
+//
+//    //===========================================================================
+//    // AEp3dExportSettingClear
+//    //===========================================================================
+//    // Description: This is the -command callback for the "Clear" buttons.
+//    //              Clears the contents of the associated textField control
+//    //              and the string attribute.
+//    //
+//    // Constraints: 
+//    //
+//    // Parameters:  string $ui: The textField control associated with the activated
+//    //                          "Clear" button.
+//    //              string $attr: The string attribute associated with the activated
+//    //                            "Clear" button.
+//    //
+//    // Return:      (none)
+//    //
+//    //===========================================================================
+//    global proc AEp3dExportSettingClear( string $ui, string $attr )
+//    {
+//        textField -e -text "" $ui;
+//        textField -e -editable true $ui;
+//        setAttr -lock false $attr;
+//        setAttr -type "string" $attr "";
+//        setAttr -lock true $attr;
+//    }
+//
+//    //===========================================================================
+//    // AEp3dPostProcessNew
+//    //===========================================================================
+//    // Description: Adds the Attribute Editor controls for the specified attribute.
+//    //                   Calls AEp3dExportSettingReplace() to populate controls.
+//    //
+//    // Parameters:  string $label: The label (currently this is actually the attribute
+//    //                                  name so is not strictly necessary.. hindsight and all..
+//    //              string $attr: The plug for which to create the controls; provided by Maya.
+//    //
+//    // Return:      (none)
+//    //
+//    //===========================================================================
+//    global proc AEp3dExportSettingNew( string $label, string $attr )
+//    {
+//        global int $gTextColumnWidthIndex;
+//
+//        string $labelUI = "p3d" + $label + "LabelUI";
+//        string $fieldUI = "p3d" + $label + "FieldUI";
+//        string $browseUI = "p3d" + $label + "BrowseUI";
+//        string $clearUI  = "p3d" + $label + "ClearUI";
+//    
+//        setUITemplate -pst attributeEditorTemplate;
+//
+//        string $form = `formLayout`;
+//    
+//            text -label `interToUI $label` -align "right" $labelUI;
+//            textField -text "" $fieldUI;
+//            symbolButton -image "navButtonBrowse.xpm" -width 24 -annotation "Browse for file" $browseUI;
+//            symbolButton -image "smallTrash.xpm" -width 24 -annotation "Clear field" $clearUI;
+//        
+//            setParent ..;
+//        
+//        formLayout -e
+//
+//            -af     $labelUI                "top"       6
+//            -aof    $labelUI                "right"     (-$gTextColumnWidthIndex)
+//        
+//            -af     $clearUI                "top"       2
+//            -af     $clearUI                "right"     4
+//            -af     $browseUI               "top"       2
+//            -ac     $browseUI               "right"     4       $clearUI
+//        
+//            -af     $fieldUI                "top"       2
+//            -ac     $fieldUI                "left"      4       $labelUI
+//            -ac     $fieldUI                "right"     4       $browseUI
+//        
+//                $form;
+//
+//        setUITemplate -ppt;
+//
+//        AEp3dExportSettingReplace( $label, $attr );
+//    }
+//
+//    //===========================================================================
+//    // AEp3dPostProcessReplace
+//    //===========================================================================
+//    // Description: Updates the Attribute Editor controls for the specified attribute.
+//    //
+//    // Parameters:  string $label: The label (currently this is actually the attribute
+//    //                             name so is not strictly necessary.. hindsight and all..
+//    //              string $attr: The plug to update; provided by Maya.
+//    //
+//    // Return:      (none)
+//    //
+//    //===========================================================================
+//    global proc AEp3dExportSettingReplace( string $label, string $attr )
+//    {
+//        string $labelUI = "p3d" + $label + "LabelUI";
+//        string $fieldUI = "p3d" + $label + "FieldUI";
+//        string $browseUI = "p3d" + $label + "BrowseUI";
+//        string $clearUI  = "p3d" + $label + "ClearUI";
+//
+//        string $post = `getAttr $attr`;
+//        textField -e -text $post $fieldUI;
+//        textField -e -editable true $fieldUI;
+//
+//        textField -e
+//    //        -ec  ( "AEp3dExportSettingReflect " + $fieldUI + " " + $attr )
+//                $fieldUI;
+//        
+//        symbolButton -e
+//            -c ( "AEp3dExportSettingBrowse " + $fieldUI + " " + $attr )
+//                $browseUI;
+//            
+//        symbolButton -e
+//            -c ( "AEp3dExportSettingClear " + $fieldUI + " " + $attr )
+//                $clearUI;
+//
+//	    connectControl $fieldUI $attr;            
+//    }
+
+// **** END OBSOLETE ****

@@ -1,0 +1,71 @@
+SelectMission("m5sd");
+
+SetMissionResetPlayerOutCar("m5_homer_start", "m5_carstart");
+SetDynaLoadData("l7z6.p3d;l7r6.p3d;");
+
+UsePedGroup(5);
+
+SetMissionStartCameraName( "mission5camShape" );
+SetMissionStartMulticontName( "mission5cam" );
+SetAnimatedCameraName( "mission5camShape" );
+SetAnimCamMulticontName( "mission5cam" );
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(19);
+	SetHUDIcon("burns");
+	AddObjective( "goto" );
+		SetDestination("m5_talkto_burns", "exclamation");
+		SetCollectibleEffect("none");
+		MustActionTrigger();
+		AddNPC("burns", "m5_burns_2");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		AddNPC("burns", "m5_burns_sd");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis07_05.p3d" );
+		SetCamBestSide( "m5_bestside" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "npc_far" );
+		SetConversationCam( 1, "pc_far" );
+		SetConversationCam( 2, "npc_far" );
+		SetConversationCam( 3, "pc_far" );
+		SetConversationCam( 4, "npc_far" );
+		SetConversationCam( 5, "pc_far" );
+		SetConversationCam( 6, "npc_far" );
+	
+		AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_thinking" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_no" );
+		AddAmbientPcAnimation( "none" );
+		SetDialogueInfo("homer","burns","barrel",0);
+		SetDialoguePositions("m5_homertalk","m5_burns_sd","m5_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

@@ -1,0 +1,136 @@
+SelectMission("m1");
+
+SetMissionResetPlayerInCar("m1_carstart");
+SetDynaLoadData("l3z1.p3d;l3r1.p3d;l3r5.p3d;l3r5_dam.p3d;");
+InitLevelPlayerVehicle("comic_v","m1_carstart","OTHER");
+
+SetNumValidFailureHints( 5 );
+
+UsePedGroup(0);
+
+SetForcedCar();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetMaxTraffic(2); 
+	SetStageMessageIndex(116); 
+	SetHUDIcon( "itcstore" );
+	AddStageVehicle("cNerd","m1_AI_carstart_1","race","Missions\level03\M1race.con", "male2");
+	SetVehicleAIParams( "cNerd", 0, 1 );   // very dumb - no shortcuts
+	//SetStageAIRaceCatchupParams("smith_v", 80, 0.5, 1.1, 1.7); 
+//		SetStageAIRaceCatchupParams("snake_v", 80, 0.5, 1.5, 1.7); 
+
+	SetStageAIRaceCatchupParams("cNerd", 80, 0.5, 1.5, 1.7); 
+
+	StartCountdown(count);
+	AddToCountdownSequence( "3", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "2", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "1", 1000 ); // duration time in milliseconds
+	AddToCountdownSequence( "GO", 400 ); // duration time in milliseconds
+	
+	AddStageWaypoint( "m1_AI_path4" );
+	AddStageWaypoint( "m1_AI_path9" );
+	AddStageWaypoint( "m1_AI_path13" );
+	AddObjective( "race", "both" );
+		AddCollectible("extracheckpoint");
+		AddCollectible("m1_AI_path13", "carsphere");
+//		SetCollectibleEffect("finish_line_col");
+	CloseObjective();
+	AddCondition("position");
+		SetConditionPosition(1);
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "comic_v" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+CloseStage();
+
+AddStage();
+	SetStageMessageIndex(177);
+	SetHUDIcon( "comic" );
+	AddObjective("goto");
+		SetDestination("m1_itchy","is_comic");
+		TurnGotoDialogOff();
+	CloseObjective();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "comic_v" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	SetCompletionDialog("nuisance", "cbg");
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(117);
+	SetHUDIcon( "android" );
+	AddObjective("goto");
+		SetDestination("m1_end", "carsphere");
+		TurnGotoDialogOff();
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(90);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "comic_v" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	SetFadeOut( 0.1 );
+	SwapInDefaultCar();
+	SetSwapDefaultCarLocator("level3_carstart");
+	SetSwapForcedCarLocator("m1_cbgcar_sd"); 
+	SetSwapPlayerLocator("level3_lisa_walkto");
+	ShowStageComplete();
+CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(176);
+//	SetHUDIcon( "android" );
+//	AddObjective("interior");
+//		SetDestination("Android", "ad_mission_doorstar");
+//	CloseObjective();
+//CloseStage();
+
+AddStage(1);
+	AddObjective("timer");
+		AddNPC("cbg", "level3_lisa_start");
+		StayInBlack();
+		SetDurationTime(1);
+	CloseObjective();
+CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(54);
+//	SetHUDIcon( "cbg" );
+//	AddObjective("talkto");
+//		AddNPC("cbg", "m1_cbg_sd");
+//		SetTalkToTarget("cbg", 0, -0.2, "3.0");
+//	CloseObjective();
+//CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis03_01.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide("m1_bestside");
+		SetDialogueInfo("lisa","cbg","mylar",0); //needs to be re-piped
+		AddNPC("cbg", "level3_lisa_start");
+	CloseObjective();
+CloseStage();
+
+CloseMission();

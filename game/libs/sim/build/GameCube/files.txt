@@ -1,0 +1,241 @@
+##########################################################################
+#
+#  Files specific: This files specified location of the generated library/
+#		   executable file and where to gather source & header files  
+#		   for compilation.
+##########################################################################
+
+####################
+# General defines
+####################
+
+    ############################################################################
+    # Relative path the FTech root directory
+    ############################################################################
+	
+	ROOTDIR	      = ../../..
+    
+    ############################################################################
+    # Output file directory
+    ############################################################################
+	
+	LIBRARYDIR    = ../../lib
+
+    ############################################################################
+    # Output file name (don't include extension or the configuration suffix)
+    ############################################################################
+
+	TARGET        = $(LIBRARYDIR)/sim
+	
+    ############################################################################
+    # Output file type (EXECUTABLE or LIBRARY)
+    ############################################################################
+
+	TARGETTYPE    = LIBRARY
+
+    ############################################################################
+    # Radbuild defined platform specific configuration files
+    #   * one of config.ps2, config.ps2mw, or config.gcn
+    ############################################################################
+
+    include $(ROOTDIR)/radbuild/config.gcn
+
+    ############################################################################
+    # General build dependencies.
+    #   * All client files will be recompiled and linked when files listed
+    #     here are changed
+    ############################################################################
+
+    GENERAL_DEPENDS = files.txt
+
+################################################################################
+# File specification
+# 
+################################################################################
+
+    ############################################################################
+    # Source file directories
+    ############################################################################
+    
+	SOURCEDIR     = $(ROOTDIR)/sim
+
+    ############################################################################
+    # Include file directories
+    ############################################################################
+
+	INCLUDEDIR +=                     \
+		$(ROOTDIR)/sim            \
+		$(ROOTDIR)/poser/inc      \
+		$(ROOTDIR)/pure3d         \
+		$(ROOTDIR)/radmath        \
+		$(ROOTDIR)/radcontent/inc \
+		$(ROOTDIR)/radcore/inc    \
+		$(ROOTDIR)/../code        \
+
+
+################################################################################
+# Compile settings
+#   * default values are provided
+#   * use '+=' if you want add to default values
+#   * use '=' if you want to override default values
+################################################################################
+
+    ############################################################################
+    # Add pre-processor definitions
+    ############################################################################
+
+    DEFINES += 	PNG_USER_MEM_SUPPORTED \
+    			LZO_NO_SYS_TYPES_H \
+
+    ############################################################################
+    # Assembler flags
+    ############################################################################
+
+    # ASFLAGS += 
+
+    ############################################################################
+    # C Compiler
+    ############################################################################
+
+    #CFLAGS +=
+
+    ############################################################################
+    # C++ Compiler
+    ############################################################################
+    
+    #CXXFLAGS +=
+
+################################################################################
+# Link setttings
+#   * default values are provided
+#   * use '+=' if you want add to default values
+#   * use '=' if you want to override default values
+################################################################################
+
+    # LDFLAGS +=
+
+	############################################################################
+	# linker command file flag for GCN
+	############################################################################
+
+	# LINKERCMDFILE = $(DOLPHIN_SDK_ROOT)/include/dolphin/eppc.$(DOLPHIN_PLATFORM).lcf
+
+
+################################################################################
+# Pre-compile
+################################################################################
+
+    ############################################################################
+    # Add your target to this list
+    #       - e.g. precompile : crt0.o yourtarget.o
+    ############################################################################
+
+    # precompile : yourtarget.o
+
+    ############################################################################
+    # Your pre-compile steps
+    ############################################################################
+
+    # yourtarget.o: yourtarget.s
+	#     @$(CC) $(ASFLAGS) -o $@ $< > $*.lst
+
+
+################################################################################
+# Pre-link
+################################################################################
+
+    ############################################################################
+    # Add your target to this list
+    #       - e.g. prelink : yourtarget.o
+    ############################################################################
+
+    # prelink : yourtarget.o
+
+    ############################################################################
+    # Your pre-link steps
+    ############################################################################
+
+    # yourtarget.o: yourtarget.s
+	#     @$(CC) $(ASFLAGS) -o $@ $< > $*.lst
+
+################################################################################
+# Client Clean
+################################################################################
+
+    ############################################################################
+    # Your clean build targets
+    ############################################################################
+
+    # clientclean :
+	# 	@echo Cleaning client files...
+	# 	@echo ----------------------------
+	# 	@$(RM) -rf crt0.o
+
+#####################################
+# source files included in project
+#####################################
+
+COLLISION = \
+	simcollision/collision \
+	simcollision/collisionanalyser \
+	simcollision/collisionanalyserdata \
+	simcollision/collisionanalyserdataUID \
+	simcollision/collisionanalyserevent \
+	simcollision/collisionanalyserinfo \
+	simcollision/collisionanalysertranslator \
+	simcollision/collisiondetector \
+	simcollision/collisiondisplay \
+	simcollision/collisionmanager \
+	simcollision/collisionobject \
+	simcollision/collisionvolume \
+	simcollision/impulsebasedcollisionsolver \
+	simcollision/subcollisiondetector \
+	simcollision/proximitydetection \
+
+
+COMMON = \
+	simcommon/arraymath \
+	simcommon/dline2 \
+	simcommon/impulselink \
+	simcommon/kalmann \
+	simcommon/largesymmetricmatrix \
+	simcommon/physicsproperties \
+	simcommon/sbmatrix \
+	simcommon/simconstraint \
+	simcommon/simenvironment \
+	simcommon/simmath \
+	simcommon/simstate \
+	simcommon/simstatearticulated \
+	simcommon/simstateflexible \
+	simcommon/simstatetarget \
+	simcommon/simtarget \
+	simcommon/simulatedobject \
+	simcommon/simutility \
+	simcommon/skeletoninfo \
+	simcommon/symmatrix \
+	simcommon/tlist \
+	simcommon/trackerjointmodifier \
+	simcommon/trajectoryextrapolator \
+
+
+PHYSICS = \
+	simphysics/physicsobject \
+	simphysics/articulatedphysicsobject \
+	simphysics/physicsjoint \
+	simphysics/virtualcm \
+	simphysics/restingdetector \
+
+
+IK = \
+
+
+FLEXIBLE = \
+
+
+SOURCEFILES = \
+	$(COLLISION)\
+	$(COMMON)\
+	$(PHYSICS)\
+	$(IK) \
+	$(FLEXIBLE) \
+

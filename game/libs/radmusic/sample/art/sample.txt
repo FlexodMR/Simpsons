@@ -1,0 +1,176 @@
+group sample
+{
+      clip clip_gliss { filename:"gliss" }
+
+	group push {
+		stream stream_loop7 { filename:"loop7" tempo:{ bpm:116.0 } type:preloaded }
+		clip   clip_voice_push_operation { filename:"voice_push_operation" }
+		clip   clip_voice_non            { filename:"voice_non" }
+		clip   clip_voice_looping        { filename:"voice_looping" }
+
+		region looping_push_region {
+			layer layer1 {
+				seq:~{stream_loop7 }
+			}
+			
+			layer layer2 {
+				volume: 0.7
+				seq:~{clip_voice_looping,clip_voice_push_operation}
+			}
+		}
+
+		region non_looping_push_region {
+			layer layer1 {
+				seq:stream_loop7
+			}
+			
+			layer layer2 {
+				volume: 0.7
+				seq:{clip_voice_non,clip_voice_looping,clip_voice_push_operation}
+			}
+		}
+	}
+
+	group mission1_jazz {
+		stream stream_loop1 { filename:"loop1" tempo:{ bpm:116.0 time_sig:8/8} }
+		stream stream_loop2 { filename:"loop2" tempo:{ bpm:116.0 } type:preloaded}
+		stream stream_loop3 { filename:"loop3" tempo:{ bpm:116.0 }}
+
+
+		group mission_1_jazz_intro {
+
+		clip stream_voice_m1_jazz_intro { filename:"voice_m1_jazz_intro" }
+
+	          region mission1_jazz_intro {
+	    	        layer layer1 {
+	    		      seq:~{stream_loop1}
+	    	        }
+
+	    	        layer voice {
+	    		      volume: 0.4
+	    		      seq:{stream_voice_m1_jazz_intro}
+	    	        }
+
+                 layer gliss {
+                      beats: { 1.0 }
+                      seq:clip_gliss
+                      type:event }
+
+                }		
+	    }
+
+            group mission1_jazz_chase {
+
+		    clip stream_voice_m1_jazz_chase { filename:"voice_m1_jazz_chase" }
+
+                region mission1_jazz_chase
+	          {
+                    layer layer1 {
+	    		      seq:~{stream_loop2}
+	    	        }
+                
+                    layer voice {
+                        volume: 0.5
+                        seq:{stream_voice_m1_jazz_chase}
+                    }
+                }
+            }
+            
+            group mission1_jazz_search {
+
+		    clip stream_voice_m1_jazz_search { filename:"voice_m1_jazz_search" }
+
+                region mission1_jazz_search {
+	    	        layer layer1 {
+	    		    seq:~{stream_loop3}
+	    	        }
+
+	    	        layer voice {
+	    		    volume: 0.5
+	    		    seq:{stream_voice_m1_jazz_search}
+	    	        }
+                }
+            }
+	}
+
+	group mission2_jazz
+	{
+		stream stream_loop4 { filename:"loop4" tempo:{ bpm:116.0 } type:preloaded }
+		stream stream_loop5 { filename:"loop5" tempo:{ bpm:116.0 }}
+		stream stream_loop6 { filename:"loop6" tempo:{ bpm:116.0 }}
+		group mission_2_jazz_intro {
+
+		    clip stream_voice_m2_jazz_intro { filename:"voice_m2_jazz_intro" }
+
+                region mission2_jazz_intro {
+
+        	        layer layer1 { seq:~{stream_loop4} }		    
+
+        	        layer voice {
+        		      volume: 0.5
+        		      seq:{stream_voice_m2_jazz_intro}
+        	        }		
+
+		 }
+        }
+
+        group mission2_jazz_chase {
+
+		clip stream_voice_m2_jazz_chase { filename:"voice_m2_jazz_chase" }
+
+            region mission2_jazz_chase {
+        	    layer layer1 { seq:~{stream_loop5} }
+
+        	    layer voice {
+        		volume: 0.5
+        		seq:{stream_voice_m2_jazz_chase} }
+            }
+        }
+
+        group mission_2_jazz_search {
+		clip stream_voice_m2_jazz_search { filename:"voice_m2_jazz_search" }
+
+            region mission2_jazz_search {
+
+        	    layer layer1 {
+        		    seq:~{stream_loop6}
+        	    }
+
+        	    layer voice {
+        	        volume: 0.5
+        		  seq:{$(500),stream_voice_m2_jazz_search}
+        	    }
+            }
+        }
+    }
+
+	state mission { mission1, mission2 }
+	state style   { jazz, rock }
+	//trans_stitch { target:anything source:anything }
+	trans_fade { target:anything source:anything st: 1000 tt: 1000 beats: { 1.0 } }
+	event_matrix [mission][style] {
+		intro[mission1][jazz] { play_region:{ region:mission1_jazz_intro } }
+		chase[mission1][jazz] { play_region:{ region:mission1_jazz_chase } }
+		search[mission1][jazz] { play_region:{ region:mission1_jazz_search } }
+		intro[mission2][jazz] { play_region:{ region:mission2_jazz_intro } }
+		chase[mission2][jazz] { play_region:{ region:mission2_jazz_chase } }
+		search[mission2][jazz] { play_region:{ region:mission2_jazz_search } }
+	}
+   
+    
+	event random_style { rand_state: { state:style } }
+
+	event random_mission { rand_state: { state: mission } }
+	event looping_push_test { push_region: { region:looping_push_region } }
+	event non_looping_push_test { push_region: { region:non_looping_push_region } }
+	event pop_anything{ pop_region:{}}
+
+      event start_gliss { start_layer: { layer:gliss } }
+      event stop_gliss  { stop_layer:  { layer:gliss } }
+}
+
+
+
+
+
+

@@ -1,0 +1,114 @@
+SelectMission("m6sd");
+
+SetMissionResetPlayerOutCar("m6_bart_start","m6_carstart");
+SetDynaLoadData("l6z4.p3d;l6r3.p3d;l6r4.p3d;");
+
+UsePedGroup(6);
+
+SetMissionStartCameraName( "mission6camShape" );
+SetMissionStartMulticontName( "mission6cam" );
+SetAnimatedCameraName( "mission6camShape" );
+SetAnimCamMulticontName( "mission6cam" );
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(209);
+	SetHUDIcon("krustylu");
+	AddObjective( "goto" );
+		AddNPC("krusty", "m6_krusty_sd");
+		SetDestination( "m6_krustylu", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(5);
+	RESET_TO_HERE();
+	SetStageMessageIndex(191);
+	SetHUDIcon("krusty");
+	AddObjective("talkto");
+		AddNPC("krusty", "m6_krusty_sd");
+		AddObjectiveNPCWaypoint( "krusty", "m6_krusty_walk1" );
+		SetTalkToTarget("krusty", 0, 0);
+	CloseObjective();
+CloseStage();
+
+//LOCKED STAGE FOR SCHOOL BUS
+//
+//THIS DIALOGUE WILL INCLUDE THE GATED LINES
+AddStage("locked","car","scorp_v");
+	SetStageMessageIndex(8);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis06_06.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_near" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_near" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide( "m6_bestside" );
+		SetDialogueInfo("bart","krusty","freeguns",0);
+		SetDialoguePositions("m6_bart_krustytalk","m6_krusty_sd","m6_carstart");
+	CloseObjective();
+CloseStage();
+
+//THIS DIALOGUE WILL NOT INCLUDE THE GATED LINES AND WILL START THE MISSION
+//AddStage(0);
+//	AddObjective("dialogue");
+//		SetPresentationBitmap( "art/frontend/dynaload/images/mis06_06.p3d" );
+//		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+//		AmbientAnimationRandomize( 0, 0 );
+//		SetConversationCam( 0, "pc_far" );
+//		SetConversationCam( 1, "npc_near" );
+//		SetConversationCam( 2, "pc_far" );
+//		SetConversationCam( 3, "npc_near" );
+//		AddAmbientNpcAnimation( "none" );
+//		AddAmbientNpcAnimation( "dialogue_shaking_fist" );
+//		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+//		AddAmbientPcAnimation( "none" );
+//		SetCamBestSide( "m6_bestside" );
+//		SetDialogueInfo("bart","krusty","freeguns2",0);
+//		SetDialoguePositions("m6_bart_krustytalk","m6_krusty_sd","m6_carstart");
+//	CloseObjective();
+//CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(213);
+	SetHUDIcon( "kearney" );
+	AddObjective("buycar", "scorp_v");
+	CloseObjective();
+CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(12);
+//	AddObjective("getin");
+//		SetObjTargetVehicle("current");
+//	CloseObjective();
+//CloseStage();
+
+//AddStage(0);
+//	SetStageMessageIndex(209);
+//	SetHUDIcon("krustylu");
+//	AddObjective( "goto" );
+//		AddNPC("krusty", "m6_krusty_sd");
+//		SetDestination( "m6_krustylu", "carsphere");
+//		SetCollectibleEffect("wrench_collect");
+//	CloseObjective();
+//CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

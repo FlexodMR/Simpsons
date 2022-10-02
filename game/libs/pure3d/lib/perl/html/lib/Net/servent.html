@@ -1,0 +1,139 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::servent - by-name interface to Perl's built-in getserv*() functions
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::servent - by-name interface to Perl's built-in getserv*() functions
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use Net::servent;
+ $s = getservbyname(shift || 'ftp') || die &quot;no service&quot;;
+ printf &quot;port for %s is %s, aliases are %s\n&quot;,
+    $s-&gt;name, $s-&gt;port, &quot;@{$s-&gt;aliases}&quot;;
+</PRE>
+
+<P>
+
+<PRE> use Net::servent qw(:FIELDS);
+ getservbyname(shift || 'ftp') || die &quot;no service&quot;;
+ print &quot;port for $s_name is $s_port, aliases are @s_aliases\n&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module's default exports override the core <CODE>getservent(),</CODE>
+<CODE>getservbyname(),</CODE> and <CODE>getnetbyport()</CODE> functions,
+replacing them with versions that return ``Net::servent'' objects. They
+take default second arguments of ``tcp''. This object has methods that
+return the similarly named structure field name from the C's servent
+structure from <EM>netdb.h</EM>; namely name, aliases, port, and proto. The aliases method returns an
+array reference, the rest scalars.
+
+
+<P>
+
+You may also import all the structure fields directly into your namespace as regular variables using the 
+<FONT SIZE=-1>:FIELDS</FONT> import tag. (Note that this still overrides your core functions.) Access these fields as variables named with a preceding
+ <CODE>n_</CODE>. Thus, <CODE>$serv_obj-&gt;name()</CODE> corresponds to <CODE>$s_name</CODE> if you import the fields. Array
+references are available as regular array variables, so for example <CODE>@{ $serv_obj-&gt;aliases()
+}</CODE> would be simply @s_aliases.
+
+
+<P>
+
+The <CODE>getserv()</CODE> function is a simple front-end that forwards a
+numeric argument to <CODE>getservbyport(),</CODE> and the rest to
+<CODE>getservbyname().</CODE>
+
+
+<P>
+
+To access this functionality without the core overrides, pass the <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_use">use</A> an empty import list, and then access function functions with their full
+qualified names. On the other hand, the built-ins are still available via
+the <CODE>CORE::</CODE> pseudo-package.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+<PRE> use Net::servent qw(:FIELDS);
+</PRE>
+
+<P>
+
+<PRE> while (@ARGV) {
+     my ($service, $proto) = ((split m!/!, shift), 'tcp');
+     my $valet = getserv($service, $proto);
+     unless ($valet) {
+         warn &quot;$0: No service: $service/$proto\n&quot;
+         next;
+     }
+     printf &quot;service $service/$proto is port %d\n&quot;, $valet-&gt;port;
+     print &quot;alias are @s_aliases\n&quot; if @s_aliases;
+ }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+While this class is currently implemented using the Class::Struct module to
+build a struct-like class, you shouldn't rely upon this.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tom Christiansen
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

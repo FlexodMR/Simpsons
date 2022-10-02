@@ -1,0 +1,213 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformExpressionKeyAll.mel
+// Author: Bryan Brandt, Senta Kaiser
+//
+// Description: Expression deformer key all attached states
+//
+
+
+// Keys all attached states to a given group
+// - arguments:
+//      group - group whose states need to be keyed
+//
+global proc p3dDeformExpressionKeyAll(string $group)
+{
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[];
+         $destinations = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression;
+
+               // key state slider
+               string $state_state = $state + ".state";
+               
+               setKeyframe $state_state;
+
+               // key weight slider, if not connected to state
+               int $state_weight_connected = eval("isConnected " + $state + ".state " +
+                                                                   $state + ".weight");
+               
+               if (!$state_weight_connected)
+               {
+                  string $state_weight = $state + ".weight";
+                  setKeyframe $state_weight;
+               
+               }
+            
+            }
+         }
+      }
+   }
+}
+
+global proc p3dDeformExpressionCopyAll(string $group)
+{
+   int $numExp = 0;
+   string $oldSelList[] = `ls -sl`;
+   select -cl;
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[];
+         $destinations = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression;
+
+               // key state slider
+               string $state_state = $state + ".state";
+               
+               select -add $expression;
+               $numExp++;
+               
+            }
+            
+            
+         }
+      }
+   }
+   if ($numExp > 0)
+      copyKey;
+   select $oldSelList;
+}
+
+global proc p3dDeformExpressionPasteAll(string $group)
+{
+   string $oldSelList[] = `ls -sl`;
+   int $numExp = 0;
+   select -cl;
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[];
+         $destinations = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression;
+
+               // key state slider
+               string $state_state = $state + ".state";
+               
+               select -add $expression;
+               $numExp++;
+               
+            }
+            
+            
+         }
+      }
+   }
+   if ($numExp > 0)
+      pasteKey;
+   select $oldSelList;
+}
+
+
+// Zeros out all attached states to a given group
+// - arguments:
+//      group - group whose states need to be zeroed
+//
+global proc p3dDeformExpressionZeroAll(string $group)
+{
+   print( "Name of group to zero all: " + $group + "\n" );
+
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[] = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression;
+
+               // set state slider
+               eval("setAttr " + $state + ".state 0");
+
+               // set weight slider, if not connected to state
+               int $state_weight_connected = eval("isConnected " + $state + ".state " +
+                                                                   $state + ".weight");
+               if (!$state_weight_connected)
+               {
+                  eval("setAttr " + $state + ".weight 0");
+               }
+               
+            }
+         }
+      }
+   }
+}
+
+
+global proc p3dDeformExpressionSelectAll(string $group)
+{
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[] = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression + ".state";
+               select -add $state;
+            }
+         }
+      }
+   }
+}
+
+
+global proc p3dDeformExpressionSelectNone(string $group)
+{
+   string $expressionList[] = `ls -type p3dDeformExpressionState`;
+   for ($expression in $expressionList)
+   {
+      if (`connectionInfo -isSource ($expression + ".output")`)
+      {
+         string $destinations[] = `connectionInfo -dfs ($expression + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $tmpArr[];
+            tokenize $destination "." $tmpArr;
+            if ($tmpArr[0] == $group)
+            {
+               string $state = $expression + ".state";
+               select -d $state;
+            }
+         }
+      }
+   }
+}
+// End of file.

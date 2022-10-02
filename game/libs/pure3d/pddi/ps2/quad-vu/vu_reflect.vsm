@@ -1,0 +1,560 @@
+VU_REFLECT:
+
+   nop                              ilw.x  vi01, TOP_OF_CLIPPER(vi00)x
+   nop                              xgkick vi01
+   nop                              nop
+
+   nop                              bal vi15, VU_LOADPRIMGROUP
+   nop                              nop
+
+   nop                              iaddiu vi02,vi00,1
+   nop                              ilw.z vi01,TOP_OF_CLIPPER(vi00)z
+   nop                              iand vi01,vi01,vi02 ; check lit flag
+   nop                              nop
+
+   nop                              ibgtz vi01,VU_REFLECT_LIT
+   nop                              nop
+
+VU_REFLECT_UNLIT:
+
+   nop                              bal vi15, VU_LOADPRIMGROUP
+   nop                              nop
+
+   nop                              bal vi15,VU_UNLIT_PROGRAM
+   nop                              nop
+
+   nop                              bal vi15, VU_LOADPRIMGROUP
+   nop                              nop
+
+
+   mulx.w vf01w,vf00w,vf00x         iaddiu vi01,vi00,0x7f
+   nop                              mfir.w vf01w,vi01  ; alpha is always 0x7f
+   FIXUP_COLOURS:
+   nop                              iaddi vi05,vi05,-1
+   mul.xyz vf01,vf00,vf00           lq vf03,1(vi06)     ; vf01 = 0,0,0,0x7f
+
+   nop                              mtir vi07,vf03x
+   nop                              mtir vi08,vf03y
+   nop                              mtir vi09,vf03z
+
+   nop                              iand vi07,vi07,vi01 
+   nop                              iand vi08,vi08,vi01
+   nop                              iand vi09,vi09,vi01
+
+   nop                              mfir.x vf01x,vi07  ; red
+   nop                              mfir.y vf01y,vi08  ; green
+   nop                              mfir.z vf01z,vi09  ; blue
+
+   nop                              iaddiu vi06,vi06,3
+
+   nop                              ibgtz vi05,FIXUP_COLOURS
+   nop                              sq vf01,-3+1(vi06)
+
+   nop                              b REFLECT_NEXT
+   nop                              nop
+
+VU_REFLECT_LIT:
+   nop                              bal vi15,VU_LIT_PROGRAM
+   nop                              nop
+
+REFLECT_NEXT:
+
+REFLECT_NO_CLIP_0:
+   nop                              xgkick _GIFTAG                   ; kick prims
+   nop                              nop
+
+   nop                              bal vi15, VU_LOADPRIMGROUP
+   nop                              nop
+
+   nop                              ilw.y  vi01, TOP_OF_CLIPPER(vi00)y ; kick 2nd state
+   nop                              xgkick vi01
+   nop                              nop
+
+   nop                              iaddiu vi02,vi00,2+4  ; bits 1-2
+   nop                              ilw.z vi01,TOP_OF_CLIPPER(vi00)z
+   nop                              iand vi01,vi01,vi02 ; check what type of reflection
+   nop                              nop
+
+   nop                              bal vi15,VU_SPHEREMAP_PROGRAM
+   nop                              nop
+
+REFLECTON_ALL_DONE:
+
+REFLECT_NO_CLIP_1:
+   nop                              xgkick _GIFTAG                   ; kick prims and go to sleep
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b VU_REFLECT
+   nop                              nop
+
+;-------------------------------------------------------
+VU_SPHEREMAP_PROGRAM:
+
+   nop                              ilw.w  vi01, TOP_OF_CLIPPER(vi00)w ; get transform
+   mulz.w vf01w,vf00w,vf00z         lq vf06,0(vi01)
+   nop                              lq vf07,1(vi01)
+   nop                              lq vf08,2(vi01)  
+   nop                              lq vf09,3(vi01)  
+
+SP_REFLECT_MAP_LOOP:
+
+#if 0
+
+   nop                              lq     vf02, 2(vi04)            ; vf02 = vertex position 
+   sub.xyz vf02,_VIEW,vf02          lq.xyz vf01, 1(vi04)
+   
+   ; normalize view vector
+   mul.xyz vf03,vf02,vf02           nop
+   addy.x  vf03x,vf03x,vf03y        nop
+   addz.x  vf03x,vf03x,vf03z        nop
+   nop                              rsqrt q,vf00w,vf03x
+   mulq.xyz vf02,vf02,q             waitq 
+
+   mul.xyz  vf03,vf01,vf02          loi 2.0                         ; vf03 = vf01 dot vf02
+   addy.x   vf03x,vf03x,vf03y       nop
+   addz.x   vf03x,vf03x,vf03z       nop                             ; vf03x = N dot E
+
+   muli.x   vf03x,vf03x,i           nop                             ; vf03x = 2(N dot E)
+   mulx.xyz vf01,vf01,vf03x         nop                             ; vf01  = 2(N dot E)N   
+   sub.xyz  vf01,vf02,vf01          nop                             ; vf01  = E - 2(N dot E)N 
+
+   mulax  ACC, vf06,  vf01          nop                              ; transform normal
+   madday ACC, vf07,  vf01          nop
+   maddz  vf01, vf08, vf01          loi 1.0
+
+   ; R = reflection vector = vf01 ------------------------
+
+   add.xyz vf04,vf00,vf01           lq vf03,0(vi06)                 ; vf03 = old ST, vf02 = reflection vector
+   addi.z  vf04z,vf04z,i            nop                             ; vf02 = (rx,ry,rz+1)      
+
+   mul.xyz vf04,vf04,vf04           nop
+   addy.x  vf04x,vf04x,vf04y        nop
+   addz.x  vf04x,vf04x,vf04z        loi 0.5                         ; vf02x = (rx^2 + ry^2 + (rz+1)^2)
+   nop                              rsqrt q,vf00w,vf04x             ; m = q = 1/ sqrt( rx^2 + ry^2 + (rz+1)^2 )
+
+   mulq.xy vf04,vf01,q              waitq                           ; vf02 = (rx*m,ry*m)
+   muli.xy vf04,vf04,i              iaddiu vi06,vi06,3
+   addi.xy vf04,vf04,i              iaddi  vi05,vi05,-1             ; vf02 = ((rx*m)+0.5,(ry*m)+0.5,1.0f)
+   mulz.xy vf04,vf04,vf03z          iaddiu vi04,vi04,3              ; perspective correct
+   
+   nop                              ibgtz vi05,SP_REFLECT_MAP_LOOP
+   nop                              sq.xy vf04,-3(vi06)
+#else
+; === (null)
+; === __LP__ EXPL_reflect2_vcl_SP_REFL_LOOP__MAIN_LOOP:
+; ===            hDown : optimal=26 clid=0 mlid=6 size=(26)  OK!
+; =================================================
+; flowMon::Emit() vcl 1.4.beta.3 produced this code:
+		.global	vclSpheremap2_CodeStart
+		.global	vclSpheremap2_CodeEnd
+vclSpheremap2_CodeStart:
+SP_TOP_REFL:
+; _LNOPT_w=[ another ] 40 [68 0] 72   [SP_TOP_REFL]
+         NOP                                                        lq.xyz        VF03,2(VI04)                        
+         sub.xyz       VF03,VF25,VF03                               lq.xyz        VF05,5(VI04)                               ;	STALL_LATENCY ?3
+         mul.xyz       VF10,VF03,VF03                               loi           0x40000000                                 ;	STALL_LATENCY ?3
+         addy.x        VF04,VF10,VF10y                              NOP                                                      ;	STALL_LATENCY ?3
+         addz.x        VF04,VF04,VF10z                              NOP                                                      ;	STALL_LATENCY ?3
+         NOP                                                        rsqrt         Q,VF00w,VF04x                              ;	STALL_LATENCY ?3
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         sub.xyz       VF03,VF25,VF05                               move.xyz      VF04,VF03                           
+         mul.xyz       VF10,VF03,VF03                               NOP                                                      ;	STALL_LATENCY ?3
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         mulq.xyz      VF04,VF04,Q                                  lq.xyz        VF05,1(VI04)                        
+         addy.x        VF10,VF10,VF10y                              NOP                                               
+         mul.xyz       VF01,VF04,VF05                               NOP                                                      ;	STALL_LATENCY ?2
+         addz.x        VF10,VF10,VF10z                              NOP                                               
+         addy.x        VF01,VF01,VF01y                              NOP                                                      ;	STALL_LATENCY ?2
+         NOP                                                        rsqrt         Q,VF00w,VF10x                       
+         addz.x        VF01,VF01,VF01z                              lq.xyz        VF10,8(VI04)                               ;	STALL_LATENCY ?2
+         muli.x        VF09,VF01,I                                  loi           0x40000000                                 ;	STALL_LATENCY ?3
+         sub.xyz       VF03,VF25,VF10                               move.xyz      VF01,VF03                           
+         mulx.xyz      VF09,VF05,VF09x                              move.xyz      VF02,VF04                                  ;	STALL_LATENCY ?2
+         mul.xyz       VF10,VF03,VF03                               NOP                                               
+         mulq.xyz      VF04,VF01,Q                                  lq.xyz        VF05,4(VI04)                        
+         sub.xyz       VF01,VF02,VF09                               NOP                                                      ;	STALL_LATENCY ?1
+         addy.x        VF10,VF10,VF10y                              NOP                                               
+         mul.xyz       VF09,VF04,VF05                               NOP                                               
+         mulax.xyz     ACC,VF06,VF01x                               NOP                                                      ;	STALL_LATENCY ?1
+         addz.x        VF02,VF10,VF10z                              NOP                                               
+         addy.x        VF10,VF09,VF09y                              NOP                                               
+         madday.xyz    ACC,VF07,VF01y                               NOP                                               
+         maddz.xyz     VF01,VF08,VF01z                              iaddiu        VI03,VI00,0                         
+         NOP                                                        rsqrt         Q,VF00w,VF02x                       
+         addz.x        VF09,VF10,VF09z                              isubiu        VI05,VI05,3                         
+         NOP                                                        move.xy       VF10,VF01                                  ;	STALL_LATENCY ?1
+         NOP                                                        iblez         VI05,EXPL_reflect2_vcl_SP_REFL_LOOP__EPI3
+         muli.x        VF09,VF09,I                                  loi           0x3f800000                          
+; _LNOPT_w=[ ] 20 [21 0] 26   [EXPL_reflect2_vcl_SP_REFL_LOOP__PRO1]
+         addi.z        VF10,VF01,I                                  lq.xyz        VF15,11(VI04)                       
+         sub.xyz       VF03,VF25,VF15                               move.xyz      VF02,VF03                                  ;	STALL_LATENCY ?3
+         NOP                                                        NOP                                               
+         mulx.xyz      VF11,VF05,VF09x                              loi           0x40000000                          
+         mul.xyz       VF09,VF10,VF10                               move.xyz      VF15,VF04                           
+         mul.xyz       VF10,VF03,VF03                               NOP                                               
+         mulq.xyz      VF04,VF02,Q                                  lq.xyz        VF05,7(VI04)                        
+         sub.xyz       VF02,VF15,VF11                               NOP                                                      ;	STALL_LATENCY ?1
+         addy.x        VF10,VF10,VF10y                              NOP                                               
+         mul.xyz       VF15,VF04,VF05                               NOP                                               
+         mulax.xyz     ACC,VF06,VF02x                               NOP                                                      ;	STALL_LATENCY ?1
+         addz.x        VF11,VF10,VF10z                              NOP                                               
+         addy.x        VF10,VF15,VF15y                              NOP                                               
+         madday.xyz    ACC,VF07,VF02y                               NOP                                               
+         maddz.xyz     VF01,VF08,VF02z                              move.xy       VF02,VF01                           
+         NOP                                                        rsqrt         Q,VF00w,VF11x                       
+         addz.x        VF11,VF10,VF15z                              isubiu        VI05,VI05,1                         
+         NOP                                                        move.xy       VF10,VF01                                  ;	STALL_LATENCY ?1
+         addy.x        VF15,VF09,VF09y                              iblez         VI05,EXPL_reflect2_vcl_SP_REFL_LOOP__EPI2
+         muli.x        VF09,VF11,I                                  loi           0x3f800000                          
+; _LNOPT_w=[ ] 23 [26 0] 26   [EXPL_reflect2_vcl_SP_REFL_LOOP__PRO2]
+         addi.z        VF10,VF01,I                                  lq.xyz        VF12,14(VI04)                       
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         addz.x        VF13,VF15,VF09z                              loi           0x40000000                          
+         sub.xyz       VF03,VF25,VF12                               move.xyz      VF11,VF03                           
+         NOP                                                        NOP                                               
+         mulx.xyz      VF12,VF05,VF09x                              move.xyz      VF15,VF04                           
+         mul.xyz       VF09,VF10,VF10                               rsqrt         Q,VF00w,VF13x                       
+         mul.xyz       VF10,VF03,VF03                               NOP                                               
+         mulq.xyz      VF04,VF11,Q                                  lq.xyz        VF05,10(VI04)                       
+         sub.xyz       VF11,VF15,VF12                               NOP                                               
+         addy.x        VF10,VF10,VF10y                              NOP                                                      ;	STALL_LATENCY ?1
+         mul.xyz       VF15,VF04,VF05                               NOP                                               
+         mulax.xyz     ACC,VF06,VF11x                               NOP                                               
+         addz.x        VF12,VF10,VF10z                              NOP                                                      ;	STALL_LATENCY ?1
+         addy.x        VF10,VF15,VF15y                              NOP                                               
+         madday.xyz    ACC,VF07,VF11y                               move.xy       VF11,VF02                           
+         maddz.xyz     VF01,VF08,VF11z                              move.xy       VF02,VF01                           
+         NOP                                                        rsqrt         Q,VF00w,VF12x                       
+         addz.x        VF12,VF10,VF15z                              isubiu        VI05,VI05,1                         
+         NOP                                                        move.xy       VF10,VF01                                  ;	STALL_LATENCY ?1
+         addy.x        VF15,VF09,VF09y                              iblez         VI05,EXPL_reflect2_vcl_SP_REFL_LOOP__EPI1
+         muli.x        VF09,VF12,I                                  loi           0x3f800000                          
+; _LNOPT_w=[ ] 25 [26 0] 26   [EXPL_reflect2_vcl_SP_REFL_LOOP__PRO3]
+         mulq.xy       VF13,VF11,Q                                  lq.xyz        VF12,17(VI04)                       
+         NOP                                                        NOP                                               
+         addi.z        VF10,VF01,I                                  NOP                                               
+         addz.x        VF14,VF15,VF09z                              move.xyz      VF11,VF03                           
+         sub.xyz       VF03,VF25,VF12                               NOP                                               
+         mulx.xyz      VF12,VF05,VF09x                              move.xyz      VF15,VF04                           
+         mul.xyz       VF09,VF10,VF10                               lq.xyz        VF05,13(VI04)                       
+         mulq.xyz      VF04,VF11,Q                                  rsqrt         Q,VF00w,VF14x                       
+         mul.xyz       VF10,VF03,VF03                               loi           0x3f000000                          
+         muli.xy       VF13,VF13,I                                  NOP                                               
+         sub.xyz       VF11,VF15,VF12                               NOP                                               
+         mul.xyz       VF15,VF04,VF05                               NOP                                               
+         addy.x        VF12,VF10,VF10y                              NOP                                               
+         addi.xy       VF10,VF13,I                                  loi           0x40000000                          
+         mulax.xyz     ACC,VF06,VF11x                               NOP                                               
+         addy.x        VF15,VF15,VF15y                              iaddiu        VI04,VI04,0x00000012                
+         addz.x        VF13,VF12,VF10z                              lq.z          VF10,0(VI06)                        
+         madday.xyz    ACC,VF07,VF11y                               move.xy       VF11,VF02                           
+         NOP                                                        move.xy       VF02,VF01                           
+         maddz.xyz     VF01,VF08,VF11z                              iaddiu        VI06,VI06,0x00000012                
+         NOP                                                        rsqrt         Q,VF00w,VF13x                       
+         addz.x        VF12,VF15,VF15z                              isubiu        VI05,VI05,1                         
+         mulz.xy       VF13,VF10,VF10z                              move.xy       VF10,VF01                                  ;	STALL_LATENCY ?1
+         addy.x        VF15,VF09,VF09y                              iblez         VI05,EXPL_reflect2_vcl_SP_REFL_LOOP__EPI0
+         muli.x        VF09,VF12,I                                  loi           0x3f800000                          
+EXPL_reflect2_vcl_SP_REFL_LOOP__MAIN_LOOP:
+; _LPOPT_w=[ hDown ] 26 [26 26] 26   [EXPL_reflect2_vcl_SP_REFL_LOOP__MAIN_LOOP]
+         NOP                                                        lq.xyz        VF12,2(VI04)                        
+         mulq.xy       VF13,VF11,Q                                  sq.xy         VF13,-18(VI06)                      
+         addz.x        VF14,VF15,VF09z                              iaddiu        VI04,VI04,0x00000003                
+         addi.z        VF10,VF01,I                                  move.xyz      VF11,VF03                           
+         sub.xyz       VF03,VF25,VF12                               iaddiu        VI06,VI06,0x00000003                
+         mulx.xyz      VF12,VF05,VF09x                              loi           0x3f000000                          
+         muli.xy       VF13,VF13,I                                  move.xyz      VF15,VF04                           
+         mul.xyz       VF09,VF10,VF10                               rsqrt         Q,VF00w,VF14x                       
+         mul.xyz       VF10,VF03,VF03                               NOP                                               
+         mulq.xyz      VF04,VF11,Q                                  lq.xyz        VF05,-5(VI04)                       
+         sub.xyz       VF11,VF15,VF12                               NOP                                               
+         NOP                                                        NOP                                               
+         addy.x        VF14,VF10,VF10y                              NOP                                               
+         mul.xyz       VF12,VF04,VF05                               NOP                                               
+         addi.xy       VF10,VF13,I                                  NOP                                               
+         mulax.xyz     ACC,VF06,VF11x                               NOP                                               
+         addz.x        VF13,VF14,VF10z                              NOP                                               
+         addy.x        VF12,VF12,VF12y                              lq.z          VF10,-18(VI06)                      
+         madday.xyz    ACC,VF07,VF11y                               move.xy       VF11,VF02                           
+         maddz.xyz     VF01,VF08,VF11z                              move.xy       VF02,VF01                           
+         NOP                                                        rsqrt         Q,VF00w,VF13x                       
+         addz.x        VF12,VF12,VF12z                              isubiu        VI05,VI05,1                         
+         NOP                                                        loi           0x40000000                          
+         mulz.xy       VF13,VF10,VF10z                              move.xy       VF10,VF01                           
+         addy.x        VF15,VF09,VF09y                              ibgtz         VI05,EXPL_reflect2_vcl_SP_REFL_LOOP__MAIN_LOOP
+         muli.x        VF09,VF12,I                                  loi           0x3f800000                          
+EXPL_reflect2_vcl_SP_REFL_LOOP__EPI0:
+; _LNOPT_w=[ ] 62 [80 0] 91   [EXPL_reflect2_vcl_SP_REFL_LOOP__EPI0]
+         NOP                                                        NOP                                               
+         mulq.xy       VF13,VF11,Q                                  sq.xy         VF13,-18(VI06)                      
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         addz.x        VF12,VF15,VF09z                              NOP                                               
+         mulq.xyz      VF04,VF03,Q                                  move.xyz      VF15,VF04                           
+         mulx.xyz      VF11,VF05,VF09x                              lq.xyz        VF05,-2(VI04)                       
+         NOP                                                        NOP                                               
+         addi.z        VF10,VF01,I                                  loi           0x3f000000                          
+         muli.xy       VF13,VF13,I                                  NOP                                               
+         mul.xyz       VF03,VF04,VF05                               NOP                                               
+         sub.xyz       VF11,VF15,VF11                               rsqrt         Q,VF00w,VF12x                       
+         mul.xyz       VF09,VF10,VF10                               NOP                                               
+         addi.xy       VF10,VF13,I                                  loi           0x40000000                          
+         addy.x        VF13,VF03,VF03y                              NOP                                               
+         mulax.xyz     ACC,VF06,VF11x                               lq.z          VF10,-15(VI06)                      
+         madday.xyz    ACC,VF07,VF11y                               move.xy       VF11,VF02                           
+         maddz.xyz     VF01,VF08,VF11z                              move.xy       VF02,VF01                           
+         addz.x        VF03,VF13,VF03z                              NOP                                               
+         addy.x        VF15,VF09,VF09y                              NOP                                               
+         mulz.xy       VF13,VF10,VF10z                              NOP                                               
+         muli.x        VF09,VF03,I                                  move.xy       VF10,VF01                                  ;	STALL_LATENCY ?1
+         addz.x        VF03,VF15,VF09z                              loi           0x3f800000                          
+         mulq.xy       VF13,VF11,Q                                  sq.xy         VF13,-15(VI06)                      
+         addi.z        VF10,VF01,I                                  NOP                                               
+         mulx.xyz      VF11,VF05,VF09x                              loi           0x3f000000                          
+         NOP                                                        rsqrt         Q,VF00w,VF03x                       
+         muli.xy       VF13,VF13,I                                  NOP                                               
+         mul.xyz       VF09,VF10,VF10                               lq.z          VF10,-12(VI06)                      
+         sub.xyz       VF11,VF04,VF11                               NOP                                               
+         addi.xy       VF10,VF13,I                                  loi           0x3f800000                                 ;	STALL_LATENCY ?1
+         addy.x        VF15,VF09,VF09y                              NOP                                               
+         mulax.xyz     ACC,VF06,VF11x                               NOP                                               
+         madday.xyz    ACC,VF07,VF11y                               NOP                                               
+         mulz.xy       VF13,VF10,VF10z                              move.xy       VF11,VF02                           
+         maddz.xyz     VF01,VF08,VF11z                              move.xy       VF02,VF01                           
+         addz.x        VF09,VF15,VF09z                              NOP                                               
+         mulq.xy       VF13,VF11,Q                                  sq.xy         VF13,-12(VI06)                             ;	STALL_LATENCY ?1
+         NOP                                                        move.xy       VF10,VF01                           
+         NOP                                                        rsqrt         Q,VF00w,VF09x                       
+         addi.z        VF10,VF01,I                                  loi           0x3f000000                          
+         muli.xy       VF13,VF13,I                                  NOP                                               
+         mul.xyz       VF09,VF10,VF10                               lq.z          VF10,-9(VI06)                              ;	STALL_LATENCY ?2
+         addi.xy       VF10,VF13,I                                  loi           0x3f000000                          
+         addy.x        VF15,VF09,VF09y                              NOP                                                      ;	STALL_LATENCY ?2
+         mulz.xy       VF13,VF10,VF10z                              lq.z          VF10,-6(VI06)                       
+         addz.x        VF10,VF15,VF09z                              waitq                                                    ;	STALL_LATENCY ?2
+         mulq.xy       VF13,VF02,Q                                  sq.xy         VF13,-9(VI06)                       
+         NOP                                                        rsqrt         Q,VF00w,VF10x                              ;	STALL_LATENCY ?2
+         muli.xy       VF13,VF13,I                                  NOP                                               
+         addi.xy       VF10,VF13,I                                  loi           0x3f000000                                 ;	STALL_LATENCY ?3
+         mulz.xy       VF13,VF10,VF10z                              lq.z          VF10,-3(VI06)                              ;	STALL_LATENCY ?3
+         mulq.xy       VF13,VF01,Q                                  sq.xy         VF13,-6(VI06)                              ;	STALL_LATENCY ?3
+         muli.xy       VF13,VF13,I                                  NOP                                                      ;	STALL_LATENCY ?3
+         addi.xy       VF10,VF13,I                                  NOP                                                      ;	STALL_LATENCY ?3
+         mulz.xy       VF13,VF10,VF10z                              NOP                                                      ;	STALL_LATENCY ?3
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        b             EXPL_reflect2_vcl_SP_REFL_LOOP__EXIT_POINT
+         NOP                                                        sq.xy         VF13,-3(VI06)                       
+EXPL_reflect2_vcl_SP_REFL_LOOP__EPI1:
+; _LNOPT_w=[ ] 62 [80 0] 89   [EXPL_reflect2_vcl_SP_REFL_LOOP__EPI1]
+         mulq.xy       VF12,VF11,Q                                  NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         addz.x        VF13,VF15,VF09z                              NOP                                               
+         mulx.xyz      VF11,VF05,VF09x                              move.xyz      VF15,VF04                           
+         mulq.xyz      VF04,VF03,Q                                  lq.xyz        VF05,13(VI04)                       
+         sub.xyz       VF11,VF15,VF11                               NOP                                                      ;	STALL_LATENCY ?2
+         mul.xyz       VF03,VF04,VF05                               NOP                                               
+         addi.z        VF10,VF01,I                                  loi           0x3f000000                          
+         muli.xy       VF12,VF12,I                                  rsqrt         Q,VF00w,VF13x                       
+         mulax.xyz     ACC,VF06,VF11x                               NOP                                               
+         addy.x        VF03,VF03,VF03y                              NOP                                               
+         mul.xyz       VF09,VF10,VF10                               NOP                                               
+         addi.xy       VF10,VF12,I                                  NOP                                               
+         addz.x        VF12,VF03,VF03z                              lq.z          VF10,0(VI06)                               ;	STALL_LATENCY ?1
+         madday.xyz    ACC,VF07,VF11y                               move.xy       VF11,VF02                           
+         maddz.xyz     VF01,VF08,VF11z                              move.xy       VF02,VF01                           
+         addy.x        VF15,VF09,VF09y                              loi           0x40000000                          
+         muli.x        VF09,VF12,I                                  NOP                                               
+         mulz.xy       VF03,VF10,VF10z                              NOP                                               
+         NOP                                                        NOP                                               
+         mulq.xy       VF12,VF11,Q                                  move.xy       VF10,VF01                           
+         mulx.xyz      VF11,VF05,VF09x                              loi           0x3f800000                          
+         addz.x        VF03,VF15,VF09z                              sq.xy         VF03,0(VI06)                        
+         addi.z        VF10,VF01,I                                  loi           0x3f000000                          
+         muli.xy       VF05,VF12,I                                  NOP                                               
+         sub.xyz       VF11,VF04,VF11                               NOP                                               
+         mul.xyz       VF09,VF10,VF10                               rsqrt         Q,VF00w,VF03x                              ;	STALL_LATENCY ?1
+         addi.xy       VF10,VF05,I                                  NOP                                               
+         mulax.xyz     ACC,VF06,VF11x                               NOP                                               
+         madday.xyz    ACC,VF07,VF11y                               lq.z          VF10,3(VI06)                        
+         addy.x        VF15,VF09,VF09y                              move.xy       VF11,VF02                           
+         maddz.xyz     VF01,VF08,VF11z                              move.xy       VF02,VF01                           
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         mulz.xy       VF08,VF10,VF10z                              loi           0x3f800000                          
+         addz.x        VF09,VF15,VF09z                              move.xy       VF10,VF01                           
+         addi.z        VF10,VF01,I                                  loi           0x3f000000                          
+         NOP                                                        sq.xy         VF08,3(VI06)                               ;	STALL_LATENCY ?1
+         mulq.xy       VF08,VF11,Q                                  rsqrt         Q,VF00w,VF09x                       
+         mul.xyz       VF09,VF10,VF10                               lq.z          VF10,6(VI06)                        
+         muli.xy       VF08,VF08,I                                  NOP                                                      ;	STALL_LATENCY ?2
+         addy.x        VF15,VF09,VF09y                              NOP                                               
+         addi.xy       VF10,VF08,I                                  loi           0x3f000000                                 ;	STALL_LATENCY ?2
+         addz.x        VF09,VF15,VF09z                              NOP                                               
+         mulz.xy       VF10,VF10,VF10z                              NOP                                                      ;	STALL_LATENCY ?2
+         NOP                                                        rsqrt         Q,VF00w,VF09x                       
+         mulq.xy       VF10,VF02,Q                                  sq.xy         VF10,6(VI06)                               ;	STALL_LATENCY ?2
+         muli.xy       VF10,VF10,I                                  NOP                                                      ;	STALL_LATENCY ?3
+         addi.xy       VF10,VF10,I                                  NOP                                                      ;	STALL_LATENCY ?3
+         NOP                                                        lq.z          VF10,9(VI06)                        
+         mulq.xy       VF01,VF01,Q                                  NOP                                               
+         mulz.xy       VF10,VF10,VF10z                              loi           0x3f000000                                 ;	STALL_LATENCY ?2
+         muli.xy       VF01,VF01,I                                  lq.z          VF10,12(VI06)                       
+         addi.xy       VF10,VF01,I                                  sq.xy         VF10,9(VI06)                               ;	STALL_LATENCY ?3
+         mulz.xy       VF01,VF10,VF10z                              NOP                                                      ;	STALL_LATENCY ?3
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        b             EXPL_reflect2_vcl_SP_REFL_LOOP__EXIT_POINT
+         NOP                                                        sq.xy         VF01,12(VI06)                       
+EXPL_reflect2_vcl_SP_REFL_LOOP__EPI2:
+; _LNOPT_w=[ ] 62 [80 0] 88   [EXPL_reflect2_vcl_SP_REFL_LOOP__EPI2]
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         addi.z        VF10,VF01,I                                  NOP                                               
+         addz.x        VF12,VF15,VF09z                              NOP                                               
+         mulx.xyz      VF11,VF05,VF09x                              move.xyz      VF15,VF04                           
+         mulq.xyz      VF04,VF03,Q                                  lq.xyz        VF05,10(VI04)                       
+         mul.xyz       VF09,VF10,VF10                               NOP                                               
+         NOP                                                        rsqrt         Q,VF00w,VF12x                       
+         sub.xyz       VF10,VF15,VF11                               NOP                                               
+         mul.xyz       VF03,VF04,VF05                               NOP                                               
+         mulax.xyz     ACC,VF06,VF10x                               NOP                                                      ;	STALL_LATENCY ?2
+         addy.x        VF10,VF03,VF03y                              NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         madday.xyz    ACC,VF07,VF10y                               NOP                                               
+         addz.x        VF11,VF10,VF03z                              move.xy       VF03,VF02                           
+         maddz.xyz     VF01,VF08,VF10z                              move.xy       VF02,VF01                           
+         NOP                                                        NOP                                               
+         addy.x        VF15,VF09,VF09y                              loi           0x40000000                          
+         muli.x        VF09,VF11,I                                  waitq                                             
+         NOP                                                        move.xy       VF10,VF01                           
+         mulq.xy       VF11,VF03,Q                                  loi           0x3f800000                          
+         addi.z        VF10,VF01,I                                  NOP                                               
+         mulx.xyz      VF03,VF05,VF09x                              NOP                                               
+         addz.x        VF15,VF15,VF09z                              loi           0x3f000000                          
+         muli.xy       VF05,VF11,I                                  NOP                                               
+         mul.xyz       VF09,VF10,VF10                               NOP                                               
+         sub.xyz       VF04,VF04,VF03                               NOP                                               
+         NOP                                                        rsqrt         Q,VF00w,VF15x                       
+         addi.xy       VF10,VF05,I                                  NOP                                               
+         addy.x        VF15,VF09,VF09y                              NOP                                               
+         mulax.xyz     ACC,VF06,VF04x                               lq.z          VF10,0(VI06)                        
+         madday.xyz    ACC,VF07,VF04y                               move.xy       VF07,VF02                           
+         maddz.xyz     VF01,VF08,VF04z                              move.xy       VF02,VF01                           
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         addz.x        VF09,VF15,VF09z                              loi           0x3f800000                          
+         mulz.xy       VF08,VF10,VF10z                              move.xy       VF10,VF01                           
+         addi.z        VF10,VF01,I                                  loi           0x3f000000                          
+         mulq.xy       VF07,VF07,Q                                  rsqrt         Q,VF00w,VF09x                              ;	STALL_LATENCY_THRUPUT ?2
+         mul.xyz       VF09,VF10,VF10                               lq.z          VF10,3(VI06)                        
+         muli.xy       VF07,VF07,I                                  sq.xy         VF08,0(VI06)                               ;	STALL_LATENCY ?2
+         addy.x        VF15,VF09,VF09y                              NOP                                               
+         addi.xy       VF10,VF07,I                                  loi           0x3f000000                                 ;	STALL_LATENCY ?2
+         addz.x        VF09,VF15,VF09z                              NOP                                               
+         mulz.xy       VF10,VF10,VF10z                              NOP                                                      ;	STALL_LATENCY ?2
+         NOP                                                        rsqrt         Q,VF00w,VF09x                       
+         mulq.xy       VF10,VF02,Q                                  sq.xy         VF10,3(VI06)                               ;	STALL_LATENCY ?2
+         muli.xy       VF10,VF10,I                                  NOP                                                      ;	STALL_LATENCY ?3
+         addi.xy       VF10,VF10,I                                  NOP                                                      ;	STALL_LATENCY ?3
+         NOP                                                        lq.z          VF10,6(VI06)                        
+         mulq.xy       VF01,VF01,Q                                  NOP                                               
+         mulz.xy       VF10,VF10,VF10z                              loi           0x3f000000                                 ;	STALL_LATENCY ?2
+         muli.xy       VF01,VF01,I                                  lq.z          VF10,9(VI06)                        
+         addi.xy       VF10,VF01,I                                  sq.xy         VF10,6(VI06)                               ;	STALL_LATENCY ?3
+         mulz.xy       VF01,VF10,VF10z                              NOP                                                      ;	STALL_LATENCY ?3
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        b             EXPL_reflect2_vcl_SP_REFL_LOOP__EXIT_POINT
+         NOP                                                        sq.xy         VF01,9(VI06)                        
+EXPL_reflect2_vcl_SP_REFL_LOOP__EPI3:
+; _LNOPT_w=[ ] 54 [80 0] 91   [EXPL_reflect2_vcl_SP_REFL_LOOP__EPI3]
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         addi.z        VF10,VF01,I                                  loi           0x40000000                          
+         mulx.xyz      VF02,VF05,VF09x                              move.xyz      VF11,VF04                           
+         mulq.xyz      VF04,VF03,Q                                  lq.xyz        VF05,7(VI04)                        
+         mul.xyz       VF09,VF10,VF10                               NOP                                                      ;	STALL_LATENCY ?1
+         sub.xyz       VF10,VF11,VF02                               NOP                                               
+         mul.xyz       VF03,VF04,VF05                               NOP                                               
+         addy.x        VF02,VF09,VF09y                              NOP                                                      ;	STALL_LATENCY ?1
+         mulax.xyz     ACC,VF06,VF10x                               NOP                                               
+         addy.x        VF10,VF03,VF03y                              NOP                                               
+         addz.x        VF02,VF02,VF09z                              NOP                                                      ;	STALL_LATENCY ?1
+         addz.x        VF11,VF10,VF03z                              NOP                                                      ;	STALL_LATENCY ?1
+         madday.xyz    ACC,VF07,VF10y                               NOP                                               
+         maddz.xyz     VF01,VF08,VF10z                              move.xy       VF03,VF01                           
+         muli.x        VF09,VF11,I                                  loi           0x3f800000                                 ;	STALL_LATENCY ?1
+         NOP                                                        move.xy       VF10,VF01                                  ;	STALL_LATENCY ?1
+         addi.z        VF10,VF01,I                                  rsqrt         Q,VF00w,VF02x                       
+         mulx.xyz      VF05,VF05,VF09x                              loi           0x3f800000                          
+         mul.xyz       VF09,VF10,VF10                               NOP                                                      ;	STALL_LATENCY ?2
+         sub.xyz       VF10,VF04,VF05                               NOP                                               
+         addy.x        VF09,VF09,VF09y                              NOP                                                      ;	STALL_LATENCY ?2
+         mulax.xyz     ACC,VF06,VF10x                               NOP                                               
+         madday.xyz    ACC,VF07,VF10y                               NOP                                               
+         NOP                                                        NOP                                               
+         maddz.xyz     VF01,VF08,VF10z                              move.xy       VF08,VF01                           
+         NOP                                                        NOP                                               
+         mulq.xy       VF07,VF03,Q                                  waitq                                             
+         addz.x        VF09,VF09,VF09z                              move.xy       VF10,VF01                                  ;	STALL_LATENCY ?1
+         addi.z        VF10,VF01,I                                  loi           0x3f000000                          
+         muli.xy       VF07,VF07,I                                  NOP                                               
+         NOP                                                        rsqrt         Q,VF00w,VF09x                              ;	STALL_LATENCY ?1
+         mul.xyz       VF09,VF10,VF10                               lq.z          VF10,0(VI06)                        
+         addi.xy       VF10,VF07,I                                  loi           0x3f000000                          
+         mulz.xy       VF07,VF10,VF10z                              lq.z          VF10,3(VI06)                               ;	STALL_LATENCY ?3
+         addy.x        VF10,VF09,VF09y                              NOP                                               
+         NOP                                                        sq.xy         VF07,0(VI06)                               ;	STALL_LATENCY ?2
+         addz.x        VF10,VF10,VF09z                              NOP                                               
+         NOP                                                        waitq                                                    ;	STALL_LATENCY ?1
+         mulq.xy       VF08,VF08,Q                                  rsqrt         Q,VF00w,VF10x                              ;	STALL_LATENCY ?1
+         muli.xy       VF08,VF08,I                                  NOP                                                      ;	STALL_LATENCY ?3
+         mulq.xy       VF01,VF01,Q                                  waitq                                                    ;	STALL_LATENCY ?8
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         addi.xy       VF10,VF08,I                                  loi           0x3f000000                          
+         muli.xy       VF01,VF01,I                                  NOP                                               
+         mulz.xy       VF08,VF10,VF10z                              lq.z          VF10,6(VI06)                               ;	STALL_LATENCY ?2
+         addi.xy       VF10,VF01,I                                  NOP                                               
+         NOP                                                        sq.xy         VF08,3(VI06)                               ;	STALL_LATENCY ?2
+         mulz.xy       VF01,VF10,VF10z                              NOP                                               
+         NOP                                                        sq.xy         VF01,6(VI06)                               ;	STALL_LATENCY ?3
+EXPL_reflect2_vcl_SP_REFL_LOOP__EXIT_POINT:
+; _LNOPT_w=[ ] 2 [0 0] 2   [EXPL_reflect2_vcl_SP_REFL_LOOP__EXIT_POINT]
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+vclSpheremap2_CodeEnd:
+;	iCount=378
+; register stats:
+;   5 VU User integer
+;  17 VU User floating point
+
+#endif   
+                                     
+   nop                              jr vi15
+   nop                              nop
+
+;-----------------------------------------------------------------------

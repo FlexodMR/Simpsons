@@ -1,0 +1,133 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Term::Complete - Perl word completion module
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#DIAGNOSTICS">DIAGNOSTICS</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Term::Complete - Perl word completion module
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    $input = complete('prompt_string', \@completion_list);
+    $input = complete('prompt_string', @completion_list);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This routine provides word completion on the list of words in the array (or
+array ref).
+
+
+<P>
+
+The tty driver is put into raw mode using the system command
+<CODE>stty raw -echo</CODE> and restored using <CODE>stty -raw echo</CODE>.
+
+
+<P>
+
+The following command characters are defined:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_lttabgt">lttabgt
+
+</A></STRONG><DD>
+Attempts word completion. Cannot be changed.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__D">^D
+
+</A></STRONG><DD>
+Prints completion list. Defined by <EM>$Term::Complete::complete</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__U">^U
+
+</A></STRONG><DD>
+Erases the current input. Defined by <EM>$Term::Complete::kill</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ltdelgt">ltdelgt, ltbsgt
+
+</A></STRONG><DD>
+Erases one character. Defined by <EM>$Term::Complete::erase1</EM> and <EM>$Term::Complete::erase2</EM>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="DIAGNOSTICS">DIAGNOSTICS
+
+</A></H1>
+Bell sounds when word completion fails.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+The completion charater &lt;tab&gt; cannot be changed.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Wayne Thompson
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

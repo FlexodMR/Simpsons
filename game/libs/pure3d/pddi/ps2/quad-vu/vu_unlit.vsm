@@ -1,0 +1,167 @@
+; === (null)
+; === __LP__ EXPL_unlit_vcl_UNLIT_LOOP__MAIN_LOOP:
+; ===            ldumb : optimal=15 clid=0 mlid=2 size=(15)  OK!
+; ===          normal1 : optimal=15 clid=0 mlid=2 size=(15)  OK!
+; ===            hDown : optimal=15 clid=0 mlid=2 size=(15)  OK!
+; ===             vuta : optimal=15 clid=0 mlid=2 size=(15)  OK!
+; ===              dUp : optimal=15 clid=0 mlid=2 size=(15)  OK!
+; ===            vuta1 : optimal=15 clid=0 mlid=2 size=(15)  OK!
+; ===          normal2 : optimal=15 clid=0 mlid=2 size=(15)  OK!
+; =================================================
+; flowMon::Emit() vcl 1.4.beta.3 produced this code:
+		.global	vclUnlit_CodeStart
+		.global	vclUnlit_CodeEnd
+VU_UNLIT_PROGRAM:
+
+TOP_UNLIT:
+; _LNOPT_w=[ another ] 22 [22 0] 27   [TOP_UNLIT]
+         mulaw         ACC,VF29,VF00w                               lq.xyz        VF01,2(VI04)                        
+         maddaz        ACC,VF28,VF01z                               isubiu        VI05,VI05,2                                ;	STALL_LATENCY ?3
+         madday        ACC,VF27,VF01y                               iaddiu        VI04,VI04,0x00000006                
+         maddx         VF01,VF26,VF01x                              lq.xyz        VF03,-1(VI04)                       
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         mulaw         ACC,VF29,VF00w                               NOP                                               
+         maddaz        ACC,VF28,VF03z                               div           Q,VF00w,VF01w                       
+         madday        ACC,VF27,VF03y                               fcset         0                                   
+         clipw.xyz     VF01xyz,VF01w                                lq            VF02,-5(VI04)                       
+         mul.xyz       VF01,VF01,VF30                               lq            VF04,-2(VI04)                       
+         maddx         VF03,VF26,VF03x                              iaddiu        VI06,VI06,0x00000006                
+         NOP                                                        sq            VF02,-5(VI06)                              ;	STALL_LATENCY ?1
+         mulq.xyz      VF02,VF01,Q                                  lq            VF01,-6(VI04)                       
+         NOP                                                        div           Q,VF00w,VF03w                       
+         NOP                                                        sq            VF04,-2(VI06)                       
+         mulq.xyz      VF01,VF01,Q                                  fcand         VI01,262143                                ;	STALL_LATENCY ?1
+         clipw.xyz     VF03xyz,VF03w                                iadd          VI03,VI00,VI01                      
+         NOP                                                        iaddiu        VI01,VI01,0x00007fff                
+         add.xyz       VF02,VF02,VF31                               isw.w         VI01,-4(VI06)                       
+         mul.xyz       VF01,VF03,VF30                               sq            VF01,-6(VI06)                       
+         NOP                                                        fcand         VI01,262143                         
+EXPL_unlit_vcl_UNLIT_LOOP__MAIN_LOOP:
+; _LPOPT_w=[ ldumb ] 15 [15 15] 15   [EXPL_unlit_vcl_UNLIT_LOOP__MAIN_LOOP]
+         NOP                                                        lq.xyz        VF04,2(VI04)                        
+         ftoi4.xyz     VF03,VF02                                    lq            VF05,1(VI04)                        
+         mulq.xyz      VF02,VF01,Q                                  lq            VF01,-3(VI04)                       
+         mulaw         ACC,VF29,VF00w                               iadd          VI03,VI03,VI01                      
+         maddaz        ACC,VF28,VF04z                               iaddiu        VI01,VI01,0x00007fff                
+         madday        ACC,VF27,VF04y                               sq            VF05,1(VI06)                        
+         maddx         VF04,VF26,VF04x                              isw.w         VI01,-1(VI06)                       
+         mulq.xyz      VF01,VF01,Q                                  sq.xyz        VF03,-4(VI06)                       
+         add.xyz       VF02,VF02,VF31                               iaddiu        VI06,VI06,0x00000003                
+         NOP                                                        isubiu        VI05,VI05,1                         
+         clipw.xyz     VF04xyz,VF04w                                div           Q,VF00w,VF04w                       
+         mul.xyz       VF01,VF04,VF30                               sq            VF01,-6(VI06)                       
+         NOP                                                        iaddiu        VI04,VI04,0x00000003                
+         NOP                                                        ibgtz         VI05,EXPL_unlit_vcl_UNLIT_LOOP__MAIN_LOOP
+         NOP                                                        fcand         VI01,262143                         
+; _LNOPT_w=[ ] 13 [13 0] 16   [EXPL_unlit_vcl_UNLIT_LOOP__EPI0]
+         NOP                                                        NOP                                               
+         ftoi4.xyz     VF03,VF02                                    NOP                                               
+         mulq.xyz      VF02,VF01,Q                                  lq            VF01,-3(VI04)                       
+         NOP                                                        sq.xyz        VF03,-4(VI06)                              ;	STALL_LATENCY ?2
+         add.xyz       VF02,VF02,VF31                               NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         mulq.xyz      VF01,VF01,Q                                  iadd          VI03,VI03,VI01                      
+         ftoi4.xyz     VF02,VF02                                    iaddiu        VI01,VI01,0x00007fff                
+         NOP                                                        isw.w         VI01,-1(VI06)                       
+         NOP                                                        sq            VF01,-3(VI06)                              ;	STALL_LATENCY ?1
+         NOP                                                        sq.xyz        VF02,-1(VI06)                       
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+         NOP                                                        NOP                                               
+vclUnlit_CodeEnd:
+;	iCount=52
+; register stats:
+;   6 VU User integer
+;  12 VU User floating point
+
+   nop                              jr vi15
+   nop                              nop
+   
+;-----------------------------------------------------------------------------------------
+; unlit, guard band clipping
+;-----------------------------------------------------------------------------------------
+VU_UNLIT_TRI:
+
+   nop                              bal vi15,VU_CHECKSKINNING_LOADPRIMGROUP
+   nop                              nop
+
+   nop                              bal vi15,VU_UNLIT_PROGRAM
+   nop                              nop
+
+   test_bfc_clip                                                     ; test for bfcing and clipping
+
+   nop                              xgkick _GIFTAG                   ; stop, kick prims to GIF
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b VU_UNLIT_TRI                   ; start a new batch of vertices
+   nop                              nop
+
+
+;-----------------------------------------------------------------------------------------
+; unlit, fogged
+;-----------------------------------------------------------------------------------------
+
+VU_UNLITFOG_TRI:
+
+nop[e] nop
+nop    nop
+
+nop    b VU_UNLITFOG_TRI
+nop    nop
+
+
+#if 0
+UNLITFOG_TRI_START:
+   check_skinning
+   load_primgroup   
+
+   nop                              fcset 0
+   nop                              iaddiu vi03,vi00,0
+   
+UNLITFOG_TRI_LOOP:
+   mulaw ACC,  _CTM3, vf00          lq vf02, 2(vi04)                 ; vf02 = vertex xyzw
+   maddaz ACC, _CTM2, vf02          iaddiu vi08, vi00, 0x7fff        ; for fog AND mask
+   madday ACC, _CTM1, vf02          lq vf05, 0(vi04)                 ; vf05 = st
+   maddx vf03, _CTM0, vf02          nop                              ; vf03 = transformed vertex, store st in queue
+   nop[i]                           loi 255.0                        ;
+   nop                              iaddiu vi08, vi08, 1             ;
+   nop                              nop
+   clipw.xyz vf03xyz, vf03w         div q, vf00w, vf03w              ; clip code, 1/w
+   mulw.w vf07w, vf03w, _FOGSCALE   nop                              ; cache vertex in queue
+   mul.xyz vf03, vf03, _VPS         nop                              ; scale z to fog range   
+   nop                              nop
+   nop                              fcand vi01, 0x3ffff
+   addw.w vf07, vf07, _FOGOFFSET    iaddiu vi02, vi01, 0x7fff        ; fog offset
+   nop                              iand vi02, vi08, vi02
+   nop                              lq vf02,1(vi04)
+   mulq.xyz vf03, vf03, q           iadd vi03,vi03,vi01              ; project vertex
+   mulq.xyz vf05, vf05, q           nop                              ; multply s,t by 1/q
+   minii.w vf07w, vf07w, i          nop                              ; clamp fog to 255
+   maxx.w vf07w, vf07w, vf00x       nop                              ; clamp fog to 0 - store color in clip buffer
+   ftoi4.w vf07w, vf07w             sq vf02,1(vi06)                  ; convert fog to integer
+   add.xyz vf03, vf03, _VPO         mtir vi03, vf07w                 ; copy fog to int register         
+   nop                              ior vi03, vi03, vi02           
+   ftoi4.xyz  vf03, vf03            iaddi vi05, vi05, -1             ;
+   nop                              sq vf05, 0(vi06)                 ;
+   nop                              mfir.w vf03, vi03                ; write fog
+   nop                              iaddiu vi06,vi06,3
+   nop                              iaddiu vi04, vi04, 3             ; next vertex
+   nop                              ibgtz vi05, UNLITFOG_TRI_LOOP    ; loop
+   nop                              sq vf03, -1(vi06)                ; store xyzw
+
+   test_bfc_clip                                                     ; test for bfcing and clipping
+
+   nop                              xgkick _GIFTAG                   ; kick prims and go to sleep
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b UNLITFOG_TRI_START             ;
+   nop                              nop
+#endif

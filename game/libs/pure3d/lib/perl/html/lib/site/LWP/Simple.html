@@ -1,0 +1,239 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>mirror - Procedural LWP interface
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+get, head, getprint, getstore, mirror - Procedural 
+<FONT SIZE=-1>LWP</FONT> interface
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> perl -MLWP::Simple -e 'getprint &quot;<A HREF="http://www.sn.no&quot">http://www.sn.no&quot</A>;'
+</PRE>
+
+<P>
+
+<PRE> use LWP::Simple;
+ $content = get(&quot;<A HREF="http://www.sn.no/&quot">http://www.sn.no/&quot</A>;)
+ if (mirror(&quot;<A HREF="http://www.sn.no/&quot">http://www.sn.no/&quot</A>;, &quot;foo&quot;) == RC_NOT_MODIFIED) {
+     ...
+ }
+ if (is_success(getprint(&quot;<A HREF="http://www.sn.no/&quot">http://www.sn.no/&quot</A>;))) {
+     ...
+ }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This interface is intended for those who want a simplified view of the libwww-perl library. This interface should also be suitable for one-liners. If you need more control or access to the header fields in the requests sent and responses received you should use the full 
+<FONT SIZE=-1>OO</FONT> interface provided by the LWP::UserAgent module.
+
+
+
+<P>
+
+This following functions are provided (and exported) by this module:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_get">get($url)
+
+</A></STRONG><DD>
+This function will get the document identified by the given 
+<FONT SIZE=-1>URL.</FONT> The <CODE>get()</CODE> function will return the document if successful or 'undef' if it fails. The <CODE>$url</CODE> argument can be either a simple string or a reference to a 
+<FONT SIZE=-1>URI::URL</FONT> object.
+
+
+
+<P>
+
+You will not be able to examine the response code or response headers (like <EM>Content-Type</EM>) when you are accessing the web using this function. If you need this you should use the full 
+<FONT SIZE=-1>OO</FONT> interface.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_head">head($url)
+
+</A></STRONG><DD>
+Get document headers. Returns the following values if successful:
+($content_type, $document_length, $modified_time, $expires, $server)
+
+
+<P>
+
+Returns an empty list if it fails.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getprint">getprint($url)
+
+</A></STRONG><DD>
+Get and print a document identified by a 
+<FONT SIZE=-1>URL.</FONT> The document is printet on 
+<FONT SIZE=-1>STDOUT.</FONT> The error message (formatted as 
+<FONT SIZE=-1>HTML)</FONT> is printed on 
+<FONT SIZE=-1>STDERR</FONT> if the request fails. The return value is the 
+<FONT SIZE=-1>HTTP</FONT> response code.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_getstore">getstore($url, $file)
+
+</A></STRONG><DD>
+Gets a document identified by a 
+<FONT SIZE=-1>URL</FONT> and stores it in the file. The return value is the 
+<FONT SIZE=-1>HTTP</FONT> response code.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_mirror">mirror($url, $file)
+
+</A></STRONG><DD>
+Get and store a document identified by a 
+<FONT SIZE=-1>URL,</FONT> using
+<EM>If-modified-since</EM>, and checking of the <EM>Content-Length</EM>. Returns the 
+<FONT SIZE=-1>HTTP</FONT> response code.
+
+
+<P>
+
+</DL>
+This module also exports the HTTP::Status constants and procedures. These
+can be used when you check the response code from <CODE>getprint(),</CODE>
+<CODE>getstore()</CODE> and <CODE>mirror().</CODE> The constants are:
+
+
+<P>
+
+<PRE>   RC_CONTINUE
+   RC_SWITCHING_PROTOCOLS
+   RC_OK
+   RC_CREATED
+   RC_ACCEPTED
+   RC_NON_AUTHORITATIVE_INFORMATION
+   RC_NO_CONTENT
+   RC_RESET_CONTENT
+   RC_PARTIAL_CONTENT
+   RC_MULTIPLE_CHOICES
+   RC_MOVED_PERMANENTLY
+   RC_MOVED_TEMPORARILY
+   RC_SEE_OTHER
+   RC_NOT_MODIFIED
+   RC_USE_PROXY
+   RC_BAD_REQUEST
+   RC_UNAUTHORIZED
+   RC_PAYMENT_REQUIRED
+   RC_FORBIDDEN
+   RC_NOT_FOUND
+   RC_METHOD_NOT_ALLOWED
+   RC_NOT_ACCEPTABLE
+   RC_PROXY_AUTHENTICATION_REQUIRED
+   RC_REQUEST_TIMEOUT
+   RC_CONFLICT
+   RC_GONE
+   RC_LENGTH_REQUIRED
+   RC_PRECONDITION_FAILED
+   RC_REQUEST_ENTITY_TOO_LARGE
+   RC_REQUEST_URI_TOO_LARGE
+   RC_UNSUPPORTED_MEDIA_TYPE
+   RC_INTERNAL_SERVER_ERROR
+   RC_NOT_IMPLEMENTED
+   RC_BAD_GATEWAY
+   RC_SERVICE_UNAVAILABLE
+   RC_GATEWAY_TIMEOUT
+   RC_HTTP_VERSION_NOT_SUPPORTED
+</PRE>
+
+<P>
+
+The HTTP::Status classification functions are:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_is_success">is_success($rc)
+
+</A></STRONG><DD>
+Check if response code indicated successfull request.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_is_error">is_error($rc)
+
+</A></STRONG><DD>
+Check if response code indicated that an error occured.
+
+
+<P>
+
+</DL>
+The module will also export the LWP::UserAgent object as <CODE>$ua</CODE> if you ask for it explicitly.
+
+
+<P>
+
+The user agent created by this module will identify itself as
+``LWP::Simple/0.00'' and will initialize its proxy defaults from the
+environment (by calling $ua-&gt;env_proxy).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/LWP.html#">the LWP manpage</A>, <A HREF="/n|/perl/html/./lib/site/LWP/UserAgent.html">UserAgent</A>, <A HREF="/n|/perl/html/./lib/site/HTTP/Status.html">Status</A>, <EM>request</EM>, <EM>mirror</EM>
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,2718 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>DBI - Database independent interface for Perl
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<UL>
+
+		<LI><A HREF="#NOTE">NOTE</A>
+		<LI><A HREF="#RECENT_CHANGES">RECENT CHANGES </A>
+	</UL>
+
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Architecture_of_a_DBI_Applicatio">Architecture of a DBI Application</A>
+		<LI><A HREF="#Notation_and_Conventions">Notation and Conventions</A>
+		<LI><A HREF="#General_Interface_Rules_Caveat">General Interface Rules & Caveats</A>
+		<LI><A HREF="#Naming_Conventions">Naming Conventions</A>
+		<LI><A HREF="#Data_Query_Methods">Data Query Methods</A>
+		<LI><A HREF="#Placeholders_and_Bind_Values">Placeholders and Bind Values</A>
+		<LI><A HREF="#SQL_A_Query_Language">SQL - A Query Language</A>
+	</UL>
+
+	<LI><A HREF="#THE_DBI_CLASS">THE DBI CLASS</A>
+	<UL>
+
+		<LI><A HREF="#DBI_Class_Methods">DBI Class Methods</A>
+		<LI><A HREF="#DBI_Utility_Functions">DBI Utility Functions</A>
+		<LI><A HREF="#DBI_Dynamic_Attributes">DBI Dynamic Attributes</A>
+	</UL>
+
+	<LI><A HREF="#METHODS_COMMON_TO_ALL_HANDLES">METHODS COMMON TO ALL HANDLES</A>
+	<LI><A HREF="#ATTRIBUTES_COMMON_TO_ALL_HANDLES">ATTRIBUTES COMMON TO ALL HANDLES</A>
+	<LI><A HREF="#DBI_DATABASE_HANDLE_OBJECTS">DBI DATABASE HANDLE OBJECTS</A>
+	<UL>
+
+		<LI><A HREF="#Database_Handle_Methods">Database Handle Methods</A>
+		<LI><A HREF="#Database_Handle_Attributes">Database Handle Attributes</A>
+	</UL>
+
+	<LI><A HREF="#DBI_STATEMENT_HANDLE_OBJECTS">DBI STATEMENT HANDLE OBJECTS</A>
+	<UL>
+
+		<LI><A HREF="#Statement_Handle_Methods">Statement Handle Methods</A>
+		<LI><A HREF="#Statement_Handle_Attributes">Statement Handle Attributes</A>
+	</UL>
+
+	<LI><A HREF="#TRANSACTIONS">TRANSACTIONS</A>
+	<UL>
+
+		<LI><A HREF="#Robust_Applications">Robust Applications</A>
+	</UL>
+
+	<LI><A HREF="#SIMPLE_EXAMPLE">SIMPLE EXAMPLE</A>
+	<LI><A HREF="#DEBUGGING">DEBUGGING</A>
+	<LI><A HREF="#WARNINGS">WARNINGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<UL>
+
+		<LI><A HREF="#Database_Documentation">Database Documentation</A>
+		<LI><A HREF="#Books_and_Journals">Books and Journals</A>
+		<LI><A HREF="#Manual_Pages">Manual Pages</A>
+		<LI><A HREF="#Mailing_List">Mailing List</A>
+		<LI><A HREF="#Assorted_Related_WWW_Links">Assorted Related WWW Links</A>
+		<LI><A HREF="#FAQ">FAQ</A>
+	</UL>
+
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#ACKNOWLEDGEMENTS">ACKNOWLEDGEMENTS</A>
+	<LI><A HREF="#SUPPORT_WARRANTY">SUPPORT / WARRANTY</A>
+	<LI><A HREF="#OUTSTANDING_ISSUES_TO_DO">OUTSTANDING ISSUES TO DO</A>
+	<LI><A HREF="#FREQUENTLY_ASKED_QUESTIONS">FREQUENTLY ASKED QUESTIONS</A>
+	<UL>
+
+		<LI><A HREF="#Why_doesn_t_my_CGI_script_work_r">Why doesn't my CGI script work right?</A>
+		<LI><A HREF="#How_can_I_maintain_a_WWW_connect">How can I maintain a WWW connection to a database?</A>
+		<LI><A HREF="#A_driver_build_fails_because_it_">A driver build fails because it can't find DBIXS.h</A>
+		<LI><A HREF="#Has_the_DBI_and_DBD_Foo_been_po">Has the DBI and DBD::Foo been ported to NT / Win32?</A>
+		<LI><A HREF="#What_about_ODBC_">What about ODBC?</A>
+	</UL>
+
+	<LI><A HREF="#KNOWN_DRIVER_MODULES">KNOWN DRIVER MODULES</A>
+	<LI><A HREF="#OTHER_RELATED_WORK_AND_PERL_MODU">OTHER RELATED WORK AND PERL MODULES</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+
+<FONT SIZE=-1>DBI</FONT> - Database independent interface for Perl
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use DBI;
+ 
+  @data_sources = DBI-&gt;data_sources($driver_name);
+</PRE>
+
+<P>
+
+<PRE>  $dbh = DBI-&gt;connect($data_source, $username, $auth);
+  $dbh = DBI-&gt;connect($data_source, $username, $auth, \%attr);
+ 
+  $rc  = $dbh-&gt;disconnect;
+ 
+  $rv  = $dbh-&gt;do($statement);
+  $rv  = $dbh-&gt;do($statement, \%attr);
+  $rv  = $dbh-&gt;do($statement, \%attr, @bind_values);
+ 
+  $sth = $dbh-&gt;prepare($statement);
+  $sth = $dbh-&gt;prepare($statement, \%attr);
+ 
+  $rc = $sth-&gt;bind_col($col_num, \$col_variable);
+  $rc = $sth-&gt;bind_columns(\%attr, @list_of_refs_to_vars_to_bind);
+</PRE>
+
+<P>
+
+<PRE>  $rv = $sth-&gt;bind_param($param_num, $bind_value);
+  $rv = $sth-&gt;bind_param($param_num, $bind_value, $bind_type);
+  $rv = $sth-&gt;bind_param($param_num, $bind_value, \%attr);
+</PRE>
+
+<P>
+
+<PRE>  $rv = $sth-&gt;execute;
+  $rv = $sth-&gt;execute(@bind_values);
+ 
+  @row_ary  = $sth-&gt;fetchrow_array;
+  $ary_ref  = $sth-&gt;fetchrow_arrayref;
+  $hash_ref = $sth-&gt;fetchrow_hashref;
+ 
+  $rc = $sth-&gt;finish;
+ 
+  $rv = $sth-&gt;rows;
+ 
+  $rc  = $dbh-&gt;commit;
+  $rc  = $dbh-&gt;rollback;
+</PRE>
+
+<P>
+
+<PRE>  $sql = $dbh-&gt;quote($string);
+ 
+  $rc  = $h-&gt;err;
+  $str = $h-&gt;errstr;
+  $rv  = $h-&gt;state;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="NOTE">NOTE
+
+</A></H2>
+This is the draft 
+<FONT SIZE=-1>DBI</FONT> specification that corresponds to the 
+<FONT SIZE=-1>DBI</FONT> version 0.89 ($Date: 1997/07/25 11:17:49 $).
+
+
+
+<P>
+
+<PRE> * The DBI specification is currently evolving quite quickly so it is
+ * important to check that you have the latest copy. The RECENT CHANGES
+ * section below has a summary of user-visible changes and the F&lt;Changes&gt;
+ * file supplied with the DBI holds more detailed change information.
+</PRE>
+
+<P>
+
+<PRE> * Note also that whenever the DBI changes the drivers take some time to
+ * catch up. Recent versions of the DBI have added many new features that
+ * may not yet be supported by the drivers you use. Talk to the authors of
+ * those drivers if you need the features.
+</PRE>
+
+<P>
+
+Please also read the 
+<FONT SIZE=-1>DBI</FONT> 
+<FONT SIZE=-1>FAQ</FONT> which is installed as a 
+<FONT SIZE=-1>DBI::FAQ</FONT> module so you can use perldoc to read it by executing the
+ <CODE>perldoc DBI::FAQ</CODE> command.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="RECENT_CHANGES">RECENT CHANGES 
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> brief summary of significant user-visible changes in
+recent versions (if a recent version isn't mentioned it simply means that
+there were no significant user-visible changes in that version).
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_DBI">DBI 0.86 - 16th July 1997
+
+</A></STRONG><DD>
+Added $h-&gt;{LongReadLen} and $h-&gt;{LongTruncOk} attributes for 
+<FONT SIZE=-1>BLOBS.</FONT> Added 
+<FONT SIZE=-1>DBI_USER</FONT> and 
+<FONT SIZE=-1>DBI_PASS</FONT> env vars. See
+ <A HREF="#connect">connect</A> for usage. Added DBI-&gt;trace() to set global trace level (like per-handle $h-&gt;trace). 
+<FONT SIZE=-1>PERL_DBI_DEBUG</FONT> env var renamed 
+<FONT SIZE=-1>DBI_TRACE</FONT> (old name still works for now). Updated docs, including commit, rollback, AutoCommit and Transactions sections. Added bind_param method and <CODE>execute(@bind_values)</CODE> to docs.
+
+
+
+<P>
+
+<DT><STRONG>DBI 0.85 - 25th June 1997
+
+</A></STRONG><DD>
+The 'new-style connect' (see below) now defaults to AutoCommit mode unless
+{ AutoCommit =&gt; 0 } specified in connect attributes (see <A HREF="#connect">connect</A>). New 
+<FONT SIZE=-1>DBI_DSN</FONT> env var default for connect method (supersedes 
+<FONT SIZE=-1>DBI_DRIVER).</FONT> Documented the func method.
+
+
+
+<P>
+
+<DT><STRONG>DBI 0.84 - 20th June 1997
+
+</A></STRONG><DD>
+Added $h-&gt;{PrintError} attribute which, if set true, causes all errors
+to trigger a <CODE>warn().</CODE> New-style DBI-&gt;connect call now
+automatically sets PrintError=1 unless { PrintError =&gt; 0 } specified in
+the connect attributes (see <A HREF="#connect">connect</A>). The old-style connect with a separate driver parameter is deprecated.
+Renamed $h-&gt;debug to $h-&gt;trace() and added a trace filename arg.
+
+
+<P>
+
+<DT><STRONG>DBI 0.83 - 11th June 1997
+
+</A></STRONG><DD>
+Added 'new-style' driver specification syntax to the DBI-&gt;connect data_source parameter: DBI-&gt;connect( 'dbi:driver:...', $user, $passwd); The DBI-&gt;data_sources method should return data_source names with the appropriate 'dbi:driver:' prefix. DBI-&gt;connect will warn if \%attr is true but not a hash ref. Added new fetchrow methods (fetchrow_array, fetchrow_arrayref and fetchrow_hashref): Added the 
+<FONT SIZE=-1>DBI</FONT> 
+<FONT SIZE=-1>FAQ</FONT> from Alligator Descartes in module form for easy reading via ``perldoc 
+<FONT SIZE=-1>DBI::FAQ''.</FONT>
+
+
+
+<P>
+
+<DT><STRONG>DBI 0.82 - 23rd May 1997
+
+</A></STRONG><DD>
+Added $h-&gt;{RaiseError} attribute which, if set true, causes all errors
+to trigger a <CODE>die().</CODE> This makes it much easier to implement
+robust applications in terms of higher level eval { ... } blocks and
+rollbacks. Added DBI-&gt;data_sources($driver) method for implementation by
+drivers.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The Perl 
+<FONT SIZE=-1>DBI</FONT> is a database access Application Programming Interface 
+<FONT SIZE=-1>(API)</FONT> for the Perl Language. The 
+<FONT SIZE=-1>DBI</FONT> defines a set of functions, variables and conventions that provide a consistent database interface independant of the actual database being used.
+
+
+
+<P>
+
+It is important to remember that the 
+<FONT SIZE=-1>DBI</FONT> is just an interface. 
+<FONT SIZE=-1>A</FONT> thin layer of 'glue' between an application and one or more Database Drivers. It is the drivers which do the real work. The 
+<FONT SIZE=-1>DBI</FONT> provides a standard interface and framework for the drivers to operate within.
+
+
+
+<P>
+
+This document is a <EM>work-in-progress</EM>. Although it is incomplete it should be useful in getting started with the 
+<FONT SIZE=-1>DBI.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Architecture_of_a_DBI_Applicatio">Architecture of a DBI Application
+
+</A></H2>
+<PRE>             |&lt;- Scope of DBI -&gt;|
+                  .-.   .--------------.   .-------------.
+  .-------.       | |---| XYZ Driver   |---| XYZ Engine  |
+  | Perl  |       |S|   `--------------'   `-------------'
+  | script|  |A|  |w|   .--------------.   .-------------.
+  | using |--|P|--|i|---|Oracle Driver |---|Oracle Engine|
+  | DBI   |  |I|  |t|   `--------------'   `-------------'
+  | API   |       |c|...
+  |methods|       |h|... Other drivers
+  `-------'       | |...
+                  `-'
+</PRE>
+
+<P>
+
+The 
+<FONT SIZE=-1>API</FONT> is the Application Perl-script (or Programming) Interface. The call interface and variables provided by 
+<FONT SIZE=-1>DBI</FONT> to perl scripts. The 
+<FONT SIZE=-1>API</FONT> is implemented by the 
+<FONT SIZE=-1>DBI</FONT> Perl extension.
+
+
+
+<P>
+
+The 'Switch' is the code that 'dispatches' the 
+<FONT SIZE=-1>DBI</FONT> method calls to the appropriate Driver for actual execution. The Switch is also responsible for the dynamic loading of Drivers, error checking/handling and other duties. The 
+<FONT SIZE=-1>DBI</FONT> and Switch are generally synonymous.
+
+
+
+<P>
+
+The Drivers implement support for a given type of Engine (database). Drivers contain implementations of the 
+<FONT SIZE=-1>DBI</FONT> methods written using the private interface functions of the corresponding Engine. Only authors of sophisticated/multi-database applications or generic library functions need be concerned with Drivers.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Notation_and_Conventions">Notation and Conventions
+
+</A></H2>
+<PRE>  DBI    static 'top-level' class name
+  $dbh   Database handle object
+  $sth   Statement handle object
+  $drh   Driver handle object (rarely seen or used in applications)
+  $h     Any of the $??h handle types above
+  $rc    General Return Code  (boolean: true=ok, false=error)
+  $rv    General Return Value (typically an integer)
+  @ary   List of values returned from the database, typically a row of data
+  $rows  Number of rows processed by a function (if available, else -1)
+  $fh    A filehandle
+  undef  NULL values are represented by undefined values in perl
+</PRE>
+
+<P>
+
+Note that Perl will automatically destroy database and statement objects if
+all references to them are deleted.
+
+
+<P>
+
+Handle object attributes are shown as:
+
+
+<P>
+
+<CODE><PRE>  $h-E&lt;gt&gt;{attribute_name}
+</PRE>
+</CODE>   (<EM>type</EM>)
+
+
+<P>
+
+where <EM>type</EM> indicates the type of the value of the attribute (if it's not a simple
+scalar):
+
+
+<P>
+
+<PRE>  \$   reference to a scalar: $h-&gt;{attr}       or  $a = ${$h-&gt;{attr}}
+  \@   reference to a list:   $h-&gt;{attr}-&gt;[0]  or  @a = @{$h-&gt;{attr}}
+  \%   reference to a hash:   $h-&gt;{attr}-&gt;{a}  or  %a = %{$h-&gt;{attr}}
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="General_Interface_Rules_Caveat">General Interface Rules & Caveats
+
+</A></H2>
+The 
+<FONT SIZE=-1>DBI</FONT> does not have a concept of a `current session'.
+Every session has a handle object (i.e., a $dbh) returned from the connect
+method and that handle object is used to invoke database related methods.
+
+
+<P>
+
+Most data is returned to the perl script as strings (null values are
+returned as undef). This allows arbitrary precision numeric data to be
+handled without loss of accuracy. Be aware that perl may not preserve the
+same accuracy when the string is used as a number.
+
+
+<P>
+
+Dates and times are returned as character strings in the native format of
+the corresponding Engine. Time Zone effects are Engine/Driver dependent.
+
+
+<P>
+
+Perl supports binary data in perl strings and the 
+<FONT SIZE=-1>DBI</FONT> will pass binary data to and from the Driver
+without change. It is up to the Driver implementors to decide how they wish
+to handle such binary data.
+
+
+<P>
+
+Multiple 
+<FONT SIZE=-1>SQL</FONT> statements may not be combined in a single
+statement handle, e.g., a single $sth.
+
+
+<P>
+
+Non-sequential record reads are not supported in this version of the 
+<FONT SIZE=-1>DBI.</FONT> E.g., records can only be fetched in the order
+that the database returned them and once fetched they are forgotten.
+
+
+<P>
+
+Positioned updates and deletes are not directly supported by the 
+<FONT SIZE=-1>DBI.</FONT> See the description of the CursorName attribute
+for an alternative.
+
+
+<P>
+
+Individual Driver implementors are free to provide any private functions and/or handle attributes that they feel are useful. Private functions can be invoked using the 
+<FONT SIZE=-1>DBI</FONT>
+ <A HREF="#item_func">func</A> method (which is currently not documented). Private attributes are accessed
+just like standard attributes.
+
+
+<P>
+
+Character sets: Most databases which understand character sets have a
+default global charset and text stored in the database is, or should be,
+stored in that charset (if it's not then that's the fault of either the
+database or the application that inserted the data). When text is fetched
+it should be (automatically) converted to the charset of the client
+(presumably based on the locale). If a driver needs to set a flag to get
+that behaviour then it should do so. It should not require the application
+to do that.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Naming_Conventions">Naming Conventions
+
+</A></H2>
+The 
+<FONT SIZE=-1>DBI</FONT> package and all packages below it 
+<FONT SIZE=-1>(DBI::*)</FONT> are reserved for use by the 
+<FONT SIZE=-1>DBI.</FONT> Package names beginning with 
+<FONT SIZE=-1>DBD::</FONT> are reserved for use by 
+<FONT SIZE=-1>DBI</FONT> database drivers. All environment variables used by the 
+<FONT SIZE=-1>DBI</FONT> or DBD's begin with 
+<FONT SIZE=-1>'DBI_'</FONT> or 
+<FONT SIZE=-1>'DBD_'.</FONT>
+
+
+
+<P>
+
+The letter case used for attribute names is significant and plays an important part in the portability of 
+<FONT SIZE=-1>DBI</FONT> scripts. The case of the attribute name is used to signify who defined the meaning of that name and its values.
+
+
+
+<P>
+
+<PRE>  Case of name  Has a meaning defined by
+  ------------  ------------------------
+  UPPER_CASE    Standards, e.g.,  X/Open, SQL92 etc (portable)
+  MixedCase     DBI API (portable), underscores are not used.
+  lower_case    Driver or Engine specific (non-portable)
+</PRE>
+
+<P>
+
+It is of the utmost importance that Driver developers only use lowercase
+attribute names when defining private attributes.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Data_Query_Methods">Data Query Methods
+
+</A></H2>
+The 
+<FONT SIZE=-1>DBI</FONT> allows an application to `prepare' a statement for later execution. 
+<FONT SIZE=-1>A</FONT> prepared statement is identified by a statement handle object, e.g., $sth.
+
+
+
+<P>
+
+Typical method call sequence for a select statement:
+
+
+<P>
+
+<PRE>  connect,
+    prepare,
+      execute, fetch, fetch, ... finish,
+      execute, fetch, fetch, ... finish,
+      execute, fetch, fetch, ... finish.
+</PRE>
+
+<P>
+
+Typical method call sequence for a non-select statement:
+
+
+<P>
+
+<PRE>  connect,
+    prepare,
+      execute,
+      execute,
+      execute.
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Placeholders_and_Bind_Values">Placeholders and Bind Values
+
+</A></H2>
+Some drivers support Placeholders and Bind Values. These drivers allow a database statement to contain placeholders, sometimes called parameter markers, that indicate values that will be supplied later, before the prepared statement is executed. For example, an application might use the following to insert a row of data into the 
+<FONT SIZE=-1>SALES</FONT> table:
+
+
+
+<P>
+
+<PRE>  insert into sales (product_code, qty, price) values (?, ?, ?)
+</PRE>
+
+<P>
+
+or the following, to select the description for a product:
+
+
+<P>
+
+<PRE>  select product_description from products where product_code = ?
+</PRE>
+
+<P>
+
+The <CODE>?</CODE> characters are the placeholders. The association of actual values with
+placeholders is known as binding and the values are referred to as bind
+values. Undefined values or <A HREF="#item_undef">undef</A> can be used to indicate null values.
+
+
+<P>
+
+Without using placeholders, the insert statement above would have to
+contain the literal values to be inserted and it would have to be
+re-prepared and re-executed for each row. With placeholders, the insert
+statement only needs to be prepared once. The bind values for each row can
+be given to the execute method each time it's called. By avoiding the need
+to re-prepare the statement for each row the application typically many
+times faster! Here's an example:
+
+
+<P>
+
+<PRE>  my $sth = $dbh-&gt;prepare(q{
+    insert into sales (product_code, qty, price) values (?, ?, ?)
+  }) || die $dbh-&gt;errstr;
+  while(&lt;&gt;) {
+      chop;
+      my($product_code, $qty, $price) = split(/,/);
+      $sth-&gt;execute($product_code, $qty, $price) || die $dbh-&gt;errstr;
+  }
+  $dbh-&gt;commit || die $dbh-&gt;errstr;
+</PRE>
+
+<P>
+
+See <A HREF="#execute">execute</A> and <A HREF="#bind_param">bind_param</A> for more details.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="SQL_A_Query_Language">SQL - A Query Language
+
+</A></H2>
+Most 
+<FONT SIZE=-1>DBI</FONT> drivers require applications to use a dialect of 
+<FONT SIZE=-1>SQL</FONT> (the Structured Query Language) to interact with the database engine. These links may provide some useful information about 
+<FONT SIZE=-1>SQL:</FONT>
+
+
+
+<P>
+
+<PRE>  <A HREF="http://www.jcc.com/sql_stnd.html">http://www.jcc.com/sql_stnd.html</A>
+  <A HREF="http://w3.one.net/~jhoffman/sqltut.htm">http://w3.one.net/~jhoffman/sqltut.htm</A>
+  <A HREF="http://skpc10.rdg.ac.uk/misc/sqltut.htm">http://skpc10.rdg.ac.uk/misc/sqltut.htm</A>
+</PRE>
+
+<P>
+
+The 
+<FONT SIZE=-1>DBI</FONT> itself does not mandate or require any particular language to be used. It is language independant. In 
+<FONT SIZE=-1>ODBC</FONT> terms it is always in pass-thru mode. The only requirement is that queries and other statements must be expressed as a single string of letters passed as the first argument to the
+ <A HREF="#prepare">prepare</A> method.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="THE_DBI_CLASS">THE DBI CLASS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="DBI_Class_Methods">DBI Class Methods
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_connect">connect
+
+</A></STRONG><DD>
+<PRE>  $dbh = DBI-&gt;connect($data_source, $username, $password);
+  $dbh = DBI-&gt;connect($data_source, $username, $password, \%attr);
+</PRE>
+
+<P>
+
+Establishes a database connection (session) to the requested data_source.
+Returns a database handle object.
+
+
+<P>
+
+Multiple simultaneous connections to multiple databases through multiple drivers can be made via the 
+<FONT SIZE=-1>DBI.</FONT> Simply make one connect call for each and keep a copy of each returned database handle.
+
+
+
+<P>
+
+The <CODE>$data_source</CODE> value should begin with 'dbi:driver_name:'. That prefix will be stripped off and the driver_name part is used to specify the driver. As a convenience, if the <CODE>$data_source</CODE> field is undefined or empty the 
+<FONT SIZE=-1>DBI</FONT> will substitute the value of the environment variable 
+<FONT SIZE=-1>DBI_DSN</FONT> if any.
+
+
+
+<P>
+
+If driver is not specified, the environment variable 
+<FONT SIZE=-1>DBI_DRIVER</FONT> is used. If that variable is not set then
+the connect dies.
+
+
+<P>
+
+If <CODE>$username</CODE> or <A HREF="#item__password">$password</A> are <EM>undefined</EM> (rather than empty) then the 
+<FONT SIZE=-1>DBI</FONT> will substitute the values of the 
+<FONT SIZE=-1>DBI_USER</FONT> and 
+<FONT SIZE=-1>DBI_PASS</FONT> environment variables respectively. The use of the environment for these values is not recommended for security reasons. The mechanism is only intended to simplify testing.
+
+
+
+<P>
+
+DBI-&gt;connect automatically installs the driver if it has not been
+installed yet. Driver installation <EM>always</EM> returns a valid driver handle or it <EM>dies</EM> with an error message which includes the string 'install_driver' and the
+underlying problem. So, DBI-&gt;connect will die on a driver installation
+failure and will only return undef on a connect failure, for which
+$DBI::errstr will hold the error.
+
+
+<P>
+
+The <CODE>$data_source</CODE> argument (with the 'dbi:...:' prefix removed) and the <CODE>$username</CODE> and <A HREF="#item__password">$password</A> arguments are then passed to the driver for processing. The 
+<FONT SIZE=-1>DBI</FONT> does not define
+ <EM>any</EM> interpretation for the contents of these fields. The driver is free to interpret the data_source, username and password fields in any way and supply whatever defaults are appropriate for the engine being accessed (Oracle, for example, uses the 
+<FONT SIZE=-1>ORACLE_SID</FONT> and 
+<FONT SIZE=-1>TWO_TASK</FONT> env vars if no data_source is specified).
+
+
+
+<P>
+
+The AutoCommit and PrintError attributes for each connection default to
+default to <EM>on</EM> (see <A HREF="#AutoCommit">AutoCommit</A> and <A HREF="#PrintError">PrintError</A> for more information).
+
+
+<P>
+
+The \%attr parameter can be used to alter the default settings of the
+PrintError, RaiseError and AutoCommit attributes. For example:
+
+
+<P>
+
+<PRE>  $dbh = DBI-&gt;connect($data_source, $user, $pass, {
+        PrintError =&gt; 0,
+        AutoCommit =&gt; 0
+  });
+</PRE>
+
+<P>
+
+These are currently the <EM>only</EM> defined uses for the DBI-&gt;connect \%attr.
+
+
+<P>
+
+Portable applications should not assume that a single driver will be able
+to support multiple simultaneous sessions.
+
+
+<P>
+
+Where possible each session ($dbh) is independent from the transactions in
+other sessions. This is useful where you need to hold cursors open across
+transactions, e.g., use one session for your long lifespan cursors
+(typically read-only) and another for your short update transactions.
+
+
+<P>
+
+For compatibility with old 
+<FONT SIZE=-1>DBI</FONT> scripts the driver can be specified by passing its
+name as the fourth argument to connect (instead of \%attr):
+
+
+<P>
+
+<PRE>  $dbh = DBI-&gt;connect($data_source, $user, $pass, $driver);
+</PRE>
+
+<P>
+
+In this 'old-style' form of connect the <CODE>$data_source</CODE> should
+not start with 'dbi:driver_name:' and, even if it does, the embedded
+driver_name will be ignored. The $dbh-&gt;{AutoCommit} attribute is <EM>undefined</EM>. The $dbh-&gt;{PrintError} attribute is off. And the old 
+<FONT SIZE=-1>DBI_DBNAME</FONT> env var is checked if 
+<FONT SIZE=-1>DBI_DSN</FONT> is not defined.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_available_drivers">available_drivers
+
+</A></STRONG><DD>
+<PRE>  @ary = DBI-&gt;available_drivers;
+  @ary = DBI-&gt;available_drivers($quiet);
+</PRE>
+
+<P>
+
+Returns a list of all available drivers by searching for 
+<FONT SIZE=-1>DBD::*</FONT> modules through the directories in 
+<FONT SIZE=-1>@INC.</FONT> By default a warning will be given if some drivers are hidden by others of the same name in earlier directories. Passing a true value for <CODE>$quiet</CODE> will inhibit the warning.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_data_sources">data_sources
+
+</A></STRONG><DD>
+<PRE>  @ary = DBI-&gt;data_sources($driver);
+</PRE>
+
+<P>
+
+Returns a list of all data sources (databases) available via the named driver. The driver will be loaded if not already. If <CODE>$driver</CODE> is empty or undef then the value of the 
+<FONT SIZE=-1>DBI_DRIVER</FONT> environment variable will be used.
+
+
+
+<P>
+
+Note that many drivers have no way of knowing what data sources might be
+available for it and thus, typically, return an empty list.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_trace">trace
+
+</A></STRONG><DD>
+<PRE>  DBI-&gt;trace($trace_level)
+  DBI-&gt;trace($trace_level, $trace_file)
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>DBI</FONT> trace information can be enabled for all handles using this 
+<FONT SIZE=-1>DBI</FONT> class method. To enable trace information for a specific handle use the similar $h-&gt;trace method described elsewhere.
+
+
+
+<P>
+
+Use <CODE>$trace_level</CODE> 2 to see detailed call trace information
+including parameters and return values. The trace output is detailed and
+typically <EM>very</EM> useful.
+
+
+<P>
+
+Use <CODE>$trace_level</CODE> 0 to disable the trace.
+
+
+<P>
+
+If <CODE>$trace_filename</CODE> is specified then the file is opened in
+append mode and <EM>all</EM> trace output (including that from other handles) is redirected to that
+file.
+
+
+<P>
+
+See also the $h-&gt;trace() method and <A HREF="#DEBUGGING">DEBUGGING</A> for information about the 
+<FONT SIZE=-1>DBI_TRACE</FONT> environment variable.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="DBI_Utility_Functions">DBI Utility Functions
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_neat">neat
+
+</A></STRONG><DD>
+<PRE>  $str = DBI::neat($value, $maxlen);
+</PRE>
+
+<P>
+
+Return a string containing a neat (and tidy) representation of the supplied value. Strings will be quoted and undefined 
+<FONT SIZE=-1>(NULL)</FONT> values will be shown as
+ <A HREF="#item_undef">undef</A>. Unprintable characters will be replaced by dot (.) and the string will be
+truncated and terminated with '...' if longer than <CODE>$maxlen</CODE> (0
+or undef defaults to 400 characters).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_neat_list">neat_list
+
+</A></STRONG><DD>
+<PRE>  $str = DBI::neat_list(\@listref, $maxlen, $field_sep);
+</PRE>
+
+<P>
+
+Calls DBI::neat on each element of the list and returns a string containing
+the results joined with $field_sep. <CODE>$field_sep</CODE> defaults to <CODE>", "</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dump_results">dump_results
+
+</A></STRONG><DD>
+<PRE>  $rows = DBI::dump_results($sth, $maxlen, $lsep, $fsep, $fh);
+</PRE>
+
+<P>
+
+Fetches all the rows from $sth, calls DBI::neat_list for each row and
+prints the results to <CODE>$fh</CODE> (defaults to <CODE>STDOUT</CODE>) separated by <CODE>$lsep</CODE> (default <A HREF="#item__n_">"\n"</A>). <CODE>$fsep</CODE> defaults to <CODE>", "</CODE> and <CODE>$maxlen</CODE> defaults to 35. This function is designed as a
+handy utility for prototyping and testing queries.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="DBI_Dynamic_Attributes">DBI Dynamic Attributes
+
+</A></H2>
+These attributes are always associated with the last handle used.
+
+
+<P>
+
+Where an attribute is Equivalent to a method call, then refer to the method
+call for all related documentation.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__DBI_err">$DBI::err
+
+</A></STRONG><DD>
+Equivalent to $h-&gt;err.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__DBI_errstr">$DBI::errstr
+
+</A></STRONG><DD>
+Equivalent to $h-&gt;errstr.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__DBI_state">$DBI::state
+
+</A></STRONG><DD>
+Equivalent to $h-&gt;state.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__DBI_rows">$DBI::rows
+
+</A></STRONG><DD>
+Equivalent to $h-&gt;rows.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS_COMMON_TO_ALL_HANDLES">METHODS COMMON TO ALL HANDLES
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_err">err
+
+</A></STRONG><DD>
+<PRE>  $rv = $h-&gt;err;
+</PRE>
+
+<P>
+
+Returns the native database engine error code from the last driver function
+called.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_errstr">errstr
+
+</A></STRONG><DD>
+<PRE>  $str = $h-&gt;errstr;
+</PRE>
+
+<P>
+
+Returns the native database engine error message from the last driver
+function called.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_state">state
+
+</A></STRONG><DD>
+<PRE>  $str = $h-&gt;state;
+</PRE>
+
+<P>
+
+Returns an error code in the standard 
+<FONT SIZE=-1>SQLSTATE</FONT> five character format. Note that the specific
+success code <CODE>00000</CODE> is translated to <CODE></CODE>
+(false). If the driver does not support 
+<FONT SIZE=-1>SQLSTATE</FONT> then state will return <CODE>S1000</CODE> (General Error) for all errors.
+
+
+<P>
+
+<DT><STRONG>trace
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;trace($trace_level);
+  $h-&gt;trace($trace_level, $trace_filename);
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>DBI</FONT> trace information can be enabled for a specific
+handle (and any future children of that handle) by setting the trace level
+using the trace method.
+
+
+<P>
+
+Use <CODE>$trace_level</CODE> 2 to see detailed call trace information
+including parameters and return values. The trace output is detailed and
+typically <EM>very</EM> useful.
+
+
+<P>
+
+Use <CODE>$trace_level</CODE> 0 to disable the trace.
+
+
+<P>
+
+If <CODE>$trace_filename</CODE> is specified then the file is opened in
+append mode and <EM>all</EM> trace output (including that from other handles) is redirected to that
+file.
+
+
+<P>
+
+See also the DBI-&gt;trace() method and <A HREF="#DEBUGGING">DEBUGGING</A> for information about the 
+<FONT SIZE=-1>DBI_TRACE</FONT> environment variable.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_func">func
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;func(@func_arguments, $func_name);
+</PRE>
+
+<P>
+
+The func method can be used to call private non-standard and non-portable
+methods implemented by the driver. Note that the function name is given as
+the <EM>last</EM> argument.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="ATTRIBUTES_COMMON_TO_ALL_HANDLES">ATTRIBUTES COMMON TO ALL HANDLES
+
+</A></H1>
+These attributes are common to all types of 
+<FONT SIZE=-1>DBI</FONT> handles.
+
+
+<P>
+
+Some attributes are inherited by <EM>child</EM> handles. That is, the value of an inherited attribute in a newly created
+statement handle is the same as the value in the parent database handle.
+Changes to attributes in the new statement handle do not affect the parent
+database handle and changes to the database handle do not affect <EM>existing</EM> statement handles, only future ones.
+
+
+<P>
+
+Attempting to set or get the value of an undefined attribute is fatal,
+except for private driver specific attributes (which all have names
+starting with a lowercase letter).
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Warn">Warn (inherited)
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;{Warn}
+</PRE>
+
+<P>
+
+Enables useful warnings for certain bad practices. Enabled by default. Some
+emulation layers, especially those for perl4 interfaces, disable warnings.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_CompatMode">CompatMode (inherited)
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;{CompatMode}
+</PRE>
+
+<P>
+
+Used by emulation layers (such as Oraperl) to enable compatible behaviour
+in the underlying driver (e.g., DBD::Oracle) for this handle. Not normally
+set by application code.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_InactiveDestroy">InactiveDestroy
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;{InactiveDestroy}
+</PRE>
+
+<P>
+
+This attribute can be used to disable the effect of destroying a handle
+(which would normally close a prepared statement or disconnect from the
+database etc). It is specifically designed for use in unix applications
+which 'fork' child processes. Either the parent or the child process, but
+not both, should set InactiveDestroy on all their handles.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PrintError">PrintError (inherited)
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;{PrintError}
+</PRE>
+
+<P>
+
+This attribute can be used to force errors to generate warnings (using warn) in addition to returning error codes in the normal way. When set on, any method which results in an error occuring ($DBI::err being set true) will cause the 
+<FONT SIZE=-1>DBI</FONT> to effectively do <CODE>warn(``$DBI::errstr'').</CODE> Note that the contents of the warning are currently just $DBI::errstr but that may change and should not be relied upon.
+
+
+
+<P>
+
+By default DBI-&gt;connect sets PrintError on (except for old-style connect
+usage, see connect for more details).
+
+
+<P>
+
+If desired, the warnings can be caught and processed using a 
+<FONT SIZE=-1>$SIG{__WARN__}</FONT> handler or modules like CGI::ErrorWrap.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_RaiseError">RaiseError (inherited)
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;{RaiseError}
+</PRE>
+
+<P>
+
+This attribute can be used to force errors to raise exceptions rather than simply return error codes in the normal way. It defaults to off. When set on, any method which results in an error occuring ($DBI::err being set true) will cause the 
+<FONT SIZE=-1>DBI</FONT> to effectively do <CODE>croak(``$DBI::errstr'').</CODE>
+
+
+
+<P>
+
+If PrintError is also on then the PrintError is done before the RaiseError unless no 
+<FONT SIZE=-1>__DIE__</FONT> handler has been defined, in which case PrintError is skipped since the croak will print the message.
+
+
+
+<P>
+
+Note that the contents of $@ are currently just $DBI::errstr but that may
+change and should not be relied upon.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ChopBlanks">ChopBlanks (inherited)
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;{ChopBlanks}
+</PRE>
+
+<P>
+
+This attribute can be used to control the trimming of trailing space
+characters from fixed width char fields. No other field types are affected.
+
+
+<P>
+
+The default is false (it is possible that that may change). Applications
+that need specific behaviour should set the attribute as needed. Emulation
+interfaces should set the attribute to match the behaviour of the interface
+they are emulating.
+
+
+<P>
+
+Drivers are not required to support this attribute but any driver which
+does not must arrange to return undef as the attribute value.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_LongReadLen">LongReadLen (inherited)
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;{LongReadLen}
+</PRE>
+
+<P>
+
+This attribute may be used to control the maximum length of 'long' (or
+'blob') fields which the driver will read from the database automatically
+when it fetches each row of data.
+
+
+<P>
+
+The default is typically 80 bytes but may vary between drivers. Most
+applications using long fields will set this value to slightly larger than
+the longest long field value which will be fetched.
+
+
+<P>
+
+See <A HREF="#LongTruncOk">LongTruncOk</A> about truncation behaviour.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_LongTruncOk">LongTruncOk (inherited)
+
+</A></STRONG><DD>
+<PRE>  $h-&gt;{LongTruncOk}
+</PRE>
+
+<P>
+
+This attribute may be used to control the effect of fetching a long field
+value which has been truncated (typically because it's longer than the
+value of the LongReadLen attribute).
+
+
+<P>
+
+By default LongTruncOk is false and fetching a truncated long value will
+cause the fetch to fail. (Applications should always take care to check for
+errors after a fetch loop in case a database error, such as a divide by
+zero or long field truncation, caused the fetch to terminate prematurely.)
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="DBI_DATABASE_HANDLE_OBJECTS">DBI DATABASE HANDLE OBJECTS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Database_Handle_Methods">Database Handle Methods
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_prepare">prepare
+
+</A></STRONG><DD>
+<PRE>  $sth = $dbh-&gt;prepare($statement)           || die $dbh-&gt;errstr;
+  $sth = $dbh-&gt;prepare($statement, \%attr)   || die $dbh-&gt;errstr;
+</PRE>
+
+<P>
+
+Prepare a single statement for execution by the database engine and return
+a reference to a statement handle object which can be used to get
+attributes of the statement and invoke the <A HREF="#execute">execute</A> method.
+
+
+<P>
+
+Note that prepare should never execute a statement, even if it is not a
+select statement, it only prepares it for execution. Having said that, some
+drivers, notably Oracle, will execute data definition statements such as
+create/drop table when they are prepared. In practice this is rarely a
+problem.
+
+
+<P>
+
+Drivers for engines which don't have the concept of preparing a statement
+will typically just store the statement in the returned handle and process
+it when $sth-&gt;execute is called. Such drivers are likely to be unable to
+give much useful information about the statement, such as
+$sth-&gt;{NUM_OF_FIELDS}, until after $sth-&gt;execute has been called.
+Portable applications should take this into account.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_do">do
+
+</A></STRONG><DD>
+<PRE>  $rc  = $dbh-&gt;do($statement)           || die $dbh-&gt;errstr;
+  $rc  = $dbh-&gt;do($statement, \%attr)   || die $dbh-&gt;errstr;
+  $rv  = $dbh-&gt;do($statement, \%attr, @bind_values) || ...
+</PRE>
+
+<P>
+
+Prepare and execute a statement. Returns the number of rows affected (-1 if
+not known or not available) or undef on error.
+
+
+<P>
+
+This method is typically most useful for non-select statements which either
+cannot be prepared in advance (due to a limitation in the driver) or which
+do not need to be executed repeatedly.
+
+
+<P>
+
+The default do method is logically similar to:
+
+
+<P>
+
+<PRE>  sub do {
+      my($dbh, $statement, $attr, @bind_values) = @_;
+      my $sth = $dbh-&gt;prepare($statement) or return undef;
+      $sth-&gt;execute(@bind_values) or return undef;
+      my $rows = $sth-&gt;rows;
+      ($rows == 0) ? &quot;0E0&quot; : $rows;
+  }
+</PRE>
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>  my $rows_deleted = $dbh-&gt;do(q{
+      delete from table
+      where status = 'DONE'
+  }) || die $dbh-&gt;errstr;
+</PRE>
+
+<P>
+
+Using placeholders and <CODE>@bind_values</CODE> with the <A HREF="#item_do">do</A> method can be useful because it avoids the need to correctly quote any
+variables in the $statement.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_commit">commit
+
+</A></STRONG><DD>
+<PRE>  $rc  = $dbh-&gt;commit     || die $dbh-&gt;errstr;
+</PRE>
+
+<P>
+
+Commit (make permanent) the most recent series of database changes if the
+database supports transactions.
+
+
+<P>
+
+If the database supports transactions and AutoCommit is on then the commit
+should issue a ``commit ineffective with AutoCommit'' warning.
+
+
+<P>
+
+See also <A HREF="#Transactions">Transactions</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rollback">rollback
+
+</A></STRONG><DD>
+<PRE>  $rc  = $dbh-&gt;rollback   || die $dbh-&gt;errstr;
+</PRE>
+
+<P>
+
+Roll-back (undo) the most recent series of uncommitted database changes if
+the database supports transactions.
+
+
+<P>
+
+If the database supports transactions and AutoCommit is on then the
+rollback should issue a ``rollback ineffective with AutoCommit'' warning.
+
+
+<P>
+
+See also <A HREF="#Transactions">Transactions</A>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_disconnect">disconnect
+
+</A></STRONG><DD>
+<PRE>  $rc  = $dbh-&gt;disconnect   || warn $dbh-&gt;errstr;
+</PRE>
+
+<P>
+
+Disconnects the database from the database handle. Typically only used
+before exiting the program. The handle is of little use after
+disconnecting.
+
+
+<P>
+
+The transaction behaviour of disconnect is undefined. Some database systems
+(such as Oracle and Ingres) will automatically commit any outstanding
+changes, but others (such as Informix) will rollback any outstanding
+changes. Applications should explicitly call commit or rollback before
+calling disconnect.
+
+
+<P>
+
+The database is automatically disconnected (by the 
+<FONT SIZE=-1>DESTROY</FONT> method) if still connected when there are no longer any references to the handle. The 
+<FONT SIZE=-1>DESTROY</FONT> method for each driver should explicitly call rollback to undo any uncommitted changes. This is
+ <EM>vital</EM> behaviour to ensure that incomplete transactions don't get committed simply because Perl calls 
+<FONT SIZE=-1>DESTROY</FONT> on every object before exiting.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ping">ping
+
+</A></STRONG><DD>
+<PRE>  $rc = $dbh-&gt;ping;
+</PRE>
+
+<P>
+
+Attempts to determine, in a reasonably efficient way, if the database
+server is still running and the connection to it is still working. The
+default implementation currently always returns true without actually doing
+anything. Individual drivers should implement this function in the most
+suitable manner for their database engine.
+
+
+<P>
+
+Very few applications would have any use for this method. See the
+specialist Apache::DBI module for one example usage.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_quote">quote
+
+</A></STRONG><DD>
+<PRE>  $sql = $dbh-&gt;quote($string);
+</PRE>
+
+<P>
+
+Quote a string literal for use in an 
+<FONT SIZE=-1>SQL</FONT> statement by <EM>escaping</EM> any special characters (such as quotation marks) contained within the
+string and adding the required type of outer quotation marks.
+
+
+<P>
+
+<PRE>  $sql = sprintf &quot;select foo from bar where baz = %s&quot;,
+                $dbh-&gt;quote(&quot;Don't\n&quot;);
+</PRE>
+
+<P>
+
+For most database types quote would return <CODE>'Don''t'</CODE> (including the outer quotation marks).
+
+
+<P>
+
+An undefined <CODE>$string</CODE> value will be returned as 
+<FONT SIZE=-1>NULL</FONT> (without quotation marks).
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Database_Handle_Attributes">Database Handle Attributes
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_AutoCommit">AutoCommit
+
+</A></STRONG><DD>
+<PRE>  $dbh-&gt;{AutoCommit}     ($)
+</PRE>
+
+<P>
+
+If true then database changes cannot be rolledback (undone). If false then
+database changes automatically occur within a 'transaction' which must
+either be committed or rolled-back using the commit or rollback methods.
+
+
+<P>
+
+Drivers should always default to AutoCommit mode. (An unfortunate choice forced on the 
+<FONT SIZE=-1>DBI</FONT> by 
+<FONT SIZE=-1>ODBC</FONT> and 
+<FONT SIZE=-1>JDBC</FONT> conventions.)
+
+
+
+<P>
+
+Attempting to set AutoCommit to an unsupported value is a fatal error. This is an important feature of the 
+<FONT SIZE=-1>DBI.</FONT> Applications which need full transaction behaviour can set $dbh-&gt;{AutoCommit}=0 (or via connect) without having to check the value was assigned okay.
+
+
+
+<P>
+
+For the purposes of this description we can divide databases into three
+categories:
+
+
+<P>
+
+<PRE>  Database which don't support transactions at all.
+  Database in which a transaction is always active.
+  Database in which a transaction must be explicitly started ('BEGIN WORK').
+</PRE>
+
+<P>
+
+<STRONG>* Database which don't support transactions at all</STRONG>
+
+
+
+
+<P>
+
+For these databases attempting to turn AutoCommit off is a fatal error.
+Commit and rollback both issue warnings about being ineffective while
+AutoCommit is in effect.
+
+
+<P>
+
+<STRONG>* Database in which a transaction is always active</STRONG>
+
+
+
+
+<P>
+
+These are typically mainstream commercial relational databases with 
+<FONT SIZE=-1>'ANSI</FONT> standandard' transaction behaviour.
+
+
+<P>
+
+If AutoCommit is off then changes to the database won't have any lasting
+effect unless <A HREF="#commit">commit</A> is called (but see also
+<A HREF="#disconnect">disconnect</A>). If <A HREF="#rollback">rollback</A> is called then any changes since the last commit are undone.
+
+
+<P>
+
+If AutoCommit is on then the effect is the same as if the 
+<FONT SIZE=-1>DBI</FONT> were to have called commit automatically after
+every successful database operation. In other words, calling commit or
+rollback explicitly while AutoCommit is on would be ineffective because the
+changes would have already been commited.
+
+
+<P>
+
+Changing AutoCommit from off to on may issue a <A HREF="#commit">commit</A> in some drivers.
+
+
+<P>
+
+Changing AutoCommit from on to off should have no immediate effect.
+
+
+<P>
+
+For databases which don't support a specific auto-commit mode, the driver has to commit each statement automatically using an explicit 
+<FONT SIZE=-1>COMMIT</FONT> after it completes successfully (and roll it back using an explicit 
+<FONT SIZE=-1>ROLLBACK</FONT> if it fails). The error information reported to the application will correspond to the statement which was executed, unless it succeeded and the commit or rollback failed.
+
+
+
+<P>
+
+<STRONG>* Database in which a transaction must be explicitly started</STRONG>
+
+
+
+
+<P>
+
+For these database the intention is to have them act like databases in
+which a transaction is always active (as described above).
+
+
+<P>
+
+To do this the 
+<FONT SIZE=-1>DBI</FONT> driver will automatically begin a transaction when
+AutoCommit is turned off (from the default on state) and will automatically
+begin another transaction after a <A HREF="#commit">commit</A> or <A HREF="#rollback">rollback</A>.
+
+
+<P>
+
+In this way, the application does not have to treat these databases as a
+special case.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="DBI_STATEMENT_HANDLE_OBJECTS">DBI STATEMENT HANDLE OBJECTS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Statement_Handle_Methods">Statement Handle Methods
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_bind_param">bind_param
+
+</A></STRONG><DD>
+<PRE>  $rc = $sth-&gt;bind_param($param_num, $bind_value)  || die $sth-&gt;errstr;
+  $rv = $sth-&gt;bind_param($param_num, $bind_value, \%attr)     || ...
+  $rv = $sth-&gt;bind_param($param_num, $bind_value, $bind_type) || ...
+</PRE>
+
+<P>
+
+The bind_param method can be used to <EM>bind</EM> (assign/associate) a value with a <EM>placeholder</EM> embedded in the prepared statement. Placeholders are indicated with
+question mark character (<CODE>?</CODE>). For example:
+
+
+<P>
+
+<PRE>  $dbh-&gt;{RaiseError} = 1;        # save having to check each method call
+  $sth = $dbh-&gt;prepare(&quot;select name, age from people where name like ?&quot;);
+  $sth-&gt;bind_param(1, &quot;John%&quot;);  # placeholders are numbered from 1
+  $sth-&gt;execute;
+  DBI::dump_results($sth);
+</PRE>
+
+<P>
+
+Note that the <CODE>?</CODE> is not enclosed in quotation marks even when the placeholder represents a
+string. Some drivers also allow <CODE>:1</CODE>, <CODE>:2</CODE>
+etc and <CODE>:name</CODE> style placeholders in addition to <CODE>?</CODE> but their use is not portable.
+
+
+<P>
+
+Sadly, placeholders can only represent single scalar values, so this
+statement, for example, won't work as expected for more than one value:
+
+
+<P>
+
+<PRE>  &quot;select name, age from people where name in (?)&quot;    # wrong
+</PRE>
+
+<P>
+
+The <A HREF="#item__attr">\%attr</A> parameter can be used to specify the data type the placeholder should have.
+Typically the driver is only interested in knowing if the placeholder
+should be bound as a number or a string.
+
+
+<P>
+
+<PRE>  $sth-&gt;bind_param(1, $value, { TYPE =&gt; SQL_INTEGER });
+</PRE>
+
+<P>
+
+As a short-cut for this common case, the data type can be passed directly
+inplace of the attr hash reference. This example is equivalent to the one
+above:
+
+
+<P>
+
+<PRE>  $sth-&gt;bind_param(1, $value, SQL_INTEGER);
+</PRE>
+
+<P>
+
+Perl only has string and number scalar data types. All database types that
+aren't numbers are bound as strings and must be in a format the database
+will understand.
+
+
+<P>
+
+Undefined values or <A HREF="#item_undef">undef</A> can be used to indicate null values.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_execute">execute
+
+</A></STRONG><DD>
+<PRE>  $rv = $sth-&gt;execute                || die $sth-&gt;errstr;
+  $rv = $sth-&gt;execute(@bind_values)  || die $sth-&gt;errstr;
+</PRE>
+
+<P>
+
+Perform whatever processing is necessary to execute the prepared statement. An undef is returned if an error occurs, a successful execute always returns true (see below). It is always important to check the return status of execute (and most other 
+<FONT SIZE=-1>DBI</FONT> methods).
+
+
+
+<P>
+
+For a non-select statement execute returns the number of rows affected (if known). Zero rows is returned as 
+<FONT SIZE=-1>``0E0''</FONT> which Perl will treat as 0 but will regard as true. If the number of rows affected is not known then execute returns -1.
+
+
+
+<P>
+
+For select statements execute simply 'starts' the query within the Engine.
+Use one of the fetch methods to retreive the data after calling execute.
+Note that the execute method does <EM>not</EM> return the number of rows that will be returned by the query (because most
+Engines can't tell in advance).
+
+
+<P>
+
+If any arguments are given then execute will effectively call
+<A HREF="#bind_param">bind_param</A> for each value before executing the statement. Values bound in this way are treated as 
+<FONT SIZE=-1>SQL_VARCHAR</FONT> types.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_fetchrow_arrayref">fetchrow_arrayref
+
+</A></STRONG><DD>
+<PRE>  $ary_ref = $sth-&gt;fetchrow_arrayref;
+  $ary_ref = $sth-&gt;fetch;    # alias
+</PRE>
+
+<P>
+
+Fetches the next row of data and returns a reference to an array holding
+the field values. If there are no more rows fetchrow_arrayref returns
+undef. Null values are returned as undef. This is the fastest way to fetch
+data, particularly if used with $sth-&gt;bind_columns.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_fetchrow_array">fetchrow_array
+
+</A></STRONG><DD>
+<PRE> @ary = $sth-&gt;fetchrow_array;
+</PRE>
+
+<P>
+
+An alternative to <A HREF="#item_fetchrow_arrayref">fetchrow_arrayref</A>. Fetches the next row of data and returns it as an array holding the field
+values. If there are no more rows fetchrow_array returns an empty list.
+Null values are returned as undef.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_fetchrow_hashref">fetchrow_hashref
+
+</A></STRONG><DD>
+<PRE> $hash_ref = $sth-&gt;fetchrow_hashref;
+</PRE>
+
+<P>
+
+An alternative to <A HREF="#item_fetchrow_arrayref">fetchrow_arrayref</A>. Fetches the next row of data and returns it as a reference to a hash
+containing field name and field value pairs. Null values are returned as
+undef. If there are no more rows fetchhash returns undef.
+
+
+<P>
+
+The keys of the hash are the same names returned by $sth-&gt;{NAME}. If
+more than one field has the same name there will only be one entry in the
+returned hash.
+
+
+<P>
+
+Because of the extra work fetchrow_hashref and perl have to perform it is
+not as efficient as fetchrow_arrayref or fetchrow_array and is not
+recommended where performance is very important. Currently a new hash
+reference is returned for each row. This is likely to change in the future
+so don't rely on it.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_fetchall_arrayref">fetchall_arrayref
+
+</A></STRONG><DD>
+<PRE>  $tbl_ary_ref = $sth-&gt;fetchall_arrayref;
+</PRE>
+
+<P>
+
+The <A HREF="#item_fetchall_arrayref">fetchall_arrayref</A> method can be used to fetch all the data to be returned from a prepared
+statement. It returns a reference to an array which contains one array
+reference per row (as returned by
+<A HREF="#item_fetchrow_arrayref">fetchrow_arrayref</A>).
+
+
+<P>
+
+If there are no rows to return, fetchall_arrayref returns a reference to an
+empty array.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_finish">finish
+
+</A></STRONG><DD>
+<PRE>  $rc  = $sth-&gt;finish;
+</PRE>
+
+<P>
+
+Indicates that no more data will be fetched from this statement before it
+is either prepared again or destroyed. It is helpful to call this method
+where appropriate in order to allow the server to free off any internal
+resources (such as read locks) currently being held. It does not affect the
+transaction status of the session in any way.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rows">rows
+
+</A></STRONG><DD>
+<PRE>  $rv = $sth-&gt;rows;
+</PRE>
+
+<P>
+
+Returns the number of rows affected by the last database altering command,
+or -1 if not known or not available.
+
+
+<P>
+
+Generally you can only rely on a row count after a <CODE>do()</CODE> or
+non-select <CODE>execute().</CODE> Some drivers only offer a row count
+after executing some specific operations (e.g., update and delete).
+
+
+<P>
+
+It is generally not possible to know how many rows will be returned from an
+arbitrary select statement except by fetching and counting them all. Also
+note that some drivers, such as DBD::Oracle, implement read-ahead row
+caches for select statements which means that the row count may appear to
+be incorrect while there are still more records to fetch.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_bind_col">bind_col
+
+</A></STRONG><DD>
+<PRE>  $rc = $sth-&gt;bind_col($column_number, \$var_to_bind);
+  $rc = $sth-&gt;bind_col($column_number, \$var_to_bind, \%attr);
+</PRE>
+
+<P>
+
+Binds a column (field) of a select statement to a perl variable. Whenever a
+row is fetched from the database the corresponding perl variable is
+automatically updated. There is no need to fetch and assign the values
+manually. This makes using bound variables very efficient. See bind_columns
+below for an example. Note that column numbers count up from 1.
+
+
+<P>
+
+The binding is performed at a very low level using perl aliasing so there is no extra copying taking place. So long as the driver uses the correct internal 
+<FONT SIZE=-1>DBI</FONT> call to get the array the fetch function returns, it will automatically support column binding.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_bind_columns">bind_columns
+
+</A></STRONG><DD>
+<PRE>  $rc = $sth-&gt;bind_columns(\%attr, @list_of_refs_to_vars_to_bind);
+</PRE>
+
+<P>
+
+e.g.
+
+
+<P>
+
+<PRE>  $sth-&gt;prepare(q{ select region, sales from sales_by_region }) or die ...;
+  my($region, $sales);
+  # Bind perl variables to columns.
+  $rv = $sth-&gt;bind_columns(undef, \$region, \$sales);
+  # you can also use perl's \(...) syntax (see <A HREF="/n|/perl/html/./lib/Pod/perlref.html">perlref</A> docs):
+  #     $sth-&gt;bind_columns(undef, \($region, $sales));
+  # Column binding is the most eficient way to fetch data
+  while($sth-&gt;fetch) {
+      print &quot;$region: $sales\n&quot;;
+  }
+</PRE>
+
+<P>
+
+Calls bind_col for each column of the select statement. bind_columns will
+croak if the number of references does not match the number of fields.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Statement_Handle_Attributes">Statement Handle Attributes
+
+</A></H2>
+Note that some drivers cannot provide valid values for some or all of these
+attributes until after $sth-&gt;execute has been called.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_NUM_OF_FIELDS">NUM_OF_FIELDS
+
+</A></STRONG><DD>
+<PRE>  $sth-&gt;{NUM_OF_FIELDS}  ($)
+</PRE>
+
+<P>
+
+Number of fields (columns) the prepared statement will return. Non-select statements will have 
+<FONT SIZE=-1>NUM_OF_FIELDS</FONT> == 0.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_NUM_OF_PARAMS">NUM_OF_PARAMS
+
+</A></STRONG><DD>
+<PRE>  $sth-&gt;{NUM_OF_PARAMS}  ($)
+</PRE>
+
+<P>
+
+The number of parameters (placeholders) in the prepared statement. See 
+<FONT SIZE=-1>SUBSTITUTION</FONT> 
+<FONT SIZE=-1>VARIABLES</FONT> below for more details.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_NAME">NAME
+
+</A></STRONG><DD>
+<PRE>  $sth-&gt;{NAME}           (\@)
+</PRE>
+
+<P>
+
+Returns a <EM>reference</EM> to an array of field names for each column. The names may contain spaces
+but should not be truncated or have any trailing space.
+
+
+<P>
+
+<PRE>  print &quot;First column name: $sth-&gt;{NAME}-&gt;[0]\n&quot;;
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_NULLABLE">NULLABLE
+
+</A></STRONG><DD>
+<PRE>  $sth-&gt;{NULLABLE}       (\@)
+</PRE>
+
+<P>
+
+Returns a <EM>reference</EM> to an array indicating the possibility of each column returning a null.
+
+
+<P>
+
+<PRE>  print &quot;First column may return NULL\n&quot; if $sth-&gt;{NULLABLE}-&gt;[0];
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_CursorName">CursorName
+
+</A></STRONG><DD>
+<PRE>  $sth-&gt;{CursorName}     ($)
+</PRE>
+
+<P>
+
+Returns the name of the cursor associated with the statement handle if
+available. If not available or the database driver does not support the
+<CODE>"where current of ..."</CODE> 
+<FONT SIZE=-1>SQL</FONT> syntax then it returns undef.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="TRANSACTIONS">TRANSACTIONS
+
+</A></H1>
+Transactions are a fundamental part of any quality database system. They
+protect against errors and database corruption by ensuring that changes to
+the database take place in atomic (indivisible, all-or-nothing) units.
+
+
+<P>
+
+See <A HREF="#AutoCommit">AutoCommit</A> for details of using AutoCommit with various types of database.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Robust_Applications">Robust Applications
+
+</A></H2>
+This section applies to databases which support transactions and where
+AutoCommit is off.
+
+
+<P>
+
+The recommended way to implement robust transactions in Perl applications
+is to make use of <A&nbsp;HREF="#item_eval_">eval&nbsp;{&nbsp;...&nbsp;}</A> (which is very fast, unlike <A&nbsp;HREF="#item_eval_">eval&nbsp;"..."</A>).
+
+
+<P>
+
+<PRE>  eval {
+      foo(...)
+  };
+  if ($@) {
+      $dbh-&gt;rollback;
+      # add other application on-error-clean-up code here
+  }
+  else {
+      $dbh-&gt;commit;
+  }
+</PRE>
+
+<P>
+
+The code in <CODE>foo(),</CODE> or any other code executed from within the
+curly braces, can be implemented in this way:
+
+
+<P>
+
+<PRE>  $h-&gt;method(@args) || die $h-&gt;errstr
+</PRE>
+
+<P>
+
+or the $h-&gt;{RaiseError} attribute can be set on, in which case the 
+<FONT SIZE=-1>DBI</FONT> will automatically <CODE>croak()</CODE> on error
+so you don't have to test the return value of each method call. See <A HREF="#RaiseError">RaiseError</A> for more details.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> major advantage of the eval approach is that the
+transaction will be properly rolled back if <EM>any</EM> code in the inner application croaks or dies for any reason.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SIMPLE_EXAMPLE">SIMPLE EXAMPLE
+
+</A></H1>
+<PRE>  my $dbh = DBI-&gt;connect(&quot;dbi:Oracle:$data_source&quot;, $user, $password)
+      || die &quot;Can't connect to $data_source: $DBI::errstr&quot;;
+</PRE>
+
+<P>
+
+<PRE>  my $sth = $dbh-&gt;prepare( q{
+          SELECT name, phone
+          FROM mytelbook
+  }) || die &quot;Can't prepare statement: $DBI::errstr&quot;;
+</PRE>
+
+<P>
+
+<PRE>  my $rc = $sth-&gt;execute
+      || die &quot;Can't execute statement: $DBI::errstr&quot;;
+</PRE>
+
+<P>
+
+<PRE>  print &quot;Query will return $sth-&gt;{NUM_FIELDS} fields.\n\n&quot;;
+</PRE>
+
+<P>
+
+<PRE>  print &quot;$sth-&gt;{NAME}-&gt;[0]: $sth-&gt;{NAME}-&gt;[1]\n&quot;;
+  while (($name, $phone) = $sth-&gt;fetchrow_array) {
+      print &quot;$name: $phone\n&quot;;
+  }
+  # check for problems which may have terminated the fetch early
+  warn $DBI::errstr if $DBI::err;
+</PRE>
+
+<P>
+
+<PRE>  $sth-&gt;finish;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DEBUGGING">DEBUGGING
+
+</A></H1>
+In addition to the <A HREF="#trace">trace</A> method you can enable the same trace information by setting the 
+<FONT SIZE=-1>DBI_TRACE</FONT> environment variable before starting perl.
+
+
+<P>
+
+On unix-like systems using a bourne-like shell you can do this easily for a
+single command:
+
+
+<P>
+
+<PRE>  DBI_TRACE=2 perl your_test_script.pl
+</PRE>
+
+<P>
+
+If 
+<FONT SIZE=-1>DBI_TRACE</FONT> is set to a non-numeric value then it is
+assumed to be a file name and the trace level will be set to 2 with all
+trace output will be appended to that file.
+
+
+<P>
+
+See also the <A HREF="#trace">trace</A> method.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="WARNINGS">WARNINGS
+
+</A></H1>
+The 
+<FONT SIZE=-1>DBI</FONT> is <EM>alpha</EM> software. It is <EM>only</EM> 'alpha' because the interface (api) is not finalised. The alpha status does
+not reflect code quality.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Database_Documentation">Database Documentation
+
+</A></H2>
+
+<FONT SIZE=-1>SQL</FONT> Language Reference Manual.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Books_and_Journals">Books and Journals
+
+</A></H2>
+<PRE> Programming Perl 2nd Ed. by Larry Wall, Tom Christiansen &amp; Randal Schwartz.
+ Learning Perl by Randal Schwartz.
+</PRE>
+
+<P>
+
+<PRE> Dr Dobb's Journal, November 1996.
+ The Perl Journal, April 1997.
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Manual_Pages">Manual Pages
+
+</A></H2>
+<EM>perl(1)</EM>, <EM>perlmod(1)</EM>, <EM>perlbook(1)</EM>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Mailing_List">Mailing List
+
+</A></H2>
+The dbi-users mailing list is the primary means of communication among uses of the 
+<FONT SIZE=-1>DBI</FONT> and its related modules. Subscribe and unsubscribe via:
+
+
+
+<P>
+
+<PRE> <A HREF="http://www.fugue.com/dbi">http://www.fugue.com/dbi</A>
+</PRE>
+
+<P>
+
+Mailing list archives are held at:
+
+
+<P>
+
+<PRE> <A HREF="http://www.rosat.mpe-garching.mpg.de/mailing-lists/PerlDB-Interest/">http://www.rosat.mpe-garching.mpg.de/mailing-lists/PerlDB-Interest/</A>
+ <A HREF="http://www.coe.missouri.edu/~faq/lists/dbi.html">http://www.coe.missouri.edu/~faq/lists/dbi.html</A>
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Assorted_Related_WWW_Links">Assorted Related WWW Links
+
+</A></H2>
+The 
+<FONT SIZE=-1>DBI</FONT> 'Home Page' (not maintained by me):
+
+
+<P>
+
+<PRE> <A HREF="http://www.hermetica.com/technologia/DBI">http://www.hermetica.com/technologia/DBI</A>
+</PRE>
+
+<P>
+
+Other related links:
+
+
+<P>
+
+<PRE> <A HREF="http://www-ccs.cs.umass.edu/db.html">http://www-ccs.cs.umass.edu/db.html</A>
+ <A HREF="http://www.odmg.org/odmg93/updates_dbarry.html">http://www.odmg.org/odmg93/updates_dbarry.html</A>
+ <A HREF="http://www.jcc.com/sql_stnd.html">http://www.jcc.com/sql_stnd.html</A>
+ <A HREF="ftp://alpha.gnu.ai.mit.edu/gnu/gnusql-0.7b3.tar.gz">ftp://alpha.gnu.ai.mit.edu/gnu/gnusql-0.7b3.tar.gz</A>
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="FAQ">FAQ
+
+</A></H2>
+Please also read the 
+<FONT SIZE=-1>DBI</FONT> 
+<FONT SIZE=-1>FAQ</FONT> which is installed as a 
+<FONT SIZE=-1>DBI::FAQ</FONT> module so you can use perldoc to read it by executing the
+ <CODE>perldoc DBI::FAQ</CODE> command.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+
+<FONT SIZE=-1>DBI</FONT> by Tim Bunce. This pod text by Tim Bunce, 
+<FONT SIZE=-1>J.</FONT> Douglas Dunlop, Jonathan Leffler and others. Perl by Larry Wall and the perl5-porters.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+The 
+<FONT SIZE=-1>DBI</FONT> module is Copyright (c) 1995,1996,1997 Tim Bunce. England. The 
+<FONT SIZE=-1>DBI</FONT> module is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+
+
+
+<P>
+
+This document is Copyright (c) 1997 by Tim Bunce. All rights reserved.
+Permission to distribute this document, in full or part, via email, usenet
+or ftp/http archives or printed copy is granted providing that no charges
+are involved, reasonable attempt is made to use the most current version,
+and all credits and copyright notices are retained. Requests for other
+distribution rights, including incorporation in commercial products, such
+as books, magazine articles, or CD-ROMs should be made to <A
+HREF="MAILTO:Tim.Bunce@ig.co.uk">Tim.Bunce@ig.co.uk</A> (please <EM>don't</EM> use this mail address for other 
+<FONT SIZE=-1>DBI</FONT> related mail - use the dbi-users mailing list).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ACKNOWLEDGEMENTS">ACKNOWLEDGEMENTS
+
+</A></H1>
+
+<FONT SIZE=-1>I</FONT> would like to acknowledge the valuable contributions of the many people 
+<FONT SIZE=-1>I</FONT> have worked with on the 
+<FONT SIZE=-1>DBI</FONT> project, especially in the early years (1992-1994): Kevin Stock, Buzz Moschetti, Kurt Andersen, Ted Lemon, William Hails, Garth Kennedy, Michael Peppler, Neil 
+<FONT SIZE=-1>S.</FONT> Briscoe, David 
+<FONT SIZE=-1>J.</FONT> Hughes, Jeff Stander, Forrest 
+<FONT SIZE=-1>D</FONT> Whitcher, Larry Wall, Jeff Fried, Roy Johnson, Paul Hudson, Georg Rehfeld, Steve Sizemore, Ron Pool, Jon Meek, Tom Christiansen, Steve Baumgarten, Randal Schwartz, and a whole lot more.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SUPPORT_WARRANTY">SUPPORT / WARRANTY
+
+</A></H1>
+The 
+<FONT SIZE=-1>DBI</FONT> is free software. 
+<FONT SIZE=-1>IT</FONT> 
+<FONT SIZE=-1>COMES</FONT> 
+<FONT SIZE=-1>WITHOUT</FONT> 
+<FONT SIZE=-1>WARRANTY</FONT> 
+<FONT SIZE=-1>OF</FONT> 
+<FONT SIZE=-1>ANY</FONT> 
+<FONT SIZE=-1>KIND.</FONT>
+
+
+
+<P>
+
+Commercial support agreements for Perl and the 
+<FONT SIZE=-1>DBI,</FONT> DBD::Oracle and Oraperl modules can be arranged
+via The Perl Clinic. See <A
+HREF="http://www.perl.co.uk/tpc">http://www.perl.co.uk/tpc</A> for more
+details.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="OUTSTANDING_ISSUES_TO_DO">OUTSTANDING ISSUES TO DO
+
+</A></H1>
+<PRE>        data types (ISO type numbers and type name conversions)
+        error handling
+        data dictionary methods
+        test harness support methods
+        portability
+        blob_read
+        etc
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="FREQUENTLY_ASKED_QUESTIONS">FREQUENTLY ASKED QUESTIONS
+
+</A></H1>
+See the 
+<FONT SIZE=-1>DBI</FONT> 
+<FONT SIZE=-1>FAQ</FONT> for a more comprehensive list of FAQs. Use the
+
+<CODE>perldoc DBI::FAQ</CODE> command to read it.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Why_doesn_t_my_CGI_script_work_r">Why doesn't my CGI script work right?
+
+</A></H2>
+Read the information in the references below. Please do <EM>not</EM> post 
+<FONT SIZE=-1>CGI</FONT> related questions to the dbi-users mailing list
+(or to me).
+
+
+<P>
+
+<PRE> <A HREF="http://www.perl.com/perl/faq/idiots-guide.html">http://www.perl.com/perl/faq/idiots-guide.html</A>
+ <A HREF="http://www3.pair.com/webthing/docs/cgi/faqs/cgifaq.shtml">http://www3.pair.com/webthing/docs/cgi/faqs/cgifaq.shtml</A>
+ <A HREF="http://www.perl.com/perl/faq/perl-cgi-faq.html">http://www.perl.com/perl/faq/perl-cgi-faq.html</A>
+ <A HREF="http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html">http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html</A>
+ <A HREF="http://www.boutell.com/faq/">http://www.boutell.com/faq/</A>
+ <A HREF="http://www.perl.com/perl/faq/">http://www.perl.com/perl/faq/</A>
+</PRE>
+
+<P>
+
+General problems and good ideas:
+
+
+<P>
+
+<PRE> Use the CGI::ErrorWrap module.
+ Remember that many env vars won't be set for CGI scripts
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_maintain_a_WWW_connect">How can I maintain a WWW connection to a database?
+
+</A></H2>
+For information on the Apache httpd server and the mod_perl module see <A
+HREF="http://www.osf.org/~dougm/apache">http://www.osf.org/~dougm/apache</A>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="A_driver_build_fails_because_it_">A driver build fails because it can't find DBIXS.h
+
+</A></H2>
+The installed location of the DBIXS.h file changed with 0.77 (it was being
+installed into the 'wrong' directory but that's where driver developers
+came to expect it to be). The first thing to do is check to see if you have
+the latest version of your driver. Driver authors will be releasing new
+versions which use the new location. If you have the latest then ask for a
+new release. You can edit the Makefile.PL file yourself. Change the part
+which reads <CODE>"-I.../DBI"</CODE> so it reads
+<CODE>"-I.../auto/DBI"</CODE> (where ... is a string of non-space characters).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Has_the_DBI_and_DBD_Foo_been_po">Has the DBI and DBD::Foo been ported to NT / Win32?
+
+</A></H2>
+The latest version of the 
+<FONT SIZE=-1>DBI</FONT> and, at least, the DBD::Oracle module will build -
+without changes - on NT/Win32 <EM>if</EM> your are using the standard Perl 5.004 and <EM>not</EM> the ActiveWare port.
+
+
+<P>
+
+Jeffrey Urlwin <A
+HREF="MAILTO:<jurlwin@access.digex.net>"><jurlwin@access.digex.net></A> (or
+<A HREF="MAILTO:<jurlwin@hq.caci.com>)"><jurlwin@hq.caci.com>)</A> is
+helping me with the port (actually he's doing it and I'm integrating the
+changes :-).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="What_about_ODBC_">What about ODBC?
+
+</A></H2>
+See the statement and following notes in the 
+<FONT SIZE=-1>DBI</FONT> 
+<FONT SIZE=-1>README</FONT> file.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="KNOWN_DRIVER_MODULES">KNOWN DRIVER MODULES
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_Oracle">Oracle - DBD::Oracle
+
+</A></STRONG><DD>
+<PRE> Author:  Tim Bunce
+ Email:   dbi-users@fugue.com
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Ingres">Ingres - DBD::Ingres
+
+</A></STRONG><DD>
+<PRE> Author:  Henrik Tougaard
+ Email:   ht@datani.dk,  dbi-users@fugue.com
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_mSQL">mSQL - DBD::mSQL
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_DB2">DB2 - DBD::DB2
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Empress">Empress - DBD::Empress
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Informix">Informix - DBD::Informix
+
+</A></STRONG><DD>
+<PRE> Author:  Jonathan Leffler
+ Email:   johnl@informix.com, dbi-users@fugue.com
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Solid">Solid - DBD::Solid
+
+</A></STRONG><DD>
+<PRE> Author:  Thomas Wenrich
+ Email:   wenrich@site58.ping.at, dbi-users@fugue.com
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Postgres">Postgres - DBD::Pg
+
+</A></STRONG><DD>
+<PRE> Author:  Edmund Mergl
+ Email:   mergl@nadia.s.bawue.de, dbi-users@fugue.com
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Fulcrum">Fulcrum SearchServer - DBD::Fulcrum
+
+</A></STRONG><DD>
+<PRE> Author:  Davide Migliavacca
+ Email:   davide.migliavacca@inferentia.it
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="OTHER_RELATED_WORK_AND_PERL_MODU">OTHER RELATED WORK AND PERL MODULES
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_Apache">Apache::DBI by E.Mergl@bawue.de
+
+</A></STRONG><DD>
+To be used with the Apache daemon together with an embedded perl interpreter like mod_perl. Establishes a database connection which remains open for the lifetime of the http daemon. This way the 
+<FONT SIZE=-1>CGI</FONT> connect and disconnect for every database access becomes superfluous.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_JDBC">JDBC Server by Stuart 'Zen' Bishop <zen@bf.rmit.edu.au>
+
+</A></STRONG><DD>
+The server is written in Perl. The client classes that talk to it are of course in Java. Thus, a Java applet or application will be able to comunicate via the 
+<FONT SIZE=-1>JDBC</FONT> 
+<FONT SIZE=-1>API</FONT> with any database that has a 
+<FONT SIZE=-1>DBI</FONT> driver installed. The 
+<FONT SIZE=-1>URL</FONT> used is in the form jdbc:dbi://host.domain.etc:999/Driver/DBName. It seems to be very similar to some commercial products, such as jdbcKona.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Remote">Remote Proxy DBD support
+
+</A></STRONG><DD>
+<PRE>  Carl Declerck &lt;carl@miskatonic.inbe.net&gt;
+  Terry Greenlaw &lt;z50816@mip.mar.lmco.com&gt;
+</PRE>
+
+<P>
+
+Carl is developing a generic proxy object module which could form the basis
+of a DBD::Proxy driver in the future. Terry is doing something similar.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SQL">SQL Parser - Stephen Zander <stephen.zander@mckesson.com>
+
+</A></STRONG><DD>
+Based on the O'Reilly lex/yacc book examples and byacc.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

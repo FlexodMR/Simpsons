@@ -1,0 +1,70 @@
+SelectMission("m4sd");
+
+SetMissionStartCameraName( "mission4camShape" );
+SetMissionStartMulticontName( "mission4cam" );
+SetAnimatedCameraName( "mission4camShape" );
+SetAnimCamMulticontName( "mission4cam" );
+
+SetMissionResetPlayerOutCar("m4_marge_start","m4_carstart");
+SetDynaLoadData("l4z1.p3d;l4z7.p3d;l4r7.p3d;");
+
+AddStage(0);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(240);
+	SetHUDIcon("cemetery");
+	AddObjective("goto");
+		AddNPC("moleman", "m4_moleman_sd");
+		SetDestination("m5_graveyard", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	ShowStageComplete();
+CloseStage();	
+
+AddStage(25);
+	RESET_TO_HERE();
+	SetStageMessageIndex(105);
+	SetHUDIcon("moleman");
+	AddObjective("talkto");
+		AddNPC("moleman", "m4_moleman_sd");
+		AddObjectiveNPCWaypoint( "moleman", "m4_moleman_walk1" );
+		AddObjectiveNPCWaypoint( "moleman", "m4_moleman_walk2" );
+		AddObjectiveNPCWaypoint( "moleman", "m4_moleman_sd" );
+		SetTalkToTarget("moleman", 0, -0.5);
+	CloseObjective();
+CloseStage();
+
+AddStage(1);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis04_04.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_near" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_near" );
+		SetConversationCam( 3, "npc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_scratch_head" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide("m4_bestside");
+		SetDialogueInfo("marge","moleman","hiding",0);
+		SetDialoguePositions("m4_marge_talk","m4_moleman_sd","m4_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

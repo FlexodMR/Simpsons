@@ -1,0 +1,427 @@
+/* Search Strings
+
+global proc P3DExport()
+
+*/
+
+//***************************************************
+global proc P3DExecuteExporterScript()
+{
+    string $options[] = `ls -type p3dExporterOptionsShape`;
+    string $currentSetting = "";
+    
+    if ( `size $options` > 0 )
+    {
+        $currentSetting = `getAttr ( $options[0] + ".currentSetting" )`;
+    }
+
+    if ( ( $currentSetting != "" ) && ( `objExists $currentSetting` ) )
+    {
+        string $exporterScript = `getAttr ($currentSetting+".exporterScript")`;
+
+        if ( `getAttr ( $currentSetting + ".exporterScriptEnable" )` )
+        {
+      
+            if (`filetest -r $exporterScript`==1)
+            {
+//         int $fileId=`fopen $exporterScript "r"`;
+//
+//         while(`feof $fileId`==0)
+//         {
+//            string $command = `fread $fileId $command`;
+//            evalEcho($command);
+//         }
+//         fclose $fileId;
+
+                // Changed by Bryan Ewert on 02 Jan 2002
+                // Does it work to simply call "source" here?
+                eval( "source \"" + $exporterScript + "\"" );
+            }       // if ( Exporter Script exists )
+        }       // if ( Exporter Script is enabled )
+    }       // if ( Exporter Setting node exists )
+}
+
+//***************************************************
+global proc P3DExportSelection()
+{
+   P3DCreateExporterOptions();
+   P3DExecuteExporterScript();
+   p3dQuickExporterCmd -selection;   
+}
+
+//===========================================================================
+// P3DExport
+//===========================================================================
+// Description: Exports the currently loaded scene.
+//
+// Constraints: This was formerly P3DExportScene().
+//              'P3DExportScene' has been migrated to an API command which 
+//              will call either P3DExport() (given no argument) or
+//              P3DExportSceneEx() (when provided either a '-open' or
+//              '-p3d' argument).
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc P3DExport()
+{
+   P3DCreateExporterOptions();
+   P3DExecuteExporterScript();
+   p3dQuickExporterCmd;   
+}
+
+//===========================================================================
+// P3DExportSceneEx
+//===========================================================================
+// Description: Called by the 'P3DExportScene' API command when either the
+//              '-open' or '-p3d' flags are specified.
+//
+//              If '-open' is specified then this scene is opened.  The API
+//              command validates that the specified file exists and provides
+//              a fully qualified path.  The API command also converts the
+//              path to use forward slashes (it shouldn't matter, but I
+//              thought I'd point it out.)
+//
+//              If '-p3d' is specified then the Exported File is modified 
+//              so as to generate the requested output file.
+//
+// Constraints: For reliable results $filepath should be a fully qualified path.
+//
+//  Parameters: string $filepath: Fully qualified path for scene to export.
+//              string $p3dFile: Path for exported P3D file.
+//
+//      Return: (void)
+//
+//===========================================================================
+global proc P3DExportSceneEx( string $filepath, string $p3dFile, int $selectionOnly )
+{
+    int $bClearScene = false;
+
+    if ( $filepath != "" )
+    {
+        waitCursor -state on;
+        file -f -open $filepath;  pause -sec 1;
+        waitCursor -state off;
+        $bClearScene = true;
+    }
+
+    P3DCreateExporterOptions();
+
+    if ( $p3dFile != "" )
+    {
+        // Set the exported filename.
+        P3DChangeFileAttribute $p3dFile "exportedFile";
+    }
+
+    P3DExecuteExporterScript();
+
+    if ( $selectionOnly )
+    {
+        p3dQuickExporterCmd -selection;
+    }
+    else
+    {
+        p3dQuickExporterCmd;   
+    }
+
+    // If the '-file' argument was specified then a new file was loaded
+    // and the scene should be cleared before exiting.
+    if ( $bClearScene )
+    {
+        file -f -new;
+    }
+}
+
+proc string GetCurrentP3DViewTarget()
+{
+    string $currentTarget = "";
+    if ( `optionVar -exists p3dQuickViewTarget` )
+    {
+        $currentTarget = `optionVar -q p3dQuickViewTarget`;
+    }
+
+    return $currentTarget;
+}
+
+//***************************************************
+global proc P3DViewSelection()
+{
+    P3DCreateExporterOptions();
+    P3DExecuteExporterScript();
+
+    string $options[] = `ls -type p3dExporterOptionsShape`;
+    float $background[3] = { 0.0, 0.0, 0.0 };
+    string $currentSetting = "";
+    string $viewerScript = "";
+    
+    if ( `size $options` > 0 )
+    {
+        $background = `getAttr ( $options[0] + ".backgroundColour" )`;
+        $currentSetting = `getAttr ( $options[0] + ".currentSetting" )`;
+    }
+
+    if ( ( $currentSetting != "" ) && ( `objExists $currentSetting` ) )
+    {
+        if ( `getAttr ( $currentSetting + ".viewerScriptEnable" )` )
+        {
+            $viewerScript = `getAttr ($currentSetting+".viewerScript")`;
+        }
+    }
+
+    string $target = GetCurrentP3DViewTarget();
+
+    string $command = ( "p3dQuickViewerCmd -selection -background " + $background[0] + " " + $background[1] + " " + $background[2] + " -script \"" + $viewerScript + "\"" );
+
+    if ( $target != "" )
+    {
+        $command += ( " -target \"" + $target + "\"" );
+    }
+
+    eval $command;
+}
+
+//***************************************************
+global proc P3DViewScene()
+{
+    P3DCreateExporterOptions();
+    P3DExecuteExporterScript();
+
+    string $options[] = `ls -type p3dExporterOptionsShape`;
+    string $currentSetting = "";
+    string $viewerScript = "";
+    float $background[3] = { 0.0, 0.0, 0.0 };
+    
+    if ( `size $options` > 0 )
+    {
+        $background = `getAttr ( $options[0] + ".backgroundColour" )`;
+        $currentSetting = `getAttr ( $options[0] + ".currentSetting" )`;
+    }
+
+    if (size(`ls -type p3dExportSettingNode $currentSetting`)==1)
+    {
+        if ( `getAttr ( $currentSetting + ".viewerScriptEnable" )` )
+        {
+            $viewerScript = `getAttr ($currentSetting+".viewerScript")`;
+        }
+    }
+
+    string $target = GetCurrentP3DViewTarget();
+
+    string $command = ( "p3dQuickViewerCmd -background " + $background[0] + " " + $background[1] + " " + $background[2] + " -script \"" + $viewerScript + "\"" );
+
+    if ( $target != "" )
+    {
+        $command += ( " -target \"" + $target + "\"" );
+    }
+
+    eval $command;
+}
+
+proc string P3DDefineQuickViewUITemplates()
+{
+    string $quickViewUITemplate = "P3DQuickViewUITemplate";
+
+    int $labelWidth = 72;
+    int $fieldWidth = 200;
+    int $sliderFieldWidth = 48;
+    int $sliderWidth = ( $fieldWidth - $sliderFieldWidth );
+    int $buttonWidth = 32;
+    int $checkBoxWidth = 16;
+    int $offset = 4;
+    
+    if (!`uiTemplate -exists $quickViewUITemplate`) 
+    {
+        uiTemplate $quickViewUITemplate;
+    }
+    
+    frameLayout -defineTemplate $quickViewUITemplate
+        -marginWidth 4
+        -marginHeight 4
+        ;
+        
+    attrColorSliderGrp -defineTemplate $quickViewUITemplate
+        -columnWidth4 $labelWidth $sliderFieldWidth $sliderWidth 1
+        -columnAlign4 "right" "left" "left" "left"
+        -columnAttach4 "right" "both" "both" "left"
+        -adjustableColumn4 3
+        ;
+
+    textFieldButtonGrp -defineTemplate $quickViewUITemplate
+        -columnWidth3 $labelWidth $fieldWidth $buttonWidth
+        -columnAttach3 right both both
+        -columnAlign3 right center center
+        -columnOffset3 2 2 2
+        -adjustableColumn3 2
+        ;
+
+    button -defineTemplate $quickViewUITemplate
+        -align "center"
+        ;
+
+    return $quickViewUITemplate;
+}
+
+global proc P3DFindQuickView( string $p3dQuickViewUI )
+{
+    p3dQuickViewerCmd -find;
+    string $target = `p3dQuickViewerCmd -pathname`;
+
+    P3DUpdateQuickViewPrefs( $p3dQuickViewUI );
+}
+
+global proc P3DUpdateQuickViewPrefs( string $uiParent )
+{
+    string $p3dQuickViewPathUI = "p3dQuickViewPathUI";
+    string $p3dQuickViewTargetsUI = "p3dQuickViewTargetsUI";
+
+    if ( !`exists p3dQuickViewerCmd` )
+    {
+        return;
+    }
+
+    setParent $uiParent;
+
+    string $quickViewPath = `p3dQuickViewerCmd -pathname`;
+
+    string $targetFolder = "targets/";
+    string $quickViewFolder = ( $quickViewPath + "/" + $targetFolder );
+    string $targets[];
+    if ( `file -q -exists $quickViewFolder` )
+    {
+        $targets = `getFileList -folder $quickViewFolder -fs "*.ini"`;
+    }
+
+    string $currentTarget = "";
+    if ( `optionVar -exists p3dQuickViewTarget` )
+    {
+        $currentTarget = `optionVar -q p3dQuickViewTarget`;
+    }
+
+    textFieldButtonGrp -e
+        -text $quickViewPath
+            $p3dQuickViewPathUI;
+
+    setParent $p3dQuickViewTargetsUI;
+
+    string $ca[] = `columnLayout -q -ca $p3dQuickViewTargetsUI`;
+    for ( $child in $ca ) deleteUI $child;
+
+    if ( `size $targets` > 0 )
+    {
+        radioCollection;
+
+        for ( $target in $targets )
+        {
+            string $onTarget = ( $targetFolder + $target );
+            int $onValue = ( $onTarget == $currentTarget );
+
+            string $rb = `radioButton 
+                -label $target
+                -onc ( "optionVar -stringValue p3dQuickViewTarget \"" + $onTarget + "\"" )`;
+
+            if ( $onValue )
+            {
+                radioButton -e -select $rb;
+            }
+        }
+    }
+    else
+    {
+        text -label "No target '.ini' configurations available.";
+    }
+
+    // Just as a convenience for the caller.
+    setParent $uiParent;
+}
+
+global proc P3DConfigureQuickView( string $uiParent )
+{
+    string $p3dQuickViewPathUI = "p3dQuickViewPathUI";
+    string $p3dQuickViewTargetsUI = "p3dQuickViewTargetsUI";
+
+    if ( !`exists p3dQuickViewerCmd` )
+    {
+//        error( "Please load Exporter plug-in before configuring QuickViewer." );
+        return;
+    }
+
+//    window -title "Pure3D Quick Viewer Target" p3dQuickViewTarget;
+//        columnLayout;
+
+    setParent $uiParent;
+
+        textFieldButtonGrp
+            -label "Viewer Path"
+            -buttonLabel "Set"
+            -text ""
+            -editable false
+                $p3dQuickViewPathUI;
+
+        separator -height 2 -style "none";
+
+        frameLayout -label "Target Platform" -collapsable false;
+
+            columnLayout -columnOffset left 8 $p3dQuickViewTargetsUI;
+
+                setParent ..;
+
+            setParent ..;
+
+        textFieldButtonGrp -e
+            -bc ( "P3DFindQuickView " + $uiParent )
+                $p3dQuickViewPathUI;
+
+    P3DUpdateQuickViewPrefs( $uiParent );
+
+//    showWindow p3dQuickViewTarget;
+
+    // Window is autonomous.. no other action necessary.
+}
+
+//***************************************************
+global proc P3DViewPrefs()
+{
+    string $quickViewUITemplate = P3DDefineQuickViewUITemplates();
+
+   P3DCreateExporterOptions();
+   if (`window -query -exists ViewPrefsPrompt`)
+    deleteUI -window ViewPrefsPrompt;
+
+    string $options[] = `ls -type p3dExporterOptionsShape`;
+
+    window -width 396 -height 50 -minimizeButton false -maximizeButton false -title "Viewer Prefs" ViewPrefsPrompt;
+
+    setUITemplate -pushTemplate $quickViewUITemplate;
+
+        string $urlLayout[] = p3dFrameLayout( "Viewer Prefs", "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Exporter/quickViewer.html", false, false );
+
+            string $uiParent = `columnLayout -adj true`;
+
+                attrColorSliderGrp 
+                    -label "Background"
+                    -at ( $options[0] + ".backgroundColour" );
+
+                separator -height 4 -style "none";
+
+                // Add items which are v16.15 only
+                P3DConfigureQuickView( $uiParent );
+
+                setParent ..;
+
+            PopP3dFrameLayout( $urlLayout);
+
+    // Users are used to expecting a one-liner window.
+    // Expand it so they can see the rest of the window.
+    if ( `window -q -height ViewPrefsPrompt` <= 52 )
+    {
+        window -e
+            -height 192
+                ViewPrefsPrompt;
+    }
+
+    setUITemplate -popTemplate;
+
+    showWindow ViewPrefsPrompt;
+}

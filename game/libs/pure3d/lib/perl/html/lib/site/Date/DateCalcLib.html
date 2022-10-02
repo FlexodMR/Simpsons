@@ -1,0 +1,1103 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Date::DateCalcLib - Date Calculations Library
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#VERSION">VERSION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+	<LI><A HREF="#LICENSE">LICENSE</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Date::DateCalcLib - Date Calculations Library
+
+
+<P>
+
+Library of useful date calculation functions
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<UL>
+<LI><STRONG></STRONG>
+<CODE>use Date::DateCalcLib qw( nth_wday_of_month_year</CODE>
+
+<CODE>decode_date_us decode_date_eu year_month_day_offset</CODE>
+
+<CODE>parse_date easter_sunday calendar );</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>use Date::DateCalcLib qw(:all);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = nth_wday_of_month_year($nth,$wday,$month,$year);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = decode_date_us($date);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = decode_date_eu($date);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = year_month_day_offset($year,$mm,$dd,$y_offs,$m_offs,$d_offs);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = parse_date(`/bin/date`);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = easter_sunday($year);</CODE>
+
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>$string = calendar($year,$month);</CODE>
+
+
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module expands the functionality of the ``Date::DateCalc'' module (see <A HREF="/n|/perl/html/./lib/site/Date/DateCalc_3_.html">DateCalc(3)</A> for more details), which is intended to be a rather basic set of tools,
+with functions for various special tasks like:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+calculating the n-th weekday for a given month and year
+
+
+<P>
+
+<LI><STRONG></STRONG>
+parsing dates in 
+<FONT SIZE=-1>U.S.</FONT> american and european format
+
+
+<P>
+
+<LI><STRONG></STRONG>
+calculating a new date with a year, month and/or day offset
+
+
+<P>
+
+<LI><STRONG></STRONG>
+parsing the current date or the submission date of an e-mail message
+
+
+<P>
+
+<LI><STRONG></STRONG>
+calculating easter sunday and all the related christian feast days
+
+
+<P>
+
+<LI><STRONG></STRONG>
+printing a calendar for a given month and year
+
+
+<P>
+
+</UL>
+For a detailed description of each function, see below:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+<CODE>use Date::DateCalcLib qw( nth_wday_of_month_year</CODE>
+
+<CODE>decode_date_us decode_date_eu year_month_day_offset</CODE>
+
+<CODE>parse_date easter_sunday calendar );</CODE>
+
+
+
+
+<P>
+
+Use this statement to make the functions of this module available in your
+module or script.
+
+
+<P>
+
+You can also use any subset of the functions listed above that you like by
+only including the names of the functions you actually need between the
+parentheses of the ``qw()'' operator above.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>use Date::DateCalcLib qw(:all);</CODE>
+
+
+
+
+<P>
+
+Alternate and simpler way of importing 
+<FONT SIZE=-1>ALL</FONT> the functions exported by this module into your
+module or script.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = nth_wday_of_month_year($nth,$wday,$month,$year);</CODE>
+
+
+
+
+<P>
+
+This function calculates the n-th weekday for a given month and year, for
+example the 3rd Thursday of a given month and year.
+
+
+<P>
+
+``<CODE>$nth</CODE>'' must be in the range 1 to 5 (for ``the first'' to ``the fifth''), ``<CODE>$wday</CODE>'' must be in the range 1 to 7 (1 = Monday, 7 = Sunday), ``<CODE>$month</CODE>'' must (of course) be in the range 1 to 12 and ``<CODE>$year</CODE>'' must be greater than zero.
+
+
+<P>
+
+The function returns an empty list if any of its parameters is illegal or
+if the requested date cannot be calculated (for instance, if there is no
+fifth ``<CODE>$wday</CODE>'' in the given month and year!).
+
+
+<P>
+
+Example:
+
+
+<P>
+
+Suppose you have a meeting (of some user group, for instance) in regular
+intervals, let's say the first Friday of each month, and that you want to
+send a mail to all members saying: ``Remember: Tomorrow is our user group's
+meeting!'' on the day before.
+
+
+<P>
+
+Given the current date, you would go about this as follows:
+
+
+<P>
+
+Convert the current date into days using the function ``calc_days()'' of
+the ``Date::DateCalc'' module. We'll refer to this number as ``the number
+of days of the current date'' below.
+
+
+<P>
+
+Calculate the first Friday of the current month.
+
+
+<P>
+
+Convert the resulting date into days using the function ``calc_days()'' of
+the ``Date::DateCalc'' module.
+
+
+<P>
+
+See if the number of days of the current date <CODE>*plus</CODE> one* is
+the same as the number of days of the first Friday of the current month.
+
+
+<P>
+
+If so, send your mail!
+
+
+<P>
+
+If not, calculate the first Friday of the 
+<FONT SIZE=-1>NEXT</FONT> month (beware: if the month is equal to 12, you
+need to ``wrap'' it back to 1 and to increment the year number!).
+
+
+<P>
+
+(This is necessary because the first Friday of any given month could fall on the first day of that month, which means that the day before that (when you want to send your mail!) is in the 
+<FONT SIZE=-1>PREVIOUS</FONT> month!)
+
+
+
+<P>
+
+Convert the resulting date into days using the function ``calc_days()'' of
+the ``Date::DateCalc'' module.
+
+
+<P>
+
+See if the number of days of the current date <CODE>*plus</CODE> one* is
+the same as the number of days of the first Friday of the next month.
+
+
+<P>
+
+If so, send your mail!
+
+
+<P>
+
+If not, you're done for today!
+
+
+<P>
+
+(On a 
+<FONT SIZE=-1>UNIX</FONT> system, you would normally use a ``cron'' job
+running once every day to automatically carry out these calculations and to
+send the reminder mail.)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = decode_date_us($date);</CODE>
+
+
+
+
+<P>
+
+Using this function, you can parse dates in almost any format, provided the
+date is given as ``month - day - year''.
+
+
+<P>
+
+(To decode dates in european format, i.e., dates given as ``day - month -
+year'', see the function ``decode_date_eu()'' in this module or the
+function ``decode_date()'' in the ``Date::DateCalc'' module.)
+
+
+<P>
+
+The day and the year must be given as numbers, the month may be specified
+either by a number or its name in English (however, only up to the 3 first
+characters are compared, any extra characters are ignored). The latter
+comparison is carried out in a case-insensitive manner.
+
+
+<P>
+
+If they uniquely identify the month, one or two letters are sufficient
+(e.g., ``s'' for september or ``ja'' for january).
+
+
+<P>
+
+The year may be abbreviated as well, for instance ``97'' instead of
+``1997''. (Year numbers below 100 are incremented by 1900.)
+
+
+<P>
+
+Note that leading zeros are ignored for all numeric values (= contiguous
+strings of digits).
+
+
+<P>
+
+If the month given in the input string isn't numeric, any number of non-alphanumeric characters (i.e., all characters 
+<FONT SIZE=-1>NOT</FONT> in [A-Za-z0-9]) may precede and follow the month, and any number of non-digits (i.e., all characters 
+<FONT SIZE=-1>NOT</FONT> in [0-9]) may precede and follow the year.
+
+
+
+<P>
+
+If separating non-digits between the day and year are missing, the string
+of digits following the month is automatically mapped to the day and year
+depending on its length, as intuitively as possible, as follows:
+
+
+<P>
+
+<PRE>                Length:        Mapping:
+                  2              dy
+                  3              dyy
+                  4              ddyy
+                  5              dyyyy
+                  6              ddyyyy
+</PRE>
+
+<P>
+
+If the month given in the input string is numeric, any number of non-digits
+may precede the month, separate the month from the day and the day from the
+year, and follow the year.
+
+
+<P>
+
+If separating non-digits are missing, the string of digits contained in the
+input string is automatically mapped to the month, day and year depending
+on its length, as intuitively as possible, as follows:
+
+
+<P>
+
+<PRE>                Length:        Mapping:
+                  3              mdy
+                  4              mdyy
+                  5              mddyy
+                  6              mmddyy
+                  7              mddyyyy
+                  8              mmddyyyy
+</PRE>
+
+<P>
+
+Example:
+
+
+<P>
+
+All the following strings will be recognized as ``January 3rd 1964'':
+
+
+<P>
+
+<PRE>                      1 3 64
+                      1.3.64
+                     01.03.64
+                     01/03/64
+                    Jan 3 1964
+                 January 3rd, 1964
+                    Jan 3. '64
+                     Jan-3-64
+                     Jan3.1964
+                       ja364
+                       1364
+</PRE>
+
+<P>
+
+If no valid date can be derived from the input string, the function returns
+an empty list.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = decode_date_eu($date);</CODE>
+
+
+
+
+<P>
+
+Using this function, you can parse dates in almost any format, provided the
+date is given as ``day - month - year''.
+
+
+<P>
+
+(To decode dates in 
+<FONT SIZE=-1>U.S.</FONT> american format, i.e., dates given as ``month -
+day - year'', see the function ``decode_date_us()'' in this module.)
+
+
+<P>
+
+The day and the year must be given as numbers, the month may be specified
+either by a number or its name in English (however, only up to the 3 first
+characters are compared, any extra characters are ignored). The latter
+comparison is carried out in a case-insensitive manner.
+
+
+<P>
+
+If they uniquely identify the month, one or two letters are sufficient
+(e.g., ``s'' for september or ``ja'' for january).
+
+
+<P>
+
+The year may be abbreviated as well, for instance ``97'' instead of
+``1997''. (Year numbers below 100 are incremented by 1900.)
+
+
+<P>
+
+Note that this function is a little more flexible than the function
+``decode_date()'' in the ``Date::DateCalc'' module since it allows any
+number of leading zeros for numeric values and any number of letters for
+the name of the month.
+
+
+<P>
+
+If the month given in the input string isn't numeric, any number of non-alphanumeric characters (i.e., all characters 
+<FONT SIZE=-1>NOT</FONT> in [A-Za-z0-9]) may precede and follow the month (separating it from the day and the year), and any number of non-digits (i.e., all characters 
+<FONT SIZE=-1>NOT</FONT> in [0-9]) may precede the day and follow the year.
+
+
+
+<P>
+
+If the month given in the input string is numeric, any number of non-digits
+may precede the day, separate the day from the month and the month from the
+year, and follow the year.
+
+
+<P>
+
+In the latter case, if separating non-digits are missing, the string of
+digits contained in the input string is automatically mapped to the day,
+month and year depending on its length, as intuitively as possible, as
+follows:
+
+
+<P>
+
+<PRE>                Length:        Mapping:
+                  3              dmy
+                  4              dmyy
+                  5              dmmyy
+                  6              ddmmyy
+                  7              dmmyyyy
+                  8              ddmmyyyy
+</PRE>
+
+<P>
+
+Example:
+
+
+<P>
+
+All the following strings will be recognized as ``January 3rd 1964'':
+
+
+<P>
+
+<PRE>                      3.1.64
+                      3 1 64
+                     03.01.64
+                     03/01/64
+                    3. Jan 1964
+                  3 January 1964
+                    3. Jan '64
+                     03-Jan-64
+                     3.Jan1964
+                      3Jan64
+                       3ja64
+                       3164
+</PRE>
+
+<P>
+
+If no valid date can be derived from the input string, the function returns
+an empty list.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = year_month_day_offset($year,$mm,$dd,$y_offs,$m_offs,$d_offs);</CODE>
+
+
+
+
+<P>
+
+Many people have asked for a function to calculate a new date, starting
+with a given date and a year, month and/or day offset. So here it is!
+
+
+<P>
+
+Note that all parameters must be integers.
+
+
+<P>
+
+The function ensures this by applying the ``int()'' function to every
+parameter.
+
+
+<P>
+
+An empty list is returned if the given date or any (intermediate or final)
+result is invalid.
+
+
+<P>
+
+Note that the day offset is added first using the ``calc_new_date()''
+function of the ``Date::DateCalc'' module (see <A HREF="/n|/perl/html/./lib/site/Date/DateCalc_3_.html">DateCalc(3)</A>).
+
+
+<P>
+
+Beware that an empty list is returned if this intermediate result is not a
+valid date!
+
+
+<P>
+
+After this, the month offset is added and finally the year offset (with a
+possible carry over from the month) is added.
+
+
+<P>
+
+Note that all three offsets may have any (integer) value (provided that all
+(intermediate or final) results are valid dates) and any sign
+(independently from each other!).
+
+
+<P>
+
+If the final result happens to be the 29th of February in a non-leap year,
+it is substituted by the 1st of March.
+
+
+<P>
+
+
+<FONT SIZE=-1>BEWARE</FONT> that because the three offsets are always applied in the same order, and also because of the substitution mentioned above, the transformation calculated by this function is 
+<FONT SIZE=-1>NOT</FONT> 
+<FONT SIZE=-1>REVERSIBLE,</FONT> in general!
+
+
+
+<P>
+
+(Unlike the ``calc_new_date()'' function of the ``Date::DateCalc'' module!)
+
+
+<P>
+
+I.e.,
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) =
+    year_month_day_offset(
+    year_month_day_offset($year,$mm,$dd, $y_offs,$m_offs,$d_offs),
+    -$y_offs,-$m_offs,-$d_offs);
+</PRE>
+
+<P>
+
+will not, in general, return the original date!
+
+
+<P>
+
+In the formula above, in order to reverse the effect of the first call to
+``year_month_day_offset()'', the offsets do not only need to have the
+opposite sign, but they would also need to be applied in reverse order in
+the second call to ``year_month_day_offset()''!
+
+
+<P>
+
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = parse_date($date);</CODE>
+
+
+
+
+<P>
+
+This function is a (special!) relative of the ``decode_date_us()'' and
+``decode_date_eu()'' function.
+
+
+<P>
+
+In contrast to the ``decode_date_us()'' and ``decode_date_eu()'' function,
+however, the month is required to be a three-letter abbreviation of the
+month's name (in English).
+
+
+<P>
+
+Moreover, the month's name is required to be followed by the day's number,
+separated by whitespace.
+
+
+<P>
+
+Another restriction is that year numbers must lie in the range 1900 to
+2099.
+
+
+<P>
+
+In compensation, the year number may come before or after the month/day
+pair.
+
+
+<P>
+
+This function is especially designed to parse dates returned by the 
+<FONT SIZE=-1>UNIX</FONT> ``date'' command:
+
+
+<P>
+
+</UL>
+<DL>
+<DT><STRONG></STRONG><DD>
+<CODE>-   </CODE>Parse today's date:
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = parse_date(`/bin/date`);
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>-   </CODE>Parse date of submission of an e-mail:
+
+
+<P>
+
+<PRE>    while (&lt;MAIL&gt;)
+    {
+        if (/^From \S/)
+        {
+            ($year,$mm,$dd) = parse_date($_);
+            ...
+        }
+        ...
+    }
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+The function returns an empty list if it can't extract a valid date from
+the input string.
+
+
+<P>
+
+</DL>
+<UL>
+<LI><STRONG></STRONG>
+<CODE>($year,$mm,$dd) = easter_sunday($year);</CODE>
+
+
+
+
+<P>
+
+Calculates the date of easter sunday for years in the range 1583 to 2299
+using Gauss' Rule.
+
+
+<P>
+
+Returns an empty list for all arguments outside this range.
+
+
+<P>
+
+Other christian feast days depend on easter sunday and can be calculated
+using the function ``calc_new_date()'' of the ``Date::DateCalc'' module
+(see
+<A HREF="/n|/perl/html/./lib/site/Date/DateCalc_3_.html">DateCalc(3)</A> for more info) as follows:
+
+
+<P>
+
+</UL>
+<DL>
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday - 48
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),-48);
+</PRE>
+
+<P>
+
+<PRE>    Carnival Monday / Rosenmontag / Veille du Mardi Gras
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday - 47
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),-47);
+</PRE>
+
+<P>
+
+<PRE>    Mardi Gras / Faschingsdienstag, Karnevalsdienstag / Mardi Gras
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday - 46
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),-46);
+</PRE>
+
+<P>
+
+<PRE>    Ash Wednesday / Aschermittwoch / Mercredi des Cendres
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday - 7
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),-7);
+</PRE>
+
+<P>
+
+<PRE>    Palm Sunday / Palmsonntag / Dimanche des Rameaux
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday - 2
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),-2);
+</PRE>
+
+<P>
+
+<PRE>    Easter Friday / Karfreitag / Vendredi Saint
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday - 1
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),-1);
+</PRE>
+
+<P>
+
+<PRE>    Easter Saturday / Ostersamstag / Samedi de Paques
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday + 1
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),1);
+</PRE>
+
+<P>
+
+<PRE>    Easter Monday / Ostermontag / Lundi de Paques
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday + 39
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),39);
+</PRE>
+
+<P>
+
+<PRE>    Ascension of Christ / Christi Himmelfahrt / Ascension
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday + 49
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),49);
+</PRE>
+
+<P>
+
+<PRE>    Whitsunday / Pfingstsonntag / Dimanche de Pentecote
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday + 50
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),50);
+</PRE>
+
+<P>
+
+<PRE>    Whitmonday / Pfingstmontag / Lundi de Pentecote
+</PRE>
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+<CODE>*   </CODE>Easter Sunday + 60
+
+
+<P>
+
+<PRE>    ($year,$mm,$dd) = calc_new_date(easter_sunday($year),60);
+</PRE>
+
+<P>
+
+<PRE>    Feast of Corpus Christi / Fronleichnam / Fete-Dieu
+</PRE>
+
+<P>
+
+</DL>
+<DL>
+<DT><STRONG></STRONG><DD>
+For more information about easter sunday and how to calculate it, see also on 
+<FONT SIZE=-1>USENET</FONT> in news.answers
+
+
+
+<P>
+
+<PRE>    Calendar FAQ, v. 1.6 (modified 26 Dec 1996) Part 1/3
+    Calendar FAQ, v. 1.6 (modified 26 Dec 1996) Part 2/3
+    Calendar FAQ, v. 1.6 (modified 26 Dec 1996) Part 3/3
+</PRE>
+
+<P>
+
+or
+
+
+<P>
+
+<PRE>    <A HREF="http://www.math.uio.no/faq/calendars/faq.html">http://www.math.uio.no/faq/calendars/faq.html</A>
+</PRE>
+
+<P>
+
+or
+
+
+<P>
+
+<PRE>    <A HREF="http://www.pip.dknet.dk/~pip10160/calendar.html">http://www.pip.dknet.dk/~pip10160/calendar.html</A>
+</PRE>
+
+<P>
+
+All authored by
+
+
+<P>
+
+<PRE>    Claus Tondering &lt;c-t@pip.dknet.dk&gt;
+</PRE>
+
+<P>
+
+</DL>
+<UL>
+<LI><STRONG></STRONG>
+<CODE>$string = calendar($year,$month);</CODE>
+
+
+
+
+<P>
+
+This function returns a string containing a calendar for the given month and year (which looks pretty much like the output of the 
+<FONT SIZE=-1>UNIX</FONT> ``cal'' command).
+
+
+
+<P>
+
+The calendar is not printed directly but rather returned as a string in order to make post-processing possible, i.e., like staggering multiple month calendars together on one page to produce a calendar of a complete year, or transforming the day numbers into hyperlinks for incorporation of the calendar (with clickable day numbers) into an 
+<FONT SIZE=-1>HTML</FONT> page.
+
+
+
+<P>
+
+The function returns an empty list if the given month or year is invalid.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+Date::DateCalc(3).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="VERSION">VERSION
+
+</A></H1>
+This man page documents ``Date::DateCalcLib'' version 3.2.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Steffen Beyer <A HREF="MAILTO:<sb@sdm.de>."><sb@sdm.de>.</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1997 by Steffen Beyer. All rights reserved.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="LICENSE">LICENSE
+
+</A></H1>
+This package is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,68 @@
+.global PDDI_VU1_code_start
+.global PDDI_VU1_code_end
+.global VU_BASE
+.global VU_LOAD_CONTEXT
+.global VU_XGKICK
+.global VU_UNLIT_TRI
+.global VU_UNLIT_TRI_MT
+.global VU_UNLIT_TRI_PROJTEX
+.global VU_UNLIT_TRI_TEXGEN_MT
+.global VU_UNLIT_TRI_ENVMAP_MT
+.global VU_SET_PASS_0
+.global VU_SET_PASS_1
+.global VU_UNLITFOG_TRI
+.global VU_LIT_TRI
+.global VU_LITSPEC_TRI
+.global VU_LITSPECFOG_TRI
+.global VU_LITFOG_TRI
+.global VU_LINE
+.global VU_DONOTHING
+.global VU_SNOW
+.global VU_SKINBLEND_NT
+.global VU_SKINBLEND1B_NT
+.global VU_REFRACT
+.global VU_SKINBLEND_CT
+.global VU_SKINBLEND1B_CT
+.global VU_TOON
+.global VU_REFLECT
+.global VU_SHADOW_VOL
+.global VU_END
+.global VU_LOADPRIMGROUP
+.global VU_CHECKSKINNING_LOADPRIMGROUP
+.global VU_LIT_PROGRAM
+.global VU_UNLIT_PROGRAM
+
+
+
+
+#include <pddi/ps2/quad-vu/usercode/vu_user_globals.h>
+
+PDDI_VU1_code_start:
+.align 0
+DMAend * 
+MPG 0, *
+VU_BASE:
+#include <pddi/ps2/quad-vu/regmap.h>
+#include <pddi/ps2/quad-vu/vu_macro.h>
+#include <pddi/ps2/quad-vu/math.vsm>
+#include <pddi/ps2/quad-vu/load.vsm>
+#include <pddi/ps2/quad-vu/vu_xgkick.vsm>
+#include <pddi/ps2/quad-vu/vu_unlit.vsm>
+#include <pddi/ps2/quad-vu/vu_lit.vsm>
+#include <pddi/ps2/quad-vu/vu_mt.vsm>
+#include <pddi/ps2/quad-vu/vu_refract.vsm>
+#include <pddi/ps2/quad-vu/vu_toon.vsm>
+#include <pddi/ps2/quad-vu/vu_reflect.vsm>
+#include <pddi/ps2/quad-vu/vu_line.vsm>
+#include <pddi/ps2/quad-vu/vu_fog.vsm>
+#include <pddi/ps2/quad-vu/vu_shadow.vsm>
+#include <pddi/ps2/quad-vu/vu_snow.vsm>
+#include <pddi/ps2/quad-vu/vu_clipper.vsm>
+#include <pddi/ps2/quad-vu/vu_bfc.vsm>
+#include <pddi/ps2/quad-vu/skinblend.vsm>
+#include <pddi/ps2/quad-vu/usercode/vu_user_code.h>
+VU_END:
+
+PDDI_VU1_code_end:
+.EndMPG
+.EndDmaData

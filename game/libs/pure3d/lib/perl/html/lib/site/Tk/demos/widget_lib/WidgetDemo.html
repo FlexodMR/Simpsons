@@ -1,0 +1,149 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>WidgetDemo() - create a standard widget demonstration window.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_demo_widget_Top_">$demo_widget->Top;</A>
+	</UL>
+
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#HISTORY">HISTORY</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+<CODE>WidgetDemo()</CODE> - create a standard widget demonstration window.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use WidgetDemo;
+ my $demo_widget = $MW-&gt;WidgetDemo(
+     -name             =&gt; $demo,
+     -text             =&gt; 'Learn how to write a widget demonstration!',
+     -title            =&gt; 'WidgetDemo Demonstration',
+     -iconname         =&gt; 'WidgetDemo',
+     -geometry_manager =&gt; 'grid',
+     -font             =&gt; $FONT,
+ );
+ $TOP = $demo_widget-&gt;Top;      # get grid master
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This constructor builds a standard widget demonstration window, composed of
+three frames. The top frame contains descriptive demonstration text. The
+bottom frame contains the ``Dismiss'' and ``See Code'' buttons. The middle
+frame is demonstration container, which came be managed by either the pack
+or grid geometry manager.
+
+
+<P>
+
+The -text attribute is supplied to a Label widget, which is left-adjusted
+with -wraplength set to 4 inches. If you require different specifications
+then pass an array to -text; the first element is the text string and the
+remaining array elements are standard Label widget attributes - WidgetDemo
+will rearrange things as required..
+
+
+<P>
+
+<PRE>    -text =&gt; ['Hello World!', qw/-wraplength 6i/],
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="_demo_widget_Top_">$demo_widget->Top;
+
+</A></H2>
+Returns the frame container reference for the demonstration. Treat this as
+the top of your window hierarchy, a ``main window''.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Stephen 
+<FONT SIZE=-1>O.</FONT> Lidie <A
+HREF="MAILTO:<lusol@Lehigh.EDU>"><lusol@Lehigh.EDU></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="HISTORY">HISTORY
+
+</A></H1>
+<A HREF="MAILTO:lusol@Lehigh.EDU,">lusol@Lehigh.EDU,</A> 
+<FONT SIZE=-1>LUCC,</FONT> 97/02/11 <A HREF="MAILTO:lusol@Lehigh.EDU,">lusol@Lehigh.EDU,</A> 
+<FONT SIZE=-1>LUCC,</FONT> 97/06/07
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 
+<FONT SIZE=-1>(C)</FONT> 1997 - 1997 Stephen 
+<FONT SIZE=-1>O.</FONT> Lidie. All rights reserved.
+
+
+
+<P>
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

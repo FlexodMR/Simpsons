@@ -1,0 +1,271 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::WaitBox - An Object Oriented Wait Dialog for Perl/Tk, of the Please Wait variety.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#bitmap">bitmap</A>
+		<LI><A HREF="#label">label</A>
+		<LI><A HREF="#secondary_label">secondary label</A>
+		<LI><A HREF="#userframe">userframe</A>
+		<LI><A HREF="#cancel_button">cancel button</A>
+	</UL>
+
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<UL>
+
+		<LI><A HREF="#Basic_Usage">Basic Usage</A>
+		<LI><A HREF="#Configuration">Configuration</A>
+		<LI><A HREF="#Example_Code">Example Code</A>
+	</UL>
+
+	<LI><A HREF="#Advertised_Subwidgets">Advertised Subwidgets</A>
+	<LI><A HREF="#Author">Author</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::WaitBox - An Object Oriented Wait Dialog for Perl/Tk, of the Please
+Wait variety.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> WaitBox consists of a number of subwidgets:
+
+
+<P>
+
+<DL>
+<DT><STRONG></STRONG><DD>
+<H2><A NAME="bitmap">bitmap
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> bitmap (configurable via the <EM>-bitmap</EM> command, the default is an hourglass) on the left side of the WaitBox
+
+
+<P>
+
+<H2><A NAME="label">label
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> label (configurable via the <EM>-txt1</EM> command), with text in the upper portion of the right hand frame
+
+
+<P>
+
+<H2><A NAME="secondary_label">secondary label
+
+</A></H2>
+Another label (configurable via the <EM>-txt2</EM> command, the default is 'Please Wait'), with text in the lower portion of
+the right hand frame
+
+
+<P>
+
+<H2><A NAME="userframe">userframe
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> frame displayed, if required, between the label and
+the secondary label. For details, see the example code and the Advertised
+Widget section
+
+
+<P>
+
+<H2><A NAME="cancel_button">cancel button
+
+</A></H2>
+If a cancelroutine (configured via the <EM>-cancelroutine</EM> command) is defined, a frame will be packed below the labels and bitmap,
+with a single button. The text of the button will be 'Cancel' (configurable
+via the <EM>-canceltext</EM> command), and the button will call the supplied subroutine when pressed.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_Usage">Usage Description
+
+</A></STRONG><DD>
+<DT><STRONG></STRONG><DD>
+<H2><A NAME="Basic_Usage">Basic Usage
+
+</A></H2>
+To use, create your WaitDialog objects during initialization, or at least
+before a Show. When you wish to display the WaitDialog object, invoke the
+'Show' method on the WaitDialog object; when you wish to cease displaying
+the WaitDialog object, invoke the 'unShow' method on the object.
+
+
+<P>
+
+<H2><A NAME="Configuration">Configuration
+
+</A></H2>
+Configuration may be done at creation or via the configure method.  
+
+
+<P>
+
+<H2><A NAME="Example_Code">Example Code
+
+</A></H2>
+<DT><STRONG></STRONG><DD>
+<PRE> #!/usr/local/bin/perl -w 
+</PRE>
+
+<P>
+
+<PRE> use Tk;
+ use Tk::WaitBox;
+ use strict;
+</PRE>
+
+<P>
+
+<PRE> my($root) = MainWindow-&gt;new;
+ my($utxt) = &quot;Initializing...&quot;;
+</PRE>
+
+<P>
+
+<PRE> my($wd) = $root-&gt;WaitBox(
+        -bitmap =&gt;'questhead', # Default would be 'hourglass'
+        -txt2 =&gt; 'tick-tick-tick', #default would be 'Please Wait'
+        -title =&gt; 'Takes forever to get service around here',
+        -cancelroutine =&gt; sub {
+            print &quot;\nI'm canceling....\n&quot;;
+            $wd-&gt;unShow;
+            $utxt = undef;
+        });
+ $wd-&gt;configure(-txt1 =&gt; &quot;Hurry up and Wait, my Drill Sergeant told me&quot;);
+ $wd-&gt;configure(-foreground =&gt; 'blue',-background =&gt; 'white');
+</PRE>
+
+<P>
+
+<PRE> ### Do something quite boring with the user frame
+ my($u) = $wd-&gt;{SubWidget}(uframe);
+ $u-&gt;pack(-expand =&gt; 1, -fill =&gt; 'both');
+ $u-&gt;Label(-textvariable =&gt; \$utxt)-&gt;pack(-expand =&gt; 1, -fill =&gt; 'both');
+</PRE>
+
+<P>
+
+<PRE> ## It would definitely be better to do this with a canvas... this is dumb
+ my($base) = $u-&gt;Frame(-background =&gt;'gray',
+                       -relief =&gt; 'sunken',
+                       -borderwidth =&gt; 2,
+                       -height =&gt; 20)
+         -&gt;pack(-side =&gt; 'left', -anchor =&gt; 'w',-expand =&gt; 1,
+                -fill =&gt; 'both');
+ my($bar) = $base-&gt;Frame(-borderwidth =&gt; 2,
+                         -relief =&gt; 'raised', -height =&gt; 20,
+                         -width =&gt; 0, -background =&gt; 'blue')
+         -&gt;pack(-fill =&gt; 'y', -side =&gt; 'left');
+</PRE>
+
+<P>
+
+<PRE> $wd-&gt;configure(-canceltext =&gt; 'Halt, Cease, Desist'); # default is 'Cancel'
+</PRE>
+
+<P>
+
+<PRE> $wd-&gt;Show;
+</PRE>
+
+<P>
+
+<PRE> for (1..15) {
+     sleep(1);
+     $bar-&gt;configure(-width =&gt; int($_/15*$base-&gt;Width));
+     $utxt = 100*$_/15 . &quot;% Complete&quot;;
+     $root-&gt;update;
+     last if !defined($utxt);
+ }
+</PRE>
+
+<P>
+
+<PRE> $wd-&gt;unShow;
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="Advertised_Subwidgets">Advertised Subwidgets
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_uframe">uframe
+
+</A></STRONG><DD>
+uframe is a frame created between the two messages. It may be used for
+anything the user has in mind... including exciting cycle wasting displays
+of sand dropping through an hour glass, Zippy riding either a Gnu or a
+bronc, et cetera.
+
+
+<P>
+
+Assuming that the WaitBox is referenced by $w, the uframe may be addressed as $w-&gt;subwidget{'uframe'}. Having gotten the address, you can do anything 
+<FONT SIZE=-1>(I</FONT> think) you would like with it
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="Author">Author
+
+</A></H1>
+<STRONG>Brent B. Powers, Merrill Lynch (B2Pi)</STRONG>
+ <A HREF="MAILTO:powers@ml.com">powers@ml.com</A>
+
+
+<P>
+
+This code may be distributed under the same conditions as perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

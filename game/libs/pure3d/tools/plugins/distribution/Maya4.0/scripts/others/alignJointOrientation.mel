@@ -1,0 +1,88 @@
+//===========================================================================
+// Copyright ©2001 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     November 9, 2001
+//
+// Component:   
+//
+// Description: Aligns the rotate axis of one joint to that from another joint.
+//
+// Creator:     Bryan Ewert
+//
+// Version:     1.0
+//
+//===========================================================================
+
+//===========================================================================
+// alignJointOrientation
+//===========================================================================
+// Description: To use:
+//
+//                     1. Select the first joint - the one that has the desired 
+//                        alignment for its rotateAxis.
+//
+//                     2. Select the second joint - the one for which its rotateAxis
+//                        will be modified to match the first.
+//
+//                     3. Call this script.
+//
+// Constraints: If the second joint has any rotations applied to it then 
+//                   the alignment won't necessary work the first time.  For that
+//                   reason the alignment is calculated in a while() loop which
+//                   terminates once it is considered accurate enough, or after
+//                   a maximum number of iterations.
+//
+// Parameters:  (none)
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc alignJointOrientation()
+{
+    string $select[] = `ls -sl`;
+
+    string $joint[2];
+    int $jointsFound = 0;
+    
+    for ( $node in $select )
+    {
+        if ( `nodeType $node` == "joint" )
+        {
+            $joint[$jointsFound++] = $node;
+        }
+        
+        if ( $jointsFound == 2 )
+        {
+            break;
+        }
+    }
+    
+    if ( $jointsFound < 2 )
+    {
+        error ( "Please select two joints.  The second joint will have its rotateAxis modified to match the first joint." );
+    }
+    
+    float $j1[];
+    float $j3[];
+    float $jj[3];
+
+    $j1 = `joint -q -orientation $joint[0]`;
+    $j3 = `joint -q -orientation $joint[1]`;
+
+    // This is really cheap, but until I figure out the TRUE math
+    // for how to compenstate for existing rotations in the joint...
+    
+    int $maxIterations = 256;
+    // Note that this assumes that Z is the last rotation channel!
+    while ( $maxIterations-- && ( abs( $j3[2] - $j1[2] ) > 0.001 ) )
+    {
+        $jj[0] = $j3[0] - $j1[0];
+        $jj[1] = $j3[1] - $j1[1];
+        $jj[2] = $j3[2] - $j1[2];
+
+        rotate -r -os $jj[0] $jj[1] $jj[2] ( $joint[1] + ".rotateAxis" );
+
+        $j1 = `joint -q -orientation $joint[0]`;
+        $j3 = `joint -q -orientation $joint[1]`;
+    }
+}

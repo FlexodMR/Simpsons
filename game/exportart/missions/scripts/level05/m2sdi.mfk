@@ -1,0 +1,71 @@
+SelectMission("m2sd");
+
+SetMissionResetPlayerOutCar("m2_apu_start","m2_carstart");
+SetDynaLoadData("l5z2.p3d;l5r1.p3d;l5r2.p3d;");
+
+UsePedGroup(2);
+
+SetMissionStartCameraName( "mission2camShape" );
+SetMissionStartMulticontName( "mission2cam" );
+SetAnimatedCameraName( "mission2camShape" );
+SetAnimCamMulticontName( "mission2cam" );
+
+//AddStage(0);
+//	SetStageMessageIndex(0000000000000000000);
+//	SetHUDIcon( "lbsc" );
+//	SetMaxTraffic(4);
+//	AddObjective("goto");
+//		AddNPC("louie", "m2_louie_sd");
+//		SetDestination("m2_start");
+//	CloseObjective();
+//CloseStage();
+
+AddStage(0);
+	SetMaxTraffic(4);
+	SetStageMessageIndex(190);
+	SetHUDIcon( "louie" );
+	AddObjective("talkto");
+		AddNPC("louie", "m2_louie_sd");
+		AddObjectiveNPCWaypoint( "louie", "m2_louie_walk1" );
+		AddObjectiveNPCWaypoint( "louie", "m2_louie_walk2" );
+		AddObjectiveNPCWaypoint( "louie", "m2_louie_walk1" );
+		SetTalkToTarget("louie", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(1);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis05_02.p3d" );
+		SetCamBestSide( "m2_bestside" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );	
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+
+		SetCamBestSide("m2_bestside");
+		//SetConversationCamNpcName("npc_far");
+		//SetConversationCamPcName("pc_far");
+		SetDialogueInfo("apu","louie","italian",0);
+		SetDialoguePositions("m2_apu_talk","m2_louie_walk1","m2_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

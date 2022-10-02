@@ -1,0 +1,252 @@
+################################################################################
+#
+#   Files.txt   -   GCN
+#
+#   Specify your project settings here.  (Directory locations, output file,
+#   compiler flags, etc.)
+#
+################################################################################
+
+################################################################################
+# General defines
+################################################################################
+
+    ############################################################################
+    # Relative path the FTech root directory
+    ############################################################################
+
+    ROOTDIR = ../../../../..
+
+    ############################################################################
+    # Output file directory
+    ############################################################################
+
+    BINDIRECTORY = ../../dist
+
+    ############################################################################
+    # Output file name (don't include extension or the configuration suffix)
+    ############################################################################
+
+    TARGET		= $(BINDIRECTORY)/p3dview
+
+    ############################################################################
+    # Output file type (EXECUTABLE or LIBRARY)
+    ############################################################################
+
+    TARGETTYPE	= EXECUTABLE
+
+    ############################################################################
+    # Radbuild defined platform specific configuration files
+    #   * one of config.ps2, config.ps2mw, or config.gcn
+    ############################################################################
+
+    include $(ROOTDIR)/radbuild/config.gcn
+
+    ############################################################################
+    # General build dependencies.
+    #   * All client files will be recompiled and linked when files listed
+    #     here are changed
+    ############################################################################
+
+    GENERAL_DEPENDS = files.txt
+
+################################################################################
+# File specification
+# 
+################################################################################
+
+    ############################################################################
+    # Source file directories
+    ############################################################################
+    
+    SOURCEDIR = ../../code
+
+
+    ############################################################################
+    # Include file directories
+    ############################################################################
+
+    INCLUDEDIR += \
+        	$(ROOTDIR) \
+        	../../code \
+		../../code/boot/gamecube \
+		../../code/config \
+		../../code/console \
+		../../code/file \
+		../../code/input \
+		../../code/input/gamecube \
+		../../code/kernel/gamecube \
+		../../code/plugin \
+		../../code/plugin/modules \
+		../../code/rendering \
+		../../code/simcommon \
+		../../code/simcollision \
+		../../code/utility \
+		../../code/viewer \
+
+
+    ############################################################################
+    # Source files names (excluding extension)
+    ############################################################################
+
+    SOURCEFILES += \
+		boot/gamecube/boot \
+		config/arguments \
+		config/settings \
+		console/class \
+		console/commandline \
+		console/console \
+		console/enum \
+		console/function \
+		console/objectscripter \
+		console/quickviewp3d \
+		console/shatter \
+		console/types \
+		console/viewp3d \
+		file/bufferstream \
+		file/p3dfile \
+		file/textfile \
+		input/consolebindings \
+		input/gamecube/gcDriver \
+		kernel/gamecube/kernel \
+		plugin/module \
+		plugin/registry \
+		plugin/modules/locators \
+		rendering/grid \
+		rendering/lightdebug \
+		rendering/origin \
+		rendering/quakecam \
+		rendering/strokefont \
+		simcollision/collisiondisplay \
+		simcollision/collisionobject \
+		simcollision/collisionvolume \
+		simcommon/dline2 \
+		simcommon/tlist \
+		utility/string \
+		utility/symboltable \
+		utility/time \
+		viewer/capture \
+		viewer/collision \
+		viewer/lighting \
+		viewer/overlay \
+		viewer/server \
+		viewer/testpattern \
+		viewer/viewer \
+		viewer/viewercamera \
+		
+    ############################################################################
+    # Library makefile dependencies
+    ############################################################################
+
+	include $(ROOTDIR)/radcore/build/gcn/radcore.m
+	include $(ROOTDIR)/pure3d/build/gamecube/pddi/pddi.m
+	include $(ROOTDIR)/pure3d/build/gamecube/png/png.m
+	include $(ROOTDIR)/pure3d/build/gamecube/Pure3D/pure3d.m
+	include $(ROOTDIR)/pure3d/build/gamecube/zlib/zlib.m
+	include $(ROOTDIR)/radmath/build/gamecube/radmath.m
+	include $(ROOTDIR)/radcontent/build/gamecube/radcontent.m
+
+    ############################################################################
+    # Static libraries
+    ############################################################################
+    
+    # LIBS += 
+
+    ############################################################################
+    # Object files to be linked in
+    ############################################################################
+
+    # OBJS +=
+
+################################################################################
+# Compile settings
+#   * default values are provided
+#   * use '+=' if you want add to default values
+#   * use '=' if you want to override default values
+################################################################################
+
+    ############################################################################
+    # Add pre-processor definitions
+    ############################################################################
+
+    # DEFINE +=
+
+    ############################################################################
+    # Assembler flags
+    ############################################################################
+
+    # ASFLAGS += 
+
+    ############################################################################
+    # C Compiler
+    ############################################################################
+
+    # CFLAGS +=
+
+    ############################################################################
+    # C++ Compiler
+    ############################################################################
+    
+    # CXXFLAGS +=
+
+################################################################################
+# Link setttings
+#   * default values are provided
+#   * use '+=' if you want add to default values
+#   * use '=' if you want to override default values
+################################################################################
+
+    # LDFLAGS +=
+
+################################################################################
+# Pre-compile
+################################################################################
+
+    ############################################################################
+    # Add your target to this list
+    #       - e.g. precompile : crt0.o yourtarget.o
+    ############################################################################
+
+    # precompile : yourtarget.o
+
+    ############################################################################
+    # Your pre-compile steps
+    ############################################################################
+
+    # yourtarget.o: yourtarget.s
+	#     @$(CC) $(ASFLAGS) -o $@ $< > $*.lst
+
+
+################################################################################
+# Pre-link
+################################################################################
+
+    ############################################################################
+    # Add your target to this list
+    #       - e.g. prelink : yourtarget.o
+    ############################################################################
+
+    # prelink : yourtarget.o
+
+    ############################################################################
+    # Your pre-link steps
+    ############################################################################
+
+    # yourtarget.o: yourtarget.s
+	#     @$(CC) $(ASFLAGS) -o $@ $< > $*.lst
+
+################################################################################
+# Client Clean
+################################################################################
+
+    ############################################################################
+    # Your clean build targets
+    ############################################################################
+
+    # clientclean :
+	# 	@echo Cleaning client files...
+	# 	@echo ----------------------------
+	# 	@$(RM) -rf crt0.o
+
+
+

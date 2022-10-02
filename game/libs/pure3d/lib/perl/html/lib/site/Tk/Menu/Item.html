@@ -1,0 +1,160 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::Menu::Item - Base class for Menu items
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::Menu::Item - Base class for Menu items
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>   require Tk::Menu::Item;
+</PRE>
+
+<P>
+
+<PRE>   my $but = $menu-&gt;Button(...);
+   $but-&gt;configure(...);
+   my $what = $but-&gt;cget();
+</PRE>
+
+<P>
+
+<PRE>   package Whatever;
+   require Tk::Menu::Item;
+   @ISA = qw(Tk::Menu::Item);
+</PRE>
+
+<P>
+
+<PRE>   sub PreInit
+   {
+    my ($class,$menu,$info) = @_;
+    $info-&gt;{'-xxxxx'} = ...
+    my $y = delete $info-&gt;{'-yyyy'};
+   }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Tk::Menu::Item is the base class from which Tk::Menu::Button,
+Tk::Menu::Cascade, Tk::Menu::Radiobutton and Tk::Menu::Checkbutton are
+derived. There is also a Tk::Menu::Separator.
+
+
+<P>
+
+Constructors are declared so that $menu-&gt;<CODE>Button(...)</CODE> etc. do what you would expect. 
+
+
+<P>
+
+The <CODE>-label</CODE> option is pre-processed allowing ~ to be prefixed to the character to
+derive a <CODE>-underline</CODE> value. Thus
+
+
+<P>
+
+<PRE>    $menu-&gt;Button(-label =&gt; 'Goto ~Home',...)
+</PRE>
+
+<P>
+
+<PRE>    is equivalent to 
+</PRE>
+
+<P>
+
+<PRE>    $menu-&gt;Button(-label =&gt; 'Goto Home', -underline =&gt; 6, ...)
+</PRE>
+
+<P>
+
+<CODE>Cascade</CODE> accepts <CODE>-menuitems</CODE> which is a list of items for the sub-menu. Within this list (which is also
+accepted by Menu and Menubutton) the first two elements of each item should
+be the ``constructor'' name and the label:
+
+
+<P>
+
+<PRE>    -menuitems =&gt; [
+                   [Button      =&gt; '~Quit', -command =&gt; [destroy =&gt; $mw]],
+                   [Checkbutton =&gt; '~Oil',  -variable =&gt; \$oil], 
+                  ] 
+</PRE>
+
+<P>
+
+Also <CODE>-tearoff</CODE> is propagated to the submenu, and <CODE>-menuvar</CODE> (if present) is set to the created sub-menu.
+
+
+<P>
+
+The returned object is currently a blessed reference to an array of two
+items: the containing Menu and the 'label'. Methods <CODE>configure</CODE> and <CODE>cget</CODE> are mapped onto underlying <CODE>entryconfigure</CODE>
+and <CODE>entrycget</CODE>.
+
+
+<P>
+
+The main purpose of the 
+<FONT SIZE=-1>OO</FONT> interface is to allow derived item classes to be
+defined which pre-set the options used to create a more basic item.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+This 
+<FONT SIZE=-1>OO</FONT> interface is very new. Using the label as the
+``key'' is a problem for separaror items which don't have one. The
+alternative would be to use an index into the menu but that is a problem if
+items are deleted (or inserted other than at the end).
+
+
+<P>
+
+There should probably be a PostInit entry point too, or a more widget like
+defered 'configure'.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

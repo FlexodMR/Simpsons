@@ -1,0 +1,64 @@
+SelectMission("m3sd");
+
+SetMissionResetPlayerOutCar("m3_homer_start", "m3_carstart");
+SetDynaLoadData("l7z6.p3d;l7r6.p3d;");
+
+//SetMissionStartCameraName( "mission3camShape" );
+//SetMissionStartMulticontName( "mission3cam" );
+//SetAnimatedCameraName( "mission3camShape" );
+//SetAnimCamMulticontName( "mission3cam" );
+
+AddStage(5);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(66);
+	SetHUDIcon( "frink" );
+	AddObjective("talkto");
+		AddNPC("frink", "m3_frink_sd");
+		AddStageVehicle("frink_v","m3_frink_carstart","NULL","HardRace\AI_2nd.con");
+		AddObjectiveNPCWaypoint( "frink", "m3_frink_walk1" );
+		AddObjectiveNPCWaypoint( "frink", "m3_frink_walk2" );
+		AddObjectiveNPCWaypoint( "frink", "m3_frink_walk3" );
+		SetTalkToTarget("frink", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis07_03.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_thinking" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_no" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shaking_fist" );
+		SetCamBestSide( "m3_frink_walk2" );
+		SetDialogueInfo("homer","frink","nuclear",0);
+		SetDialoguePositions("m3_frink_walk3","m3_frink_walk1","m3_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

@@ -1,0 +1,123 @@
+proc string p3dOpticEffect_FixName(string $name)
+{
+    string $newName;
+    string $buffer[];
+    tokenize($name, $buffer);
+    int $i;
+    $newName = $buffer[0];
+    for ($i=1; $i < size($buffer); $i++)
+    {
+        $newName = $newName + "_" + $buffer[$i];
+    }
+    return $newName;
+}
+
+proc string p3dOpticEffect_GetNewName(string $title, string $message)
+{
+    do {
+        string $result = `promptDialog -title $title 
+                              -message ($message + "Enter new name:")
+                              -messageAlign center
+                              -button "OK" 
+                              -button "Cancel"
+                              -defaultButton "OK" 
+                              -cancelButton "Cancel"
+                              -dismissString "Cancel"`;
+        if (`strcmp $result "OK"`==0)
+        {
+            $newName = `promptDialog -query -text`;
+            if ($newName=="")
+            {
+                $title = "ERROR!";
+                $message = "No name was entered.\n";
+            }
+            else if (size(`ls $newName`)!=0)
+            {
+                $title = "ERROR!";
+                $message = "This name is already used.\n";
+            }
+            else 
+            {
+                return $newName;
+            }
+        }
+        else
+        {
+            return "";
+        }
+    } while (1);
+}
+
+global proc p3dOpticEffect_UpdateShaderName( string $objectName, string $shaderName )
+{
+    setAttr -lock off ($objectName + ".shader");
+    setAttr -type "string" ($objectName + ".shader") $shaderName;
+    setAttr -lock on ($objectName + ".shader");
+}
+
+global proc p3dOpticEffect_CreateLensFlareGroup()
+{
+    string $selection[] = `ls -selection -transforms`; 
+
+    $newName = p3dOpticEffect_GetNewName("Create New Lens Flare Group","");
+    $groupName = p3dOpticEffect_FixName($newName);
+    if ($groupName!="")
+    {
+        string $shape = `createNode p3dLensFlareGroupShape`;
+        setAttr -lock true ($shape+".shader");
+        string $transform = `p3dOpticEffect_GetTransformNodeCmd -o $shape`;
+        if ($transform!="")
+        {
+            setAttr -lock true ($transform+".s");
+            rename $transform $groupName;
+            select $groupName;                 
+        }
+        for( $selected in $selection )
+        {
+            if (`p3dOpticEffect_IsLensFlareCmd -o $selected`==1)
+            {
+                parent $selected $groupName;            
+            }
+        }
+        select $groupName;
+    }
+}
+
+global proc p3dOpticEffect_CreateLensFlare()
+{
+    string $selection[] = `ls -selection -transforms`; 
+   
+    $newName = p3dOpticEffect_GetNewName("Create New Lens Flare","");         
+    $lensFlareName = p3dOpticEffect_FixName($newName);
+    if ($lensFlareName!="")
+    {
+        string $shape = `createNode p3dLensFlareShape`;
+        string $transform = `p3dOpticEffect_GetTransformNodeCmd -o $shape`;
+        if ($transform!="")
+        {
+            setAttr -lock true ($transform+".sz");
+            rename $transform $lensFlareName;
+            select $lensFlareName;
+        }
+        for( $selected in $selection )
+        {
+            if (`p3dOpticEffect_IsLensFlareGroupCmd -o $selected`==1)
+            {
+                parent $lensFlareName $selected;
+                select $lensFlareName;
+                return;
+            }
+            else
+            {
+                string $group = `p3dOpticEffect_GetParentLensFlareGroupCmd -o $selected`;
+                if ($group!="")
+                {
+                    parent $lensFlareName $group;
+                    select $lensFlareName;
+                    return;
+                }
+            }
+        }
+    }
+}
+

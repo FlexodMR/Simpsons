@@ -1,0 +1,23 @@
+;=======================================
+; PS2 Lecture Series
+; Course 6 - Advanced VU
+; July 12, 2000
+; Neall Verheyde (verheyde@radical.ca)
+;=======================================
+
+; This piece of ugly code packages the VU microprogram contained
+; in vector.vsm in a DMA packet.  We export the global symbol
+; VU_BaseAddress whose address will be used to DMA the program to
+; the VU0
+
+.include "vumacros.h"
+
+.global VU_BaseAddress
+
+VU_BaseAddress:
+.align 0
+DMAend *
+MPG 0, *
+.include "vector.vsm"
+.EndMPG
+.EndDmaData

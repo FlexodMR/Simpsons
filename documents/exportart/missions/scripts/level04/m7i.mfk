@@ -1,0 +1,128 @@
+SelectMission("m7");
+
+SetMissionResetPlayerInCar("m7_carstart");
+SetDynaLoadData("l4z2.p3d;l4r1.p3d;l4r2.p3d;");
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		AddStageVehicle("cCola","m7_cola1_carstart","NULL","Missions\level04\M7dest.con");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(36);
+	RESET_TO_HERE();
+	ShowStageComplete();
+	SetStageMessageIndex(103);
+	SetHUDIcon( "cola_v" );
+	AddStageWaypoint( "m7_cola1_path1" );
+	AddStageWaypoint( "m7_cola1_path4" );
+	AddStageWaypoint( "m7_cola2_path1" );
+	AddStageWaypoint( "m7_cola2_path6" );
+	AddObjective("destroy");
+		ActivateVehicle("cCola","NULL","target");
+		SetVehicleAIParams( "cCola", -10, -9 );   // no shortcuts
+		SetObjTargetVehicle("cCola");
+	CloseObjective();
+	SetStageTime(120);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	SetCompletionDialog("evil");
+CloseStage();
+
+AddStage(37);
+	SetStageMessageIndex(234);
+	SetHUDIcon( "mansion" );
+	AddObjective("goto");
+		AddStageVehicle("cCola","m7_cola2_carstart","NULL","Missions\level04\M7dest.con");
+		SetDestination("m7_cola2_trigger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(36);
+	ShowStageComplete();
+	SetStageMessageIndex(103);
+	SetHUDIcon( "cola_v" );
+	AddStageWaypoint( "m7_cola2_path6" );
+	AddStageWaypoint( "m7_cola2_path6a" );
+	AddStageWaypoint( "m7_cola3_path5" );
+	AddStageWaypoint( "m7_cola3_path4" );
+	AddObjective("destroy");
+		ActivateVehicle("cCola","NULL","target");
+		SetVehicleAIParams( "cCola", -10, -9 );   // no shortcuts
+		SetObjTargetVehicle("cCola");
+	CloseObjective();
+	SetStageTime(120);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	SetCompletionDialog("canyonero");
+CloseStage();
+
+AddStage(37);
+	SetStageMessageIndex(235);
+	SetHUDIcon( "pwrplant" );
+	AddObjective("goto");
+		AddStageVehicle("cCola","m7_cola3_carstart","NULL","Missions\level04\M7dest.con");
+		SetDestination("m7_cola3_trigger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(36);
+	ShowStageComplete();
+	SetStageMessageIndex(38);
+	SetHUDIcon( "cola_v" );
+	AddStageWaypoint( "m7_cola3_path4" );
+	AddStageWaypoint( "m7_cola1_path1" );
+	AddObjective("destroy");
+		ActivateVehicle("cCola","NULL","target");
+		SetVehicleAIParams( "cCola", -10, -9 );   // no shortcuts
+		SetObjTargetVehicle("cCola");
+	CloseObjective();
+	SetStageTime(120);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(217);
+	SetHUDIcon( "simpsons" );
+	AddObjective( "goto" );
+//		AddStageVehicle("wiggu_v","m7_wiggum_carstart1","NULL","Missions\level04\M7evade.con");
+		AddStageVehicle("cPolice","m7_wiggum_carstart1","NULL","Missions\level04\M7evade.con","wiggum");
+		SetDestination( "m7_wiggum_pursue", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetCompletionDialog("settled","wiggum");
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(40);
+	SetHUDIcon( "wiggu_v" );
+	ActivateVehicle("cPolice","NULL","chase");
+	AddObjective("losetail");
+		SetObjTargetVehicle("cPolice");
+		SetObjDistance(150);
+	CloseObjective();
+	SetStageTime(60);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();	
+
+AddStage(0,"final");
+	SetStageMessageIndex(39);
+	SetHUDIcon( "simpsons" );
+	AddObjective("goto");
+		SetDestination("m7_home_locator", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+CloseMission();

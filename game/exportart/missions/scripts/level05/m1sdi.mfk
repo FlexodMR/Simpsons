@@ -1,0 +1,51 @@
+SelectMission("m1sd");
+
+SetMissionResetPlayerOutCar("level5_apu_start","level5_carstart");
+SetDynaLoadData("l5z4.p3d;l5r3.p3d;l5r4.p3d;");
+
+UsePedGroup(5);
+SetMissionStartCameraName( "mission1camShape" );
+SetMissionStartMulticontName( "mission1cam" );
+SetAnimatedCameraName( "mission1camShape" );
+SetAnimCamMulticontName( "mission1cam" );
+
+AddStage(0);
+	SetHUDIcon( "cola_v" );
+	SetMaxTraffic(5);
+	SetStageMessageIndex(67);
+	AddObjective("goto", "neither");
+		//TurnGotoDialogOff();
+		AddNPC("npd", "hidden_moe");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis05_01.p3d" );
+		AddStageVehicle("cCola","m1_cola_carstart","NULL","Missions\level05\M1chase.con");
+		SetDestination("m1_locater_sd","triggersphere");
+		SetCollectibleEffect("wrench_collect");
+		MustActionTrigger();
+	CloseObjective();
+
+CloseStage();
+
+// This is the Dummy mission to play Apu's dialogue//
+
+//AddStage(1);
+//	AddObjective("timer");
+//		SetDurationTime(1);
+//	CloseObjective();
+//CloseStage();
+
+AddStage("final");
+	AddObjective("dialogue");
+
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		SetDialogueInfo("apu","npd","redeem",0); //I use Ralph because he's so wee
+		SetConversationCam( 0, "pc_near" );
+		SetCamBestSide("hidden_bestside");
+		SetDialoguePositions("hidden_apu","hidden_moe","hidden_bestside");
+	CloseObjective();
+CloseStage();
+
+
+CloseMission();

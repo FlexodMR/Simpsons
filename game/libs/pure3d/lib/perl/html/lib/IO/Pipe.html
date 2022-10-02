@@ -1,0 +1,202 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>IO::pipe - supply object methods for pipes
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTRCUTOR">CONSTRCUTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+IO::pipe - supply object methods for pipes
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use IO::Pipe;
+</PRE>
+
+<P>
+
+<PRE>        $pipe = new IO::Pipe;
+</PRE>
+
+<P>
+
+<PRE>        if($pid = fork()) { # Parent
+            $pipe-&gt;reader();
+</PRE>
+
+<P>
+
+<PRE>            while(&lt;$pipe&gt; {
+                ....
+            }
+</PRE>
+
+<P>
+
+<PRE>        }
+        elsif(defined $pid) { # Child
+            $pipe-&gt;writer();
+</PRE>
+
+<P>
+
+<PRE>            print $pipe ....
+        }
+</PRE>
+
+<P>
+
+<PRE>        or
+</PRE>
+
+<P>
+
+<PRE>        $pipe = new IO::Pipe;
+</PRE>
+
+<P>
+
+<PRE>        $pipe-&gt;reader(qw(ls -l));
+</PRE>
+
+<P>
+
+<PRE>        while(&lt;$pipe&gt;) {
+            ....
+        }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>IO::Pipe</CODE> provides an interface to createing pipes between processes.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRCUTOR">CONSTRCUTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ( [READER, WRITER] )
+
+</A></STRONG><DD>
+Creates a <CODE>IO::Pipe</CODE>, which is a reference to a newly created symbol (see the <CODE>Symbol</CODE> package). <CODE>IO::Pipe::new</CODE> optionally takes two arguments, which should be objects blessed into <CODE>IO::Handle</CODE>, or a subclass thereof. These two objects will be used for the system call
+to <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_pipe">pipe</A>. If no arguments are given then method <A HREF="#item_handles">handles</A> is called on the new <CODE>IO::Pipe</CODE> object.
+
+
+<P>
+
+These two handles are held in the array part of the 
+<FONT SIZE=-1>GLOB</FONT> until either
+<A HREF="#item_reader">reader</A> or <A HREF="#item_writer">writer</A> is called.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_reader">reader ([ARGS])
+
+</A></STRONG><DD>
+The object is re-blessed into a sub-class of <CODE>IO::Handle</CODE>, and becomes a handle at the reading end of the pipe. If <CODE>ARGS</CODE> are given then <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_fork">fork</A>
+is called and <CODE>ARGS</CODE> are passed to exec.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_writer">writer ([ARGS])
+
+</A></STRONG><DD>
+The object is re-blessed into a sub-class of <CODE>IO::Handle</CODE>, and becomes a handle at the writing end of the pipe. If <CODE>ARGS</CODE> are given then <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_fork">fork</A>
+is called and <CODE>ARGS</CODE> are passed to exec.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_handles">handles ()
+
+</A></STRONG><DD>
+This method is called during construction by <CODE>IO::Pipe::new</CODE>
+on the newly created <CODE>IO::Pipe</CODE> object. It returns an array of two objects blessed into <CODE>IO::Pipe::End</CODE>, or a subclass thereof.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/IO/Handle.html">Handle</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<bodg@tiuk.ti.com>"><bodg@tiuk.ti.com></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1996 Graham Barr. All rights reserved. This program is free
+software; you can redistribute it and/or modify it under the same terms as
+Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

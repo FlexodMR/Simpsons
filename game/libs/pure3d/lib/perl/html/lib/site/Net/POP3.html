@@ -1,0 +1,305 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::POP3 - Post Office Protocol 3 Client class (RFC1081)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::POP3 - Post Office Protocol 3 Client class 
+<FONT SIZE=-1>(RFC1081)</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Net::POP3;
+    
+    # Constructors
+    $pop = Net::POP3-&gt;new('pop3host');
+    $pop = Net::POP3-&gt;new('pop3host', Timeout =&gt; 60);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module implements a client interface to the 
+<FONT SIZE=-1>POP3</FONT> protocol, enabling a perl5 application to talk to 
+<FONT SIZE=-1>POP3</FONT> servers. This documentation assumes that you are familiar with the 
+<FONT SIZE=-1>POP3</FONT> protocol described in 
+<FONT SIZE=-1>RFC1081.</FONT>
+
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> new Net::POP3 object must be created with the <EM>new</EM> method. Once this has been done, all 
+<FONT SIZE=-1>POP3</FONT> commands are accessed via method calls on the
+object.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+<PRE>    Need some small examples in here :-)
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ( [ HOST, ] [ OPTIONS ] )
+
+</A></STRONG><DD>
+This is the constructor for a new Net::POP3 object. <CODE>HOST</CODE> is the name of the remote host to which a 
+<FONT SIZE=-1>POP3</FONT> connection is required.
+
+
+<P>
+
+If <CODE>HOST</CODE> is not given, then the <CODE>POP3_Host</CODE> specified in <CODE>Net::Config</CODE>
+will be used.
+
+
+<P>
+
+<A HREF="#item_OPTIONS">OPTIONS</A> are passed in a hash like fashion, using key and value pairs. Possible
+options are:
+
+
+<P>
+
+<STRONG>Timeout</STRONG> - Maximum time, in seconds, to wait for a response from the 
+<FONT SIZE=-1>POP3</FONT> server (default: 120)
+
+
+<P>
+
+<STRONG>Debug</STRONG> - Enable debugging information
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+Unless otherwise stated all methods return either a <EM>true</EM> or <EM>false</EM>
+value, with <EM>true</EM> meaning that the operation was a success. When a method states that it
+returns a value, failure will be returned as <EM>undef</EM> or an empty list.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_user">user ( USER )
+
+</A></STRONG><DD>
+Send the 
+<FONT SIZE=-1>USER</FONT> command.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_pass">pass ( PASS )
+
+</A></STRONG><DD>
+Send the 
+<FONT SIZE=-1>PASS</FONT> command. Returns the number of messages in the
+mailbox.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_login">login ( [ USER [, PASS ]] )
+
+</A></STRONG><DD>
+Send both the the 
+<FONT SIZE=-1>USER</FONT> and 
+<FONT SIZE=-1>PASS</FONT> commands. If
+ <CODE>PASS</CODE> is not given the
+<CODE>Net::POP3</CODE> uses <CODE>Net::Netrc</CODE> to lookup the password using the host and username. If the username is not
+specified then the current user name will be used.
+
+
+<P>
+
+Returns the number of messages in the mailbox.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_top">top ( MSGNUM [, NUMLINES ] )
+
+</A></STRONG><DD>
+Get the header and the first <CODE>NUMLINES</CODE> of the body for the message
+<CODE>MSGNUM</CODE>. Returns a reference to an array which contains the lines of text read
+from the server.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_list">list ( [ MSGNUM ] )
+
+</A></STRONG><DD>
+If called with an argument the <A HREF="#item_list">list</A> returns the size of the message in octets.
+
+
+<P>
+
+If called without arguments a reference to a hash is returned. The keys
+will be the <CODE>MSGNUM</CODE>'s of all undeleted messages and the values will be their size in octets.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_get">get ( MSGNUM )
+
+</A></STRONG><DD>
+Get the message <CODE>MSGNUM</CODE> from the remote mailbox. Returns a reference to an array which contains the
+lines of text read from the server.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_last">last ()
+
+</A></STRONG><DD>
+Returns the highest <CODE>MSGNUM</CODE> of all the messages accessed.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_popstat">popstat ()
+
+</A></STRONG><DD>
+Returns an array of two elements. These are the number of undeleted
+elements and the size of the mbox in octets.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_delete">delete ( MSGNUM )
+
+</A></STRONG><DD>
+Mark message <CODE>MSGNUM</CODE> to be deleted from the remote mailbox. All messages that are marked to be
+deleted will be removed from the remote mailbox when the server connection
+closed.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_reset">reset ()
+
+</A></STRONG><DD>
+Reset the status of the remote 
+<FONT SIZE=-1>POP3</FONT> server. This includes reseting the status of all
+messages to not be deleted.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_quit">quit ()
+
+</A></STRONG><DD>
+Quit and close the connection to the remote 
+<FONT SIZE=-1>POP3</FONT> server. Any messages marked as deleted will be
+deleted from the remote mailbox.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="NOTES">NOTES
+
+</A></H1>
+If a <CODE>Net::POP3</CODE> object goes out of scope before <A HREF="#item_quit">quit</A> method is called then the <A HREF="#item_reset">reset</A> method will called before the connection is closed. This means that any
+messages marked to be deleted will not be.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Net/Netrc.html">Netrc</A>
+
+<A HREF="/n|/perl/html/./lib/Net/Cmd.html">Cmd</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright (c) 1995-1997 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

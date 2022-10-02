@@ -1,0 +1,827 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Pod::Parse - Parse perl's pod files.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#GUESSES">GUESSES</A>
+	<LI><A HREF="#POD_CONVENTIONS">POD CONVENTIONS</A>
+	<LI><A HREF="#USAGE">USAGE</A>
+	<UL>
+
+		<LI><A HREF="#Parse">Parse</A>
+		<LI><A HREF="#Simplify">Simplify</A>
+		<LI><A HREF="#Reference_to_Simplify_commands">Reference to Simplify commands</A>
+		<LI><A HREF="#Normalize2">Normalize2</A>
+		<LI><A HREF="#_Escapes">%Escapes</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Pod::Parse - Parse perl's pod files.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<STRONG>THIS TK SNAPSHOT SHOULD BE REPLACED BY A CPAN MODULE</STRONG>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+
+<FONT SIZE=-1>A</FONT> module designed to simplify the job of parsing and
+formatting ``pods'', the documentation format used by perl5. This consists
+of several different functions to present and modify predigested pod files.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="GUESSES">GUESSES
+
+</A></H1>
+This is a work in progress, so 
+<FONT SIZE=-1>I</FONT> may have some stuff wrong, perhaps badly. Some of my
+more reaching guesses:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+An =index paragraph should be split into lines, and each line placed inside an 
+<FONT SIZE=-1>`X'</FONT> formatting command which is then preprended to the next paragraph, like this:
+
+
+
+<P>
+
+<PRE>  =index foo
+  foo2
+  foo3
+  foo2!subfoo
+  
+  Foo!
+ 
+Will become:
+</PRE>
+
+<P>
+
+<PRE>  X&lt;foo&gt;X&lt;foo2&gt;X&lt;foo3&gt;X&lt;foo2!subfoo&gt;Foo!
+</PRE>
+
+<P>
+
+<LI><STRONG></STRONG>
+
+<FONT SIZE=-1>A</FONT> related change: that an 
+<FONT SIZE=-1>`X'</FONT> command is to be used for indexing data. This implies that all formatters need to at least ignore the 
+<FONT SIZE=-1>`X'</FONT> command.
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Inside an =command, no special significance is to be placed on the first
+line of the argument. Thus the following two lines should be parsed
+identically:
+
+
+<P>
+
+<PRE> =item 1. ABC
+ 
+ =item 1.
+ ABC
+</PRE>
+
+<P>
+
+Note that neither of these are identical to this:
+
+
+<P>
+
+<PRE> =item 1.
+ 
+ ABC
+</PRE>
+
+<P>
+
+which puts the 
+<FONT SIZE=-1>``ABC''</FONT> in a separate paragraph.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+
+<FONT SIZE=-1>I</FONT> actually violate this rule twice: in parsing =index commands, and in passing through the =pragma commands. 
+<FONT SIZE=-1>I</FONT> hope this make sense.
+
+
+
+<P>
+
+<LI><STRONG></STRONG>
+
+<FONT SIZE=-1>I</FONT> added the =comment command, which simply ignores the
+next paragraph
+
+
+<P>
+
+<LI><STRONG></STRONG>
+
+<FONT SIZE=-1>I</FONT> also added =pragma, which also ignores the next
+paragraph, but this time it gives the formatter a chance at doing something
+sinister with it.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H1><A NAME="POD_CONVENTIONS">POD CONVENTIONS
+
+</A></H1>
+This module has two goals: first, to simplify the usage of the pod format, and secondly the codification of the pod format. While perlpod contains some information, it hardly gives the entire story. Here 
+<FONT SIZE=-1>I</FONT> present ``the rules'', or at least the rules as far as I've managed to work them out.
+
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Paragraphs">Paragraphs: The basic element
+
+</A></STRONG><DD>
+The fundamental ``atom'' of a pod file is the paragraph, where a paragraph
+is defined as the text up to the next completely blank line (``\n\n''). Any
+pod parser will read in paragraphs sequentially, deciding what do to with
+each based solely on the current state and on the text at the _beginning_
+of the paragraph.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Commands">Commands: The method of communication
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> paragraph that starts with the `=' symbol is assumed
+to be a special command. All of the alphanumeric characters directly after
+the `=' are assumed to be part of the name of the command, up to the first
+whitespace. Anything past that whitespace is considered ``the arugment'',
+and the argument continues up till the end of the paragraph, regardless of
+newlines or other whitespace.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Text">Text: Commands that aren't Commands
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> paragraph that doesn't start with `=' is treated as
+either of two types of text. If it starts with a space or tab, it is
+considered a <STRONG>verbatim</STRONG>
+paragraph, which will be printed out... verbatim. No formatting changes
+whatsover may be done. (Actually, this isn't quite true, but I'll get back
+to that at a later date.)
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> paragraph that doesn't start with whitespace or `='
+is assumed to consist of formmated text that can be molded as the formatter
+sees fit. Reformatting to fit margins, whatever, it's fair game. These
+paragraphs also can contain a number of different formatting codes, which
+verbatim paragraphs can't. These formatting codes are covered later.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__cut_">=cut: The uncommand
+
+</A></STRONG><DD>
+There is one command that needs special mention: =cut. Anything after a
+paragraph starting with =cut is simply ignored by the formatter. In
+addition, any text <STRONG>before</STRONG> a valid command is equally ignored. Any valid `=' command will reenable
+formating. This fact is used to great benefit by Perl, which is glad to
+ignore anything between an `=' command and `=cut', so you can embed a pod
+document right inside a perl program, and neither will bother the other.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Reference">Reference to paragraph commands
+
+</A></STRONG><DD>
+<DL>
+<DT><STRONG><A NAME="item__cut">=cut
+
+</A></STRONG><DD>
+Ignore anything till the next paragraph starting with `='.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__head1">=head1
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> top-level heading. Anything after the command
+(either on the same line or on further lines) is included in the heading,
+up until the end of the paragraph.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__head2">=head2
+
+</A></STRONG><DD>
+Secondary heading. Same as =head1, but different. No, there isn't a head3,
+head4, etc.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__over">=over [N]
+
+</A></STRONG><DD>
+Start a list. The <CODE>N</CODE> is the number of characters to indent by. Not all formatters will listen to this, though. 
+<FONT SIZE=-1>A</FONT> good number to use is 4.
+
+
+
+<P>
+
+While =over sounds like it should just be indentation, it's more complex
+then that. It actually starts a nested environment, specifically for the
+use of =item's. As this command recurses properly, you can use more then
+one, you just have to make sure they are closed off properly by =back
+commands.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__back">=back
+
+</A></STRONG><DD>
+Ends the last =over block. Resets the indentation to whatever it was
+previously. Closes off the list of =item's.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__item">=item
+
+</A></STRONG><DD>
+The point behind =over and =back. This command should only be used between
+them. The argument supplied should be consistent (within a list) to one of
+three types: enumeration, itemization, or description. To exemplify:
+
+
+<P>
+
+An itemized list
+
+
+<P>
+
+<PRE>  =over 4
+  
+  =item *
+  
+  A bulleted item
+  
+  =item *
+  
+  Another bulleted item
+ 
+  =back
+  
+An enumerated list
+</PRE>
+
+<P>
+
+<PRE>  =over 4
+  
+  =item 1.
+  
+  First item.
+  
+  =item 2.
+  
+  Second item.
+  
+  =back
+  
+A described list
+</PRE>
+
+<P>
+
+<PRE>  =over 4
+  
+  =item Item #1
+  
+  First item
+  
+  =item Item #2 (which isn't really like #1, but is the second).
+  
+  Second item
+  
+  =back  
+  
+  
+If you aren't consistent about the arguments to =item, Pod::Parse will
+complain.
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__comment">=comment
+
+</A></STRONG><DD>
+Ignore this paragraph
+
+
+<P>
+
+<DT><STRONG><A NAME="item__pragma">=pragma
+
+</A></STRONG><DD>
+Ignore this paragraph, as well, unless you know what you are doing.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__index">=index
+
+</A></STRONG><DD>
+Undecided at this time, but probably magic involving 
+<FONT SIZE=-1>X</FONT>&lt;&gt;.
+
+
+<P>
+
+</DL>
+<DT><STRONG>Reference to formatting directives
+
+</A></STRONG><DD>
+<DL>
+<DT><STRONG><A NAME="item__">...
+
+</A></STRONG><DD>
+Format text inside the brackets as bold.
+
+
+<P>
+
+<DT><STRONG>...
+
+</A></STRONG><DD>
+Format text inside the brackets as italics.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_">
+
+</A></STRONG><DD>
+Replace with a zero-width character. You'll probably figure out some uses
+for this.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_And">And yet more that I haven't described yet...
+
+</A></STRONG><DD>
+</DL>
+</DL>
+<P>
+<HR>
+<H1><A NAME="USAGE">USAGE
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Parse">Parse
+
+</A></H2>
+This function takes a list of files as an argument. If no argument is given, it defaults to the contents of 
+<FONT SIZE=-1>@ARGV.</FONT> Parse then reads through each file and returns the data as a list. Each element of this list will be a nested list containing data from a paragraph of the pod file. Elements pertaining to ``=over'' paragraphs will themselves contain the nested entries for all of the paragraphs within that list. Thus, it's easier to parse the output of Parse using a recursive parses. (Um, did that parse?)
+
+
+
+<P>
+
+It is <EM>highly</EM> recommended that you use the output of Simplify, not Parse, as it's
+simpler.
+
+
+<P>
+
+The output will consist of a list, where each element in the list matches
+one of these prototypes:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__0_0_0_0_filename_">[0,0,0,0,$filename]
+
+</A></STRONG><DD>
+This is produced at the beginning of each file parsed, where
+<CODE>$filename</CODE> is the name of that file.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__1_0_0_0_filename_">[-1,0,0,0,$filename]
+
+</A></STRONG><DD>
+End of same.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__1_line_pos_0_verbatim_">[1,$line,$pos,0,$verbatim]
+
+</A></STRONG><DD>
+This is produced for each paragraph of verbatim text.
+<CODE>$verbatim</CODE> is the text, <CODE>$line</CODE> is the line offset
+of the paragraph within the file, and <A HREF="#item__pos">$pos</A> is the
+byte offset. (In all of the following elements, <A
+HREF="#item__pos">$pos</A> and <CODE>$line</CODE> have identical meanings,
+so I'll skip explaining them each time.)
+
+
+<P>
+
+<DT><STRONG><A NAME="item__2_line_pos_level_heading_">[2,$line,$pos,$level,$heading]
+
+</A></STRONG><DD>
+Producded by a =head1 or =head2 command. <CODE>$level</CODE> is either 1 or
+2, and <CODE>$heading</CODE> is the argument.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__3_line_pos_0_item_">[3,$line,$pos,0,$item]
+
+</A></STRONG><DD>
+<CODE>$item</CODE> is the argument from an =item paragraph.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__4_line_pos_0_index_">[4,$line,$pos,0,$index]
+
+</A></STRONG><DD>
+<A HREF="#item__index">$index</A> is the argument from an =index paragraph.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__6_line_pos_0_text_">[6,$line,$pos,0,$text]
+
+</A></STRONG><DD>
+Normal formatted text paragraph. <CODE>$text</CODE> is the text.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__7_line_pos_0_pragma_">[7,$line,$pos,0,$pragma]
+
+</A></STRONG><DD>
+<CODE>$pragma</CODE> is the argument from a =pragma paragraph.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__8_line_pos_indentation_type">[8,$line,$pos,$indentation,$type,...]
+
+</A></STRONG><DD>
+This item is produced for each matching =over/=back pair.
+<CODE>$indentation</CODE> is the argument to =over, <A
+HREF="#item__type">$type</A> is 1 if the embedded =item's are bulleted, 2
+if they are enumerated, 3 if they are text, and 0 if there are no items.
+
+
+<P>
+
+The ``...'' indicates an unlimited number of further elements which are
+themselves nested arrays in exactly the format being described. In other
+words, a list item includes all the paragraphs inside the list inside
+itself. (Clear? No? Nevermind.)
+
+
+<P>
+
+<DT><STRONG><A NAME="item__9_line_pos_0_cut_">[9,$line,$pos,0,$cut]
+
+</A></STRONG><DD>
+<CODE>$cut</CODE> contains the text from a =cut paragraph. You shouldn't need to use this, but 
+<FONT SIZE=-1>I</FONT> _suppose_ it might be necessary to do special breaks on a cut. 
+<FONT SIZE=-1>I</FONT> doubt it though. This one is ``depreciated'', as Larry put it. Or perhaps disappreciated.
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Simplify">Simplify
+
+</A></H2>
+This procedure takes as it's input the convoluted output from
+<CODE>Parse(),</CODE> and outputs a much simpler array consisting of pairs
+of commands and arguments, designed to be easy (easier?) to parse in your
+pod formatting code.
+
+
+<P>
+
+It is used very simply by saying something like:
+
+
+<P>
+
+<PRE> @Pod = Simplify(Parse());
+ 
+ while($cmd = shift @Pod) { $arg = shift @Pod;
+        #...
+ }
+</PRE>
+
+<P>
+
+Where #... is the code that responds to any of the commands from the following list. Note that you are welcome to ignore any of the commands that you want to. Many contain duplicate information, or at least information that will go unused. 
+<FONT SIZE=-1>A</FONT> formatted based on this data can be quite simple indeed. (See pod2text for entirely too simple an example.)
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Reference_to_Simplify_commands">Reference to Simplify commands
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item__filename_">"filename"
+
+</A></STRONG><DD>
+The argument contains the name of the pod file that is being parsed. These
+will be present at the start of each file. You should open an output file,
+output headers, etc., based on this, and not when you start parsing.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__endfile_">"endfile"
+
+</A></STRONG><DD>
+The end of the file. Each file will be ended before the next one begins,
+and after all files are done with. You can do end processing here. The
+argument is the same name as in ``filename''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__setline_">"setline"
+
+</A></STRONG><DD>
+This gives you a chance to record the ``current'' input line, probably for
+debugging purposes. In this case, ``current'' means that the next command
+you see that was derived from an input paragraph will have start at the
+arguments line in the file.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__setloc_">"setloc"
+
+</A></STRONG><DD>
+Same as setline, but the byte offset in the input, instead of the line
+offset.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__pragma_">"pragma"
+
+</A></STRONG><DD>
+The argument contains the text of a pragma command.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__text_">"text"
+
+</A></STRONG><DD>
+The argument contains a paragraph of formatted text.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__verbatim_">"verbatim"
+
+</A></STRONG><DD>
+The argument contains a paragraph of verbatim text.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__cut_">"cut"
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> =cut command was hit. You shouldn't really need to
+listen for this one.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__index_">"index"
+
+</A></STRONG><DD>
+The argument contains an =index paragraph. (Note: Current =index commands are not fed through, but turned into 
+<FONT SIZE=-1>X</FONT>
+&lt;&gt; commands.)
+
+
+<P>
+
+<DT><STRONG><A NAME="item__head1_">"head1"
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__head2_">"head2"
+
+</A></STRONG><DD>
+The argument contains the argument from a header command.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__setindent_">"setindent"
+
+</A></STRONG><DD>
+If you are tracking indentation, use the argument to set the indentation
+level.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__listbegin_">"listbegin"
+
+</A></STRONG><DD>
+Start a list environment. The argument is the type of list (1,2,3 or 0).
+
+
+<P>
+
+<DT><STRONG><A NAME="item__listend_">"listend"
+
+</A></STRONG><DD>
+Ends a list environment. Same argument as listbegin.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__listtype_">"listtype"
+
+</A></STRONG><DD>
+The argument is the type of list. You can just record the argument when you
+see one of these, instead of paying attention to listbegin &amp; listend.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__over_">"over"
+
+</A></STRONG><DD>
+The argument is the indentation. It's probably better to listen to the
+``list...'' commands.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__back_">"back"
+
+</A></STRONG><DD>
+Ends an ``over'' list. The argument is the original indentation.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__item_">"item"
+
+</A></STRONG><DD>
+The argument is the text of the =item command.
+
+
+<P>
+
+</DL>
+Note that all of these various commands you've seen are syncronized
+properly so you don't have to pay attention to all at once, but they are
+all output for your benefit. Consider the following example:
+
+
+<P>
+
+<PRE> listtype 2
+ listbegin 2
+ setindent 4
+ over 4
+ item 1.
+ text Item #1
+ item 2.
+ text Item #2
+ setindent 0
+ listend 2
+ back 0
+ listtype 0
+ 
+=head2 Normalize
+</PRE>
+
+<P>
+
+This command is normally invoked by Parse, so you shouldn't need to deal
+with it. It just cleans up text a little, turning spare '&lt;', '&gt;', and '&amp;' characters into 
+<FONT SIZE=-1>HTML</FONT> escapes (&lt;, etc.) as well as generating warnings for some pod formatting mistakes.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Normalize2">Normalize2
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> little more aggresive formating based on heuristics.
+Not applied by default, as it might confuse your own heuristics.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_Escapes">%Escapes
+
+</A></H2>
+This hash is exported from Pod::Parse, and contains default 
+<FONT SIZE=-1>ASCII</FONT> translations for some common 
+<FONT SIZE=-1>HTML</FONT> escape sequences. You might like to use this as a basis for an <CODE>%HTML_Escapes</CODE> array in your own formatter.
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,156 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::BrowseEntry - entry widget with popup choices.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::BrowseEntry - entry widget with popup choices.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Tk::BrowseEntry;
+</PRE>
+
+<P>
+
+<PRE>    $b = $frame-&gt;BrowseEntry(-label =&gt; &quot;Label&quot;, -variable =&gt; \$var);
+    $b-&gt;insert(&quot;end&quot;, &quot;opt1&quot;);
+    $b-&gt;insert(&quot;end&quot;, &quot;opt2&quot;);
+    $b-&gt;insert(&quot;end&quot;, &quot;opt3&quot;);
+    ...
+    $b-&gt;pack;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+BrowseEntry is a poor man's ComboBox. It may be considered an enhanced
+version of LabEntry which provides a button to popup the choices of the
+possible values that the Entry may take. BrowseEntry supports all the
+options LabEntry supports except <STRONG>-textvariable</STRONG>. This is replaced by <STRONG>-variable</STRONG>. Other options that BrowseEntry supports.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__listwidth">-listwidth
+
+</A></STRONG><DD>
+Specifies the width of the popup listbox.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__variable">-variable
+
+</A></STRONG><DD>
+Specifies the variable in which the entered value is to be stored.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__browsecmd">-browsecmd
+
+</A></STRONG><DD>
+Specifies a function to call when a selection is made in the popped up
+listbox. It is passed the widget and the text of the entry selected. This
+function is called after the entry variable has been assigned the value.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__listcmd">-listcmd
+
+</A></STRONG><DD>
+Specifies the function to call when the button next to the entry is pressed
+to popup the choices in the listbox. This is called before popping up the
+listbox, so can be used to populate the entries in the listbox.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_insert">insert(index, string)
+
+</A></STRONG><DD>
+Inserts the text of <EM>string</EM> at the specified <EM>index</EM>. This string then becomes available as one of the choices.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_delete">delete(index1, index2)
+
+</A></STRONG><DD>
+Deletes items from <EM>index1</EM> to <EM>index2</EM>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+BrowseEntry should really provide more of the ComboBox options.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+<STRONG>Rajappa Iyer</STRONG> <A HREF="MAILTO:rsi@earthling.net">rsi@earthling.net</A>
+
+
+<P>
+
+This code was inspired by ComboBox.tcl in Tix4.0 by Ioi Lam and bears more
+than a passing resemblance to ComboBox code. This may be distributed under
+the same conditions as Perl.
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

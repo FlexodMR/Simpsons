@@ -1,0 +1,357 @@
+// Copyright (C) 2000 Radical Entertainment
+// 
+// Name:   p3dDeformAnimSliders.mel
+// Author: Bryan Brandt
+//
+// Description: Creates the Expression sliders on the Animation UI tab
+//
+// Contents:
+// global proc p3dDeformKeyState(string $state)
+// global proc p3dDeformZeroState(string $state)
+// global proc p3dDeformAnimSliderChanged(string $state)
+// global proc string p3dDeformMakeAnimSlider(string $state, string $sub_form, int $type)
+// global proc p3dDeformUpdateSelection(string $state)
+// global proc p3dDeformMakeExpressionAnimControls(string $arg_column_form)
+// global proc p3dDeformUpdateHotKeyField(string $statename)
+// global proc string p3dDeformGetHotKey(string $state)
+// global proc p3dDeformEnterHotKey(string $state)
+// global proc string p3dDeformValidateHotKey(string $state)
+// global proc p3dDeformUIClearStateList(string $arg_window,string $arg_column_form)
+
+
+// Callback when "Key" command n the drop-down menu attached to each
+// expression slider is click.
+//
+global proc p3dDeformKeyState(string $state)
+{
+   string $state_state = $state + ".state";
+   setKeyframe $state_state;
+}
+
+//Called when the "Zero" command in the drop-down menu attached to each
+// expression slider is click.
+//
+global proc p3dDeformZeroState(string $state)
+{
+   string $state_state = $state + ".state";
+   setAttr $state_state 0.0;
+}
+
+// Called whenever associated slider changes
+//
+global proc p3dDeformAnimSliderChanged(string $state)
+{
+   //-replace mode is used to select only the state node affected
+   //by this slider. This ensures that  the keys set for this expression
+   //state only, appear in the timeline.
+
+   select -replace $state;
+}
+
+
+
+/*************************************************************************
+// Description: Creates an animation slider of designated type	
+//
+// Parameters: $state - name of an expressionState node
+//			   $sub_form - the parent layout in which to create this slider
+//			   $type     - 0: a non-usable mini-slider (for states with no pose keys)
+//						 - 1: a half-size slider for states with only positive keys only
+//						 - 2: a half-size slider for states with only negative keys only
+//						 - 3: a full-size slider (for states with both negative and positive keys)
+//
+// Returns: Name of the created slider control
+//
+***************************************************************************/
+
+global proc string p3dDeformMakeAnimSlider(string $state, string $sub_form, int $type)
+{
+   string $slider_cmd = "p3dDeformCallbackMgr \"UpdateState\" {\"" + $state + "\"}";
+	
+   string $state_slider;
+   string $attr_state = $state + ".state";
+   
+   float $slidermax, $slidermin;
+   int $col3, $col4;
+    
+   switch ($type) 
+   {
+		case 0:		$col3 = 10;  $col4 = 150; $slidermin = 0;  $slidermax = 1;  break; 
+		case 1:		$col3 = 75;  $col4 = 85;  $slidermin = 0;  $slidermax = 1;  break; 
+		case 2:		$col3 = 75;  $col4 = 85;  $slidermin = -1; $slidermax = 0;  break;
+		case 3:		$col3 = 150; $col4 = 10;  $slidermin = -1; $slidermax = 1;  break;
+		default:	error "Invalid slider type for p3dDeformMakeAnimSlider";
+					return ""; 
+   }
+ 
+    //fieldmin and fieldmax allows the user to override the slider range (feature request)
+   float $fieldmin = -1;
+   float $fieldmax = 1; 
+   $state_slider = `attrFieldSliderGrp -p $sub_form
+												  -l $state
+												  -at $attr_state
+                                                  -fieldMinValue $fieldmin
+                                                  -fieldMaxValue $fieldmax
+												  -sliderMinValue $slidermin
+												  -sliderMaxValue $slidermax	  					  
+												  -cal 1 "right"
+												  -cw4 110 50 $col3 $col4					  
+												  -cc $slider_cmd`;
+   popupMenu;
+	  menuItem -command ("p3dDeformCallbackMgr \"KeyExpr\" " + "{\"" + $state +"\"}" ) -label "Key";
+	  menuItem -command ("p3dDeformCallbackMgr \"ZeroExpr\" " + "{\"" + $state +"\"}")-label "Zero";
+   return $state_slider;
+}
+
+
+global proc p3dDeformUpdateSelection(string $state)
+{
+   select -tgl $state;
+}
+
+
+
+// Populates a given state list
+// - arguments:
+//     arg_column_form - column form in the state panel list
+//
+global proc p3dDeformMakeExpressionAnimControls(string $arg_column_form)
+{
+   //debug
+   p3dDeformDebugTrace("In p3dDeformMakeExpressionAnimControls");
+   p3dDeformDebugStr("Called with scroll layout =", $arg_column_form);
+   //debug
+
+    string $winUI = "p3dDeformerUI";
+   if (!(`window -exists $winUI`))
+   {
+      return;
+   }
+
+   string $states[] = `ls -type p3dDeformExpressionState`;
+   int $state_count = size($states);
+
+   int $state_flags[];
+   $state_flags[$state_count] = 0;
+
+   string $state_panels[] = `columnLayout -q -ca $arg_column_form`;
+   int $state_panel_count = size($state_panels);
+
+   int $i, $j;
+
+   string $P3D_PREFIX = "p3dDeformExpressionState_Panel_";
+   int $P3D_PREFIX_LENGTH = size($P3D_PREFIX);
+   int $P3D_PREFIX_LENGTH_PLUS_ONE = $P3D_PREFIX_LENGTH + 1;
+
+   for ($i = 0; $i < $state_panel_count; $i++)
+   {
+      // reset j so that the "found state" check fails
+      $j = $state_count;
+
+      // extract (what should be) the prefix
+      string $state_prefix = `substring $state_panels[$i] 1 $P3D_PREFIX_LENGTH`;
+
+      // verify prefix
+      if ($state_prefix == $P3D_PREFIX)
+      {
+         // extract the associated state
+         int $state_panels_i_size = size($state_panels[$i]);
+         string $state_name = `substring $state_panels[$i] $P3D_PREFIX_LENGTH_PLUS_ONE $state_panels_i_size`;
+
+         // find the actual state
+         for ($j = 0; $j < $state_count; $j++)
+         {
+            if ($state_name == $states[$j])
+            {
+               break;
+            }
+         }
+      }
+
+      // found the state, so update the flags to
+      // reflect that a control for it already exists
+      if (($j < $state_count) &&
+          ($state_flags[$j] == 0))
+      {
+         $state_flags[$j] = 1;
+      }
+      // a state by that name doesn't exist, so delete the child UI item
+      else
+      {
+         deleteUI -layout $state_panels[$i];
+      }
+   }
+
+   for ($i = 0; $i < $state_count; $i++)
+   {
+      
+      // check if the state is connected to the correct group
+      if(`connectionInfo -isSource ($states[$i] + ".output")`)
+      {
+           
+         string $destinations[] = `connectionInfo -dfs ($states[$i] + ".output")`;
+         for ($destination in $destinations)
+         {
+            string $regular_expr = "^[^\.]*";
+            string $group = match($regular_expr, $destination);
+            
+            string $columnGrpName;
+            string $tmpGrpArr[];
+            string $tmpColFormArr[];
+            
+            tokenize $arg_column_form "|" $tmpGrpArr;
+            for ($stIt =0; $stIt < size($tmpGrpArr); $stIt++)
+            {
+               if (gmatch($tmpGrpArr[$stIt], "*_Panel_*") == 1)
+               {
+                  break;
+               }
+            }
+
+            
+            //so now $stIt points to the correct string
+
+            string $deUnder[];
+            tokenize $tmpGrpArr[$stIt] "_" $deUnder;
+            
+            int $stIt = 0;
+            int $nameStart = 0;
+            for ($stIt = 0; $stIt < size($deUnder); $stIt++)
+            {
+               if ($deUnder[$stIt] == "Panel")
+               {
+                  $nameStart = $stIt + 1;
+                  break;
+               }
+
+            }
+            
+            $columnGrpName = "";
+            for ($stIt = $nameStart; $stIt < size($deUnder); $stIt++)
+            {
+               if ($stIt - $nameStart != 0)
+                  $columnGrpName+="_";
+               $columnGrpName+=$deUnder[$stIt];  
+            }
+            
+            if ($columnGrpName == $group)
+            {
+               // state UI hasn't been created yet, so create it
+               setParent $arg_column_form;
+
+               string $sub_form_name = `formLayout`;
+
+               setParent $sub_form_name;
+               
+			   //create Sel button
+               string $selName = "p3dDeformStateSelectBtn_" + $states[$i];
+               button -l "Sel" $selName;
+               string $cbCmd = "p3dDeformCallbackMgr \"Sel\" {\"" + $states[$i]+ "\"}";
+               button -e -c $cbCmd $selName;
+			   
+			   //create the Hot key text field
+			   string $textBoxName = "p3dDeformHotKeyField_" + $states[$i];
+			   string $txtCmd = "p3dDeformCallbackMgr \"EnterHotKey\" {\"" + $states[$i]+ "\"}";
+			   textField -w 18
+						 -cc $txtCmd
+						 $textBoxName;
+			   //debug
+			   p3dDeformDebugStr("hotkey field name =", $textBoxName);
+			   //debug
+	   	
+			   p3dDeformUpdateHotKeyField($states[$i]);
+					
+ 		   
+			   //determine whether this state has only negative or only positive keys
+			   string $keyIndicesAttr = $states[$i] + ".keyIndices";
+			   float $poseKeys[] = `getAttr $keyIndicesAttr`;
+			   int $k, $numPos = 0, $numNeg = 0;
+			   int $numPoseKeys = size($poseKeys);
+			   for ($k = 0; $k < $numPoseKeys; $k++)
+			   {
+					if($poseKeys[$k] > 0) $numPos++;
+					else if ($poseKeys[$k] < 0 && $poseKeys[$k] != -2) $numNeg++;
+			   }
+			   
+			   // execute callback to create sliders. If have both neg and pos numbers then create a
+			   // regular sized slider else create a half-sized slider.
+			   string $slider;
+			   
+			   if($numPos == 0 && $numNeg == 0)//make a slider that indicates no posekeys have been created
+				$slider = `p3dDeformMakeAnimSlider $states[$i] $sub_form_name 0`; 
+				
+			   else if($numPos != 0 && $numNeg != 0)
+				$slider = `p3dDeformMakeAnimSlider $states[$i] $sub_form_name 3`; //make a full-size slider
+
+			   else if($numPos != 0 && $numNeg == 0) 
+				$slider = `p3dDeformMakeAnimSlider $states[$i] $sub_form_name 1`; //make a positive half-size slider
+
+			   else if($numPos == 0 && $numNeg != 0)
+				$slider = `p3dDeformMakeAnimSlider $states[$i] $sub_form_name 2`; //make a negative half-size slider
+
+               // create key button
+               string $key_cmd = "p3dDeformCallbackMgr \"KeyExpr\" " + "{\"" + $states[$i] +"\"}" ;
+               string $key_btn = `button -l "Key" 
+                                         -annotation ("Key state " + $states[$i])
+                                         -c $key_cmd`;
+
+			   int $offset;
+			   //calculate how far the "Key" button should be offset from the slider
+			   if($numPos != 0 && $numNeg != 0) $offset = 0;
+			   else if($numPos == 0 && $numNeg == 0) $offset = 140;
+			   else $offset = 75;
+
+               formLayout -edit
+                          -ap $selName left 3 0
+                          -af $selName top 3
+                          -an $selName right
+                          -an $selName bottom
+                          -aoc $slider top 0 $selName
+                          -ac $slider left 0 $selName
+                          -an $slider right
+                          -an $slider bottom
+                          -aoc $key_btn top 0 $slider
+                          -ac $key_btn left $offset $slider
+                          -an $key_btn right
+                          -an $key_btn bottom
+						  -aoc $textBoxName top 0 $key_btn
+						  -ac $textBoxName left 10 $key_btn
+						  //-af $textBoxName right 3
+						  -an $textBoxName bottom
+                          $sub_form_name;
+            }
+         }  //end for destinations ...
+      }// end if connectionInfo ...
+
+   }  //end for all states
+
+   setParent $arg_column_form;
+}
+
+
+
+
+// Clears a given state list
+// - arguments:
+//     arg_window - window containing column form
+//     arg_column_form - column form containing the state panel list
+//
+global proc p3dDeformUIClearStateList(string $arg_window,
+                                      string $arg_column_form)
+{
+   if (!(`window -exists $arg_window`))
+   {
+      return;
+   }
+
+   string $state_panels[] = eval("columnLayout -q -ca " + $arg_column_form);
+   int $state_panel_count = size($state_panels);
+
+   int $i;
+   for ($i = 0; $i < $state_panel_count; $i++)
+   {
+      deleteUI -layout $state_panels[$i];
+   }
+}
+// End of file.
+

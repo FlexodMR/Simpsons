@@ -1,0 +1,599 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Net::PH - CCSO Nameserver Client class
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CONSTRUCTOR">CONSTRUCTOR</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#Q_A">Q&A</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+	<LI><A HREF="#ACKNOWLEDGMENTS">ACKNOWLEDGMENTS</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Net::PH - 
+<FONT SIZE=-1>CCSO</FONT> Nameserver Client class
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Net::PH;
+    
+    $ph = Net::PH-&gt;new(&quot;some.host.name&quot;,
+                       Port    =&gt; 105,
+                       Timeout =&gt; 120,
+                       Debug   =&gt; 0);
+</PRE>
+
+<P>
+
+<PRE>    if($ph) {
+        $q = $ph-&gt;query({ field1 =&gt; &quot;value1&quot; },
+                        [qw(name address pobox)]);
+    
+        if($q) {
+        }
+    }
+    
+    # Alternative syntax
+    
+    if($ph) {
+        $q = $ph-&gt;query('field1=value1',
+                        'name address pobox');
+    
+        if($q) {
+        }
+    }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>Net::PH</CODE> is a class implementing a simple Nameserver/PH client in Perl as described in the 
+<FONT SIZE=-1>CCSO</FONT> Nameserver -- Server-Client Protocol. Like other modules in the Net:: family the
+ <CODE>Net::PH</CODE> object inherits methods from
+<CODE>Net::Cmd</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CONSTRUCTOR">CONSTRUCTOR
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new ( [ HOST ] [, OPTIONS ])
+
+</A></STRONG><DD>
+<PRE>    $ph = Net::PH-&gt;new(&quot;some.host.name&quot;,
+                       Port    =&gt; 105,
+                       Timeout =&gt; 120,
+                       Debug   =&gt; 0
+                      );
+</PRE>
+
+<P>
+
+This is the constructor for a new Net::PH object. <CODE>HOST</CODE> is the name of the remote host to which a 
+<FONT SIZE=-1>PH</FONT> connection is required.
+
+
+<P>
+
+If <CODE>HOST</CODE> is not given, then the <CODE>SNPP_Host</CODE> specified in <CODE>Net::Config</CODE>
+will be used.
+
+
+<P>
+
+<A HREF="#item_OPTIONS">OPTIONS</A> is an optional list of named options which are passed in a hash like
+fashion, using key and value pairs. Possible options are:-
+
+
+<P>
+
+<STRONG>Port</STRONG> - Port number to connect to on remote host.
+
+
+<P>
+
+<STRONG>Timeout</STRONG> - Maximum time, in seconds, to wait for a response from the Nameserver, a value of zero will cause all 
+<FONT SIZE=-1>IO</FONT> operations to block. (default: 120)
+
+
+
+<P>
+
+<STRONG>Debug</STRONG> - Enable the printing of debugging information to 
+<FONT SIZE=-1>STDERR</FONT>
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+Unless otherwise stated all methods return either a <EM>true</EM> or <EM>false</EM>
+value, with <EM>true</EM> meaning that the operation was a success. When a method states that it
+returns a value, failure will be returned as <EM>undef</EM> or an empty list.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_query">query( SEARCH [, RETURN ] )
+
+</A></STRONG><DD>
+<PRE>    $q = $ph-&gt;query({ name =&gt; $myname },
+                    [qw(name email schedule)]);
+    
+    foreach $handle (@{$q}) {
+        foreach $field (keys %{$handle}) {
+            $c = ${$handle}{$field}-&gt;code;
+            $v = ${$handle}{$field}-&gt;value;
+            $f = ${$handle}{$field}-&gt;field;
+            $t = ${$handle}{$field}-&gt;text;
+            print &quot;field:[$field] [$c][$v][$f][$t]\n&quot; ;
+        }
+    }
+</PRE>
+
+<P>
+
+<PRE>    
+</PRE>
+
+<P>
+
+Search the database and return fields from all matching entries.
+
+
+<P>
+
+The <CODE>SEARCH</CODE> argument is a reference to a 
+<FONT SIZE=-1>HASH</FONT> which contains field/value pairs which will be
+passed to the Nameserver as the search criteria.
+
+
+<P>
+
+<A HREF="#item_RETURN">RETURN</A> is optional, but if given it should be a reference to a list which contains
+field names to be returned.
+
+
+<P>
+
+The alternative syntax is to pass strings instead of references, for
+example
+
+
+<P>
+
+<PRE>    $q = $ph-&gt;query('name=myname',
+                    'name email schedule');
+</PRE>
+
+<P>
+
+The <CODE>SEARCH</CODE> argument is a string that is passed to the Nameserver as the search
+criteria.
+
+
+<P>
+
+<A HREF="#item_RETURN">RETURN</A> is optional, but if given it should be a string which will contain field
+names to be returned.
+
+
+<P>
+
+Each match from the server will be returned as a 
+<FONT SIZE=-1>HASH</FONT> where the keys are the field names and the values
+are <CODE>Net::PH:Result</CODE> objects (<EM>code</EM>, <EM>value</EM>, 
+<EM>field</EM>, <EM>text</EM>).
+
+
+<P>
+
+Returns a reference to an 
+<FONT SIZE=-1>ARRAY</FONT> which contains references to HASHs, one per
+match from the server.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_change">change( SEARCH , MAKE )
+
+</A></STRONG><DD>
+<PRE>    $r = $ph-&gt;change({ email =&gt; &quot;*.domain.name&quot; },
+                     { schedule =&gt; &quot;busy&quot;);
+</PRE>
+
+<P>
+
+Change field values for matching entries.
+
+
+<P>
+
+The <CODE>SEARCH</CODE> argument is a reference to a 
+<FONT SIZE=-1>HASH</FONT> which contains field/value pairs which will be
+passed to the Nameserver as the search criteria.
+
+
+<P>
+
+The <CODE>MAKE</CODE> argument is a reference to a 
+<FONT SIZE=-1>HASH</FONT> which contains field/value pairs which will be
+passed to the Nameserver that will set new values to designated fields.
+
+
+<P>
+
+The alternative syntax is to pass strings instead of references, for
+example
+
+
+<P>
+
+<PRE>    $r = $ph-&gt;change('email=&quot;*.domain.name&quot;',
+                     'schedule=&quot;busy&quot;');
+</PRE>
+
+<P>
+
+The <CODE>SEARCH</CODE> argument is a string to be passed to the Nameserver as the search criteria.
+
+
+<P>
+
+The <CODE>MAKE</CODE> argument is a string to be passed to the Nameserver that will set new
+values to designated fields.
+
+
+<P>
+
+Upon success all entries that match the search criteria will have the field
+values, given in the Make argument, changed.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_login">login( USER, PASS [, ENCRYPT ])
+
+</A></STRONG><DD>
+<PRE>    $r = $ph-&gt;login('username','password',1);
+</PRE>
+
+<P>
+
+Enter login mode using <A HREF="#item_USER">USER</A> and <CODE>PASS</CODE>. If <CODE>ENCRYPT</CODE> is given and is <EM>true</EM> then the password will be used to encrypt a challenge text string provided
+by the server, and the encrypted string will be sent back to the server. If <CODE>ENCRYPT</CODE> is not given, or <EM>false</EM> the the password will be sent in clear text (<EM>this is not recommended</EM>)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_logout">logout()
+
+</A></STRONG><DD>
+<PRE>    $r = $ph-&gt;logout();
+</PRE>
+
+<P>
+
+Exit login mode and return to anonymous mode.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_fields">fields( [ FIELD_LIST ] )
+
+</A></STRONG><DD>
+<PRE>    $fields = $ph-&gt;fields();
+    foreach $field (keys %{$fields}) {
+        $c = ${$fields}{$field}-&gt;code;
+        $v = ${$fields}{$field}-&gt;value;
+        $f = ${$fields}{$field}-&gt;field;
+        $t = ${$fields}{$field}-&gt;text;
+        print &quot;field:[$field] [$c][$v][$f][$t]\n&quot;;
+    }
+</PRE>
+
+<P>
+
+Returns a reference to a 
+<FONT SIZE=-1>HASH.</FONT> The keys of the 
+<FONT SIZE=-1>HASH</FONT> are the field names and the values are
+ <CODE>Net::PH:Result</CODE> objects (<EM>code</EM>, <EM>value</EM>, <EM>field</EM>,
+<EM>text</EM>).
+
+
+<P>
+
+<CODE>FIELD_LIST</CODE> is a string that lists the fields for which info will be returned.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_add">add( FIELD_VALUES )
+
+</A></STRONG><DD>
+<PRE>    $r = $ph-&gt;add( { name =&gt; $name, phone =&gt; $phone });
+</PRE>
+
+<P>
+
+This method is used to add new entries to the Nameserver database. You must
+successfully call <EM>login</EM> before this method can be used.
+
+
+<P>
+
+<STRONG>Note</STRONG> that this method adds new entries to the database. To modify an existing
+entry use <EM>change</EM>.
+
+
+<P>
+
+<CODE>FIELD_VALUES</CODE> is a reference to a 
+<FONT SIZE=-1>HASH</FONT> which contains field/value pairs which will be
+passed to the Nameserver and will be used to initialize the new entry.
+
+
+<P>
+
+The alternative syntax is to pass a string instead of a reference, for
+example
+
+
+<P>
+
+<PRE>    $r = $ph-&gt;add('name=myname phone=myphone');
+</PRE>
+
+<P>
+
+<CODE>FIELD_VALUES</CODE> is a string that consists of field/value pairs which the new entry will
+contain.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_delete">delete( FIELD_VALUES )
+
+</A></STRONG><DD>
+<PRE>    $r = $ph-&gt;delete('name=myname phone=myphone');
+</PRE>
+
+<P>
+
+This method is used to delete existing entries from the Nameserver
+database. You must successfully call <EM>login</EM> before this method can be used.
+
+
+<P>
+
+<STRONG>Note</STRONG> that this method deletes entries to the database. To modify an existing
+entry use <EM>change</EM>.
+
+
+<P>
+
+<CODE>FIELD_VALUES</CODE> is a string that serves as the search criteria for the records to be
+deleted. Any entry in the database which matches this search criteria will
+be deleted.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_id">id( [ ID ] )
+
+</A></STRONG><DD>
+<PRE>    $r = $ph-&gt;id('709');
+</PRE>
+
+<P>
+
+Sends <CODE>ID</CODE> to the Nameserver, which will enter this into its logs. If <CODE>ID</CODE> is not given then the 
+<FONT SIZE=-1>UID</FONT> of the user running the process will be sent.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_status">status()
+
+</A></STRONG><DD>
+Returns the current status of the Nameserver.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_siteinfo">siteinfo()
+
+</A></STRONG><DD>
+<PRE>    $siteinfo = $ph-&gt;siteinfo();
+    foreach $field (keys %{$siteinfo}) {
+        $c = ${$siteinfo}{$field}-&gt;code;
+        $v = ${$siteinfo}{$field}-&gt;value;
+        $f = ${$siteinfo}{$field}-&gt;field;
+        $t = ${$siteinfo}{$field}-&gt;text;
+        print &quot;field:[$field] [$c][$v][$f][$t]\n&quot;;
+    }
+</PRE>
+
+<P>
+
+Returns a reference to a 
+<FONT SIZE=-1>HASH</FONT> containing information about the server's site. The keys of the 
+<FONT SIZE=-1>HASH</FONT> are the field names and values are
+
+<CODE>Net::PH:Result</CODE> objects (<EM>code</EM>, <EM>value</EM>, <EM>field</EM>, <EM>text</EM>).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_quit">quit()
+
+</A></STRONG><DD>
+<PRE>    $r = $ph-&gt;quit();
+</PRE>
+
+<P>
+
+Quit the connection
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="Q_A">Q&A
+
+</A></H1>
+How do 
+<FONT SIZE=-1>I</FONT> get the values of a Net::PH::Result object?
+
+
+<P>
+
+<PRE>    foreach $handle (@{$q}) {
+        foreach $field (keys %{$handle}) {
+            $my_code  = ${$q}{$field}-&gt;code;
+            $my_value = ${$q}{$field}-&gt;value;
+            $my_field = ${$q}{$field}-&gt;field;
+            $my_text  = ${$q}{$field}-&gt;text;
+        }
+    }
+</PRE>
+
+<P>
+
+How do 
+<FONT SIZE=-1>I</FONT> get a count of the returned matches to my query?
+
+
+<P>
+
+<PRE>    $my_count = scalar(@{$query_result});
+</PRE>
+
+<P>
+
+How do 
+<FONT SIZE=-1>I</FONT> get the status code and message of the last <CODE>$ph</CODE> command?
+
+
+<P>
+
+<PRE>    $status_code    = $ph-&gt;code;
+    $status_message = $ph-&gt;message;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/Net/Cmd.html">Cmd</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+Graham Barr <A HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A> Alex Hristov
+<A HREF="MAILTO:<hristov@slb.com>"><hristov@slb.com></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ACKNOWLEDGMENTS">ACKNOWLEDGMENTS
+
+</A></H1>
+Password encryption code ported to perl by Broc Seib <A
+HREF="MAILTO:<bseib@purdue.edu>,"><bseib@purdue.edu>,</A> Purdue University
+Computing Center.
+
+
+<P>
+
+Otis Gospodnetic <A
+HREF="MAILTO:<otisg@panther.middlebury.edu>"><otisg@panther.middlebury.edu></A>
+suggested passing parameters as string constants. Some queries cannot be
+executed when passing parameters as string references.
+
+
+<P>
+
+<PRE>        Example: query first_name last_name email=&quot;*.domain&quot;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+The encryption code is based upon cryptit.c, Copyright 
+<FONT SIZE=-1>(C)</FONT> 1988 by Steven Dorner and the University of Illinois Board of Trustees, and by 
+<FONT SIZE=-1>CSNET.</FONT>
+
+
+
+<P>
+
+All other code is Copyright (c) 1996-1997 Graham Barr <A
+HREF="MAILTO:<gbarr@ti.com>"><gbarr@ti.com></A> and Alex Hristov <A
+HREF="MAILTO:<hristov@slb.com>."><hristov@slb.com>.</A> All rights
+reserved. This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

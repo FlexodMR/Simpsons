@@ -1,0 +1,230 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>ExtUtils::MM_Win32 - methods to override UN*X behaviour in ExtUtils::MakeMaker
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+ExtUtils::MM_Win32 - methods to override 
+<FONT SIZE=-1>UN*X</FONT> behaviour in ExtUtils::MakeMaker
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use ExtUtils::MM_Win32; # Done internally by ExtUtils::MakeMaker if needed
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+See ExtUtils::MM_Unix for a documentation of the methods provided there.
+This package overrides the implementation of these methods, not the
+semantics.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_catfile">catfile
+
+</A></STRONG><DD>
+Concatenate one or more directory names and a filename to form a complete
+path ending with a filename
+
+
+<P>
+
+<DT><STRONG><A NAME="item_constants">constants (o)
+
+</A></STRONG><DD>
+Initializes lots of constants and 
+<FONT SIZE=-1>.SUFFIXES</FONT> and 
+<FONT SIZE=-1>.PHONY</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_static_lib">static_lib (o)
+
+</A></STRONG><DD>
+Defines how to produce the *.a (or equivalent) files.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dynamic_bs">dynamic_bs (o)
+
+</A></STRONG><DD>
+Defines targets for bootstrap files.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dynamic_lib">dynamic_lib (o)
+
+</A></STRONG><DD>
+Defines how to produce the *.so (or equivalent) files.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_canonpath">canonpath
+
+</A></STRONG><DD>
+No physical check on the filesystem, but a logical cleanup of a path. On 
+<FONT SIZE=-1>UNIX</FONT> eliminated successive slashes and successive
+``/.''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_perl_script">perl_script
+
+</A></STRONG><DD>
+Takes one argument, a file name, and returns the file name, if the argument
+is likely to be a perl script. On MM_Unix this is true for any ordinary,
+readable file.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_pm_to_blib">pm_to_blib
+
+</A></STRONG><DD>
+Defines target that copies all files in the hash 
+<FONT SIZE=-1>PM</FONT> to their destination and autosplits them. See <A HREF="/n|/perl/html/./lib/ExtUtils/Install_DESCRIPTION.html">Install/DESCRIPTION</A>
+
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_test_via_harness">test_via_harness (o)
+
+</A></STRONG><DD>
+Helper method to write the test targets
+
+
+<P>
+
+<DT><STRONG><A NAME="item_tool_autosplit">tool_autosplit (override)
+
+</A></STRONG><DD>
+Use Win32 quoting on command line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_tools_other">tools_other (o)
+
+</A></STRONG><DD>
+Win32 overrides.
+
+
+<P>
+
+Defines 
+<FONT SIZE=-1>SHELL,</FONT> 
+<FONT SIZE=-1>LD,</FONT> 
+<FONT SIZE=-1>TOUCH,</FONT> 
+<FONT SIZE=-1>CP,</FONT> 
+<FONT SIZE=-1>MV,</FONT> 
+<FONT SIZE=-1>RM_F,</FONT> 
+<FONT SIZE=-1>RM_RF,</FONT> 
+<FONT SIZE=-1>CHMOD,</FONT> 
+<FONT SIZE=-1>UMASK_NULL</FONT> in the Makefile. Also defines the perl programs 
+<FONT SIZE=-1>MKPATH,</FONT> 
+<FONT SIZE=-1>WARN_IF_OLD_PACKLIST,</FONT> 
+<FONT SIZE=-1>MOD_INSTALL.</FONT> 
+<FONT SIZE=-1>DOC_INSTALL,</FONT> and 
+<FONT SIZE=-1>UNINSTALL.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_xs_o">xs_o (o)
+
+</A></STRONG><DD>
+Defines suffix rules to go from 
+<FONT SIZE=-1>XS</FONT> to object files directly. This is only intended for
+broken make implementations.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_top_targets">top_targets (o)
+
+</A></STRONG><DD>
+Defines the targets all, subdirs, config, and 
+<FONT SIZE=-1>O_FILES</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_manifypods">manifypods (o)
+
+</A></STRONG><DD>
+We don't want manpage process. 
+<FONT SIZE=-1>XXX</FONT> add pod2html support later.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dist_ci">dist_ci (o)
+
+</A></STRONG><DD>
+Same as MM_Unix version (changes command-line quoting).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dist_core">dist_core (o)
+
+</A></STRONG><DD>
+Same as MM_Unix version (changes command-line quoting).
+
+
+<P>
+
+<DT><STRONG><A NAME="item_pasthru">pasthru (o)
+
+</A></STRONG><DD>
+Defines the string that is passed to recursive make calls in
+subdirectories.
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

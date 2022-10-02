@@ -1,0 +1,68 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::Submethods - add aliases for tk sub-commands
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::Submethods - add aliases for tk sub-commands
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use Tk::Submethods ( 'command1' =&gt; [qw(sub1 sub2 sub3)],
+                       'command2' =&gt; [qw(sub1 sub2 sub3)]);  
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Creates <CODE>-&gt;commandSub(...)</CODE> as an alias for <CODE>-&gt;command('sub',...)</CODE>
+e.g. <CODE>-&gt;grabRelease</CODE> for <CODE>-&gt;grab('release')</CODE>.
+
+
+<P>
+
+For each command/subcommand pair this creates a closure with command and
+subcommand as bound lexical variables and assigns a reference to this to a
+'glob' in the callers package.
+
+
+<P>
+
+Someday the sub-commands may be created directly in the 
+<FONT SIZE=-1>C</FONT> code.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

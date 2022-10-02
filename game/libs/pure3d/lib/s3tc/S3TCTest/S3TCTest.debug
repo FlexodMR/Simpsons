@@ -1,0 +1,22 @@
+S3TCTest : Compress.o DDSFile.o Endian.o MemAlloc.o S3TCTest.o
+	gcc -g -o S3TCTest Compress.o DDSFile.o Endian.o MemAlloc.o S3TCTest.o -lS3TC -L./
+
+Compress.o : Compress.c
+	gcc -g -c -w Compress.c
+
+DDSFile.o : DDSFile.c
+	gcc -g -c -w DDSFile.c
+
+Endian.o : Endian.c
+	gcc -g -c -w Endian.c
+
+MemAlloc.o : MemAlloc.c
+	gcc -g -c -w MemAlloc.c
+
+S3TCTest.o : S3TCTest.c
+	gcc -g -c -w S3TCTest.c
+
+.PHONY : clean
+
+clean :
+	rm -f *.o S3TCTest

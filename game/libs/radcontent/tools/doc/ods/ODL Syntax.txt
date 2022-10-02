@@ -1,0 +1,662 @@
+//============================================================================
+// radcontent TDL/ODL Syntax
+//============================================================================
+// Version 1.0 Sept 24, 2002 Tim Hinds
+//----------------------------------------------------------------------------
+// Version 1.1 Oct 1, 2002 Tim Hinds
+//      - Changes made to make syntax look as close to C++ as possible
+//      - Added more "," and ";"s for Rod
+//      - Added preprocessor section
+//      - Added function/method syntax
+//      - Documented Default Type Ranges and Default Default Values.
+//      - Documented standard .tdl, .odl file extensions
+//		- Documented format of .odl
+//		- Documented comment block syntax
+//		- Put examples before BNF form for readabiblity
+//----------------------------------------------------------------------------
+// Status: Second Draft 
+//============================================================================
+
+//============================================================================
+// How to read this doc.
+//============================================================================
+
+To get the gist of this document you could probably get away with just reading
+the text in each "Declaration Examples:" section for each type.
+
+//============================================================================
+// Overview
+//============================================================================
+
+TDL - (Type Definition Language) - The text format for specifying types
+ODL - (Object Definition Language) - The text format for specifying instances
+    of types described in the TDL.
+ODS - (Object Definition System) The TDL, ODL and the tool and runtime side
+    libraries for parsing, loading, saving, and manipulating this information.
+    
+type   - a class, enum, int, bool, .. that can be instantiated.
+object - an instance of a type
+
+It is interresting to note that in order to define a complete TDL, an ODL was
+necessary.  Without an ODL, member initializers and default values are
+impossible to define.  Thus, for each type specifier (enum, int, class, etc)
+a type declaration syntax AND an initialization syntax is provided.
+
+In other words, by adopting the TDL as a standard, we standardize the syntax
+for defining objects (ODL) in text form.
+
+//============================================================================
+// About types, declarations, and initialization
+//============================================================================
+
+"type specifier" is a built-in type such as class, enum, int, array, etc:
+
+"type declaration" is the statement of a new type based on a "type
+specifier" template.  This statement is different for each type
+specifier.  It names with metadata (version, description, etc) a
+type and can be refered to thereafter by "type name".  
+
+"type initializer" definines the value of a type.  Types based on each
+ primitive type specifier have a different syntax for initialization.  Both
+ the TDL and the ODL use the "type initializer" syntax.
+ 
+"type" is a "type name" or a "type declaration".  The TDL system lets you
+use the name of a type declartion or an inline type declaration where
+a type is needed.
+
+//============================================================================
+// Preprocessor
+//============================================================================
+
+A simple text replacement preprocessor will be implemented in the parser.
+
+Examples:
+
+	1.  #define DEFAULT_STRING_VAL "Unknown!
+
+	2.  #define MAX_ARRAY_SIZE 255
+
+	3.  #define LAZYCLASS class myClass \
+			{ \
+				int { } m_IntegerVal; \
+			} : 4;
+			
+BNF Form:			
+				
+	<newline_char> ::= "\"
+	<macro_text> ::= { <ascii_character> }
+
+	<macro_definition> ::=
+		"#define" <macro_name> <macro_text>
+		[ { <newline_char> <CRLF> <macro_text> } ]			      
+
+//============================================================================
+// Comment Blocks
+//============================================================================
+
+Both types of C++ comments are supported in TDL and ODL files:
+
+Example:
+
+	/* <comment>
+		<comment> */
+		
+	or
+
+	// <comment> 
+
+//============================================================================
+// Literal Types 
+//============================================================================
+
+<boolean_value> ::= "true" | "false"
+<float_value> ::= -1.0, 2.0, etc..
+<string_val> ::= "\"" { <char> } "\""
+<variable_name> ::= ( <letter> | "_" ) [ <letter> | "+" | "number" ]
+<composite_variable_name> ::= <varaiable_name> [ { "." <varialbe_name> } ]
+<hex_integer_value> ::= "0x"  ... etc
+<decimal_integer_value> ::= [ "-" | "+" ] { <number> }
+<integer_value> ::= <hex_integer_value> | <decimal_integer_value>
+
+//============================================================================
+// About types, declarations, and initialization
+//============================================================================
+
+<type_declaration> ::=
+    <bool_declaration>          |
+    <int_declaration>           |
+    <float_declaration>         |
+    <string_declaration >       |
+    <enum_declaration >         |
+    <ref_declaration>           |
+    <collection_declaration>    |
+    <array_declaration>         |
+    <fixedarray_declaration>    |
+    <class_declaration >
+    
+<type> ::= <type_name> | <type_declaration>
+
+<type_name> ::= <variable_name>
+
+//============================================================================
+// Gemeral type definition form
+//============================================================================
+
+The type definition syntax and class member definition syntax is based on a
+meta-attribute extended version of the enum and class syntax in C++.  
+
+    enum MyEnumType { ... }  
+    class MyClassType { ... } m_MyNestedClass
+    
+The initializer syntax is similar to  C++ constructor syntax  using the ":"
+separator but was modified to allow nested structure initialization and
+initialization of non-simple-types.
+
+    class MyClassType { ... } : [ m_Int: 0, m_NestedClasss: [ m_Float:1.0]]
+    
+BNF Form:
+
+<type_meta_attribute> ::=
+    version:<float_value> |
+    description:<string_value> |
+    friendlyname:<string_value>
+    context: "[" <varaible_name> [ "," <varible_name> ] "]"
+    
+<type_meta_information > ::=
+	"[" { <type_meta_attribute> [ "," <type_meta_attribute> ] } "]"
+    
+<type_specifier>
+[ <type_name> ]
+"<" <template_type> ">"
+[ "[" <type_meta_information> "]" ]
+ "{" [ <type_specific_parameters> ] "}"
+[ ":" <type_specific_intializer> ]
+    
+
+//============================================================================
+// 'bool'
+//============================================================================
+
+Declaration Examples:
+    
+    bool { }
+    bool dolby [ description: "dolby on" ] { } : true
+    bool { } : true            // Default to true
+    bool frameRateCap : false  // Default to false
+    
+BNF Form:    
+    	
+	<bool_initializer> ::= <boolean_value> // Defaults to 'false' if omitted
+
+	<bool_declaration> ::=
+		"bool"
+		[ <type_name> ]
+		[ <type_meta_information> ]
+		"{" "}"						
+		[ ":" <bool_initializer> ]
+
+*Note that the empty {} is necessary as an separator in order to simulate
+C++ 'enum' style syntax.  The empty {}'s are only need for the bool type as
+it is the primitive of all primitives--it represents a bit and thus has no
+useful range or other attributes.
+
+
+//============================================================================
+// 'float'
+//============================================================================
+
+Declaration Examples:
+
+    1.  float { }
+    2.  float audioVolume[ version: 1.0, context: [ xbox, tool ] ] { }
+    3.  float aspect { min: 0.0, max: 10.0 }
+    2.  float Rpm[ description: "Rotations PerMinute" ]
+		{ min=-3.0 max=1.0 } : 800.0
+    3.  float bpm{ max= 400.0} : 12.0
+    
+BNF Form:
+
+	<float_optional_attribute> ::=
+		"min:"<float_val> |  // Defaults to FLT_MIN if omitted
+		"max:"<float_val>    // Defaults to FLT_MAX if omitted
+
+	<float_initializer> := <float_value> // Defaults to 0.0 if omitted
+
+	<float_declaration> ::=
+		"float"
+		[ <type_name> ]
+		[ <type_meta_information> ]  
+		"{" [ <float_optional_attribute>
+			{ "," <float_optional_attribute } ] "}"
+		[ ":" <float_initializer>  ]
+	  
+
+//============================================================================
+// 'int'
+//============================================================================
+
+Declaration Examples:
+
+    1.  int Integer{ }
+    2.  int colorval{ min: 0, max:255 } : 128   
+    3.  int colorval [ description: "red, green, or blue" ] {min:0, max: 255}
+    4.  int { max:0xA0 }
+
+BNF Form:
+
+	<int_optional_attribute> ::=
+		"min:"<int_val> |			// Defaults to INT_MIN if omitted
+		"max:"<int_val>				// Defaults to INT_MAX if omitted
+
+	<int_initializer> ::= <integer_value> // Defaults to 0 if omitted
+
+	<int_declaration> ::=
+		"int"
+		[ <type_name> ]
+		[ <type_meta_information> ]    
+		"{" [ <int_optional_attribute> [ { "," <int_optional_attribute } ] ] "}"
+		[ ":" <int_initializer>  ]     
+
+
+//============================================================================
+// 'string'
+//============================================================================
+
+Declaration Examples:
+
+    1.  string gameName { } : "Undefined game name"
+    2.  string { }
+    3.  string example { minchars:0, maxchars:64 ) : "This is a quote in a string \""
+    4.  string sentance { maxchars: 128 } : ""
+    
+BNF Form:
+    
+	<string_optional_attribute> ::=
+		minchars:<int_value> |			// Defaults to 0 if omitted
+		maxchars:<int_value>			// Defaults to INT_MAX if omitted
+
+	<string_initializer > ::= <string_value> // Defaults to "" if omitted
+
+	<string_declaration> ::=
+		"string"
+		[ <type_name> ]
+		[ <type_meta_information> ]    
+		"{" [ <string_optional_attribute>
+			[ { "," <string_optional_attribute } ] ] "}"
+		[ ":" <string_initializer>  ]
+
+
+//============================================================================
+// 'reference'
+//============================================================================
+
+Declaration Examples:
+
+    1.  ref AnimationReference< tAnimation > { }
+    2.  ref CarReference< car > { nullok: false } : cars.defaultcar
+    3.  ref< tAnimation >{nullok:true} : null
+    4.  ref StringRef< string64 >
+		[ description: "reference to a string" ] {nullok:true} 
+		
+BNF Form:
+		
+	<ref_value> ::=
+		<composite_variable_name> |
+		"null"
+
+	<ref_initializer > ::= <ref_value> // Defaults to 'null' if omitted
+
+	<ref_declaration> ::=
+		"ref"
+		[ <type_name> ]
+		"<" <type> ">"
+		[ <type_meta_information> ]    
+		"{" [ "nullok:" <boolean_value> ] "}"  Defaults to 'null' if omitted
+		[ ":" <ref_initializer>  ]     
+  
+
+//============================================================================
+// 'enum'
+//============================================================================
+
+Declaration Examples:  
+      
+    1.  enum AudioFormat[ version:1.0 ]{ pcm, adpcm, vag }
+    2.  enum { pcm:4, adpcm, vag } : adpcm
+    3.  enum [description:"colors of the rainbow" ]{ red:0,green:12, cyan:432 }
+    4.  enum strangeEnum{ hex:0xF8, purple:0 } : purple
+    
+BNF Form:
+
+	<enum_val> ::= <varaible_name> [ ":" <integer_val> ]
+
+	<enum_initializer> ::=
+		<varable_name> // Defaults to first enum value if omitted
+
+	<enum_declaration> ::=
+		"enum"
+		[ <type_name> ]
+		[ <type_meta_information> ]    
+		"{" <enum_val> [ { [ "," <enum_val> ] } ] "}"
+		[ ":" <enum_initializer>  ]  
+ 
+ 
+//============================================================================
+// 'fixedarray'
+//
+// Fixed sized array -- size can be assumed and need not be stored as object
+//  instance data.
+//============================================================================
+
+Declaration Examples:
+
+    1.  fixedarray shortStringArray< string{ minchars:4 } >{ 12 }
+    2.  fixedarray< ref< string >{ nullok:false } >{ 2 }
+            : [ strings.one, strings.two, strings.three, strings.four ]
+    3.  fixedarray _12x12Array< fixedarray< float >{ 12 } >{ 12 }
+           : [ [ 1.0 2.0 3.0 4.0 ], [ 10.0 20.0 30.0 40.0 ] ]    
+    4.  fixedarray fleet< car >{ 100 }
+            = [ [ m_MaxSpeed:130, m_Engine:[ m_EngineSoundRef=sounds.engine1 ] ]
+              [ [ m_MaxSpeed:200, m_Engine:[
+				m_EngineSoundRef=sounds.engine2 ] ] }  ]
+              
+BNF Form:
+             
+	<fixedarray_initializer> ::= "[" { <type_specific_initializer> } "]"
+
+	<array_size> ::= <integer_value>
+
+	<fixedarray_declaration> ::=
+		"fixedarray"
+		[ <type_name> ]    
+		"<" <type> ">"
+		[ <type_meta_information> ]    
+		"{" <array_size> "}"
+		[ ":" <fixedarray_initializer>  ]     
+    
+    
+//============================================================================
+// 'array' (dynamic)
+//
+// Open ended array--size of array must be stored per object instance.
+//============================================================================
+
+    
+Declaration Examples:
+    1.  array _12floatArray< float{} >{ min:0, max:12 }
+    2.  array carRefArray< ref< car >{ } >{ } : [ car1, car2, car4 ]
+    3.  array RenderableAnimationArray< tAnimation >{ max:500 }
+            : []
+    4.  array myRadIntArray< int >{ }
+            : [ 400, 500, -600, 0xA0 ]
+
+BNF Form:
+           
+	<array_optional_attribute> ::=
+		min:<int_value> |				// Defaults to 0 if omitted
+		max:<int_value>                 // Defaults to INT_MAX if omitted
+	    
+	<array_initializer> ::=
+		"["
+		[ <type_specific_initializer>, [ { "," <type_specific_initializer> } ] ]
+		"]"
+
+	<array_declaration> ::=
+		"array"
+		[ <type_name> ]    
+		"<" <type> ">"
+		[ <type_meta_information> ]    
+		"{" [ <array_optional_attribute>
+			[ { "," <array_optional_attribute } ] ] "}"
+		[ ":" <array_initializer>  ]
+
+            
+//============================================================================
+// 'collection'
+//
+// A collection of NAMED objects. 
+//============================================================================
+
+Declaration Example:
+
+    1.  collection FloatCollection< float{} >{ max:12 }
+    2.  collection NamedFleet< car >{ }
+        : [ bigcar: [ m_EngineSound: engines.engine2a ] littlecar:[] ]
+    3.  collection CarRefCollection < ref< car >{} >{ min:3, max:6 }
+        : [ startcar:cars.mycar, finishcar:yourcar, defcar:global.everybodyscar ]
+        
+BNF Form:
+        
+	<collection_optional_attribute> ::=
+		min:<int_value> |					// Defaults to 0 if omitted
+		max:<int_value>						// Defaults to INT_MAX if omitted
+
+	<collection_initializer> ::=
+		"["
+			[ <variable_name>":"<type_specific_initializer>
+				{ "," <variable_name>":"<type_specific_initializer> } ]
+		"]"
+	        
+	<collection_declaration> ::=
+		"collection"
+		[ <type_name> ]    
+		"<" <type> ">"
+		[ <type_meta_information> ]    
+		"{" [ <collection_optional_attribute>
+			[ { "," <collection_optional_attribute } ] ] "}"
+		[ ":" <collection_initializer>  ]          
+
+    
+//============================================================================
+// 'function' - global function or static member
+//============================================================================
+
+// Function syntax varies slightly from C++.  This is probably not a bad thing
+// as C++'s syntax tends to be very confusing, especially in the case of
+// function typedefs.
+
+Declaration Examples:
+
+	1. function ref< string > GetFrameNameFunction(
+			AnimationRef refAnimation, FrameVal frames )
+
+	2. function SoundVolume GetVolumeFunction( )
+
+	3. function ref< string > GetGameNameFunction[ ]( )
+
+	4. function StopFunctionType( )
+	
+BNF Form:
+	
+	<function_meta_attribute> ::= TBA...
+	<function_meta_information> ::= "[" [ <function_meta_attribute, [ {
+		"," <function_meta_attribute> } ]
+
+	<function_parameter_name> ::= <variable_name>
+	<function_parameter> ::= <type> <function_parameter_name>
+
+	<function_declaration> ::= 
+	"function"
+	[<return_value>]
+	[ <type_name> ]
+	[ <function_meta_information> ]
+	"(" [ <function_parameter>, [ { "," <function_paramenter> } ]
+
+
+//============================================================================
+// 'method' - of a class, has a this pointer
+//============================================================================
+
+Examples:
+
+	1. method SoundVolume GetVolume( AuxSendId auxSend );
+	
+BNF Form:
+	
+	<function_meta_attribute> ::= TBA...
+	<function_meta_information> ::= "[" [ <function_meta_attribute, [ {
+		"," <function_meta_attribute> } ]
+
+	<function_parameter_name> ::= <variable_name>
+	<function_parameter> ::= <type> <function_parameter_name>
+
+	<method_declaration> ::= 
+	"method"
+	[ <return_value> ]
+	[ <type_name> ]
+	[ <function_meta_information> ]
+	"(" [ <function_parameter>, [ { "," <function_paramenter> } ]
+
+
+//============================================================================
+// 'class'
+//============================================================================
+   
+Declaration Exampls:
+    
+    1.  class myClass 
+        [ version: 1.0, description: "Example Class" ]
+        {       
+            Sound m_EngineSound
+                [ description: "The sounds that the engine makes",
+                  friendlyname: "Engine Sounds" ];
+             
+        }
+        
+    2. class MyDrawable base Drawable
+       {
+            array TriList< fixedarray< float >{ 3 } >{ } m_TriangleList
+                [ serialize:true,
+                  description:"Triangles that make up this object" ];
+	
+            bool { } m_Visible;
+            
+            enum BkgMode { TRANSPARENT, SOLID } m_BkgMode;
+            
+            method PlaySoundMethod Play; // PlaySoundMethod defined outside class
+            
+            method bool { } ( SoundVolume volume ) Play; // Inline function type definition 
+                   
+       } : [ m_TriangleList: [ [ 1.0. 3.0 5.0 ], [ 2.8 3.9. 14.6 ] ]  
+       
+BNF Form:
+       
+	<attribute_name> ::= <variable_name>
+
+	<class_member_meta_information> ::= 
+		"context:"
+			{ [ <variable_name> [ { "," <varaible_name>  } ] ] | // Tune, Ps2, etc
+		"description:" <string_value> |
+		"friendlyname:" <string_value> |
+		"serialize:" <boolean_value>
+	    
+	<class_member_definition> ::=
+		<type>
+		<attribute_name>
+		[ "[" [ <class_member_meta_information>
+			[ { "," <class_member_meta_information> } ] ] "]" ]
+	        
+	<class_method_definition> :: =
+		<method_type>
+		<method_name>
+		[ "[" [ <class_method_meta_information>
+			[ { "," <class_method_meta_information> } ] ] "]" ]
+
+	<attribute_initializer> ::=  <attribute_name> ":" <type_specific_initializer> 
+	<class_initializer> ::=
+		"["
+		[ <attribute_initializer> { "," <attribute_initializer> } ]
+		"]" 
+	    
+	<class_declaration> ::=
+		"class"
+		<type_name>
+		[ "base" <type> ]
+		[ <type_meta_information> ]
+		"{"
+		[ { <class_member_definition> ";" } |
+			{ <class_method_definition>  ";" } ]
+		"}"
+		[ ":" < class_initializer >  ]                  
+                
+//============================================================================
+// TDL text file format
+//============================================================================                  
+
+A Type Definition File is a file of ';" terminated type definitions.
+
+Type definition files will have the extension ".tdl"
+
+<TDL_File> ::= { <type_definition> ";" }
+
+//============================================================================
+// ODL text file format
+//============================================================================  
+
+An object definition file contains text representing the values of
+named instantiated TDL types.
+
+ODL files will have the extension ".odl"
+
+<ODL_FILE> ::= 
+	[ { <type_name> <instance_name>
+		[ ":" <type_specific_initializer> ] ";" } ]
+	
+Example:
+
+	// example.odl
+	
+	Sound MySound :
+	[
+		m_FileName:"sounds/soundfile1.rsd",
+		m_NestedClass: [ m_Attr1: 0, m_Attr2: "yo!" ]
+	]
+	
+	SoundVolume masterMusicVolume  : 1.0
+	SoundVolume masterDialogVolume : 1.0
+
+
+//============================================================================
+// A word about the Built-in-type model used in the TDL
+//============================================================================  
+
+Note: In the TDL there are no directly referencable built in types with preset
+built in ranges.  With the TDL you must define the range of an int for a
+particular usage.  For example the volume of a sound is a float.  Really
+though, it is not a "float", it is a floating point number between 0.0 and
+1.0.  You must declare this usage of a float as new type such as "soundvolume",
+or declare the new type inline.  Declaring the new type inline with default
+system ranges gives us the effect of having a standard 'int' type rather
+than an 'int' type specifier.
+
+Think of a float as a class with a default constructor of the following
+C++ form:
+
+    float
+        {
+        float( float min = MIN_FLOAT, float max = MAX_FLOAT );
+        }
+        
+For example in radical's TDL:
+    
+        class myClass{
+        
+            // This is a declaration of NEW type inline--notice that we
+            // implicitly use the default range of a float.
+            
+            float { } m_MyFloat;
+        ]
+        
+       
+        class [
+            
+            // This is a declaration of NEW type inline--notice that we
+            // explicity use the default range of a float.
+                    
+            float{ min:MIN_FLOAT, max:MAX_FLOAT } m_MyFloat;
+        ]
+        
+Are equivalent...and in all cases we are declaring a NEW type.  By requiring
+the range of the float for each usage (even if it is defined implicitly) we
+allow the system to do type-safe attribute checking down to the primitive
+type level.

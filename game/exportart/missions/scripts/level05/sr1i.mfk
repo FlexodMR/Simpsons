@@ -1,0 +1,77 @@
+SelectMission("sr1");
+	//The TIME TRIAL
+	//Script set up for multiple laps
+
+	SetMissionResetPlayerInCar("sr1_carstart");
+	SetDynaLoadData("l5z2.p3d;l5r2.p3d;l5r1.p3d;");
+	PlacePlayerCar("current", "sr1_carstart");
+
+	UsePedGroup(4);
+
+	SetMissionStartCameraName( "race1camShape" );
+	SetMissionStartMulticontName( "race1cam" );
+	SetAnimatedCameraName( "race1camShape" );
+	SetAnimCamMulticontName( "race1cam" );
+
+	//Chuck: StreetRace Prop Load and Unload Setup
+	StreetRacePropsLoad("l5_sr1p.p3d;");
+	StreetRacePropsUnload("l5_sr1p.p3d:");
+
+	AddStage(0);
+		SetHUDIcon( "race"); 
+		DisableHitAndRun();
+		StartCountdown("count");
+			AddToCountdownSequence( "3", 1200 ); // duration time in milliseconds
+			AddToCountdownSequence( "2", 800 ); // duration time in milliseconds
+			AddToCountdownSequence( "1", 600 ); // duration time in milliseconds
+			AddToCountdownSequence( "DRIVE", 400 ); // duration time in milliseconds
+		SetStageMessageIndex(222);
+		NoTrafficForStage();
+		SetStageTime(80);
+		RESET_TO_HERE();
+		AddObjective( "race","neither");
+			AddNPC("patty", "sr1_patty");
+			AddNPC("selma", "sr1_selma");
+			AddCollectible("sr1_waypoint1","carsphere");
+			SetCollectibleEffect("wrench_collect");
+			AddCollectible("sr1_waypoint2","carsphere");
+			SetCollectibleEffect("wrench_collect");
+			AddCollectible("sr1_waypoint3","carsphere");
+			SetCollectibleEffect("wrench_collect");
+			AddCollectible("sr1_waypoint4","carsphere");
+			SetCollectibleEffect("wrench_collect");
+			SetRaceLaps(5);
+		CloseObjective();
+		AddCondition("timeout");
+		CloseCondition();
+		AddCondition( "damage" );
+			SetCondMinHealth( 0.0 );
+			SetCondTargetVehicle( "current");
+		CloseCondition();
+		AddCondition("outofvehicle");
+			SetCondTime( 10000 );
+		CloseCondition();
+	CloseStage();
+
+AddStage(1, "final");
+	AddObjective("dialogue");
+		AddNPC("patty", "sr1_patty");
+		AddNPC("selma", "sr1_selma");
+		//AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		//AmbientAnimationRandomize( 0, 0 );      <<<===---  ASK IAN ABOUT THIS COMMAND
+		//AddAmbientNpcAnimation( "dialogue_open_arm_hand_gesture" );
+		//AddAmbientNpcAnimation( "none" );
+		//AddAmbientNpcAnimation( "dialogue_thinking" );
+		//AddAmbientPcAnimation( "none" );
+		//AddAmbientPcAnimation( "dialogue_yes" );
+		//AddAmbientPcAnimation( "none" );
+		//AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		//SetConversationCam( 3, "pc_far" );
+		//SetConversationCamNpcName("npc_near");
+		//SetConversationCamPcName("pc_near");            <<<===--- ASK IAN ABOUT THIS COMMAND.
+		SetDialogueInfo("patty","apu","success",0);
+		SetDialoguePositions("sr1_patty","sr1_apu_end","sr1_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();

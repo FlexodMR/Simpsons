@@ -1,0 +1,448 @@
+
+(object Petal
+    version    	44
+    _written   	"Rose 7.0.9420.17"
+    charSet    	0)
+
+(object Class_Category "Ambient System"
+    is_unit    	TRUE
+    is_loaded  	TRUE
+    attributes 	(list Attribute_Set
+	(object Attribute
+	    tool       	"sc"
+	    name       	"SourceControlSpec"
+	    value      	"-- using Perforce --"))
+    quid       	"3CB0E25300E2"
+    exportControl 	"Public"
+    logical_models 	(list unit_reference_list
+	(object Class "AmbientSoundPlayer"
+	    quid       	"3C9A706A0154"
+	    documentation 	"Plays the occasional ambient sound, e.g. a ringing school bell when driving by the school."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CACD20500E9"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E"))
+	    operations 	(list Operations
+		(object Operation "DisableSounds"
+		    quid       	"3CABD0FB021B"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "EnableSounds"
+		    quid       	"3CABDD7301B4"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "isSoundResourceAvailable"
+		    quid       	"3CAD09560014"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "AmbientSoundLocationData"
+	    quid       	"3CB1ED2403B8"
+	    documentation 	"Contains the location information for a set of ambient sounds meant to be loaded in sound memory at one time.  These objects should have a one-to-one relationship with the sound clusters in the sound loader subcomponent.  The objects will have links to each other to allow easy navigation between adjacent world zones.")
+	(object Association "$UNNAMED$0"
+	    quid       	"3CB1EB730055"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$1"
+		    quid       	"3CB1EB73016E"
+		    supplier   	"Logical View::Model::Sound Manager::SimpsonsSoundPlayer"
+		    quidu      	"3CA102FB00FA"
+		    client_cardinality 	(value cardinality "n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$2"
+		    quid       	"3CB1EB73017E"
+		    supplier   	"Logical View::Model::Sound Manager::Ambient System::AmbientSoundPlayer"
+		    quidu      	"3C9A706A0154"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$3"
+	    quid       	"3CB1EBFE020D"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$4"
+		    quid       	"3CB1EBFE0326"
+		    supplier   	"Logical View::Model::Sound Manager::Avatar Sound System::AvatarPosition"
+		    quidu      	"3CB1EBEE0086"
+		    client_cardinality 	(value cardinality "1..2")
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$5"
+		    quid       	"3CB1EBFE0336"
+		    supplier   	"Logical View::Model::Sound Manager::Ambient System::AmbientSoundPlayer"
+		    quidu      	"3C9A706A0154")))
+	(object Association "AmbientSoundLocationData"
+	    quid       	"3CB1ED2E001F"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$6"
+		    quid       	"3CB1ED2E0203"
+		    supplier   	"Logical View::Model::Sound Manager::Ambient System::AmbientSoundLocationData"
+		    quidu      	"3CB1ED2403B8"
+		    client_cardinality 	(value cardinality "n")
+		    Containment 	"By Value"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$7"
+		    quid       	"3CB1ED2E0213"
+		    supplier   	"Logical View::Model::Sound Manager::Ambient System::AmbientSoundPlayer"
+		    quidu      	"3C9A706A0154"
+		    is_aggregate 	TRUE))))
+    logical_presentations 	(list unit_reference_list
+	(object ClassDiagram "Main"
+	    quid       	"3CB0E2740279"
+	    title      	"Main"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	0
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object ClassView "Class" "Logical View::Model::Event Manager::EventListener" @1
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(912, 368)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@1
+			location   	(751, 293)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	322
+			justify    	0
+			label      	"EventListener")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A4819020E"
+		    width      	340
+		    height     	174
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::SimpsonsSoundPlayer" @2
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(416, 1152)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@2
+			location   	(192, 1077)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	448
+			justify    	0
+			label      	"SimpsonsSoundPlayer")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CA102FB00FA"
+		    width      	466
+		    height     	174
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Avatar Sound System::AvatarPosition" @3
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(1360, 1120)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@3
+			location   	(1086, 1042)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	548
+			justify    	0
+			label      	"AvatarPosition")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB1EBEE0086"
+		    width      	566
+		    height     	180
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Ambient System::AmbientSoundLocationData" @4
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(912, 1152)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@4
+			location   	(771, 1073)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	282
+			justify    	0
+			label      	"AmbientSoundLocationData")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB1ED2403B8"
+		    width      	300
+		    height     	182
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Ambient System::AmbientSoundPlayer" @5
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(912, 720)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@5
+			location   	(701, 668)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	422
+			justify    	0
+			label      	"AmbientSoundPlayer")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A706A0154"
+		    width      	440
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @6
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CACD20500E9"
+		    client     	@5
+		    supplier   	@1
+		    line_style 	0)
+		(object AssociationViewNew "$UNNAMED$0" @7
+		    location   	(676, 924)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB1EB730055"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$1" @8
+			    Parent_View 	@7
+			    location   	(-268, 156)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB1EB73016E"
+			    client     	@7
+			    supplier   	@2
+			    line_style 	0
+			    label      	(object SegLabel @9
+				Parent_View 	@8
+				location   	(654, 996)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"n"
+				pctDist    	0.431348
+				height     	40
+				orientation 	0))
+			(object RoleView "$UNNAMED$2" @10
+			    Parent_View 	@7
+			    location   	(-268, 156)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB1EB73017E"
+			    client     	@7
+			    supplier   	@5
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$3" @11
+		    location   	(1121, 906)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB1EBFE020D"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$4" @12
+			    Parent_View 	@11
+			    location   	(177, 138)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB1EBFE0326"
+			    client     	@11
+			    supplier   	@3
+			    line_style 	0
+			    label      	(object SegLabel @13
+				Parent_View 	@12
+				location   	(1316, 978)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"1..2"
+				pctDist    	1.051884
+				height     	76
+				orientation 	0))
+			(object RoleView "$UNNAMED$5" @14
+			    Parent_View 	@11
+			    location   	(177, 138)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB1EBFE0336"
+			    client     	@11
+			    supplier   	@5
+			    line_style 	0)))
+		(object AssociationViewNew "AmbientSoundLocationData" @15
+		    location   	(912, 922)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CB1ED2E001F"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$6" @16
+			    Parent_View 	@15
+			    location   	(0, 202)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB1ED2E0203"
+			    client     	@15
+			    supplier   	@4
+			    line_style 	0
+			    label      	(object SegLabel @17
+				Parent_View 	@16
+				location   	(965, 1000)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"n"
+				pctDist    	0.565217
+				height     	53
+				orientation 	0))
+			(object RoleView "$UNNAMED$7" @18
+			    Parent_View 	@15
+			    location   	(0, 202)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3CB1ED2E0213"
+			    client     	@15
+			    supplier   	@5
+			    line_style 	0)))))))

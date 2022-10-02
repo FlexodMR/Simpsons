@@ -1,0 +1,105 @@
+SelectMission("m5sd");
+
+SetAnimatedCameraName( "mission5camShape" );
+SetAnimCamMulticontName( "mission5cam" );
+SetMissionStartCameraName( "mission5camShape" );
+SetMissionStartMulticontName( "mission5cam" );
+
+SetMissionResetPlayerOutCar("m5_lisa_start", "m5_carstart");
+SetDynaLoadData("l3r2.p3d;l3z2.p3d;l3z3.p3d;");
+
+UsePedGroup(3);
+AddStage(0);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(187);
+	SetHUDIcon( "casino" );
+	AddObjective("goto");	
+		AddNPC("wiggum", "m5_wiggum_sd");
+		AddStageVehicle("wiggu_v","m5_wiggumcar_sd","NULL","EasyRace\AI_5th.con");
+		SetDestination("m5_casino_sd", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(5);
+	RESET_TO_HERE();
+	SetStageMessageIndex(104);
+	SetHUDIcon( "wiggum" );
+	AddObjective("talkto");
+		AddNPC("wiggum", "m5_wiggum_sd");
+		AddObjectiveNPCWaypoint( "wiggum", "m5_wiggum_walk1_sd" );
+		AddObjectiveNPCWaypoint( "wiggum", "m5_wiggum_walk2_sd" );
+		SetTalkToTarget("wiggum", 0, 0);
+	CloseObjective();
+CloseStage();
+
+
+//LOCKED STAGE FOR COOL CLOTHES
+//
+//THIS DIALOGUE WILL INCLUDE THE GATED LINES
+AddStage("locked","skin","l_cool");
+	SetStageMessageIndex(3);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis03_05.p3d" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide("m5_bestside");
+		AddAmbientPcAnimation( "dialogue_yes" );
+		SetDialogueInfo("lisa","wiggum","strikes",0);
+		SetDialoguePositions("m5_lisa_loc","m5_wiggum_sd","m5_carstart");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(195);
+	SetHUDIcon( "tshirt" );
+	AddObjective("buyskin", "l_cool");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(187);
+	SetHUDIcon( "casino" );
+	AddObjective("goto");	
+		AddNPC("wiggum", "m5_wiggum_sd");
+		AddStageVehicle("wiggu_v","m5_wiggumcar_sd","NULL","EasyRace\AI_5th.con");
+		SetDestination("m5_casino_sd", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetHUDIcon( "wiggu_v" );
+	SetMaxTraffic(1);
+	SetStageMessageIndex(2);
+	AddObjective("goto");
+		AddStageVehicle("wiggu_v","m5_wiggumcar_sd","NULL","EasyRace\AI_5th.con");
+		SetDestination("m5_missionstart","triggersphere");
+		SetCollectibleEffect("wrench_collect");
+		MustActionTrigger();
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

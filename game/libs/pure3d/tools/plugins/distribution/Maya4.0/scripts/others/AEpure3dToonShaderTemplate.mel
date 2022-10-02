@@ -1,0 +1,191 @@
+// ////////////////////////////////////////////////////////////////
+//  rootNode
+//
+// Description: Strips the dot-suffix of the specified string.
+//  e.g. "object.attribute" is returned as "object"
+proc string rootNode( string $object )
+{
+    string $buffer[];
+    tokenize $object "." $buffer;
+    return $buffer[0];
+}
+
+proc string GetToonShaderRampGradient( string $attr )
+{
+    string $rootNode = rootNode( $attr );
+
+    string $rampColorPort = ( $rootNode + "_ramp" );
+    if ( !`objExists $rampColorPort` )
+    {
+        if ( `connectionInfo -isSource ( $rootNode + ".nodeState" )` )
+        {
+            string $cc[] = `listConnections -destination true -plugs false ( $rootNode + ".nodeState" )`;
+            $rampColorPort = $cc[0];
+        }
+    }
+    if ( ( $rampColorPort == "" ) || !`objExists $rampColorPort` )
+    {
+        string $select[] = `ls -sl`;
+
+        $rampColorPort = `createNode -name $rampColorPort "ramp"`;
+        setAttr ( $rampColorPort + ".interpolation" ) false;
+
+        setAttr ( $rampColorPort + ".colorEntryList[0].color" ) -type double3 0.2 0.2 0.2;
+
+        setAttr ( $rampColorPort + ".colorEntryList[1].position" ) 0.45;
+        setAttr ( $rampColorPort + ".colorEntryList[1].color" ) -type double3 0.6 0.6 0.6;
+
+        setAttr ( $rampColorPort + ".colorEntryList[2].position" ) 0.80;
+        setAttr ( $rampColorPort + ".colorEntryList[2].color" ) -type double3 1.0 1.0 1.0;
+
+        connectAttr ( $rampColorPort + ".outColor" ) ( $rootNode + ".inRampColor" );
+
+        select $select;
+    }
+
+    return $rampColorPort;
+}
+
+global proc AEpure3dToonShaderTemplate ( string $nodeName )
+{
+    AEswatchDisplay $nodeName;
+    editorTemplate -beginScrollLayout;
+    editorTemplate -callCustom AEshaderTypeNew AEshaderTypeReplace "message";
+
+    editorTemplate -beginLayout "Common Material Attributes" -collapse 0; 
+        editorTemplate -addControl "diffuse";
+        editorTemplate -label "Texture" -addControl "color";
+        editorTemplate -label "Transparency" -addControl "transparency";
+        editorTemplate -addControl "ambient";
+        editorTemplate -addControl "emissive";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Specular Shading" -collapse true;
+        editorTemplate -addControl "specular";
+        editorTemplate -addControl "shininess";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Toon Shader" -collapse false;
+        editorTemplate -addControl "toonStyle";
+        editorTemplate -addControl "toonSilhouette";
+        editorTemplate -addControl "toonLineWidth";
+        editorTemplate -addControl "cellLuminanceLevels";
+//        editorTemplate -callCustom "p3dToonGradientCreate" "p3dToonGradientReplace" "";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Material Attributes" -collapse true;
+        editorTemplate -addControl "shadeMode";
+        editorTemplate -addControl "blendMode";
+        editorTemplate -label "P3D Prelight Mode" -addControl "prelightMode"; 
+        editorTemplate -addControl "doubleSided";
+        editorTemplate -suppress "zTest";
+        editorTemplate -suppress "zWrite";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Texture Attributes" -collapse true;
+        editorTemplate -addControl "uvMode";
+        editorTemplate -addControl "filterMode";
+        editorTemplate -addControl "alphaTest";
+        editorTemplate -addControl "alphaCompare";
+//        editorTemplate -callCustom AEpure3dToonShaderNewACTH AEpure3dToonShaderReplaceACTH "alphaCompareThreshold";
+        editorTemplate -suppress "alphaCompareThreshold";
+        editorTemplate -addControl "proceduralXRes";
+        editorTemplate -addControl "proceduralYRes";
+        editorTemplate -addControl "shittest";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "P3D Mipmap Control" -collapse true;
+        editorTemplate -label "Generate Mipmaps During Export" -addControl "exportMipmaps";
+        editorTemplate -addControl "mipmapmin";
+        editorTemplate -addControl "mipmapmax";
+    editorTemplate -endLayout;
+
+    // supressed attributes
+    editorTemplate -suppress "pointCamera";
+    editorTemplate -suppress "normalCamera";
+    editorTemplate -suppress "rayDirection";
+    editorTemplate -suppress "vertexShaderName";
+    editorTemplate -suppress "mmsharpness";
+    editorTemplate -suppress "shaderExport";
+    editorTemplate -suppress "inRampColor";
+    editorTemplate -suppress "outRampColor";
+    editorTemplate -suppress "dynamicallyLit";
+
+    // include/call base class/node attributes
+    AElambertCommonInclude $nodeName;
+
+    editorTemplate -beginLayout "Hardware Texturing" -collapse true;
+        AEhardwareTextureTemplate $nodeName ("color");
+    editorTemplate -endLayout;
+
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+}
+
+global proc p3dToonGradientCreate( string $attr )
+{
+    string $rampUI = "p3dToonGradientUI";
+    string $sccUI = "p3dToonGradientColorControlUI";
+    string $spcUI = "p3dToonGradientPositionControlUI";
+
+    string $rampColorPort = GetToonShaderRampGradient( $attr );
+
+	setUITemplate -pst attributeEditorTemplate;
+
+    frameLayout -label "Cell Shading (Prototype)" -collapsable false;
+        columnLayout;
+
+            rowLayout -nc 2;
+                text -label "Luminance Gradient";
+                rampColorPort -node $rampColorPort $rampUI;
+                setParent ..;
+
+	        attrColorSliderGrp -l "Selected Color" $sccUI;
+	        attrFieldSliderGrp -l "Selected Position" $spcUI;
+
+            setParent ..;
+        setParent ..;
+
+	// tell the port about the controls
+	rampColorPort -e -sc $sccUI $rampUI;
+	rampColorPort -e -sp $spcUI $rampUI;
+
+	setUITemplate -ppt;
+
+    p3dToonGradientReplace( $attr );
+}
+
+global proc p3dToonGradientReplace( string $attr )
+{
+    string $rampUI = "p3dToonGradientUI";
+    string $sccUI = "p3dToonGradientColorControlUI";
+    string $spcUI = "p3dToonGradientPositionControlUI";
+
+    string $rampColorPort = GetToonShaderRampGradient( $attr );
+
+    rampColorPort -e -node $rampColorPort $rampUI;
+
+	// tell the port about the controls
+	rampColorPort -e -sc $sccUI $rampUI;
+	rampColorPort -e -sp $spcUI $rampUI;
+}
+
+global proc AEpure3dToonShaderNewACTH( string $attr )
+{
+	global int $gTextColumnWidthIndex;
+
+    string $acthUI = "p3dToonShaderActhUI";
+
+    float $acth = `getAttr $attr`;
+
+    p3dColorSwatch( `setParent -q`, { $acth, $acth, $acth }, true, "Alpha Compare Threshold", $gTextColumnWidthIndex, true, false, 2, "", $acthUI );
+
+    AEpure3dToonShaderReplaceACTH $attr;
+}
+
+global proc AEpure3dToonShaderReplaceACTH( string $attr )
+{
+    string $acthUI = "p3dToonShaderActhUI";
+
+    p3dColorSwatch_ConnectControl( $acthUI, $attr );
+}

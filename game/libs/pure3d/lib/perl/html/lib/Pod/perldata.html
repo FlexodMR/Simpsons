@@ -1,0 +1,959 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perldata - Perl data types
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Variable_names">Variable names</A>
+		<LI><A HREF="#Context">Context</A>
+		<LI><A HREF="#Scalar_values">Scalar values</A>
+		<LI><A HREF="#Scalar_value_constructors">Scalar value constructors</A>
+		<LI><A HREF="#List_value_constructors">List value constructors</A>
+		<LI><A HREF="#Typeglobs_and_Filehandles">Typeglobs and Filehandles</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perldata - Perl data types
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Variable_names">Variable names
+
+</A></H2>
+Perl has three data structures: scalars, arrays of scalars, and associative
+arrays of scalars, known as ``hashes''. Normal arrays are indexed by
+number, starting with 0. (Negative subscripts count from the end.) Hash
+arrays are indexed by string.
+
+
+<P>
+
+Values are usually referred to by name (or through a named reference). The
+first character of the name tells you to what sort of data structure it
+refers. The rest of the name tells you the particular value to which it
+refers. Most often, it consists of a single
+<EM>identifier</EM>, that is, a string beginning with a letter or underscore, and containing
+letters, underscores, and digits. In some cases, it may be a chain of
+identifiers, separated by <CODE>::</CODE> (or by <CODE>'</CODE>, but that's deprecated); all but the last are interpreted as names of
+packages, to locate the namespace in which to look up the final identifier
+(see <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#Packages">Packages</A> for details). It's possible to substitute for a simple identifier an
+expression which produces a reference to the value at runtime; this is
+described in more detail below, and in <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A>.
+
+
+<P>
+
+There are also special variables whose names don't follow these rules, so
+that they don't accidentally collide with one of your normal variables.
+Strings which match parenthesized parts of a regular expression are saved
+under names containing only digits after the <CODE>$</CODE> (see <A HREF="/n|/perl/html/./lib/Pod/perlop.html#">the perlop manpage</A> and <A HREF="/n|/perl/html/./lib/Pod/perlre.html#">the perlre manpage</A>). In addition, several special variables which provide windows into the
+inner working of Perl have names containing punctuation characters (see <A HREF="/n|/perl/html/./lib/Pod/perlvar.html#">the perlvar manpage</A>).
+
+
+<P>
+
+Scalar values are always named with '$', even when referring to a scalar
+that is part of an array. It works like the English word ``the''. Thus we
+have:
+
+
+<P>
+
+<PRE>    $days               # the simple scalar value &quot;days&quot;
+    $days[28]           # the 29th element of array @days
+    $days{'Feb'}        # the 'Feb' value from hash %days
+    $#days              # the last index of array @days
+</PRE>
+
+<P>
+
+but entire arrays or array slices are denoted by '@', which works much like
+the word ``these'' or ``those'':
+
+
+<P>
+
+<PRE>    @days               # ($days[0], $days[1],... $days[n])
+    @days[3,4,5]        # same as @days[3..5]
+    @days{'a','c'}      # same as ($days{'a'},$days{'c'})
+</PRE>
+
+<P>
+
+and entire hashes are denoted by '%':
+
+
+<P>
+
+<PRE>    %days               # (key1, val1, key2, val2 ...)
+</PRE>
+
+<P>
+
+In addition, subroutines are named with an initial '&amp;', though this is
+optional when it's otherwise unambiguous (just as ``do'' is often redundant
+in English). Symbol table entries can be named with an initial '*', but you
+don't really care about that yet.
+
+
+<P>
+
+Every variable type has its own namespace. You can, without fear of
+conflict, use the same name for a scalar variable, an array, or a hash (or,
+for that matter, a filehandle, a subroutine name, or a label). This means
+that <CODE>$foo</CODE> and <CODE>@foo</CODE> are two different variables.
+It also means that <CODE>$foo[1]</CODE> is a part of @foo, not a part of $foo. This may seem a bit weird, but
+that's okay, because it is weird.
+
+
+<P>
+
+Because variable and array references always start with '$', '@', or '%', the ``reserved'' words aren't in fact reserved with respect to variable names. (They 
+<FONT SIZE=-1>ARE</FONT> reserved with respect to labels and filehandles, however, which don't have an initial special character. You can't have a filehandle named ``log'', for instance. Hint: you could say
+
+<A HREF="#item_open">open(LOG,'logfile')</A> rather than <A HREF="#item_open">open(log,'logfile')</A>. Using uppercase filehandles also improves readability and protects you
+from conflict with future reserved words.) Case <EM>IS</EM> significant--``FOO'', ``Foo'', and ``foo'' are all different names. Names
+that start with a letter or underscore may also contain digits and
+underscores.
+
+
+<P>
+
+It is possible to replace such an alphanumeric name with an expression that
+returns a reference to an object of that type. For a description of this,
+see <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A>.
+
+
+<P>
+
+Names that start with a digit may contain only more digits. Names which do
+not start with a letter, underscore, or digit are limited to one character,
+e.g.,  <CODE>$%</CODE> or <CODE>$$</CODE>. (Most of these one character names have a predefined significance to
+Perl. For instance, <CODE>$$</CODE> is the current process id.)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Context">Context
+
+</A></H2>
+The interpretation of operations and values in Perl sometimes depends on
+the requirements of the context around the operation or value. There are
+two major contexts: scalar and list. Certain operations return list values
+in contexts wanting a list, and scalar values otherwise. (If this is true
+of an operation it will be mentioned in the documentation for that
+operation.) In other words, Perl overloads certain operations based on
+whether the expected return value is singular or plural. (Some words in
+English work this way, like ``fish'' and ``sheep''.)
+
+
+<P>
+
+In a reciprocal fashion, an operation provides either a scalar or a list
+context to each of its arguments. For example, if you say
+
+
+<P>
+
+<PRE>    int( &lt;STDIN&gt; )
+</PRE>
+
+<P>
+
+the integer operation provides a scalar context for the &lt;
+<FONT SIZE=-1>STDIN</FONT>&gt;
+operator, which responds by reading one line from 
+<FONT SIZE=-1>STDIN</FONT> and passing it back to the integer operation,
+which will then find the integer value of that line and return that. If, on
+the other hand, you say
+
+
+<P>
+
+<PRE>    sort( &lt;STDIN&gt; )
+</PRE>
+
+<P>
+
+then the sort operation provides a list context for &lt;
+<FONT SIZE=-1>STDIN</FONT>&gt;, which will proceed to read every line available up to the end of file,
+and pass that list of lines back to the sort routine, which will then sort
+those lines and return them as a list to whatever the context of the sort
+was.
+
+
+<P>
+
+Assignment is a little bit special in that it uses its left argument to
+determine the context for the right argument. Assignment to a scalar
+evaluates the righthand side in a scalar context, while assignment to an
+array or array slice evaluates the righthand side in a list context.
+Assignment to a list also evaluates the righthand side in a list context.
+
+
+<P>
+
+User defined subroutines may choose to care whether they are being called
+in a scalar or list context, but most subroutines do not need to care,
+because scalars are automatically interpolated into lists. See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#wantarray">wantarray</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Scalar_values">Scalar values
+
+</A></H2>
+All data in Perl is a scalar or an array of scalars or a hash of scalars. Scalar variables may contain various kinds of singular data, such as numbers, strings, and references. In general, conversion from one form to another is transparent. 
+<FONT SIZE=-1>(A</FONT> scalar may not contain multiple values, but may contain a reference to an array or hash containing multiple values.) Because of the automatic conversion of scalars, operations, and functions that return scalars don't need to care (and, in fact, can't care) whether the context is looking for a string or a number.
+
+
+
+<P>
+
+Scalars aren't necessarily one thing or another. There's no place to
+declare a scalar variable to be of type ``string'', or of type ``number'',
+or type ``filehandle'', or anything else. Perl is a contextually
+polymorphic language whose scalars can be strings, numbers, or references
+(which includes objects). While strings and numbers are considered pretty
+much the same thing for nearly all purposes, references are strongly-typed
+uncastable pointers with builtin reference-counting and destructor
+invocation.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> scalar value is interpreted as 
+<FONT SIZE=-1>TRUE</FONT> in the Boolean sense if it is not the null string or the number 0 (or its string equivalent, ``0''). The Boolean context is just a special kind of scalar context.
+
+
+
+<P>
+
+There are actually two varieties of null scalars: defined and undefined.
+Undefined null scalars are returned when there is no real value for
+something, such as when there was an error, or at end of file, or when you
+refer to an uninitialized variable or element of an array. An undefined
+null scalar may become defined the first time you use it as if it were
+defined, but prior to that you can use the <CODE>defined()</CODE> operator
+to determine whether the value is defined or not.
+
+
+<P>
+
+To find out whether a given string is a valid nonzero number, it's usually
+enough to test it against both numeric 0 and also lexical ``0'' (although
+this will cause <STRONG>-w</STRONG> noises). That's because strings that aren't numbers count as 0, just as
+they do in <STRONG>awk</STRONG>:
+
+
+<P>
+
+<PRE>    if ($str == 0 &amp;&amp; $str ne &quot;0&quot;)  {
+        warn &quot;That doesn't look like a number&quot;;
+    }
+</PRE>
+
+<P>
+
+That's usually preferable because otherwise you won't treat 
+<FONT SIZE=-1>IEEE</FONT> notations like <CODE>NaN</CODE> or <CODE>Infinity</CODE> properly. At other times you might prefer to use a regular expression to
+check whether data is numeric. See <A HREF="/n|/perl/html/./lib/Pod/perlre.html#">the perlre manpage</A>
+for details on regular expressions.
+
+
+<P>
+
+<PRE>    warn &quot;has nondigits&quot;        if     /\D/;
+    warn &quot;not a whole number&quot;   unless /^\d+$/;
+    warn &quot;not an integer&quot;       unless /^[+-]?\d+$/
+    warn &quot;not a decimal number&quot; unless /^[+-]?\d+\.?\d*$/
+    warn &quot;not a C float&quot;
+        unless /^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/;
+</PRE>
+
+<P>
+
+The length of an array is a scalar value. You may find the length of array
+<CODE>@days</CODE> by evaluating <CODE>$#days</CODE>, as in <STRONG>csh</STRONG>. (Actually, it's not the length of the array, it's the subscript of the
+last element, because there is (ordinarily) a 0th element.) Assigning to <CODE>$#days</CODE> changes the length of the array. Shortening an array by this method
+destroys intervening values. Lengthening an array that was previously
+shortened
+<EM>NO LONGER</EM> recovers the values that were in those elements. (It used to in Perl 4, but
+we had to break this to make sure destructors were called when expected.)
+You can also gain some measure of efficiency by pre-extending an array that
+is going to get big. (You can also extend an array by assigning to an
+element that is off the end of the array.) You can truncate an array down
+to nothing by assigning the null list () to it. The following are
+equivalent:
+
+
+<P>
+
+<PRE>    @whatever = ();
+    $#whatever = -1;
+</PRE>
+
+<P>
+
+If you evaluate a named array in a scalar context, it returns the length of the array. (Note that this is not true of lists, which return the last value, like the 
+<FONT SIZE=-1>C</FONT> comma operator.) The following is always true:
+
+
+
+<P>
+
+<PRE>    scalar(@whatever) == $#whatever - $[ + 1;
+</PRE>
+
+<P>
+
+Version 5 of Perl changed the semantics of <CODE>$[</CODE>: files that don't set the value of <CODE>$[</CODE> no longer need to worry about whether another file changed its value. (In
+other words, use of <CODE>$[</CODE> is deprecated.) So in general you can assume that
+
+
+<P>
+
+<PRE>    scalar(@whatever) == $#whatever + 1;
+</PRE>
+
+<P>
+
+Some programmers choose to use an explicit conversion so nothing's left to
+doubt:
+
+
+<P>
+
+<PRE>    $element_count = scalar(@whatever);
+</PRE>
+
+<P>
+
+If you evaluate a hash in a scalar context, it returns a value which is
+true if and only if the hash contains any key/value pairs. (If there are
+any key/value pairs, the value returned is a string consisting of the
+number of used buckets and the number of allocated buckets, separated by a
+slash. This is pretty much useful only to find out whether Perl's (compiled
+in) hashing algorithm is performing poorly on your data set. For example,
+you stick 10,000 things in a hash, but evaluating <CODE>%HASH</CODE> in
+scalar context reveals ``1/16'', which means only one out of sixteen
+buckets has been touched, and presumably contains all 10,000 of your items.
+This isn't supposed to happen.)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Scalar_value_constructors">Scalar value constructors
+
+</A></H2>
+Numeric literals are specified in any of the customary floating point or
+integer formats:
+
+
+<P>
+
+<PRE>    12345
+    12345.67
+    .23E-10
+    0xffff              # hex
+    0377                # octal
+    4_294_967_296       # underline for legibility
+</PRE>
+
+<P>
+
+String literals are usually delimited by either single or double quotes.
+They work much like shell quotes: double-quoted string literals are subject
+to backslash and variable substitution; single-quoted strings are not
+(except for ``<CODE>\'</CODE>'' and ``<CODE>\\</CODE>''). The usual Unix backslash rules apply for making characters such as
+newline, tab, etc., as well as some more exotic forms. See
+<A HREF="/n|/perl/html/./lib/Pod/perlop.html#Quote_and_Quotelike_Operators">Quote and Quotelike Operators</A> for a list.
+
+
+<P>
+
+Octal or hex representations in string literals (e.g. '0xffff') are not
+automatically converted to their integer representation. The
+<CODE>hex()</CODE> and <CODE>oct()</CODE> functions make these conversions
+for you. See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#hex">hex</A> and
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#oct">oct</A> for more details.
+
+
+<P>
+
+You can also embed newlines directly in your strings, i.e., they can end on
+a different line than they begin. This is nice, but if you forget your
+trailing quote, the error will not be reported until Perl finds another
+line containing the quote character, which may be much further on in the
+script. Variable substitution inside strings is limited to scalar
+variables, arrays, and array slices. (In other words, names beginning with
+$ or @, followed by an optional bracketed expression as a subscript.) The
+following code segment prints out ``The price is $100.''
+
+
+<P>
+
+<PRE>    $Price = '$100';    # not interpreted
+    print &quot;The price is $Price.\n&quot;;     # interpreted
+</PRE>
+
+<P>
+
+As in some shells, you can put curly brackets around the name to delimit it
+from following alphanumerics. In fact, an identifier within such curlies is
+forced to be a string, as is any single identifier within a hash subscript.
+Our earlier example,
+
+
+<P>
+
+<PRE>    $days{'Feb'}
+</PRE>
+
+<P>
+
+can be written as
+
+
+<P>
+
+<PRE>    $days{Feb}
+</PRE>
+
+<P>
+
+and the quotes will be assumed automatically. But anything more complicated
+in the subscript will be interpreted as an expression.
+
+
+<P>
+
+Note that a single-quoted string must be separated from a preceding word by
+a space, because single quote is a valid (though deprecated) character in a
+variable name (see <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#Packages">Packages</A>).
+
+
+<P>
+
+Three special literals are 
+<FONT SIZE=-1>__FILE__,</FONT> 
+<FONT SIZE=-1>__LINE__,</FONT> and 
+<FONT SIZE=-1>__PACKAGE__,</FONT> which represent the current filename, line number, and package name at that point in your program. They may be used only as separate tokens; they will not be interpolated into strings. If there is no current package (due to a
+ <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_package_">package;</A> directive), 
+<FONT SIZE=-1>__PACKAGE__</FONT> is the undefined value.
+
+
+<P>
+
+The tokens 
+<FONT SIZE=-1>__END__</FONT> and 
+<FONT SIZE=-1>__DATA__</FONT> may be used to indicate the logical end of the script before the actual end of file. Any following text is ignored, but may be read via a 
+<FONT SIZE=-1>DATA</FONT> filehandle: main::DATA for 
+<FONT SIZE=-1>__END__,</FONT> or 
+<FONT SIZE=-1>PACKNAME::DATA</FONT> (where 
+<FONT SIZE=-1>PACKNAME</FONT> is the current package) for 
+<FONT SIZE=-1>__DATA__.</FONT> The two control characters 
+<FONT SIZE=-1>^D</FONT> and 
+<FONT SIZE=-1>^Z</FONT> are synonyms for 
+<FONT SIZE=-1>__END__</FONT> (or 
+<FONT SIZE=-1>__DATA__</FONT> in a module). See
+ <A HREF="/n|/perl/html/./lib/SelfLoader.html#">the SelfLoader manpage</A> for more description of 
+<FONT SIZE=-1>__DATA__,</FONT> and an example of its use. Note that you cannot read from the 
+<FONT SIZE=-1>DATA</FONT> filehandle in a 
+<FONT SIZE=-1>BEGIN</FONT> block: the 
+<FONT SIZE=-1>BEGIN</FONT> block is executed as soon as it is seen (during compilation), at which point the corresponding 
+<FONT SIZE=-1>__DATA__</FONT> (or 
+<FONT SIZE=-1>__END__)</FONT> token has not yet been seen.
+
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> word that has no other interpretation in the grammar
+will be treated as if it were a quoted string. These are known as
+``barewords''. As with filehandles and labels, a bareword that consists
+entirely of lowercase letters risks conflict with future reserved words,
+and if you use the <STRONG>-w</STRONG> switch, Perl will warn you about any such words. Some people may wish to
+outlaw barewords entirely. If you say
+
+
+<P>
+
+<PRE>    use strict 'subs';
+</PRE>
+
+<P>
+
+then any bareword that would 
+<FONT SIZE=-1>NOT</FONT> be interpreted as a subroutine call produces a
+compile-time error instead. The restriction lasts to the end of the
+enclosing block. An inner block may countermand this by saying <CODE>no strict 'subs'</CODE>.
+
+
+<P>
+
+Array variables are interpolated into double-quoted strings by joining all
+the elements of the array with the delimiter specified in the <CODE>$"</CODE>
+variable (<CODE>$LIST_SEPARATOR</CODE> in English), space by default. The following are equivalent:
+
+
+<P>
+
+<PRE>    $temp = join($&quot;,@ARGV);
+    system &quot;echo $temp&quot;;
+</PRE>
+
+<P>
+
+<PRE>    system &quot;echo @ARGV&quot;;
+</PRE>
+
+<P>
+
+Within search patterns (which also undergo double-quotish substitution)
+there is a bad ambiguity: Is <CODE>/$foo[bar]/</CODE> to be interpreted as
+<CODE>/${foo}[bar]/</CODE> (where <CODE>[bar]</CODE> is a character class for the regular expression) or as <CODE>/${foo[bar]}/</CODE> (where <CODE>[bar]</CODE> is the subscript to array @foo)? If <CODE>@foo</CODE> doesn't otherwise
+exist, then it's obviously a character class. If <CODE>@foo</CODE> exists,
+Perl takes a good guess about <CODE>[bar]</CODE>, and is almost always right. If it does guess wrong, or if you're just
+plain paranoid, you can force the correct interpretation with curly
+brackets as above.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> line-oriented form of quoting is based on the shell
+``here-doc'' syntax. Following a <CODE>&lt;&lt;</CODE> you specify a string to terminate the quoted material, and all lines
+following the current line down to the terminating string are the value of
+the item. The terminating string may be either an identifier (a word), or
+some quoted text. If quoted, the type of quotes you use determines the
+treatment of the text, just as in regular quoting. An unquoted identifier
+works like double quotes. There must be no space between the <CODE>&lt;&lt;</CODE> and the identifier. (If you put a space it will be treated as a null
+identifier, which is valid, and matches the first empty line.) The
+terminating string must appear by itself (unquoted and with no surrounding
+whitespace) on the terminating line.
+
+
+<P>
+
+<PRE>        print &lt;&lt;EOF;
+    The price is $Price.
+    EOF
+</PRE>
+
+<P>
+
+<PRE>        print &lt;&lt;&quot;EOF&quot;;  # same as above
+    The price is $Price.
+    EOF
+</PRE>
+
+<P>
+
+<PRE>        print &lt;&lt;`EOC`;  # execute commands
+    echo hi there
+    echo lo there
+    EOC
+</PRE>
+
+<P>
+
+<PRE>        print &lt;&lt;&quot;foo&quot;, &lt;&lt;&quot;bar&quot;; # you can stack them
+    I said foo.
+    foo
+    I said bar.
+    bar
+</PRE>
+
+<P>
+
+<PRE>        myfunc(&lt;&lt;&quot;THIS&quot;, 23, &lt;&lt;'THAT');
+    Here's a line
+    or two.
+    THIS
+    and here's another.
+    THAT
+</PRE>
+
+<P>
+
+Just don't forget that you have to put a semicolon on the end to finish the
+statement, as Perl doesn't know you're not going to try to do this:
+
+
+<P>
+
+<PRE>        print &lt;&lt;ABC
+    179231
+    ABC
+        + 20;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="List_value_constructors">List value constructors
+
+</A></H2>
+List values are denoted by separating individual values by commas (and
+enclosing the list in parentheses where precedence requires it):
+
+
+<P>
+
+<PRE>    (LIST)
+</PRE>
+
+<P>
+
+In a context not requiring a list value, the value of the list literal is the value of the final element, as with the 
+<FONT SIZE=-1>C</FONT> comma operator. For example,
+
+
+
+<P>
+
+<PRE>    @foo = ('cc', '-E', $bar);
+</PRE>
+
+<P>
+
+assigns the entire list value to array foo, but
+
+
+<P>
+
+<PRE>    $foo = ('cc', '-E', $bar);
+</PRE>
+
+<P>
+
+assigns the value of variable bar to variable foo. Note that the value of
+an actual array in a scalar context is the length of the array; the
+following assigns the value 3 to $foo:
+
+
+<P>
+
+<PRE>    @foo = ('cc', '-E', $bar);
+    $foo = @foo;                # $foo gets 3
+</PRE>
+
+<P>
+
+You may have an optional comma before the closing parenthesis of a list
+literal, so that you can say:
+
+
+<P>
+
+<PRE>    @foo = (
+        1,
+        2,
+        3,
+    );
+</PRE>
+
+<P>
+
+LISTs do automatic interpolation of sublists. That is, when a 
+<FONT SIZE=-1>LIST</FONT> is evaluated, each element of the list is evaluated in a list context, and the resulting list value is interpolated into 
+<FONT SIZE=-1>LIST</FONT> just as if each individual element were a member of 
+<FONT SIZE=-1>LIST.</FONT> Thus arrays lose their identity in a LIST--the list
+
+
+
+<P>
+
+<PRE>    (@foo,@bar,&amp;SomeSub)
+</PRE>
+
+<P>
+
+contains all the elements of <CODE>@foo</CODE> followed by all the elements
+of @bar, followed by all the elements returned by the subroutine named
+SomeSub when it's called in a list context. To make a list reference that
+does <EM>NOT</EM> interpolate, see <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A>.
+
+
+<P>
+
+The null list is represented by (). Interpolating it in a list has no
+effect. Thus ((),(),()) is equivalent to (). Similarly, interpolating an
+array with no elements is the same as if no array had been interpolated at
+that point.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> list value may also be subscripted like a normal
+array. You must put the list in parentheses to avoid ambiguity. For
+example:
+
+
+<P>
+
+<PRE>    # Stat returns list value.
+    $time = (stat($file))[8];
+</PRE>
+
+<P>
+
+<PRE>    # SYNTAX ERROR HERE.
+    $time = stat($file)[8];  # OOPS, FORGOT PARENTHESES
+</PRE>
+
+<P>
+
+<PRE>    # Find a hex digit.
+    $hexdigit = ('a','b','c','d','e','f')[$digit-10];
+</PRE>
+
+<P>
+
+<PRE>    # A &quot;reverse comma operator&quot;.
+    return (pop(@foo),pop(@foo))[0];
+</PRE>
+
+<P>
+
+You may assign to <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_undef">undef</A> in a list. This is useful for throwing away some of the return values of a
+function:
+
+
+<P>
+
+<PRE>    ($dev, $ino, undef, undef, $uid, $gid) = stat($file);
+</PRE>
+
+<P>
+
+Lists may be assigned to if and only if each element of the list is legal
+to assign to:
+
+
+<P>
+
+<PRE>    ($a, $b, $c) = (1, 2, 3);
+</PRE>
+
+<P>
+
+<PRE>    ($map{'red'}, $map{'blue'}, $map{'green'}) = (0x00f, 0x0f0, 0xf00);
+</PRE>
+
+<P>
+
+Array assignment in a scalar context returns the number of elements
+produced by the expression on the right side of the assignment:
+
+
+<P>
+
+<PRE>    $x = (($foo,$bar) = (3,2,1));       # set $x to 3, not 2
+    $x = (($foo,$bar) = f());           # set $x to f()'s return count
+</PRE>
+
+<P>
+
+This is very handy when you want to do a list assignment in a Boolean context, because most list functions return a null list when finished, which when assigned produces a 0, which is interpreted as 
+<FONT SIZE=-1>FALSE.</FONT>
+
+
+
+<P>
+
+The final element may be an array or a hash:
+
+
+<P>
+
+<PRE>    ($a, $b, @rest) = split;
+    local($a, $b, %rest) = @_;
+</PRE>
+
+<P>
+
+You can actually put an array or hash anywhere in the list, but the first
+one in the list will soak up all the values, and anything after it will get
+a null value. This may be useful in a <CODE>local()</CODE> or
+<CODE>my().</CODE>
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> hash literal contains pairs of values to be
+interpreted as a key and a value:
+
+
+<P>
+
+<PRE>    # same as map assignment above
+    %map = ('red',0x00f,'blue',0x0f0,'green',0xf00);
+</PRE>
+
+<P>
+
+While literal lists and named arrays are usually interchangeable, that's
+not the case for hashes. Just because you can subscript a list value like a
+normal array does not mean that you can subscript a list value as a hash.
+Likewise, hashes included as parts of other lists (including parameters
+lists and return lists from functions) always flatten out into key/value
+pairs. That's why it's good to use references sometimes.
+
+
+<P>
+
+It is often more readable to use the <CODE>=&gt;</CODE> operator between key/value pairs. The <CODE>=&gt;</CODE> operator is mostly just a more visually distinctive synonym for a comma,
+but it also arranges for its left-hand operand to be interpreted as a
+string, if it's a bareword which would be a legal identifier. This makes it
+nice for initializing hashes:
+
+
+<P>
+
+<PRE>    %map = (
+                 red   =&gt; 0x00f,
+                 blue  =&gt; 0x0f0,
+                 green =&gt; 0xf00,
+   );
+</PRE>
+
+<P>
+
+or for initializing hash references to be used as records:
+
+
+<P>
+
+<PRE>    $rec = {
+                witch =&gt; 'Mable the Merciless',
+                cat   =&gt; 'Fluffy the Ferocious',
+                date  =&gt; '10/31/1776',
+    };
+</PRE>
+
+<P>
+
+or for using call-by-named-parameter to complicated functions:
+
+
+<P>
+
+<PRE>   $field = $query-&gt;radio_group(
+               name      =&gt; 'group_name',
+               values    =&gt; ['eenie','meenie','minie'],
+               default   =&gt; 'meenie',
+               linebreak =&gt; 'true',
+               labels    =&gt; \%labels
+   );
+</PRE>
+
+<P>
+
+Note that just because a hash is initialized in that order doesn't mean
+that it comes out in that order. See <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#sort">sort</A> for examples of how to arrange for an output ordering.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Typeglobs_and_Filehandles">Typeglobs and Filehandles
+
+</A></H2>
+Perl uses an internal type called a <EM>typeglob</EM> to hold an entire symbol table entry. The type prefix of a typeglob is a <CODE>*</CODE>, because it represents all types. This used to be the preferred way to pass arrays and hashes by reference into a function, but now that we have real references, this is seldom needed. It also used to be the preferred way to pass filehandles into a function, but now that we have the *foo{THING} notation it isn't often needed for that, either. It is still needed to pass new filehandles into functions 
+<FONT SIZE=-1>(*HANDLE{IO}</FONT> only works if 
+<FONT SIZE=-1>HANDLE</FONT> has already been used).
+
+
+
+<P>
+
+If you need to use a typeglob to save away a filehandle, do it this way:
+
+
+<P>
+
+<PRE>    $fh = *STDOUT;
+</PRE>
+
+<P>
+
+or perhaps as a real reference, like this:
+
+
+<P>
+
+<PRE>    $fh = \*STDOUT;
+</PRE>
+
+<P>
+
+This is also a way to create a local filehandle. For example:
+
+
+<P>
+
+<PRE>    sub newopen {
+        my $path = shift;
+        local *FH;  # not my!
+        open (FH, $path) || return undef;
+        return *FH;
+    }
+    $fh = newopen('/etc/passwd');
+</PRE>
+
+<P>
+
+Another way to create local filehandles is with IO::Handle and its ilk, see
+the bottom of <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#open_">open()</A>.
+
+
+<P>
+
+See <A HREF="/n|/perl/html/./lib/Pod/perlref.html#">the perlref manpage</A>, <A HREF="/n|/perl/html/./lib/Pod/perlsub.html#">the perlsub manpage</A>, and <A HREF="/n|/perl/html/./lib/Pod/perlmod.html#Symbol_Tables">Symbol Tables</A> for more discussion on typeglobs.
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

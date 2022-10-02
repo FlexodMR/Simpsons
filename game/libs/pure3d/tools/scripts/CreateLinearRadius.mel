@@ -1,0 +1,250 @@
+proc CheckForRangeLayer()
+{
+	int $exists = `layerButton -exists "LRanges"`;
+	if($exists != 1)
+	{
+		createDisplayLayer -name "LRanges" -empty;
+		setAttr "LRanges.shading" 0;
+	}
+	$exists = `layerButton -exists "LDiscs"`;
+	if($exists != 1)
+	{
+		createDisplayLayer -name "LDiscs" -empty;
+	}
+}
+
+proc CreateSizeExpression(string $LightName, string $ObjectName, string $TransformName, string $Name)
+{
+	string $expr;
+	$expr =  "float $radius = 0.0001;\n";
+	$expr += "if((" + $LightName + ".LinearRadius > 0) && (" + $TransformName + ".scaleX != 0))\n{\n";
+	$expr += "\t$radius = " + $LightName + ".LinearRadius / " + $TransformName + ".scaleX;\n";
+	$expr += "}\n";
+	$expr += $ObjectName + ".scaleX = $radius;\n";
+	$expr += $ObjectName + ".scaleY = $radius;\n";
+	$expr += $ObjectName + ".scaleZ = $radius;\n";
+
+	string $exprName = $Name + "_radius";
+	expression -s $expr -o $ObjectName -ae 1 -uc all -n $exprName;
+}
+
+proc CreateVisibilityExpression(string $LightName, string $ObjectName, string $Name)
+{
+	string $expr;
+	$expr =         $ObjectName + ".visibility = " + $LightName + ".visibility &&\n";
+	$expr = $expr + "(" + $LightName + ".LinearRadius > 0);";
+	string $exprName = $Name + "_visibility";
+	expression -s $expr -o $ObjectName -ae 1 -uc all -n $exprName;
+}
+
+proc CheckFalloffMaterials()
+{
+	// Look for existing material...
+	string $allMat[] = `ls -mat`;
+	int $foundLinear = 0;
+	for($i = 0; ($foundLinear != 1) && ($i < size($allMat)); $i++)
+	{
+		if(($foundLinear != 1) && (`strcmp $allMat[$i] "FalloffLinear"` == 0))
+		{
+			$foundLinear = 1;
+		}
+	}
+
+	if(!$foundLinear)
+	{
+		string $matName = `shadingNode -asShader lambert`;
+		rename $matName "FalloffLinear";
+		sets -renderable true -noSurfaceShader true -empty -name "sgFalloffLinear";
+		connectAttr -f "FalloffLinear.outColor" "sgFalloffLinear.surfaceShader";
+		setAttr "FalloffLinear.transparency" -type double3 0.5 0.5 0.5;
+		string $rampName = `shadingNode -asTexture ramp`;
+		rename $rampName "FalloffLinearRamp";
+		string $rampPlaceName = `shadingNode -asUtility place2dTexture`;
+		rename $rampPlaceName "FalloffLinearRampPlace";
+		connectAttr "FalloffLinearRampPlace.outUV" "FalloffLinearRamp.uv";
+		connectAttr "FalloffLinearRampPlace.outUvFilterSize" "FalloffLinearRamp.uvFilterSize";
+		connectAttr -f "FalloffLinearRamp.outColor" "FalloffLinear.color";
+		setAttr "FalloffLinearRamp.type" 4;
+		setAttr "FalloffLinearRamp.colorEntryList[0].color" -type double3 1 0 0;
+		setAttr -size 2 FalloffLinearRamp.colorEntryList;
+		setAttr FalloffLinearRamp.colorEntryList[1].position 1;
+		setAttr FalloffLinearRamp.colorEntryList[1].color -type double3 0 0 1;
+	}
+}
+
+proc CreateRadiusSphere(string $LightName, string $TransformName, string $NameBase)
+{
+	string $name = $NameBase + "Outer";
+	string $outerName[1] = `sphere -p 0 0 0 -ax 0 1 0 -ssw 0 -esw 360 -r 1 -d 3 -ut 0 -tol 0.01 -s 4 -nsp 2 -ch 0 -name $name`;
+	parent $outerName[0] $TransformName;
+	string $fullName = $TransformName + "|" + $outerName[0];
+	setAttr ($fullName + ".translateX") 0;
+	setAttr ($fullName + ".translateY") 0;
+	setAttr ($fullName + ".translateZ") 0;
+	// Check if the orient sphere exists.
+//	expression -s "if(stringlights|pointLight117.scaleX != 0) { stringlights|pointLight117|pointLight117Outer.scaleX = 1 / stringlights|pointLight117.scaleX; } else { stringlights|pointLight117|pointLight117Outer.scaleX = 1; } if(stringlights|pointLight117.scaleY != 0) { stringlights|pointLight117|pointLight117Outer.scaleY = 1 / stringlights|pointLight117.scaleY; } else { stringlights|pointLight117|pointLight117Outer.scaleY = 1;} if( stringlights|pointLight117.scaleZ != 0) { stringlights|pointLight117|pointLight117Outer.scaleZ = 1 / stringlights|pointLight117.scaleZ;} else { stringlights|pointLight117|pointLight117Outer.scaleZ = 1; }"  -o pointLight117Outer -n "CorrectScale" -ae 1 -uc all ;
+
+	orientConstraint top $fullName;
+	// Visibility
+	CreateVisibilityExpression($LightName, $fullName, $name);
+	// Size
+	CreateSizeExpression($LightName, $fullName, $TransformName, $name);
+	// Add sphere to light ranges layer.
+	editDisplayLayerMembers "LRanges" $fullName;
+}
+
+// Create two fall off disks and only display one depending on 
+//if the decay is linear or quadratic.
+proc CreateFalloffDisc(string $LightName, string $TransformName, string $NameBase)
+{
+	// Look for existing fall off disc.
+	string $linearName = $NameBase + "LinearRadius";
+
+	// Make sure we have the materials we need.
+	CheckFalloffMaterials();
+
+	string $circleName[1] = `circle -c 0 0 0 -nr 0 1 0 -sw 360 -r 1 -d 3 -ut 0 -tol 0.0001 -s 8 -ch 0`;
+	string $discName[1] = `planarSrf -ch 0 -d 3 -ko 0 -tol 0.0001 -rn 0 -po 0 $circleName[0]`;
+	rename $discName[0] $linearName;
+	delete $circleName[0];
+	parent $linearName $TransformName;
+	string $fullName = $TransformName + "|" + $linearName;
+	aimConstraint -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "vector" -worldUpVector 0 1 0 "persp" $fullName;
+	setAttr ($fullName + ".translateX") 0;
+	setAttr ($fullName + ".translateY") 0;
+	setAttr ($fullName + ".translateZ") 0;
+	displaySmoothness -full -du 0 -dv 0 -pw 4 -ps 10 -rt 0 $fullName;
+	CreateVisibilityExpression($LightName, $linearName, $linearName);
+	CreateSizeExpression($LightName, $linearName, $TransformName, $linearName);
+
+	// Assign the nice fall off material...
+	sets -e -fe "sgFalloffLinear" $linearName;
+
+	// Add disc to light disk layer.
+	editDisplayLayerMembers "LDiscs" $fullName;
+}
+
+proc CreateAttributes(string $LightName)
+{
+	string $tempList[1] = `listAttr -st P3D_GameAttr $LightName`;
+	if($tempList[0] == "")
+	{
+		addAttr -ln P3D_GameAttr -dt "string" -hidden true ($LightName);
+	}
+	$tempList = `listAttr -st LinearRadius $LightName`;
+	if($tempList[0] == "")
+	{
+		addAttr -ln LinearRadius -at "float" -hnv true -min 0 -k true -dv 1 ($LightName);
+	}
+
+	string $curValue = `getAttr ($LightName + ".P3D_GameAttr")`;
+	$tempList[0] = `match "LinearRadius" ($curValue)`;
+	string $newValue = "LinearRadius";
+	if($tempList[0] == "")
+	{
+		if($curValue != "")
+		{
+			$newValue += "~" + $curValue;
+		}
+	}
+	setAttr ($LightName + ".P3D_GameAttr") -type "string" ($newValue);
+}
+
+// Create light range helpers for all selected point and spot lights.
+global proc CreateLinearRadius()
+{
+	// Make sure lights are selected
+	string $selList[];
+	$selList = `ls -sl -dag -type pointLight -type spotLight`;
+	int $len = size($selList);
+	if($len == 0)
+	{
+		print("No point or spot lights selected");
+		return;
+	}
+
+	CheckForRangeLayer();
+	// Deconstruct the name list to get the transform node and light node.
+	for($i = 0; $i < $len; $i++)
+	{
+		string $lightName = $selList[$i];
+		string $transformName[] = `listRelatives -pa -p $lightName`;
+		string $buffer[];
+		string $name;
+		int $count = `tokenize $transformName[0] "|" $buffer`;
+		if($count == 1)
+		{
+			$name = $transformName[0];
+		}
+		else
+		{
+			int $last = size($buffer) - 1;
+			$name = $buffer[$last];
+		}
+		// Look for an existing sphere and delete them.
+		string $allChildren[] = `listRelatives -c $transformName[0]`;
+		for($child in $allChildren)
+		{
+			if(`strcmp $child ($name + "Outer")` == 0)
+			{
+				delete $child;
+			}
+			if(`strcmp $child ($name + "LinearRadius")` == 0)
+			{
+				delete $child;
+			}
+		}
+
+		string $fullName[1] = `ls -l ($lightName)`;
+		CreateAttributes($fullName[0]);
+		CreateRadiusSphere($lightName, $transformName[0], $name);
+		CreateFalloffDisc($lightName, $transformName[0], $name);
+	}
+	select $selList;
+}
+
+// Remove the linear radius attributes from all selected point and spot ligths.
+global proc CleanLinearRadius()
+{
+	// Make sure lights are selected
+	string $selList[];
+	$selList = `ls -sl -dag -type pointLight -type spotLight`;
+	int $len = size($selList);
+	if($len == 0)
+	{
+		return;
+	}
+	// Deconstruct the name list to get the transform node, from there we'll get
+	//the sphere and fall off names.
+	for($i = 0; $i < $len; $i++)
+	{
+		string $lightName = $selList[$i];
+		string $transformName[] = `listRelatives -pa -p $lightName`;
+		string $sphereName = $transformName[0] + "Outer";
+		string $linearName = $transformName[0] + "LinearRadius";
+		catch(`delete $sphereName`);
+		catch(`delete $linearName`);
+		catch(`deleteAttr ($lightName + ".LinearRadius")`);
+		string $curValue = `getAttr ($lightName + ".P3D_GameAttr")`;
+		string $tempList[];
+		int $numTokens = `tokenize $curValue "~" $tempList`;
+		if($numTokens > 0)
+		{
+			string $newValue = "";
+			int $count = 0;
+			for($j = 0; $j < $numTokens; $j++)
+			{
+				if(strcmp($tempList[$j], "LinearRadius") != 0)
+				{
+					if($count != 0)
+					{
+						$newValue += "~";
+					}
+					$newValue += $tempList[$j];
+					$count++;
+				}
+			}
+			setAttr ($lightName + ".P3D_GameAttr") -type "string" ($newValue);
+		}
+	}
+}

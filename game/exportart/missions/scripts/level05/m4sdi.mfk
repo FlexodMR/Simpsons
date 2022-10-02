@@ -1,0 +1,131 @@
+SelectMission("m4sd");
+
+SetMissionResetPlayerOutCar("m4_apu_start","m4_carstart");
+SetDynaLoadData("l5r1.p3d;l5z1.p3d;l5z2.p3d;");
+
+UsePedGroup(0);
+
+SetMissionStartCameraName( "mission5camShape" );
+SetMissionStartMulticontName( "mission5cam" );
+SetAnimatedCameraName( "mission5camShape" );
+SetAnimCamMulticontName( "mission5cam" );
+
+AddStage(0);
+	SetMaxTraffic(5);
+	SetStageMessageIndex(171);
+	SetHUDIcon( "kburger" );
+	AddObjective( "goto" );
+		AddNPC("krusty", "m4_krusty_sd");
+		SetDestination( "m4_krustyburger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(191);
+	SetHUDIcon( "krusty" );
+	AddObjective("talkto");
+		AddNPC("krusty", "m4_krusty_sd");
+		AddObjectiveNPCWaypoint( "krusty", "m4_krusty_walk1" );
+		AddObjectiveNPCWaypoint( "krusty", "m4_krusty_walk2" );
+		AddObjectiveNPCWaypoint( "krusty", "m4_krusty_walk3" );
+		AddObjectiveNPCWaypoint( "krusty", "m4_krusty_walk4" );
+		SetTalkToTarget("krusty", 0, 0);
+	CloseObjective();
+CloseStage();
+
+//LOCKED STAGE FOR APU'S AMERICAN CLOTHES
+//
+//THIS DIALOGUE WILL INCLUDE THE GATED LINES
+AddStage("locked","skin","a_american");
+	SetStageMessageIndex(7);
+	AddObjective("dialogue");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis05_04.p3d" );
+		SetCamBestSide( "m4_bestside" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_far" );
+		SetConversationCam( 4, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_scratch_head" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		SetCamBestSide("m4_bestside");
+		SetDialogueInfo("apu","krusty","clown",0);
+		SetDialoguePositions("m4_apu_talk","m4_krusty_walk4","m4_carstart");
+	CloseObjective();
+CloseStage();
+
+//THIS DIALOGUE WILL NOT INCLUDE THE GATED LINES AND WILL START THE MISSION
+//AddStage(1);
+//	AddObjective("dialogue");
+//		SetPresentationBitmap( "art/frontend/dynaload/images/mis05_04.p3d" );
+//		SetCamBestSide( "m4_bestside" );
+//		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+//		AmbientAnimationRandomize( 0, 0 );
+//		SetConversationCam( 0, "pc_far" );
+//		SetConversationCam( 1, "npc_far" );
+//		SetConversationCam( 2, "pc_far" );
+//		SetConversationCam( 3, "npc_far" );
+//		AddAmbientNpcAnimation( "none" );
+//		AddAmbientNpcAnimation( "dialogue_no" );
+//		AddAmbientNpcAnimation( "none" );
+//		AddAmbientNpcAnimation( "dialogue_no" );
+//		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+//		AddAmbientPcAnimation( "none" );
+//		AddAmbientPcAnimation( "dialogue_scratch_head" );
+//		AddAmbientPcAnimation( "none" );
+//		SetCamBestSide("m4_bestside");
+//		SetDialogueInfo("apu","krusty","clown2",0);
+//		SetDialoguePositions("m4_apu_talk","m4_krusty_walk4","m4_carstart");
+//	CloseObjective();
+//CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(205);
+	SetHUDIcon( "tshirt" );
+	AddObjective("buyskin", "a_american");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(171);
+	SetHUDIcon( "kburger" );
+	AddObjective( "goto" );
+		AddNPC("krusty", "m4_krusty_sd");
+		SetDestination( "m4_krustyburger", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetHUDIcon( "kburger" );
+	SetStageMessageIndex(270);
+	AddObjective("goto");
+		SetDestination("m4_gated_start","triggersphere");
+		MustActionTrigger();
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

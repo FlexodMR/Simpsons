@@ -1,0 +1,1092 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>URI::URL - Uniform Resource Locators (absolute and relative)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#HOW_AND_WHEN_TO_ESCAPE">HOW AND WHEN TO ESCAPE</A>
+	<LI><A HREF="#ADDING_NEW_URL_SCHEMES">ADDING NEW URL SCHEMES</A>
+	<LI><A HREF="#FUNCTIONS">FUNCTIONS</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<LI><A HREF="#HTTP_METHODS">HTTP METHODS</A>
+	<LI><A HREF="#FILE_METHODS">FILE METHODS</A>
+	<LI><A HREF="#GOPHER_METHODS">GOPHER METHODS</A>
+	<LI><A HREF="#NEWS_METHODS">NEWS METHODS</A>
+	<LI><A HREF="#WAIS_METHODS">WAIS METHODS</A>
+	<LI><A HREF="#MAILTO_METHODS">MAILTO METHODS</A>
+	<LI><A HREF="#WHAT_A_URL_IS_NOT">WHAT A URL IS NOT</A>
+	<LI><A HREF="#COMPATIBILITY">COMPATIBILITY</A>
+	<LI><A HREF="#AUTHORS_ACKNOWLEDGMENTS">AUTHORS / ACKNOWLEDGMENTS</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+
+<FONT SIZE=-1>URI::URL</FONT> - Uniform Resource Locators (absolute and
+relative)
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use URI::URL;
+</PRE>
+
+<P>
+
+<PRE> # Constructors
+ $url1 = new URI::URL '<A HREF="http://www.perl.com/%7Euser/gisle.gif">http://www.perl.com/%7Euser/gisle.gif</A>';
+ $url2 = new URI::URL 'gisle.gif', '<A HREF="http://www.com/%7Euser">http://www.com/%7Euser</A>';
+ $url3 = url '<A HREF="http://www.sn.no/">http://www.sn.no/</A>'; # handy constructor
+ $url4 = $url2-&gt;abs;       # get absolute url using base
+ $url5 = $url2-&gt;abs('<A HREF="http:/other/path">http:/other/path</A>');
+ $url6 = newlocal URI::URL 'test';
+</PRE>
+
+<P>
+
+<PRE> # Stringify URL
+ $str1 = $url-&gt;as_string;  # complete escaped URL string
+ $str2 = $url-&gt;full_path;  # escaped path+params+query
+ $str3 = &quot;$url&quot;;           # use operator overloading
+</PRE>
+
+<P>
+
+<PRE> # Retrieving Generic-RL components:
+ $scheme   = $url-&gt;scheme;
+ $netloc   = $url-&gt;netloc; # see user,password,host,port below
+ $path     = $url-&gt;path;
+ $params   = $url-&gt;params;
+ $query    = $url-&gt;query;
+ $frag     = $url-&gt;frag;
+</PRE>
+
+<P>
+
+<PRE> # Accessing elements in their escaped form
+ $path     = $url-&gt;epath;
+ $params   = $url-&gt;eparams;
+ $query    = $url-&gt;equery;
+</PRE>
+
+<P>
+
+<PRE> # Retrieving Network location (netloc) components:
+ $user     = $url-&gt;user;
+ $password = $url-&gt;password;
+ $host     = $url-&gt;host;
+ $port     = $url-&gt;port;   # returns default if not defined
+</PRE>
+
+<P>
+
+<PRE> # Retrieve escaped path components as an array
+ @path     = $url-&gt;path_components;
+</PRE>
+
+<P>
+
+<PRE> # HTTP query-string access methods
+ @keywords = $url-&gt;keywords;
+ @form     = $url-&gt;query_form;
+</PRE>
+
+<P>
+
+<PRE> # All methods above can set the field values, e.g:
+ $url-&gt;scheme('http');
+ $url-&gt;host('www.w3.org');
+ $url-&gt;port($url-&gt;default_port);
+ $url-&gt;base($url5);                      # use string or object
+ $url-&gt;keywords(qw(dog bones));
+</PRE>
+
+<P>
+
+<PRE> # File methods
+ $url = new URI::URL &quot;<A HREF="file:/foo/bar&quot">file:/foo/bar&quot</A>;;
+ open(F, $url-&gt;local_path) or die;
+</PRE>
+
+<P>
+
+<PRE> # Compare URLs
+ if ($url-&gt;eq(&quot;<A HREF="http://www.sn.no&quot">http://www.sn.no&quot</A>;)) or die;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module implements the 
+<FONT SIZE=-1>URI::URL</FONT> class representing Uniform Resource Locators 
+<FONT SIZE=-1>(URL).</FONT> URLs provide a compact string representation for resources available via the Internet. Both absolute 
+<FONT SIZE=-1>(RFC</FONT> 1738) and relative 
+<FONT SIZE=-1>(RFC</FONT> 1808) URLs are supported.
+
+
+
+<P>
+
+
+<FONT SIZE=-1>URI::URL</FONT> objects are created by calling <CODE>new(),</CODE> which takes as argument a string representation of the 
+<FONT SIZE=-1>URL</FONT> or an existing 
+<FONT SIZE=-1>URL</FONT> object reference to be cloned. Specific individual elements can then be accessed via the <CODE>scheme(),</CODE> <CODE>user(),</CODE> <CODE>password(),</CODE> <CODE>host(),</CODE> <CODE>port(),</CODE> <CODE>path(),</CODE> <CODE>params(),</CODE> <CODE>query()</CODE> and <CODE>frag()</CODE> methods. In addition escaped versions of the path, params and query can be accessed with the <CODE>epath(),</CODE> <CODE>eparams()</CODE> and <CODE>equery()</CODE> methods. Note that some 
+<FONT SIZE=-1>URL</FONT> schemes will support all these methods.
+
+
+
+<P>
+
+The object constructor <CODE>new()</CODE> must be able to determine the scheme for the 
+<FONT SIZE=-1>URL.</FONT> If a scheme is not specified in the 
+<FONT SIZE=-1>URL</FONT> itself, it will use the scheme specified by the base 
+<FONT SIZE=-1>URL.</FONT> If no base 
+<FONT SIZE=-1>URL</FONT> scheme is defined then <CODE>new()</CODE> will croak if URI::URL::strict(1) has been invoked, otherwise
+ <EM>http</EM> is silently assumed. Once the scheme has been determined <CODE>new()</CODE> then uses the <CODE>implementor()</CODE> function to determine which class implements that scheme. If no implementor class is defined for the scheme then <CODE>new()</CODE> will croak if URI::URL::strict(1) has been invoked, otherwise the internal generic 
+<FONT SIZE=-1>URL</FONT> class is assumed.
+
+
+
+<P>
+
+Internally defined schemes are implemented by the 
+<FONT SIZE=-1>URI::URL::</FONT><EM>scheme_name</EM> module. The URI::URL::implementor() function can be used to explicitly set
+the class used to implement a scheme if you want to override this.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="HOW_AND_WHEN_TO_ESCAPE">HOW AND WHEN TO ESCAPE
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_This">This is an edited extract from a URI specification:
+
+</A></STRONG><DD>
+The printability requirement has been met by specifying a safe set of characters, and a general escaping scheme for encoding ``unsafe'' characters. This ``safe'' set is suitable, for example, for use in electronic mail. This is the canonical form of a 
+<FONT SIZE=-1>URI.</FONT>
+
+
+
+<P>
+
+There is a conflict between the need to be able to represent many characters including spaces within a 
+<FONT SIZE=-1>URI</FONT> directly, and the need to be able to use a 
+<FONT SIZE=-1>URI</FONT> in environments which have limited character sets or in which certain characters are prone to corruption. This conflict has been resolved by use of an hexadecimal escaping method which may be applied to any characters forbidden in a given context. When URLs are moved between contexts, the set of characters escaped may be enlarged or reduced unambiguously. The canonical form for URIs has all white spaces encoded.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Notes">Notes:
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> 
+<FONT SIZE=-1>URL</FONT> string <EM>must</EM>, by definition, consist of escaped components. Complete URLs are always
+escaped.
+
+
+<P>
+
+The components of a 
+<FONT SIZE=-1>URL</FONT> string must be <EM>individually</EM> escaped. Each component of a 
+<FONT SIZE=-1>URL</FONT> may have a separate requirements regarding what must be escaped, and those requirements are also dependent on the 
+<FONT SIZE=-1>URL</FONT> scheme.
+
+
+
+<P>
+
+Never escape an already escaped component string.
+
+
+<P>
+
+</DL>
+This implementation expects an escaped 
+<FONT SIZE=-1>URL</FONT> string to be passed to <CODE>new()</CODE> and will return a fully escaped 
+<FONT SIZE=-1>URL</FONT> string from <CODE>as_string()</CODE> and <CODE>full_path().</CODE>
+
+
+
+<P>
+
+Individual components can be manipulated in unescaped or escaped form. The
+following methods return/accept unescaped strings:
+
+
+<P>
+
+<PRE>    scheme                  path
+    user                    params
+    password                query
+    host                    frag
+    port
+</PRE>
+
+<P>
+
+The following methods return/accept partial <EM>escaped</EM> strings:
+
+
+<P>
+
+<PRE>    netloc                  eparams
+    epath                   equery
+</PRE>
+
+<P>
+
+<EM>Partial escaped</EM> means that only reserved characters (i.e. ':', '@', '/', ';', '?', '=',
+'&amp;' in addition to '%', '.' and '#') needs to be escaped when they are
+to be treated as normal characters.
+<EM>Fully escaped</EM> means that all unsafe characters are escaped. Unsafe characters are all all control characters 
+<FONT SIZE=-1>(%00-%1F</FONT> and 
+<FONT SIZE=-1>%7F),</FONT> all 8-bit characters 
+<FONT SIZE=-1>(%80-%FF)</FONT> as well as '{', '}', '|', '\', '^', '[', ']' '`', '``', '&lt;
+' and '&gt;'. Note that the character '~' is <STRONG>not</STRONG> considered unsafe by this library as it is common practice to use it to reference personal home pages, but it is still unsafe according to 
+<FONT SIZE=-1>RFC</FONT> 1738.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ADDING_NEW_URL_SCHEMES">ADDING NEW URL SCHEMES
+
+</A></H1>
+New 
+<FONT SIZE=-1>URL</FONT> schemes or alternative implementations for
+existing schemes can be added to your own code. To create a new scheme
+class use code like:
+
+
+<P>
+
+<PRE>   package MYURL::foo;
+   @ISA = (URI::URL::implementor());   # inherit from generic scheme
+</PRE>
+
+<P>
+
+The 'URI::URL::implementor()' function call with no parameters returns the name of the class which implements the generic 
+<FONT SIZE=-1>URL</FONT> scheme behaviour (typically
+ <CODE>URI::URL::_generic</CODE>). All hierarchical schemes should be derived from this class.
+
+
+<P>
+
+Your class can then define overriding methods (e.g., <CODE>new(),</CODE>
+<CODE>_parse()</CODE> as required).
+
+
+<P>
+
+To register your new class as the implementor for a specific scheme use
+code like:
+
+
+<P>
+
+<PRE>   URI::URL::implementor('x-foo', 'MYURL::foo');
+</PRE>
+
+<P>
+
+Any new 
+<FONT SIZE=-1>URL</FONT> created for scheme 'x-foo' will be implemented by
+your
+<CODE>MYURL::foo</CODE> class. Existing URLs will not be affected.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="FUNCTIONS">FUNCTIONS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_new">new URI::URL $url_string [, $base_url]
+
+</A></STRONG><DD>
+This is the object constructor. It will create a new 
+<FONT SIZE=-1>URI::URL</FONT> object, initialized from the 
+<FONT SIZE=-1>URL</FONT> string. To trap bad or unknown 
+<FONT SIZE=-1>URL</FONT> schemes use:
+
+
+
+<P>
+
+<PRE> $obj = eval { new URI::URL &quot;snews:comp.lang.perl.misc&quot; };
+</PRE>
+
+<P>
+
+or set URI::URL::strict(0) if you do not care about bad or unknown schemes.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_newlocal">newlocal URI::URL $path;
+
+</A></STRONG><DD>
+Returns an 
+<FONT SIZE=-1>URL</FONT> object that denotes a path within the local filesystem. Paths not starting with '/' are interpreted relative to the current working directory. This constructor always return an absolute 'file' 
+<FONT SIZE=-1>URL.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_url">url($url_string, [, $base_url])
+
+</A></STRONG><DD>
+Alternative constructor function. The <CODE>url()</CODE> function is exported by the 
+<FONT SIZE=-1>URI::URL</FONT> module and is easier both to type and read than calling URI::URL-&gt;new directly. Useful for constructs like this:
+
+
+
+<P>
+
+<PRE>   $h = url($str)-&gt;host;
+</PRE>
+
+<P>
+
+This function is just a wrapper for URI::URL-&gt;new.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_URI">URI::URL::strict($bool)
+
+</A></STRONG><DD>
+If strict is true then we croak on errors. The function returns the
+previous value.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_URI">URI::URL::implementor([$scheme, [$class]])
+
+</A></STRONG><DD>
+Use this function to get or set implementor class for a scheme. Returns '' if specified scheme is not supported. Returns generic 
+<FONT SIZE=-1>URL</FONT> class if no scheme specified.
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+This section describes the methods available for an 
+<FONT SIZE=-1>URI::URL</FONT> object. Note that some 
+<FONT SIZE=-1>URL</FONT> schemes will disallow some of these methods and will croak if they are used. Some 
+<FONT SIZE=-1>URL</FONT> schemes add additional methods that are described in the sections to follow.
+
+
+
+<P>
+
+Attribute access methods marked with (*) can take an optional argument to
+set the value of the attribute, and they always return the old value.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__url_abs_base_">$url->abs([$base, [$allow_scheme_in_relative_urls]])
+
+</A></STRONG><DD>
+The <CODE>abs()</CODE> method attempts to return a new absolute 
+<FONT SIZE=-1>URI::URL</FONT> object for a given 
+<FONT SIZE=-1>URL.</FONT> In order to convert a relative 
+<FONT SIZE=-1>URL</FONT> into an absolute one, a
+ <EM>base</EM> 
+<FONT SIZE=-1>URL</FONT> is required. You can associate a default base with a 
+<FONT SIZE=-1>URL</FONT> either by passing a
+ <EM>base</EM> to the <CODE>new()</CODE> constructor when a 
+<FONT SIZE=-1>URI::URL</FONT> is created or using the <CODE>base()</CODE>
+method on the object later. Alternatively you can specify a one-off base as
+a parameter to the <CODE>abs()</CODE> method.
+
+
+<P>
+
+Some older parsers used to allow the scheme name to be present in the relative 
+<FONT SIZE=-1>URL</FONT> if it was the same as the base 
+<FONT SIZE=-1>URL</FONT> scheme. 
+<FONT SIZE=-1>RFC1808</FONT> says that this should be avoided, but you can enable this old behaviour by passing a 
+<FONT SIZE=-1>TRUE</FONT> value as the second argument to the <CODE>abs()</CODE> method. The difference is demonstrated by the following examples:
+
+
+
+<P>
+
+<PRE>  url(&quot;<A HREF="http:foo&quot">http:foo&quot</A>;)-&gt;abs(&quot;<A HREF="http://host/a/b&quot">http://host/a/b&quot</A>;)     ==&gt;  &quot;<A HREF="http:foo&quot">http:foo&quot</A>;
+  url(&quot;<A HREF="http:foo&quot">http:foo&quot</A>;)-&gt;abs(&quot;<A HREF="http://host/a/b&quot">http://host/a/b&quot</A>;, 1)  ==&gt;  &quot;<A HREF="http:/host/a/foo&quot">http:/host/a/foo&quot</A>;
+</PRE>
+
+<P>
+
+The <CODE>rel()</CODE> method will do the opposite transformation.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_as_string">$url->as_string
+
+</A></STRONG><DD>
+Returns a string representing the 
+<FONT SIZE=-1>URL</FONT> in its canonical form. All unsafe characters will
+be escaped. This method is overloaded as the perl ``stringify'' operator,
+which means that URLs can be used as strings in many contexts.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_base">$url->base (*)
+
+</A></STRONG><DD>
+Get/set the base 
+<FONT SIZE=-1>URL</FONT> associated with the current 
+<FONT SIZE=-1>URI::URL</FONT> object. The base 
+<FONT SIZE=-1>URL</FONT> matters when you call the <CODE>abs()</CODE> method.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_clone">$url->clone
+
+</A></STRONG><DD>
+Returns a copy of the current 
+<FONT SIZE=-1>URI::URL</FONT> object.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_crack">$url->crack
+
+</A></STRONG><DD>
+Return a 9 element array with the following content:
+
+
+<P>
+
+<PRE>   0: $url-&gt;scheme *)
+   1: $url-&gt;user
+   2: $url-&gt;password
+   3: $url-&gt;host
+   4: $url-&gt;port
+   5: $url-&gt;epath
+   6: $url-&gt;eparams
+   7: $url-&gt;equery
+   8: $url-&gt;frag
+</PRE>
+
+<P>
+
+All elements except <EM>scheme</EM> will be undefined if the corresponding 
+<FONT SIZE=-1>URL</FONT> part is not available.
+
+
+<P>
+
+<STRONG>Note:</STRONG> The scheme (first element) returned by crack will aways be defined. This is
+different from what the $url-&gt;scheme returns, since it will return <EM>undef</EM> for relative URLs.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_default_port">$url->default_port
+
+</A></STRONG><DD>
+Returns the default port number for the 
+<FONT SIZE=-1>URL</FONT> scheme that the 
+<FONT SIZE=-1>URI::URL</FONT> belongs too.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_eparams">$url->eparams (*)
+
+</A></STRONG><DD>
+Get/set the 
+<FONT SIZE=-1>URL</FONT> parameters in escaped form.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_epath">$url->epath (*)
+
+</A></STRONG><DD>
+Get/set the 
+<FONT SIZE=-1>URL</FONT> path in escaped form.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_eq_other_url_">$url->eq($other_url)
+
+</A></STRONG><DD>
+Compare two URLs to decide if they match or not. The rules for how
+comparison is made varies for different parts of the URLs; scheme and
+netloc comparison is case-insensitive, and escaped chars match their
+<CODE>%XX</CODE> encoding unless they are ``reserved'' or ``unsafe''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_equery">$url->equery (*)
+
+</A></STRONG><DD>
+Get/set the 
+<FONT SIZE=-1>URL</FONT> query string in escaped form.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_full_path">$url->full_path
+
+</A></STRONG><DD>
+Returns the string ``/path;params?query''. This is the string that is
+passed to a remote server in order to access the document.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_frag">$url->frag (*)
+
+</A></STRONG><DD>
+Get/set the fragment (unescaped)
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_host">$url->host (*)
+
+</A></STRONG><DD>
+Get/set the host (unescaped)
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_netloc">$url->netloc (*)
+
+</A></STRONG><DD>
+Get/set the network location in escaped form. Setting the network location
+will affect 'user', 'password', 'host' and 'port'.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_params">$url->params (*)
+
+</A></STRONG><DD>
+Get/set the 
+<FONT SIZE=-1>URL</FONT> parameters (unescaped)
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_password">$url->password (*)
+
+</A></STRONG><DD>
+Get/set the password (unescaped)
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_path">$url->path (*)
+
+</A></STRONG><DD>
+Get/set the path (unescaped). This method will croak if any of the path
+components in the return value contain the ``/'' character. You should use
+the <CODE>epath()</CODE> method to be safe.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_path_components">$url->path_components (*)
+
+</A></STRONG><DD>
+Get/set the path using a list of unescaped path components. The return value will loose the distinction beween '.' and 
+<FONT SIZE=-1>'%2E'.</FONT> When setting a value, a '.' is converted to be a literal '.' and is therefore encoded as 
+<FONT SIZE=-1>'%2E'.</FONT>
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_port">$url->port (*)
+
+</A></STRONG><DD>
+Get/set the network port (unescaped)
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_rel_base_">$url->rel([$base])
+
+</A></STRONG><DD>
+Return a relative 
+<FONT SIZE=-1>URL</FONT> if possible. This is the opposite of what the
+<CODE>abs()</CODE> method does. For instance:
+
+
+<P>
+
+<PRE>   url(&quot;<A HREF="http://www.math.uio.no/doc/mail/top.html&quot">http://www.math.uio.no/doc/mail/top.html&quot</A>;,
+       &quot;<A HREF="http://www.math.uio.no/doc/linux/&quot">http://www.math.uio.no/doc/linux/&quot</A>;)-&gt;rel
+</PRE>
+
+<P>
+
+will return a relative 
+<FONT SIZE=-1>URL</FONT> with path set to ``../mail/top.html'' and with the same base as the original 
+<FONT SIZE=-1>URL.</FONT>
+
+
+
+<P>
+
+If the original 
+<FONT SIZE=-1>URL</FONT> already is relative or the scheme or netloc does not match the base, then a copy of the original 
+<FONT SIZE=-1>URL</FONT> is returned.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_print_on_FILEHANDLE_">$url->print_on(*FILEHANDLE);
+
+</A></STRONG><DD>
+Prints a verbose presentation of the contents of the 
+<FONT SIZE=-1>URL</FONT> object to the specified file handle (default 
+<FONT SIZE=-1>STDOUT).</FONT> Mainly useful for debugging.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_scheme">$url->scheme (*)
+
+</A></STRONG><DD>
+Get/set the scheme for the 
+<FONT SIZE=-1>URL.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_query">$url->query (*)
+
+</A></STRONG><DD>
+Get/set the query string (unescaped). This method will croak if the string returned contains both '+' and 
+<FONT SIZE=-1>'%2B'</FONT> or '=' together with 
+<FONT SIZE=-1>'%3D'</FONT> or '%26'. You should use the <CODE>equery()</CODE> method to be safe.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_user">$url->user (*)
+
+</A></STRONG><DD>
+Get/set the 
+<FONT SIZE=-1>URL</FONT> user name (unescaped)
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="HTTP_METHODS">HTTP METHODS
+
+</A></H1>
+For <EM>http</EM> URLs you may also access the query string using the <CODE>keywords()</CODE>
+and the <CODE>query_form()</CODE> methods. Both will croak if the query is
+not of the correct format. The encodings look like this:
+
+
+<P>
+
+<PRE>  word1+word2+word3..        # keywords
+  key1=val1&amp;key2=val2...     # query_form
+</PRE>
+
+<P>
+
+Note: These functions does not return the old value when they are used to
+set a value of the query string.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__url_keywords">$url->keywords (*)
+
+</A></STRONG><DD>
+The <CODE>keywords()</CODE> method returns a list of unescaped strings. The
+method can also be used to set the query string by passing in the keywords
+as individual arguments to the method.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_query_form">$url->query_form (*)
+
+</A></STRONG><DD>
+The <CODE>query_form()</CODE> method return a list of unescaped key/value
+pairs. If you assign the return value to a hash you might loose some values
+if the key is repeated (which it is allowed to do).
+
+
+<P>
+
+This method can also be used to set the query sting of the 
+<FONT SIZE=-1>URL</FONT> like this:
+
+
+<P>
+
+<PRE>  $url-&gt;query_form(foo =&gt; 'bar', foo =&gt; 'baz', equal =&gt; '=');
+</PRE>
+
+<P>
+
+If the value part of a key/value pair is a reference to an array, then it
+will be converted to separate key/value pairs for each value. This means
+that these two calls are equal:
+
+
+<P>
+
+<PRE>  $url-&gt;query_form(foo =&gt; 'bar', foo =&gt; 'baz');
+  $url-&gt;query_form(foo =&gt; ['bar', 'baz']);
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="FILE_METHODS">FILE METHODS
+
+</A></H1>
+The <EM>file</EM> URLs implement the <CODE>local_path()</CODE> method that returns a path
+suitable for access to files within the current filesystem. These methods
+can <STRONG>not</STRONG> be used to set the path of the 
+<FONT SIZE=-1>URL.</FONT>
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__url_local_path">$url->local_path
+
+</A></STRONG><DD>
+This method is really just an alias for one of the methods below depending
+on what system you run on.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_unix_path">$url->unix_path
+
+</A></STRONG><DD>
+Returns a path suitable for use on a Unix system. This method will croak if any of the path segments contains a ``/'' or a 
+<FONT SIZE=-1>NULL</FONT> character.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_dos_path">$url->dos_path
+
+</A></STRONG><DD>
+Returns a path suitable for use on a 
+<FONT SIZE=-1>MS-DOS</FONT> or MS-Windows system.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_mac_path">$url->mac_path
+
+</A></STRONG><DD>
+Returns a path suitable for use on a Macintosh system.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__url_vms_path">$url->vms_path
+
+</A></STRONG><DD>
+Returns a path suitable for use on a 
+<FONT SIZE=-1>VMS</FONT> system. 
+<FONT SIZE=-1>VMS</FONT> is a trademark of Digital.
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="GOPHER_METHODS">GOPHER METHODS
+
+</A></H1>
+The methods access the parts that are specific for the gopher URLs. These
+methods access different parts of the $url-&gt;path.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__url_gtype">$url->gtype (*)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__url_selector">$url->selector (*)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__url_search">$url->search (*)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__url_string">$url->string (*)
+
+</A></STRONG><DD>
+</DL>
+<P>
+<HR>
+<H1><A NAME="NEWS_METHODS">NEWS METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item__url_group">$url->group (*)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__url_article">$url->article (*)
+
+</A></STRONG><DD>
+</DL>
+<P>
+<HR>
+<H1><A NAME="WAIS_METHODS">WAIS METHODS
+
+</A></H1>
+The methods access the parts that are specific for the wais URLs. These
+methods access different parts of the $url-&gt;path.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__url_database">$url->database (*)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__url_wtype">$url->wtype (*)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item__url_wpath">$url->wpath (*)
+
+</A></STRONG><DD>
+</DL>
+<P>
+<HR>
+<H1><A NAME="MAILTO_METHODS">MAILTO METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item__url_address">$url->address (*)
+
+</A></STRONG><DD>
+The mail address can also be accessed with the <CODE>netloc()</CODE>
+method.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="WHAT_A_URL_IS_NOT">WHAT A URL IS NOT
+
+</A></H1>
+
+<FONT SIZE=-1>URL</FONT> objects do not, and should not, know how to 'get'
+or 'put' the resources they specify locations for, anymore than a postal
+address 'knows' anything about the postal system. The actual
+access/transfer should be achieved by some form of transport agent class
+(see
+<A HREF="/n|/perl/html/./lib/site/LWP/UserAgent.html">UserAgent</A>). The agent class can use the 
+<FONT SIZE=-1>URL</FONT> class, but should not be a subclass of it.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COMPATIBILITY">COMPATIBILITY
+
+</A></H1>
+This is a listing incompatibilities with 
+<FONT SIZE=-1>URI::URL</FONT> version 3.x:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_unsafe">unsafe(), escape() and unescape()
+
+</A></STRONG><DD>
+These methods not supported any more.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_full_path">full_path() and as_string()
+
+</A></STRONG><DD>
+These methods does no longer take a second argument which specify the set
+of characters to consider as unsafe.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__">'+' in the query-string
+
+</A></STRONG><DD>
+The '+' character in the query part of the 
+<FONT SIZE=-1>URL</FONT> was earlier considered to be an encoding of a
+space. This was just bad influence from Mosaic. Space is now encoded as
+'%20'.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_path">path() and query()
+
+</A></STRONG><DD>
+This methods will croak if they loose information. Use <CODE>epath()</CODE>
+or <CODE>equery()</CODE> instead. The <CODE>path()</CODE> method will for
+instance loose information if any path segment contain an (encoded) '/'
+character.
+
+
+<P>
+
+The <CODE>path()</CODE> now consider a leading '/' to be part of the path. If the path is empty it will default to '/'. You can get the old behaviour by setting 
+<FONT SIZE=-1>$URI::URL::COMPAT_VER_3</FONT> to 
+<FONT SIZE=-1>TRUE</FONT> before accessing the <CODE>path()</CODE> method.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_netloc">netloc()
+
+</A></STRONG><DD>
+The string passed to netloc is now assumed to be escaped. The string
+returned will also be (partially) escaped.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sub">sub-classing
+
+</A></STRONG><DD>
+The path, params and query is now stored internally in unescaped form. This might affect sub-classes of the 
+<FONT SIZE=-1>URL</FONT> scheme classes.
+
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="AUTHORS_ACKNOWLEDGMENTS">AUTHORS / ACKNOWLEDGMENTS
+
+</A></H1>
+This module is (distantly) based on the <CODE>wwwurl.pl</CODE> code in the libwww-perl distribution developed by Roy Fielding <A
+HREF="MAILTO:<fielding@ics.uci.edu>,"><fielding@ics.uci.edu>,</A> as part
+of the Arcadia project at the University of California, Irvine, with
+contributions from Brooks Cutter.
+
+
+<P>
+
+Gisle Aas <A HREF="MAILTO:<aas@sn.no>,"><aas@sn.no>,</A> Tim Bunce <A
+HREF="MAILTO:<Tim.Bunce@ig.co.uk>,"><Tim.Bunce@ig.co.uk>,</A> Roy Fielding
+<A HREF="MAILTO:<fielding@ics.uci.edu>"><fielding@ics.uci.edu></A> and
+Martijn Koster <A
+HREF="MAILTO:<m.koster@webcrawler.com>"><m.koster@webcrawler.com></A> (in
+English alphabetical order) have collaborated on the complete rewrite for
+Perl 5, with input from other people on the libwww-perl mailing list.
+
+
+<P>
+
+If you have any suggestions, bug reports, fixes, or enhancements, send them
+to the libwww-perl mailing list at <A
+HREF="MAILTO:<libwww-perl@ics.uci.edu>."><libwww-perl@ics.uci.edu>.</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1995-1996 Gisle Aas. Copyright 1995 Martijn Koster.
+
+
+<P>
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,257 @@
+##########################################################################
+#
+#  Files specific: This files specified location of the generated library/
+#		   executable file and where to gather source & header files  
+#		   for compilation.
+##########################################################################
+
+####################
+# General defines
+####################
+
+    ############################################################################
+    # Relative path the FTech root directory
+    ############################################################################
+	
+	ROOTDIR	      = ../../..
+    
+    ############################################################################
+    # Output file directory
+    ############################################################################
+	
+	LIBRARYDIR    = ../../lib
+
+    ############################################################################
+    # Output file name (don't include extension or the configuration suffix)
+    ############################################################################
+
+	TARGET        = $(LIBRARYDIR)/radcore
+	
+    ############################################################################
+    # Output file type (EXECUTABLE or LIBRARY)
+    ############################################################################
+
+	TARGETTYPE    = LIBRARY
+
+    ############################################################################
+    # Radbuild defined platform specific configuration files
+    #   * one of config.ps2, config.ps2mw, or config.gcn
+    ############################################################################
+
+    include $(ROOTDIR)/radbuild/config.gcn
+
+    ############################################################################
+    # General build dependencies.
+    #   * All client files will be recompiled and linked when files listed
+    #     here are changed
+    ############################################################################
+
+    GENERAL_DEPENDS = files.txt
+
+################################################################################
+# File specification
+# 
+################################################################################
+
+    ############################################################################
+    # Source file directories
+    ############################################################################
+    
+	SOURCEDIR     = $(ROOTDIR)/radcore/src
+
+    ############################################################################
+    # Include file directories
+    ############################################################################
+
+	INCLUDEDIR += \
+		../../../../code \
+		../../Inc \
+		../../Src/pch \
+		../../Src/radcrashhandler \
+		../../Src/raddispatch \
+  		../../Src/radmemory \
+  		../../Src/raddebugcommunication \
+  		../../Src/raddebugconsole \
+  		../../Src/raddebugwatch \
+  		../../Src/radremotecommand \
+  		../../Src/radcontroller \
+  		../../Src/radobjectbtree \
+  		../../Src/radfile/common \
+  		../../Src/radfile/gcn \
+  		../../Src/radtime \
+		../../Src/radstats \
+		../../Src/radtextdisplay \
+		../../Src/radthread \
+		../../Src/radmemorymonitor \
+		../../Src/radprofiler \
+
+################################################################################
+# Compile settings
+#   * default values are provided
+#   * use '+=' if you want add to default values
+#   * use '=' if you want to override default values
+################################################################################
+
+    ############################################################################
+    # Add pre-processor definitions
+    ############################################################################
+
+    # DEFINES +=
+
+    ############################################################################
+    # Assembler flags
+    ############################################################################
+
+    # ASFLAGS += 
+
+    ############################################################################
+    # C Compiler
+    ############################################################################
+
+    #CFLAGS +=
+
+    ############################################################################
+    # C++ Compiler
+    ############################################################################
+    
+    #CXXFLAGS +=
+
+################################################################################
+# Link setttings
+#   * default values are provided
+#   * use '+=' if you want add to default values
+#   * use '=' if you want to override default values
+################################################################################
+
+    # LDFLAGS +=
+
+	############################################################################
+	# linker command file flag for GCN
+	############################################################################
+
+	# LINKERCMDFILE = $(DOLPHIN_SDK_ROOT)/include/dolphin/eppc.$(DOLPHIN_PLATFORM).lcf
+
+
+################################################################################
+# Pre-compile
+################################################################################
+
+    ############################################################################
+    # Add your target to this list
+    #       - e.g. precompile : crt0.o yourtarget.o
+    ############################################################################
+
+    # precompile : yourtarget.o
+
+    ############################################################################
+    # Your pre-compile steps
+    ############################################################################
+
+    # yourtarget.o: yourtarget.s
+	#     @$(CC) $(ASFLAGS) -o $@ $< > $*.lst
+
+
+################################################################################
+# Pre-link
+################################################################################
+
+    ############################################################################
+    # Add your target to this list
+    #       - e.g. prelink : yourtarget.o
+    ############################################################################
+
+    # prelink : yourtarget.o
+
+    ############################################################################
+    # Your pre-link steps
+    ############################################################################
+
+    # yourtarget.o: yourtarget.s
+	#     @$(CC) $(ASFLAGS) -o $@ $< > $*.lst
+
+################################################################################
+# Client Clean
+################################################################################
+
+    ############################################################################
+    # Your clean build targets
+    ############################################################################
+
+    # clientclean :
+	# 	@echo Cleaning client files...
+	# 	@echo ----------------------------
+	# 	@$(RM) -rf crt0.o
+
+#####################################
+# source files included in project
+#####################################
+
+SOURCEFILES += \
+	radcrashhandler/gcncrashhandler \
+	raddebug/debug \
+	radobject/object \
+	raddispatch/dispatcher \
+	radmemory/align \
+	radmemory/binallocator \
+	radmemory/externalmemoryheap \
+	radmemory/externalmemoryobject \
+	radmemory/dlheap \
+	radmemory/memorymanager \
+	radmemory/memoryobject \
+	radmemory/memorypool \
+	radmemory/memoryspacegcn \
+	radmemory/platalloc \
+	radmemory/staticheap \
+	radmemory/trackingheap \
+	radmemory/twowayallocator \
+	radobjectbtree/objectbtree \
+	radobjectbtree/objectavltree \
+	radobjectlist/dynamicarray \
+	radobjectlist/objectlist \
+	radobjectlist/weakcallbackwrapper \
+	radobjectlist/weakinterfacewrapper \
+	raddebugconsole/consoleclient \
+	raddebugwatch/watchclient \
+	radremotecommand/functionlist \
+	radremotecommand/remotecommandserver \
+	radremotecommand/remotecommandtarget \
+	radcontroller/controllerbuffer \
+	radcontroller/gcncontroller \
+	radkey/radkey \
+	radfile/common/requests \
+	radfile/common/file \
+	radfile/common/instancedrive \
+	radfile/common/drive \
+	radfile/common/filesystem \
+	radfile/common/platformdrives \
+	radfile/common/radfile \
+	radfile/common/buffereddrive \
+	radfile/common/drivethread \
+	radfile/common/signeddrive \
+	radfile/common/remotedrive \
+	radfile/common/cementer \
+	radfile/common/filecache \
+	radfile/gcn/gcndvddrive \
+	radfile/gcn/gcnmemcarddrive \
+	radstring/string \
+	radplatform/platform \
+	radstacktrace/gcn/stacktrace \
+	radtime/time \
+	radtime/stopwatch \
+	raddebugcommunication/targetconnection \
+	raddebugcommunication/targetsocketchannel \
+	raddebugcommunication/targetx \
+	raddebugcommunication/targethiosocket \
+	radstats/simplestat \
+	radstats/statmanager \
+	radtextdisplay/textdisplay \
+	radthread/system \
+	radthread/mutex \
+	radthread/semaphore \
+	radthread/thread \
+	radmemorymonitor/memmonitorclient \
+	radmemorymonitor/memmonitorclienthelp \
+	radprofiler/profiler \
+	radprofiler/profiler2 \
+	radprofiler/profilesample \
+

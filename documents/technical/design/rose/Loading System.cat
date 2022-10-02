@@ -1,0 +1,814 @@
+
+(object Petal
+    version    	44
+    _written   	"Rose 7.0.9420.17"
+    charSet    	0)
+
+(object Class_Category "Loading System"
+    is_unit    	TRUE
+    is_loaded  	TRUE
+    attributes 	(list Attribute_Set
+	(object Attribute
+	    tool       	"sc"
+	    name       	"SourceControlSpec"
+	    value      	"-- using Perforce --"))
+    quid       	"3CA8CEDA00D9"
+    exportControl 	"Public"
+    logical_models 	(list unit_reference_list
+	(object Class "SoundLoader"
+	    quid       	"3C9A4C4302EB"
+	    documentation 	"Responsible for managing the loading of sound clips based on game context and player position(s) in the world."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3C9A6A4D0291"
+		    supplier   	"Logical View::Model::Event Manager::EventListener"
+		    quidu      	"3C9A4819020E"))
+	    operations 	(list Operations
+		(object Operation "LoadSounds"
+		    quid       	"3C9BB80F0201"
+		    parameters 	(list Parameters
+			(object Parameter ""
+			    quid       	"3CABB32C0396"
+			    type       	"SoundClusterID"))
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "Initialize"
+		    quid       	"3CB37A39008C"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "LoadClusterSpecs"
+		    quid       	"3CB37A6A0204"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "SoundCluster"
+	    quid       	"3C9A582B0240"
+	    documentation 	"Contains a list of sound clips appropriate to a context, level, and position, along with operations for loading and unloading them in memory."
+	    operations 	(list Operations
+		(object Operation "LoadSounds"
+		    quid       	"3C9BB87A0144"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "SoundClipCluster"
+	    quid       	"3CA28DC40095"
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CA28DDF00E3"
+		    supplier   	"Logical View::Model::Sound Manager::Loading System::SoundCluster"
+		    quidu      	"3C9A582B0240")))
+	(object Class "SoundStreamCluster"
+	    quid       	"3CA28DCC03B2"
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3CA28DE00354"
+		    supplier   	"Logical View::Model::Sound Manager::Loading System::SoundCluster"
+		    quidu      	"3C9A582B0240")))
+	(object Mechanism @1
+	    logical_models 	(list unit_reference_list
+		(object Object "$UNNAMED$0"
+		    quid       	"3CB37A0F01E3"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB37A2F038A"
+			    supplier   	"$UNNAMED$1"
+			    quidu      	"3CB37A1A000F"
+			    messages   	(list Messages
+				(object Message "Initialize( )"
+				    quid       	"3CB37A2F038B"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1"
+				    ordinal    	0
+				    quidu      	"3CB37A39008C"))))
+		    class      	"Logical View::Model::Sound Manager::SoundManager"
+		    quidu      	"3C9A490602B7"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$1"
+		    quid       	"3CB37A1A000F"
+		    collaborators 	(list link_list
+			(object Link
+			    quid       	"3CB37A6303C9"
+			    supplier   	"$UNNAMED$1"
+			    quidu      	"3CB37A1A000F"
+			    messages   	(list Messages
+				(object Message "LoadClusterSpecs( )"
+				    quid       	"3CB37A6303CA"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"1.1"
+				    ordinal    	1
+				    quidu      	"3CB37A6A0204")))
+			(object Link
+			    quid       	"3CB37AD80080"
+			    supplier   	"$UNNAMED$2"
+			    quidu      	"3CB37ABD0300"
+			    messages   	(list Messages
+				(object Message "GetResourceManager( )"
+				    quid       	"3CB37AD80081"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"2"
+				    ordinal    	2
+				    quidu      	"3C9BC21B005A")))
+			(object Link
+			    quid       	"3CB37B0802C3"
+			    supplier   	"$UNNAMED$3"
+			    quidu      	"3CB37AEE0051"
+			    messages   	(list Messages
+				(object Message "FindAllResources( )"
+				    quid       	"3CB37B0802C4"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"3"
+				    ordinal    	3
+				    quidu      	"3CB381A40218")))
+			(object Link
+			    quid       	"3CB37B290237"
+			    supplier   	"$UNNAMED$4"
+			    quidu      	"3CB37B1A0091"
+			    messages   	(list Messages
+				(object Message "<<create>>"
+				    quid       	"3CB37B290238"
+				    frequency  	"Aperiodic"
+				    synchronization 	"Simple"
+				    dir        	"FromClientToSupplier"
+				    sequence   	"4"
+				    ordinal    	4))))
+		    class      	"Logical View::Model::Sound Manager::Loading System::SoundLoader"
+		    quidu      	"3C9A4C4302EB"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$2"
+		    quid       	"3CB37ABD0300"
+		    class      	"Logical View::View::Sound Rendering System::daSoundRenderingManager"
+		    quidu      	"3C8E9CCF0390"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$3"
+		    quid       	"3CB37AEE0051"
+		    class      	"Logical View::View::Sound Rendering System::Sound Resource Management::daSoundResourceManager"
+		    quidu      	"3C8D35B40339"
+		    persistence 	"Transient"
+		    multi      	FALSE)
+		(object Object "$UNNAMED$4"
+		    quid       	"3CB37B1A0091"
+		    class      	"Logical View::Model::Sound Manager::Loading System::SoundClipCluster"
+		    quidu      	"3CA28DC40095"
+		    persistence 	"Transient"
+		    multi      	FALSE))))
+    logical_presentations 	(list unit_reference_list
+	(object ClassDiagram "Main"
+	    quid       	"3CA8CF5300C7"
+	    title      	"Main"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	0
+	    origin_y   	334
+	    items      	(list diagram_item_list
+		(object ClassView "Class" "Logical View::Model::Event Manager::EventListener" @2
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(688, 624)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	TRUE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@2
+			location   	(493, 544)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	390
+			justify    	0
+			label      	"EventListener")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A4819020E"
+		    width      	408
+		    height     	184
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Loading System::SoundClipCluster" @3
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(432, 1792)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@3
+			location   	(262, 1740)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	340
+			justify    	0
+			label      	"SoundClipCluster")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CA28DC40095"
+		    width      	358
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Loading System::SoundStreamCluster" @4
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(928, 1792)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@4
+			location   	(721, 1740)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	414
+			justify    	0
+			label      	"SoundStreamCluster")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CA28DCC03B2"
+		    width      	432
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Loading System::SoundCluster" @5
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(688, 1392)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@5
+			location   	(547, 1340)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	282
+			justify    	0
+			label      	"SoundCluster")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A582B0240"
+		    width      	300
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Sound Manager::Loading System::SoundLoader" @6
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    location   	(688, 1040)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@6
+			location   	(552, 988)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	272
+			justify    	0
+			label      	"SoundLoader")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3C9A4C4302EB"
+		    width      	290
+		    height     	128
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @7
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9A6A4D0291"
+		    client     	@6
+		    supplier   	@2
+		    line_style 	0)
+		(object AssociationViewNew "" @8
+		    location   	(688, 1215)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3C9A584000B9"
+		    roleview_list 	(list RoleViews
+			(object RoleView "" @9
+			    Parent_View 	@8
+			    location   	(128, 527)
+			    font       	(object Font
+				size       	10
+				face       	"Arial"
+				bold       	FALSE
+				italics    	FALSE
+				underline  	FALSE
+				strike     	FALSE
+				color      	0
+				default_color 	TRUE)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9A584001B3"
+			    client     	@8
+			    supplier   	@5
+			    line_style 	0
+			    label      	(object SegLabel @10
+				Parent_View 	@9
+				location   	(726, 1272)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				anchor     	2
+				anchor_loc 	1
+				nlines     	1
+				max_width  	15
+				justify    	0
+				label      	"n"
+				pctDist    	0.505747
+				height     	38
+				orientation 	0))
+			(object RoleView "" @11
+			    Parent_View 	@8
+			    location   	(128, 527)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3C9A584001B4"
+			    client     	@8
+			    supplier   	@6
+			    line_style 	0)))
+		(object InheritView "" @12
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CA28DDF00E3"
+		    client     	@3
+		    supplier   	@5
+		    line_style 	0)
+		(object InheritView "" @13
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3CA28DE00354"
+		    client     	@4
+		    supplier   	@5
+		    line_style 	0)))
+	(object InteractionDiagram "Loading System Initialization"
+	    mechanism_ref 	@1
+	    quid       	"3CB379EF00AA"
+	    title      	"Loading System Initialization"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	0
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object InterObjView "$UNNAMED$0" @14
+		    location   	(368, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@14
+			location   	(368, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	286
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB37A0F01E3"
+		    width      	304
+		    height     	993
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @15
+			location   	(368, 432)
+			line_color 	3342489
+			InterObjView 	@14
+			height     	429
+			y_coord    	369
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$1" @16
+		    location   	(784, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@16
+			location   	(784, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	282
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB37A1A000F"
+		    width      	300
+		    height     	993
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @17
+			location   	(784, 432)
+			line_color 	3342489
+			InterObjView 	@16
+			height     	369
+			y_coord    	309
+			Nested     	FALSE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @18
+			location   	(784, 560)
+			line_color 	3342489
+			InterObjView 	@16
+			height     	60
+			y_coord    	0
+			Nested     	TRUE)
+		    Focus_Of_Control 	(object Focus_Of_Control "" @19
+			location   	(784, 736)
+			line_color 	3342489
+			InterObjView 	@16
+			height     	392
+			y_coord    	332
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$2" @20
+		    location   	(1328, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@20
+			location   	(1328, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	514
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB37ABD0300"
+		    width      	532
+		    height     	993
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @21
+			location   	(1328, 736)
+			line_color 	3342489
+			InterObjView 	@20
+			height     	60
+			y_coord    	0
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$3" @22
+		    location   	(1936, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@22
+			location   	(1936, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	506
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB37AEE0051"
+		    width      	524
+		    height     	993
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @23
+			location   	(1936, 864)
+			line_color 	3342489
+			InterObjView 	@22
+			height     	60
+			y_coord    	0
+			Nested     	FALSE))
+		(object InterObjView "$UNNAMED$4" @24
+		    location   	(2416, 224)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	TRUE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@24
+			location   	(2416, 224)
+			fill_color 	13434879
+			anchor_loc 	1
+			nlines     	2
+			max_width  	332
+			justify    	0
+			label      	"")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3CB37B1A0091"
+		    width      	350
+		    height     	993
+		    icon_height 	0
+		    icon_width 	0
+		    icon_y_offset 	0
+		    annotation 	1
+		    Focus_Of_Control 	(object Focus_Of_Control "" @25
+			location   	(2416, 1008)
+			line_color 	3342489
+			InterObjView 	@24
+			height     	60
+			y_coord    	0
+			Nested     	FALSE))
+		(object InterMessView "" @26
+		    location   	(16, 432)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @27
+			Parent_View 	@26
+			location   	(576, 384)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB37A2F038B"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	194
+			justify    	0
+			label      	"Initialize( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@14
+		    supplier   	@16
+		    Focus_Src  	@15
+		    Focus_Entry 	@17
+		    origin     	(383, 432)
+		    terminus   	(768, 432)
+		    ordinal    	0)
+		(object SelfMessView "" @28
+		    location   	(16, 560)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @29
+			Parent_View 	@28
+			location   	(1008, 512)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB37A6303CA"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	379
+			justify    	0
+			label      	"LoadClusterSpecs( )"
+			pctDist    	1.393333
+			height     	48
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@16
+		    supplier   	@16
+		    Focus_Src  	@17
+		    Focus_Entry 	@18
+		    origin     	(800, 560)
+		    terminus   	(950, 560)
+		    ordinal    	1)
+		(object InterMessView "" @30
+		    location   	(1056, 736)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @31
+			Parent_View 	@30
+			location   	(1056, 688)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB37AD80081"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	441
+			justify    	0
+			label      	"GetResourceManager( )"
+			pctDist    	0.500000
+			height     	45
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@16
+		    supplier   	@20
+		    Focus_Src  	@19
+		    Focus_Entry 	@21
+		    origin     	(799, 736)
+		    terminus   	(1312, 736)
+		    ordinal    	2)
+		(object InterMessView "" @32
+		    location   	(1360, 864)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @33
+			Parent_View 	@32
+			location   	(1566, 816)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB37B0802C4"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	366
+			justify    	0
+			label      	"FindAllResources( )"
+			pctDist    	0.684211
+			height     	48
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@16
+		    supplier   	@22
+		    Focus_Src  	@19
+		    Focus_Entry 	@23
+		    origin     	(799, 864)
+		    terminus   	(1920, 864)
+		    ordinal    	3)
+		(object InterMessView "" @34
+		    location   	(1600, 1008)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object SegLabel @35
+			Parent_View 	@34
+			location   	(2160, 960)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			quidu      	"3CB37B290238"
+			anchor_loc 	1
+			nlines     	1
+			max_width  	223
+			justify    	0
+			label      	"<<create>>"
+			pctDist    	0.849469
+			height     	49
+			orientation 	0)
+		    line_color 	3342489
+		    client     	@16
+		    supplier   	@24
+		    Focus_Src  	@19
+		    Focus_Entry 	@25
+		    origin     	(799, 1008)
+		    terminus   	(2400, 1008)
+		    ordinal    	4)))))

@@ -1,0 +1,432 @@
+// Copyright (C) 2001 Radical Entertainment
+// 
+// Name:   p3dDeformHotKeys.mel
+// Author: Pamela Chow
+//
+// Description: Functions save and restore hotkey assignments
+//
+// Contents:
+// global proc p3dDeformSetKeyPress(string $key, string $nameCmd)
+// global proc p3dDeformWriteHotKeyFile()
+// global proc p3dDeformApplyHotKeyFile()
+// global proc int p3dDeformHotKeyFileExists()
+
+
+
+/*************************************************************************
+// Description:	Gets the hotkey for this state from the expressionstate node.
+// Then, displays it in the correct hotkey field on the Animation tab UI.
+//
+// Parametrs:
+//
+// Returns:
+//
+***************************************************************************/
+global proc p3dDeformUpdateHotKeyField(string $statename)
+{
+	//get the hotkey	
+	string $hotkeyAtrr = $statename + ".hotkey";
+	string $hotkey = `getAttr $hotkeyAtrr`;
+
+	//display the hotkey
+	string $textboxName = "p3dDeformHotKeyField_" +  $statename;
+	textField -e  -text $hotkey $textboxName;
+	
+}
+
+/*************************************************************************
+// Description:	Retrieves the hot key assigned to an expression
+//
+// Parameters:$state is the name of the expression
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc string p3dDeformGetHotKey(string $state)
+{
+	string $textboxName = "p3dDeformHotKeyField_" +  $state;
+	return `textField -q  -text $textboxName`;
+}
+
+
+/*************************************************************************
+// Description:	Callback proc that validates text entered in the hot key field
+//
+// Parameters:
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc string p3dDeformValidateHotKey(string $state)
+{
+	string $textboxName = "p3dDeformHotKeyField_" + $state;
+	string $text = `textField -q  -text $textboxName`;
+	string $nullStr = "";
+
+	if(size($text) == 0) return "";
+
+	//easiest way to strip spaces from text is to tokenize it
+	string $hotKeyArray[];
+	int $numKeys = tokenize($text,$hotKeyArray); //split text str into strs separated by whitespace
+		
+	if($numKeys != 1 || size($hotKeyArray[0]) != 1 )
+	{
+		confirmDialog -title "Error" -message "Hot key must be single character." -button "OK" -defaultButton "OK";
+		textField -e -text $nullStr $textboxName;
+		return "";
+	}
+	else 
+	{	string $hotKey = `tolower $hotKeyArray[0]`;
+		if ( gmatch($hotKey, "[!a-z]") && gmatch($hotKey, "[!A-Z]") )
+		{
+			confirmDialog -title "Error" -message "Hot key must be from aA -zZ." -button "OK" -defaultButton "OK";
+			textField -e -text $nullStr $textboxName;
+			return "";
+		}
+	}
+
+
+	return $hotKeyArray[0];
+}
+
+
+global proc int p3dDeformCheckHotKeyIsUnique(string $checkHotkeyVal, string $checkState) 
+{
+
+	string $state;
+	string $states[] = `ls -type p3dDeformExpressionState`;
+
+	string $existingHotkeyVal;
+
+	//debug
+	print ("checkHotkeyVal = " + $checkHotkeyVal + "\n");
+	print ("checkState = " + $checkState + "\n\n");
+
+
+
+	for ($state in $states) {
+
+		//debug
+//		print ("Current state = " + $state + "\n");
+
+		if ($state != $checkState)	{
+		
+			if (catch ($existingHotkeyVal = p3dDeformGetHotKey ($state) ) ) {
+				print ("          This usually indicates an unattached deformer expression.  Clean the file!\n");
+			}
+
+			if ($checkHotkeyVal == $existingHotkeyVal) {
+
+				string $textboxName = "p3dDeformHotKeyField_" + $checkState;
+				string $nullStr = "";
+
+				confirmDialog -title "Error" -message "Hot key already taken.  Must be unique." -button "OK" -defaultButton "OK";
+				textField -e -text $nullStr $textboxName;
+				return 0;
+			}
+		}
+
+		//debug
+//		else print ("$state = $checkState:  " + $state + " = " + $checkState + ".....Checking next state\n------------------\n\n");
+
+	}
+
+	return 1;
+}
+
+
+
+/*************************************************************************
+// Description: Writes a valid key into the state's node attribute and
+//
+// Alex Note:  this is the way we want it to be, right now, all nameCommands
+//             are assigned en masse when the dragger context is enabled...
+//
+// assigns a dragger context nameCommand to it so that immediately after
+// entering a valid hotkey, the hotkey can be used to modify the expression's
+// weight value (via the dragger context).
+//
+// Parametrs:
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformEnterHotKey(string $state)
+{
+	string $textboxName = "p3dDeformHotKeyField_" + $state;
+
+	string $hotkey = p3dDeformValidateHotKey($state);
+	if ($hotkey != "") {
+
+		if (p3dDeformCheckHotKeyIsUnique($hotkey, $state)) {
+	
+			//set state hotkey attribute (save it as an attribute of the state)
+			string $attr_hotkey = $state + ".hotkey";
+			setAttr $attr_hotkey -type "string" $hotkey;
+
+			//display hotkey string
+			textField -e -text $hotkey $textboxName;
+
+			//enable the hotkey with a name command, and associate it...
+//			print ("State:  " + $state + ", hotkey:  " + $hotkey + ", now register a nameCommand for it\n"); 
+
+		}
+
+		else {
+			//Should display a meaningful error here.
+			error "This  key has been assigned & enabled. Try another key";
+			textField -e -text "" $textboxName;
+		}
+	}
+}
+
+
+
+//*************************************************************************
+// Description:	Assigns the specified name command to the hotkey
+//
+// Parameters: $nameCmd = a nameCommand object (created using nameCommand mel cmd)
+//			   $key = hot key (single character)
+//
+// Returns:
+//
+//***************************************************************************/
+
+global proc p3dDeformSetKeyPress(string $key, string $nameCmd)
+{
+	//debug
+	p3dDeformDebugTrace("In p3dDeformSetKeyPress");
+	//debug
+
+	if($key == "")
+		print "Error: Invalid paramater for p3dDeformSetKeyPress."
+
+	//finally assign the desired command to the hotkey
+	hotkey -k $key -name "";
+	hotkey -k $key -name $nameCmd;
+	hotkey -k $key -rn "";
+
+}
+
+
+
+/*************************************************************************
+// Description:Tests to see if the file deformerBackUpHotKeys.mel exists in the
+// default user preferences directory.	
+//
+// Parameters:
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc int p3dDeformHotKeyFileExists(string $hotkeyBackupFilePrefix)
+{
+	string $hotkeyBackupFileName = (`internalVar -userPrefDir` + $hotkeyBackupFilePrefix + "UserHotkeys.mel");
+	$hotkeyBackupFileName = toNativePath( $hotkeyBackupFileName );
+
+	if (`file -q -ex $hotkeyBackupFileName`) return 1;
+	else return 0;
+}
+
+
+//-----------------------------------------------------------------------
+//Procedures for save user hotkey settings temporarily while in dragger
+//context:
+
+/*************************************************************************
+// Description:	Causes the current user selected hotkey assignments to be 
+// saved to the designated maya preferences file: userHotkeys.mel. Then, copies
+// the content of this file to deformerBackUpHotKeys.mel.
+
+// Description:  user hotkeys are created by assigning a hotkey value to a 
+//               nameCommand that does the work for the hotkey.  This proc
+//               will save off both the userHotkeys.mel and userNamedCommands.mel
+//               files, prefixed by the string argument
+//
+// Parameters: none
+//
+// Returns: void
+//
+***************************************************************************/
+
+global proc p3dDeformWriteHotKeyFile(string $hotkeyBackupFileNamePrefix)
+{
+	//------first ask Maya to save user hotkeys, this also saves the userNamedCommands
+	savePrefs -hk;
+	
+	//----- vars for the hotkeys file, and namedCommands file
+	string $deformerUserBackupHkFile;
+	string $deformerUserBackupNCFile;
+
+	//----- get user backup path
+	string $mayaUserHkFile = `internalVar -userPrefDir`;
+	string $mayaUserNCFile = $mayaUserHkFile;
+
+	//----- copy to user backup vars...
+	$deformerUserBackupHkFile = $mayaUserHkFile;
+	$deformerUserBackupNCFile = $mayaUserHkFile;
+
+	//----- specify user files;
+	$mayaUserHkFile += "userHotkeys.mel";
+	$mayaUserNCFile += "userNamedCommands.mel";
+
+	$deformerUserBackupHkFile += ($hotkeyBackupFileNamePrefix + "UserHotkeys.mel");
+	$deformerUserBackupNCFile += ($hotkeyBackupFileNamePrefix + "UserNamedCommands.mel");
+
+	//----- format file string for OS compatibility
+    $mayaUserHkFile = toNativePath( $mayaUserHkFile );
+    $deformerUserBackupHkFile = toNativePath ($deformerUserBackupHkFile);
+
+	$mayaUserNCFile = toNativePath ($mayaUserNCFile);
+	$deformerUserBackupNCFile = toNativePath ($deformerUserBackupNCFile);
+
+	//----- do the backup using a system command
+    string $command = ( "copy /Y \"" + $mayaUserHkFile + "\" \"" + $deformerUserBackupHkFile + "\"" );
+    system $command;
+
+	$command = ( "copy /Y \"" + $mayaUserNCFile + "\" \"" + $deformerUserBackupNCFile + "\"" );
+    system $command;
+
+}
+
+
+/*  -- Alex backup of the original, incase I fuck it up...
+
+global proc p3dDeformWriteHotKeyFile(string $hotkeyBackupFileNamePrefix)
+{
+	//------first ask Maya to save user hotkeys, this also saves the userNamedCommands
+	savePrefs -hk;
+	
+	//----- copy user hotkeys to a deformerUserHotKeys.mel
+	string $deformerUserBackupHkFile;
+	string $mayaUserHkFile = `internalVar -userPrefDir`;
+
+	$deformerUserBackupHkFile = $mayaUserHkFile;
+
+	$mayaUserHkFile+="userHotkeys.mel";
+	$deformerUserBackupHkFile += ($hotkeyBackupFileNamePrefix + "UserHotkeys.mel");
+
+    $mayaUserHkFile = toNativePath( $mayaUserHkFile );
+    $deformerUserBackupHkFile = toNativePath( $deformerUserBackupHkFile );
+
+    string $command = ( "copy /Y \"" + $mayaUserHkFile + "\" \"" + $deformerUserBackupHkFile + "\"" );
+    system $command;
+
+}
+
+
+*/
+
+
+/*************************************************************************
+// Description:	If a deformerBackUpHotKeys.mel file exists in user preferences dir
+// this proc will execute its contents (restoring the user hotkey assignments
+// specified in the file). The proc then deletes the file.
+//
+// Parametrs:
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDeformApplyHotKeyFile(string $hotkeyBackupFilePrefix)
+{
+	p3dDeformDebugTrace("In p3dDeformApplyHotKeyFile");
+	
+	//print ("$deformerUserBackupHkFile =  " + $deformerUserBackupHkFile + "\n");
+
+	if(p3dDeformHotKeyFileExists($hotkeyBackupFilePrefix))
+	{	
+		string $deformerUserBackupHkFile = `internalVar -userPrefDir`;
+		$deformerUserBackupHkFile += ($hotkeyBackupFilePrefix + "UserHotkeys.mel");
+
+
+		eval( "source \"" + $deformerUserBackupHkFile + "\"" );
+
+		//delete the file
+
+		int $rc = `sysFile -del $deformerUserBackupHkFile`;
+		p3dDeformDebugInt("$rc =", $rc );
+	}
+
+//  AlexNote:  don't include this warning, will give it erroneously upon enabling dragger ctx
+//             remember, this file is deleted after ctx exit, so it will only exist if Maya
+//             crashes and leaves the hotkey file as a backup to revert on first ctx load...
+
+//	else warning ("No backup hotkey file to revert, problems may exist with user hotkeys...\n");
+
+}
+
+
+global proc makeFailSafePanel() {
+
+	if (`window -exists p3dDeformFailSafeHotkeyBackupWindow`) deleteUI p3dDeformFailSafeHotkeyBackupWindow;
+
+	window	-title "Failsafe hotkey backup" -width 200 -height 50 p3dDeformFailSafeHotkeyBackupWindow;
+	rowLayout -numberOfColumns 2;
+
+		button
+			-l "Save hotkeys"
+			-c "p3dDeformWriteHotKeyFile(\"p3dDeformFailSafeUserHotkeys.mel\")"
+		  p3dDeformSaveHKFailSafeButton;
+		
+		button
+			-l "Restore hotkeys"
+			-c ""
+		  p3dDeformRestoreHKFailSafeButton;
+	
+	setParent ..;
+	showWindow p3dDeformFailSafeHotkeyBackupWindow;
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+// Removes any unconnected expression nodes from scene -- these nodes will conflict with the hotkey registration
+
+global proc p3dDeformRemoveBrokenStates()
+{
+   string $allStates[] = `ls -type p3dDeformExpressionState`;
+   string $state;
+   int $counter = 0;
+   for ($state in $allStates)
+   {
+	   string $state_plug = $state + ".output";
+	   if (!`connectionInfo -is $state_plug`)
+	   {
+		   delete $state;
+         $counter++;
+	   }
+   }
+
+   print("\nRemoved " + $counter + " disconnected states.");
+}
+
+
+
+//test procedure
+/*
+global proc p3dTestUserHotKeySys()
+{
+	p3dDeformSetKeyPress("r", "printFriendlyGreeting");
+	//---- at this point the namecommand assigned to "r" is "printFriendlyGreeting"
+	p3dDeformWriteHotKeyFile();
+	
+	hotkey -fs;
+	//---- restore hotkey defaults
+	
+	p3dDeformApplyHotKeyFile();
+	//---- reassign "r" to "printFriendlyGreeting"
+	//---- the deformerBackUpHotKeys.mel file should no longer exists in the user pref dir.
+}
+
+global proc printGreetingPam()
+{
+	print("It's a nice day in Vancouver!");
+
+}
+*/
+//------------------------------------------------------------------------------------

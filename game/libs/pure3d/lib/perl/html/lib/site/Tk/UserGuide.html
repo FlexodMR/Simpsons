@@ -1,0 +1,625 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perl/Tk - Writing Tk applications in perl5.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#Some_background">Some background</A>
+	<LI><A HREF="#First_requirements">First requirements</A>
+	<LI><A HREF="#Item_creation">Item creation</A>
+	<LI><A HREF="#Standard_Tk_types">Standard Tk types</A>
+	<LI><A HREF="#Variables_and_callback_routines">Variables and callback routines</A>
+	<LI><A HREF="#The_packer_Grouping_and_frames_">The packer.  Grouping and frames.</A>
+	<LI><A HREF="#More_than_one_window">More than one window</A>
+	<LI><A HREF="#More_callbacks">More callbacks</A>
+	<LI><A HREF="#Canvases_and_tags">Canvases and tags</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perl/Tk - Writing Tk applications in perl5.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This manual page is for beginners. It assumes you know some perl, and have
+got perl+Tk running. Please run the 'widget' demo before reading this text;
+it will teach you the various widget types supported by Tk.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Some_background">Some background
+
+</A></H1>
+Tk 
+<FONT SIZE=-1>GUI</FONT> programming is event-driven. (This may already be familiar to you.) In event-driven programs, the main 
+<FONT SIZE=-1>GUI</FONT> loop is outside of the user program and inside the 
+<FONT SIZE=-1>GUI</FONT> library. This loop will watch all events of interest, and activate the correct handler procedures to handle these events. Some of these handler procedures may be user-supplied; others will be part of the library.
+
+
+
+<P>
+
+For a programmer, this means that you're not watching what is happening;
+instead, you are requested by the toolkit to perform actions whenever
+necessary. So, you're not watching for 'raise window / close window /
+redraw window' requests, but you tell the toolkit which routine will handle
+such cases, and the toolkit will call the procedures when required.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="First_requirements">First requirements
+
+</A></H1>
+Any perl program that uses Tk needs to include <CODE>use Tk</CODE>. 
+<FONT SIZE=-1>A</FONT> program should also use <CODE>use strict</CODE> and the <STRONG>-w</STRONG> switch to ensure the program is working without common errors.
+
+
+<P>
+
+Any Tk application starts by creating the Tk main window. You then create
+items inside the main window, or create new windows, before starting the
+mainloop. (You can also create more items and windows while you're
+running.) The items will be shown on the display after you <A HREF="#item_pack">pack</A> them; more info on this later. Then you do a Tk mainloop; this will start the 
+<FONT SIZE=-1>GUI</FONT> and handle all events. That's your application. 
+<FONT SIZE=-1>A</FONT> trivial one-window example is show below:
+
+
+
+<P>
+
+<PRE>        #! /usr/bin/perl5 -w
+</PRE>
+
+<P>
+
+<PRE>        use strict;
+        use Tk; 
+</PRE>
+
+<P>
+
+<PRE>        my $main = new MainWindow;
+        $main-&gt;Label(-text =&gt; 'Hello, world!')-&gt;pack;
+        $main-&gt;Button(-text =&gt; 'Quit',
+                      -command =&gt; sub{exit}
+                      )-&gt;pack;
+        MainLoop;
+</PRE>
+
+<P>
+
+Please run this example. It shows you two items types also shown in the
+widget demo; it also shows you how items are created and packed. Finally,
+note the typical Tk style using <CODE>-option</CODE> =&gt;  <CODE>value</CODE> pairs.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Item_creation">Item creation
+
+</A></H1>
+Tk windows and widgets are hierarchical, i.e.&nbsp;one includes one or more others. You create the first Tk window using <CODE>new MainWindow</CODE>. This returns a window handle, assigned to <CODE>$main</CODE> in the example above. Keep track of the main handle.
+
+
+<P>
+
+You can use any Tk handle to create sub-items within the window or widget.
+This is done by calling the Tk constructor method on the variable. In the
+example above, the <A HREF="#item_Label">Label</A> method called from <CODE>$main</CODE> creates a label widget inside the main window. In the constructor call, you
+can specify various options; you can later add or change options for any
+widget using the <CODE>configure</CODE> method, which takes the same parameters as the constructor. The one
+exception to the hierarchical structure is the <A HREF="#item_Toplevel">Toplevel</A> constructor, which creates a new outermost window.
+
+
+<P>
+
+After you create any widget, you must render it by calling <A HREF="#item_pack">pack</A>. (This is not entirely true; more info later). If you do not need to refer
+to the widget after construction and packing, call <A HREF="#item_pack">pack</A> off the constructor results, as shown for the label and button in the
+example above. Note that the result of the compound call is the result of <A HREF="#item_pack">pack</A>, which is not a valid Tk handle.
+
+
+<P>
+
+Windows and widgets are deleted by calling <CODE>destroy</CODE> on them; this will delete and un-draw the widget and all its children, with
+the exception of Toplevel windows.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Standard_Tk_types">Standard Tk types
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_Button">Button
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Radiobutton">Radiobutton
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Checkbutton">Checkbutton
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Listbox">Listbox
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Scrollbar">Scrollbar
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Entry">Entry
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Text">Text
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Canvas">Canvas
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Frame">Frame
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Toplevel">Toplevel
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Scale">Scale
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Menu">Menu
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_Menubutton">Menubutton
+
+</A></STRONG><DD>
+</DL>
+<P>
+<HR>
+<H1><A NAME="Variables_and_callback_routines">Variables and callback routines
+
+</A></H1>
+Most graphical interfaces are used to set up a set of values and
+conditions, and then perform the appropriate action. The Tk toolkit is
+different from your average text-based prompting or menu driven system in
+that you do not collect settings yourself, and decide on an action based on
+an input code; instead, you leave these values to your toolkit and only get
+them when the action is performed.
+
+
+<P>
+
+So, where a traditional text-based system would look like this: (yes, this
+is obviously dumb code)
+
+
+<P>
+
+<PRE>        #! /usr/bin/perl5 -w
+</PRE>
+
+<P>
+
+<PRE>        use strict;
+</PRE>
+
+<P>
+
+<PRE>        print &quot;Please type a font name\n&quot;;
+        my $font = &lt;&gt;; chop $font;
+        # Validate font
+</PRE>
+
+<P>
+
+<PRE>        print &quot;Please type a file name\n&quot;;
+        my $filename = &lt;&gt;; chop $filename;
+        # Validate filename
+</PRE>
+
+<P>
+
+<PRE>        print &quot;Type &lt;1&gt; to fax, &lt;2&gt; to print\n&quot;;
+        my $option = &lt;&gt;; chop $option;
+        if ($option eq 1) {
+            print &quot;Faxing $filename in font $font\n&quot;;
+        } elsif ($option eq 2) {
+            print &quot;Now sending $filename to printer in font $font\n&quot;;
+        }
+</PRE>
+
+<P>
+
+The (slightly larger) example below shows how to do this is Tk. Note the
+use of callbacks. Note, also, that Tk handles the values, and the
+subroutine uses <A HREF="#item_get">get</A> to get at the values. If a user changes his mind and wants to change the
+font again, the application never notices; it's all handled by Tk.
+
+
+<P>
+
+<PRE>        #! /usr/bin/perl5 -w
+</PRE>
+
+<P>
+
+<PRE>        use strict;
+        use Tk;
+</PRE>
+
+<P>
+
+<PRE>        my $main = new MainWindow;
+        $main-&gt;Label(-text =&gt; 'Print file')-&gt;pack;
+        my $font = $main-&gt;Entry(-width =&gt; 10);
+        $font-&gt;pack;
+        my $filename = $main-&gt;Entry(-width =&gt; 10);
+        $filename-&gt;pack;
+        $main-&gt;Button(-text =&gt; 'Fax',
+                      -command =&gt; sub{do_fax($filename, $font)}
+                      )-&gt;pack;
+        $main-&gt;Button(-text =&gt; 'Print', 
+                      -command =&gt; sub{do_print($filename, $font)}
+                      )-&gt;pack;
+        MainLoop;
+</PRE>
+
+<P>
+
+<PRE>        sub do_fax {
+            my ($file, $font) = @_;
+            my $file_val = $file-&gt;get;
+            my $font_val = $font-&gt;get;
+            print &quot;Now faxing $file_val in $font_val\n&quot;;
+        }
+</PRE>
+
+<P>
+
+<PRE>        sub do_print {
+            my ($file, $font) = @_;
+            $file = get $file;
+            $font = get $font;
+            print &quot;Sending file $file to printer in $font\n&quot;;
+        }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="The_packer_Grouping_and_frames_">The packer.  Grouping and frames.
+
+</A></H1>
+In the examples above, you must have noticed the <A HREF="#item_pack">pack</A> calls. This is one of the more complicated parts of Tk. The basic idea is
+that any window or widget should be subject to a Tk widget placement
+manager; the <EM>packer</EM> is the most useful placement manager.
+
+
+<P>
+
+The actions of the packer are rather simple: when applied to a widget, the
+packer positions that widget on the indicated position within the remaining
+space in its parent. By default, the position is on top; this means the
+next items will be put below. You can also specify the left, right, or
+bottom positions. Specify position using <STRONG>-side =&gt; 'right'</STRONG>.
+
+
+<P>
+
+Additional packing parameters specify the behavior of the widget when there
+is some space left in the frame or when the window size is increased. If
+widgets should maintain a fixed size, specify nothing; this is the default.
+For widgets that you want to fill up the current horizontal space, specify <STRONG>-fill =&gt; 'x'</STRONG>, <STRONG>y</STRONG>, or <STRONG>both</STRONG>; for widgets that should grow, specify <STRONG>-expand =&gt; 'yes'</STRONG>. These parameters are not shown in the example below; see the widget demo.
+
+
+<P>
+
+If you want to group some items within a window that have a different
+packing order than others, you can include them in a Frame. This is a
+do-nothing window type that is meant for packing (and to play games with
+borders and colors).  
+
+
+<P>
+
+The example below shows the use of pack and frames:
+
+
+<P>
+
+<PRE>        #! /usr/bin/perl5 -w
+</PRE>
+
+<P>
+
+<PRE>        use strict;
+        use Tk;
+</PRE>
+
+<P>
+
+<PRE>        # Take top, the bottom -&gt; now implicit top is in the middle
+        my $main = new MainWindow;
+        $main-&gt;Label(-text =&gt; 'At the top (default)')-&gt;pack;
+        $main-&gt;Label(-text =&gt; 'At the bottom')-&gt;pack(-side =&gt; 'bottom');
+        $main-&gt;Label(-text =&gt; 'The middle remains')-&gt;pack;
+</PRE>
+
+<P>
+
+<PRE>        # Since left and right are taken, bottom will not work...
+        my $top1 = $main-&gt;Toplevel;
+        $top1-&gt;Label(-text =&gt; 'Left')-&gt;pack(-side =&gt; 'left');
+        $top1-&gt;Label(-text =&gt; 'Right')-&gt;pack(-side =&gt; 'right');
+        $top1-&gt;Label(-text =&gt; '?Bottom?')-&gt;pack(-side =&gt; 'bottom');
+        
+        # But when you use frames, things work quite alright
+        my $top2 = $main-&gt;Toplevel;
+        my $frame = $top2-&gt;Frame;
+        $frame-&gt;pack;
+        $frame-&gt;Label(-text =&gt; 'Left2')-&gt;pack(-side =&gt; 'left');
+        $frame-&gt;Label(-text =&gt; 'Right2')-&gt;pack(-side =&gt; 'right');
+        $top2-&gt;Label(-text =&gt; 'Bottom2')-&gt;pack(-side =&gt; 'bottom');
+</PRE>
+
+<P>
+
+<PRE>        MainLoop;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="More_than_one_window">More than one window
+
+</A></H1>
+Most real applications require more than one window. As you read before,
+you can create more outermost windows by using Toplevel. Each window is
+independent; exiting a toplevel window does not affect the others. Exiting
+the main window will end the application. The example below shows a trivial
+three-window application:
+
+
+<P>
+
+<PRE>        #! /usr/bin/perl5 -w
+</PRE>
+
+<P>
+
+<PRE>        use strict;
+        use Tk;
+</PRE>
+
+<P>
+
+<PRE>        my $main = new MainWindow;
+        fill_window($main, 'Main');
+        my $top1 = $main-&gt;Toplevel;
+        fill_window($top1, 'First top-level');
+        my $top2 = $main-&gt;Toplevel;
+        fill_window($top2, 'Second top-level');
+        MainLoop;
+</PRE>
+
+<P>
+
+<PRE>        sub fill_window {
+            my ($window, $header) = @_;
+            $window-&gt;Label(-text =&gt; $header)-&gt;pack;
+            $window-&gt;Button(-text =&gt; 'close',
+                            -command =&gt; sub{destroy $window}
+                            )-&gt;pack(-side =&gt; 'left');
+            $window-&gt;Button(-text =&gt; 'exit',
+                            -command =&gt; sub{exit}
+                            )-&gt;pack(-side =&gt; 'right');
+        }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="More_callbacks">More callbacks
+
+</A></H1>
+So far, all callback routines shown called a user procedure. You can also
+have a callback routine call another Tk routine. This is the way that
+scroll bars are implemented: scroll-bars can call a Tk item or a user
+procedure, whenever their position has changed. The Tk item that has a
+scrollbar attached calls the scrollbar when its size or offset has changed.
+In this way, the items are linked. You can still ask a scrollbar's
+position, or set it by hand - but the defaults will be taken care of.
+
+
+<P>
+
+The example below shows a listbox with a scroll bar. Moving the scrollbar
+moves the listbox. Scanning a listbox (dragging an item with the left mouse
+button) moves the scrollbar.
+
+
+<P>
+
+<PRE>        #! /usr/bin/perl5 -w
+</PRE>
+
+<P>
+
+<PRE>        use strict;
+        use Tk;
+</PRE>
+
+<P>
+
+<PRE>        my $main = new MainWindow;
+        my $box = $main-&gt;Listbox(-relief =&gt; 'sunken', 
+                                 -width =&gt; -1, # Shrink to fit
+                                 -height =&gt; 5,
+                                 -setgrid =&gt; 'yes');
+        my @items = qw(One Two Three Four Five Six Seven
+                       Eight Nine Ten Eleven Twelve);
+        foreach (@items) {
+           $box-&gt;insert('end', $_);
+        }
+        my $scroll = $main-&gt;Scrollbar(-command =&gt; ['yview', $box]);
+        $box-&gt;configure(-yscrollcommand =&gt; ['set', $scroll]);
+        $box-&gt;pack(-side =&gt; 'left', -fill =&gt; 'both', -expand =&gt; 'yes');
+        $scroll-&gt;pack(-side =&gt; 'right', -fill =&gt; 'y');
+</PRE>
+
+<P>
+
+<PRE>        MainLoop;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Canvases_and_tags">Canvases and tags
+
+</A></H1>
+One of the most powerful window types in Tk is the Canvas window. In a
+canvas window, you can draw simple graphics and include other widgets. The
+canvas area may be larger than the visible window, and may then be
+scrolled. Any item you draw on the canvas has its own id, and may
+optionally have one or more <EM>tags</EM>. You may refer to any item by its id, and may refer to any group of items
+by a common tag; you can move, delete, or change groups of items using
+these tags, and you can <EM>bind</EM> actions to tags. For a properly designed (often structured) canvas, you can
+specify powerful actions quite simply.
+
+
+<P>
+
+In the example below, actions are bound to circles (single click) and blue
+items (double-click); obviously, this can be extended to any tag or group
+of tags.
+
+
+<P>
+
+<PRE>        #! /usr/bin/perl5 -w
+</PRE>
+
+<P>
+
+<PRE>        use strict;
+        use Tk;
+</PRE>
+
+<P>
+
+<PRE>        # Create main window and canvas
+        my $main = new MainWindow;
+        my $canvas = $main-&gt;Canvas;
+        $canvas-&gt;pack(-expand =&gt; 'yes', -fill =&gt; 'both');
+</PRE>
+
+<P>
+
+<PRE>        # Create various items
+        create_item($canvas, 1, 1, 'circle', 'blue', 'Jane');
+        create_item($canvas, 4, 4, 'circle', 'red', 'Peter');
+        create_item($canvas, 4, 1, 'square', 'blue', 'James');
+        create_item($canvas, 1, 4, 'square', 'red', 'Patricia');
+</PRE>
+
+<P>
+
+<PRE>        # Single-clicking with left on a 'circle' item invokes a procedure
+        $canvas-&gt;bind('circle', '&lt;1&gt;' =&gt; sub {handle_circle($canvas)});
+        # Double-clicking with left on a 'blue' item invokes a procedure
+        $canvas-&gt;bind('blue', '&lt;Double-1&gt;' =&gt; sub {handle_blue($canvas)});
+        MainLoop;
+</PRE>
+
+<P>
+
+<PRE>        # Create an item; use parameters as tags (this is not a default!)
+        sub create_item {
+            my ($can, $x, $y, $form, $color, $name) = @_;
+    
+            my $x2 = $x + 1;
+            my $y2 = $y + 1;
+            my $kind;
+            $kind = 'oval' if ($form eq 'circle');
+            $kind = 'rectangle' if ($form eq 'square');
+            $can-&gt;create(($kind, &quot;$x&quot; . 'c', &quot;$y&quot; . 'c',
+                          &quot;$x2&quot; . 'c', &quot;$y2&quot; . 'c'),
+                         -tags =&gt; [$form, $color, $name],
+                         -fill =&gt; $color);
+        }
+</PRE>
+
+<P>
+
+<PRE>        # This gets the real name (not current, blue/red, square/circle)
+        # Note: you'll want to return a list in realistic situations...
+        sub get_name {
+            my ($can) = @_;
+            my $item = $can-&gt;find('withtag', 'current');
+            my @taglist = $can-&gt;gettags($item);
+            my $name;
+            foreach (@taglist) {
+                next if ($_ eq 'current');
+                next if ($_ eq 'red' or $_ eq 'blue');
+                next if ($_ eq 'square' or $_ eq 'circle');
+                $name = $_;
+                last;
+            }
+            return $name;
+        }
+</PRE>
+
+<P>
+
+<PRE>        sub handle_circle {
+            my ($can) = @_;
+            my $name = get_name($can);
+            print &quot;Action on circle $name...\n&quot;;
+        }
+</PRE>
+
+<P>
+
+<PRE>        sub handle_blue {
+            my ($can) = @_;
+            my $name = get_name($can);
+            print &quot;Action on blue item $name...\n&quot;;
+        }
+</PRE>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

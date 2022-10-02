@@ -1,0 +1,1035 @@
+//===========================================================================
+// Copyright ©2000-2001 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     15 Feb 2002
+// Creator:     Bryan Ewert
+//
+// Component:   Pure3D Maya Exporter - Animation Ranges.
+//
+// Description: scriptedPanel definition to display the animation ranges
+//              created for the Exporter Options.
+//
+//              Animation ranges are specified by creating an "animCurveTT"
+//              node.  Two keys are set to represent the start and end
+//              frame.  The output from the animCurve is connected to
+//              the elements of the ".animRangeNameTime[]" compound array
+//              attribute on a p3dExporterSettingNode.  The order in 
+//              which animation ranges are specified and connected is
+//              not important.
+//
+// Constraints: 
+//
+//===========================================================================
+
+proc float version()
+{
+    return ( 1.0 );
+}
+
+proc int assertCurrent()        // returns non-zero if error
+{
+    int $assert = false;
+    
+    // ** ASSERT NEWEST VERSION **
+    if ( `exists hasCurrentTool` ) $assert = ( !hasCurrentTool( "animRangePanel.mel", version() ) );
+    
+    return $assert;
+}
+
+//===========================================================================
+// arp_ClearDopeMainList
+//===========================================================================
+// Description: Clears the mainListConnection for this panel's DopeSheet Editor.
+//
+//              Used as a UI callback; must be global.
+//
+// Constraints: 
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc arp_ClearDopeMainList()
+{
+    string $arpDopeSheet = "arp_DopeSheet";
+    string $outliner = `dopeSheetEditor -q -outliner $arpDopeSheet`;
+    string $mlcDope = `outlinerEditor -q -mainListConnection $outliner`;
+
+    selectionConnection -e -clear $mlcDope;
+}
+
+//===========================================================================
+// arp_AddDopeMainList
+//===========================================================================
+// Description: Adds the specified node to the mainListConnection for this
+//              panel's DopeSheet Editor.  Actually it's added to the 
+//              selectionConnection used by the Outliner attached to this
+//              panel's DopeSheet, but the effect is to populate the
+//              DopeSheet.  
+//
+// Constraints: Only one object should be selected at any one time.
+//
+//  Parameters: string $node: The node to add to the 
+//
+//      Return: (none)
+//
+//===========================================================================
+proc arp_AddDopeMainList( string $node )
+{
+    string $arpDopeSheet = "arp_DopeSheet";
+    string $outliner = `dopeSheetEditor -q -outliner $arpDopeSheet`;
+    string $mlcDope = `outlinerEditor -q -mainListConnection $outliner`;
+
+    selectionConnection -e -select $node $mlcDope;
+}
+
+//===========================================================================
+// validAnimRanges
+//===========================================================================
+// Description: Returns the indices for the ".animRangeNameTime[]" array
+//              that are actively connected.
+//
+//              See MEL How-To: How can I list all active values/connections 
+//              in a compound array.
+//
+//                  http://www.ewertb.com/maya/mel/mel_a75.html
+//
+// Constraints: 
+//
+//  Parameters: string $settingsNode: The p3dExporterSettingNode for which
+//                          to examine the ".animRangeNameTime" attribute.
+//
+//      Return: (int[]): The array of active array indices.
+//
+//===========================================================================
+proc int[] validAnimRanges( string $settingsNode )
+{
+    int $indices[];
+    
+    // Get a list of all active '.colorEntryList' array elements.
+    string $multiAttr[] = `listAttr -multi ( $settingsNode + ".animRangeNameTime" )`;
+
+    for ( $attr in $multiAttr )
+    {
+        // Only concerned with those ending with ".animRangeTime".
+        if ( `gmatch $attr "*.animRangeTime"` )
+        {
+            string $regexp0 = "(\[[0-9]+\])"; 
+            string $regexp1 = "[0-9]+"; 
+
+            string $element = `match $regexp0 $attr`;
+            int $index = `match $regexp1 $element`;
+
+            $indices[`size $indices`] = $index;
+        }
+    }
+    
+    return $indices;
+}
+
+//===========================================================================
+// nextAnimRange
+//===========================================================================
+// Description: Returns the index for the first unused index on the 
+//              ".animRangeNameTime[]" array attribute.
+//
+// Constraints: 
+//
+//  Parameters: string $settingsNode: The p3dExporterSettingNode for which
+//                          to examine the ".animRangeNameTime" attribute.
+//
+//      Return: (int): Index to the first non-connected array element.
+//
+//===========================================================================
+proc int nextAnimRange( string $settingsNode )
+{
+    int $found = false;
+    int $index = 0;
+    
+    while ( !$found )
+    {
+        string $cc[] = `listConnections -source true ( $settingsNode + ".arnt[" + $index + "].art" )`;
+        if ( `size $cc` == 0 )
+        {
+            $found = true;
+            break;
+        }
+        
+        $index++;
+    }
+    
+    return $index;
+}
+
+//===========================================================================
+// clearAnimRangeUI
+//===========================================================================
+// Description: Clears all rows that represent animation ranges from
+//              the UI.   
+//
+// Constraints: 
+//
+//  Parameters: string $ui: Not used, apparently.  Hmmmm.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc clearAnimRangeUI( string $ui )
+{
+    string $animRangePanel_ScrollUI = "animRangePanel_ScrollUI";
+
+    if ( `columnLayout -q -exists $animRangePanel_ScrollUI` )
+    {
+        string $children[] = `columnLayout -q -ca $animRangePanel_ScrollUI`;
+        for ( $child in $children )
+        {
+            deleteUI $child;
+        }
+    }
+}
+
+//===========================================================================
+// arp_ConnectDope
+//===========================================================================
+// Description: 1. Clears this panel's DopeSheet Editor.
+//              2. Gets the connection to the ".animRangeTime" attribute.
+//                  (presumably an animCurveTT node).
+//              3. Displays the animCurve in this panel's DopeSheet Editor.
+//              4. Activates the radioButton for the row that represents
+//                  the new contents of the DopeSheet.
+//
+// Constraints: 
+//
+//  Parameters: string $radioUI: The radioButton UI control to select.
+//              string $attrBase: The current node and array element for 
+//                  the ".animRangeNameTime" array; e.g.:
+//                      "p3dExporterSetting.animRangeNameTime[0]"
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc arp_ConnectDope( string $radioUI, string $attrBase )
+{
+    arp_ClearDopeMainList();
+
+    string $cc[] = `listConnections -source true ( $attrBase + ".art" )`;
+    if ( $cc[0] != "" )
+    {
+        arp_AddDopeMainList( $cc[0] );
+
+        radioButton -e
+            -select
+                $radioUI;
+    }
+}
+
+//===========================================================================
+// arp_TrashAnimRange
+//===========================================================================
+// Description: Callback when the user deletes an animation range from the UI.
+//              If the range being delete is currently displayed in this
+//              Panel's DopeSheet editor then the mainListConnection for
+//              the Editor is cleared.
+//              The animCurveTT representing the animation range is deleted
+//              and the ".animRangeNameTime" array element is removed.
+//
+// Constraints: 
+//
+//  Parameters: string $attrBase: The current node and array element for 
+//                  the ".animRangeNameTime" array; e.g.:
+//                      "p3dExporterSetting.animRangeNameTime[0]"
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc arp_TrashAnimRange( string $attrBase )
+{
+    string $arpDopeSheet = "arp_DopeSheet";
+    string $outliner = `dopeSheetEditor -q -outliner $arpDopeSheet`;
+    string $mlcDope = `outlinerEditor -q -mainListConnection $outliner`;
+    string $objects[] = `selectionConnection -q -object $mlcDope`;
+
+    string $cc[] = `listConnections -source true ( $attrBase + ".art" )`;
+    if ( $cc[0] != "" )
+    {
+        // If this is the object in the DopeSheet, clear the mainListConnection
+        // for the DopeSheet; else it persists and won't reconnect properly
+        // when an object of the same name is recreated.
+        if ( $objects[0] == $cc[0] )
+        {
+            arp_ClearDopeMainList();
+        }
+        
+        delete $cc[0];
+    }
+
+    removeMultiInstance $attrBase;
+    arp_AnimRangeUpdateUI();
+}
+
+//===========================================================================
+// arp_EditRange
+//===========================================================================
+// Description: Callback when the user edits one of the fields reflecting
+//              the start or end frame for an animation range.
+//              The animCurve representing the animation range is updated
+//              with the new key.
+//              Special care is taken to swap the start and end frames if
+//              the user enters a start frame later than the end frame,
+//              or an end frame earlier than the start frame.
+//
+// Constraints: The Start and End frame cannot be equal.
+//
+//  Parameters: string $attrBase: The current node and array element for 
+//                  the ".animRangeNameTime" array; e.g.:
+//                      "p3dExporterSetting.animRangeNameTime[0]"
+//              int $mode: 0 if the user is editing the start frame;
+//                         1 if the user is editing the end frame.
+//              float $tc: The value to assign to the start or end frame.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc arp_EditRange( string $attrBase, int $mode, float $tc )
+{
+    int $UIisInvalid = false;
+
+    string $cc[] = `listConnections -source true ( $attrBase + ".art" )`;
+    if ( $cc[0] != "" )
+    {
+        float $keys[] = `keyframe -q $cc[0]`;
+        
+        // If edit Start key, number of keys must be at least 1.
+        if ( `size $keys` > 1 )
+        {
+            if ( ( $mode == 0 ) && ( $tc >= $keys[1] ) )
+            {
+//                $tc = $keys[1] - 1.0;
+                // Call this function set set end frame to requested value,
+                // and change this requested value to the current end frame
+                arp_EditRange( $attrBase, 1, $tc );
+                $tc = $keys[1];
+                $UIisInvalid = true;
+            }
+            
+            if ( ( $mode == 1 ) && ( $tc <= $keys[0] ) )
+            {
+//                $tc = $keys[0] + 1.0;
+                // Call this function set set start frame to requested value,
+                // and change this requested value to the current start frame
+                arp_EditRange( $attrBase, 0, $tc );
+                $tc = $keys[0];
+                $UIisInvalid = true;
+            }
+
+            keyframe -e -index $mode -tc $tc $cc[0];
+        }
+
+        // If edit End key, number of keys must be at least 2.
+        else if (  `size $keys` > 0 )
+        {
+            keyframe -e -index 0 -tc $tc $cc[0];
+        }
+    }
+
+    if ( $UIisInvalid )
+    {
+        // Maya likes to BOMB if this is not deferred!
+        evalDeferred( "arp_AnimRangeUpdateUI" );
+    }
+}
+
+//===========================================================================
+// AddAnimRangeRow
+//===========================================================================
+// Description: Adds a new rowLayout UI to this panel.  Controls are added
+//              to display the animation range name and keys.
+//
+// Constraints: 
+//
+//  Parameters: string $ui: The parent UI control; a columnLayout.
+//              string $attrBase: The current node and array element for 
+//                  the ".animRangeNameTime" array; e.g.:
+//                      "p3dExporterSetting.animRangeNameTime[0]"
+//              int $explicitConnection: Flag to indicate whether the 
+//                  DopeSheet Editor should be updated to show the animCurve
+//                  for this row.  This is TRUE if the user has just
+//                  added a new animation range; FALSE for a simple refresh.
+//
+//      Return: (none)
+//
+//===========================================================================
+proc AddAnimRangeRow( string $ui, string $attrBase, int $explicitConnection )
+{
+    string $arpDopeSheet = "arp_DopeSheet";
+    string $arpAnimRangeCollectionUI = "arpAnimRangeCollectionUI";
+    
+    string $mlcDope = `dopeSheetEditor -q -mlc $arpDopeSheet`;
+    string $objects[] = `selectionConnection -q -object $mlcDope`;
+
+    // If the connected animCurve has less than 2 keys,
+    // delete the animCurve and clear the DopeSheet.
+    string $cc[] = `listConnections -source true ( $attrBase + ".art" )`;
+    float $keys[] = `keyframe -q -tc $cc[0]`;
+    if ( `size $keys` < 2 )
+    {
+        delete $cc[0];
+        arp_ClearDopeMainList();
+        return;
+    }
+    
+    rowLayout -parent $ui -nc 5
+        -columnWidth5 160 60 60 26 24
+        -columnAttach5 "both" "both" "both" "both" "both"
+        -columnAlign5 "left" "left" "left" "left" "left"
+        -columnOffset5 2 2 0 2 0
+        ;
+        
+        string $nameUI = `textField -ann "Name for AnimRange"`;
+        string $minField = `intField -ann "Start of AnimRange"`;
+        string $maxField = `intField -ann "End of AnimRange"`;
+        string $radioUI = `radioButton -collection $arpAnimRangeCollectionUI -height 20 -label "" -editable false`;
+        string $trashUI = `symbolButton -image "smallTrash.xpm" -height 20 -ann "Delete AnimRange"`;
+        
+        setParent ..;
+
+    intField -e
+        -cc ( "arp_EditRange " + $attrBase + " 0 (#1)" )
+            $minField;
+            
+    intField-e
+        -cc ( "arp_EditRange " + $attrBase + " 1 (#1)" )
+            $maxField;
+            
+    radioButton -e
+        -cc ( "arp_ConnectDope " + $radioUI + " " + $attrBase )
+        -ann ( "View this AnimRange (" + $cc[0] + ")" )
+            $radioUI;
+
+    symbolButton -e
+        -c ( "arp_TrashAnimRange " + $attrBase )
+            $trashUI;
+
+    connectControl $nameUI ( $attrBase + ".arn" );
+    
+    string $cc[] = `listConnections -source true ( $attrBase + ".art" )`;
+
+    // If no object is current in the DopeSheet, connect it;
+    // or if the user has requested explicitConnection, connect it.
+    if ( ( `size $objects` == 0 ) || $explicitConnection )
+    {
+        arp_ConnectDope( $radioUI, $attrBase );
+        $objects = `selectionConnection -q -object $mlcDope`;
+    }
+    
+    // If the object currently displayed in the DopeSheet is this one
+    // then turn on this row's radioButton.
+    if ( $objects[0] == $cc[0] )
+    {
+        radioButton -e
+            -select
+                $radioUI;
+    }
+
+    if ( $cc[0] != "" )
+    {
+        float $tc[] = `keyframe -q -tc $cc[0]`;
+        
+        intField -e
+            -value $tc[0]
+                $minField;
+        intField -e
+            -value $tc[1]
+                $maxField;
+    }
+}
+
+//===========================================================================
+// arp_AnimRangeUpdateUI
+//===========================================================================
+// Description: Clears and rebuilds the controls for the animation ranges.
+//
+// Constraints: 
+//
+// Parameters:  (none)
+//
+// Return:      (none)
+//
+//===========================================================================
+global proc arp_AnimRangeUpdateUI()
+{
+    string $animRangePanel_ScrollUI = "animRangePanel_ScrollUI";
+    string $animRangePanel_DefaultRangeUI = "animRangePanel_DefaultRangeUI";
+
+//    arp_ClearDopeMainList();
+        
+    string $currentSetting = "";
+
+    if ( `objExists p3dExporterOptions` )
+    {
+        $currentSetting = `getAttr p3dExporterOptions.currentSetting`;
+    }
+
+    clearAnimRangeUI( $animRangePanel_ScrollUI );
+   
+    if ( $currentSetting != "" )
+    {
+        connectControl $animRangePanel_DefaultRangeUI ( $currentSetting + ".animRangeDefault" );
+
+        int $indices[] = validAnimRanges( $currentSetting );
+        
+        for ( $index in $indices )
+        {
+            string $attr = ( $currentSetting + ".animRangeNameTime[" + $index + "]" );
+
+            string $cc[] = `listConnections -source true ( $attr + ".art" )`;
+            if ( $cc[0] != "" )
+            {
+                AddAnimRangeRow( $animRangePanel_ScrollUI, $attr, false );
+            }
+        }
+    }
+}
+
+//===========================================================================
+// arp_AddAnimRange
+//===========================================================================
+// Description: Creates a new animCurveTT node to represent a new animation
+//              range.  This new node is connected to the current Exporter
+//              Configuration setting node.  A new UI row is added to 
+//              display the name and keys for the animation range.
+//
+// Constraints: 
+//
+//  Parameters: string $ui: The parent UI control for the new row of controls.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc arp_AddAnimRange( string $ui )
+{
+    string $currentSetting = "";
+
+    if ( `objExists p3dExporterOptions` )
+    {
+        $currentSetting = `getAttr p3dExporterOptions.currentSetting`;
+    }
+    
+    if ( $currentSetting != "" )
+    {
+        int $index = nextAnimRange( $currentSetting );
+        
+        string $attrBase = ( $currentSetting + ".arnt[" + $index + "]" );
+        
+        string $tt = `createNode "animCurveTT"`;
+        setKeyframe -t 1 $tt;
+        setKeyframe -t 30 $tt;
+        
+        connectAttr ( $tt + ".o" ) ( $attrBase + ".art" );
+        
+        AddAnimRangeRow( $ui, $attrBase, true );
+    }
+}
+
+//===========================================================================
+// arp_FrameDopeSheet
+//===========================================================================
+// Description: Called when the user presses one of the "Frame DopeSheet"
+//              buttons.  Frames the display for this panel's DopeSheet
+//              Editor.  A "hint" is provided to control the framing method:
+//
+//                  "now": Sets the focus to the current time.
+//                  "all": Frames the entire animCurve in the view.
+//                  "start": Frames the start key for the animCurve.
+//                  "end": Frames the end key for the animCurve.
+//
+// Constraints: 
+//
+//  Parameters: string $mode: A string "hint" to determine which framing
+//                            method to use.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc arp_FrameDopeSheet( string $mode )
+{
+    string $arpDopeSheet = "arp_DopeSheet";
+    string $mlcDope = `dopeSheetEditor -q -mlc $arpDopeSheet`;
+
+    float $keys[];
+    string $objects[] = `selectionConnection -q -object $mlcDope`;
+    
+    if ( $objects[0] != "" )
+    {
+        $keys = `keyframe -q -tc $objects[0]`;
+    }
+    
+    switch( $mode )
+    {
+        case "now":
+        {
+            dopeSheetEditor -e -lookAt "currentTime" $arpDopeSheet;
+            break;
+        }
+        case "start":
+        {
+            if ( `size $keys` > 0 )
+            {
+                selectKey -k -t $keys[0] $objects[0];
+                dopeSheetEditor -e -lookAt "selected" $arpDopeSheet;
+            }
+            break;
+        }
+        case "end":
+        {
+            if ( `size $keys` > 1 )
+            {
+                selectKey -k -t $keys[1] $objects[0];
+                dopeSheetEditor -e -lookAt "selected" $arpDopeSheet;
+            }
+            break;
+        }
+        case "all":
+        default:
+        {
+            dopeSheetEditor -e -lookAt "all" $arpDopeSheet;
+            break;
+        }
+    }
+}
+
+//===========================================================================
+// arp_Add
+//===========================================================================
+// Description: DEFINITION FUNCTION for the scriptedPanelType.
+//
+//              Adds the UI controls to the scriptedPanel.
+//
+// Constraints: 
+//
+//  Parameters: string $panel: The parent UI for the scriptedPanel.
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc arp_Add( string $panel )
+{
+    string $arpDopeSheet = "arp_DopeSheet";
+    string $arpOutliner = "arp_Outliner";
+    string $animRangePanel_ScrollUI = "animRangePanel_ScrollUI";
+    string $animRangePanel_DefaultRangeUI = "animRangePanel_DefaultRangeUI";
+    string $arpAnimRangeCollectionUI = "arpAnimRangeCollectionUI";
+
+    string $url = "http://radnet/teams/atg/Pure3D%20Maya%20Plugins/Exporter/animationRanges.html";
+
+    string $urlForm[] = p3dFrameLayout( "Animation Ranges", $url, false, false );
+    
+        string $paneUI = `formLayout`;
+
+            checkBox -label "Enable Default Range" $animRangePanel_DefaultRangeUI;;
+            
+            string $addRangeUI = `button -label "Add Range"`;
+            
+            string $scrollUI = `scrollLayout`;
+                
+                columnLayout -adj true $animRangePanel_ScrollUI;
+                
+                    radioCollection $arpAnimRangeCollectionUI;
+                    
+                    setParent ..;
+                    
+                setParent ..;
+
+            string $dopeForm = `formLayout -height 32`;
+            
+                string $dopeToolsForm = `formLayout -height 24`;
+
+                    string $frameDopeUI = `symbolButton -image "frameSelection.xpm" -width 24 -height 24 -ann "Frame AnimRange"`;
+                    string $frameStartDopeUI = `symbolButton -image "frameStart.bmp" -width 24 -height 24 -ann "Frame Start of AnimRange"`;
+                    string $frameEndDopeUI = `symbolButton -image "frameEnd.bmp" -width 24 -height 24 -ann "Frame End of AnimRange"`;
+                    string $focusDopeUI = `symbolButton -image "focus.bmp" -width 24 -height 24 -ann "Set Focus to Current Frame"`;
+                    string $refreshDopeUI = `symbolButton -image "redrawPaintEffects.xpm" -width 24 -height 24 -ann "Refresh AnimRange Table"`;
+                    
+                    string $trashDopeUI = `symbolButton -manage false -image "smallTrash.xpm" -width 24 -height 24 -ann "Clear the DopeSheet"`;
+
+                    setParent ..;
+
+                setParent ..;
+            
+            setParent ..;
+            
+        PopP3dFrameLayout( $urlForm );
+
+    outlinerEditor -e -parent $dopeForm $arpOutliner;        
+    dopeSheetEditor -e -parent $dopeForm $arpDopeSheet;
+
+    // Delete the popupMenu for the DopeSheet
+    string $control = `dopeSheetEditor -q -ctl $arpDopeSheet`;
+    if ( $control != "NONE" )
+    {
+        string $pma[] = `control -q -pma $control`;
+        for ( $p in $pma )
+        {
+            deleteUI $p;
+        }
+    }
+
+    button -e
+         -c ( "arp_AddAnimRange " + $animRangePanel_ScrollUI )
+            $addRangeUI;
+
+    symbolButton -e
+        -c "arp_FrameDopeSheet all"
+            $frameDopeUI;
+            
+    symbolButton -e
+        -c "arp_FrameDopeSheet start"
+            $frameStartDopeUI;
+            
+    symbolButton -e
+        -c "arp_FrameDopeSheet end"
+            $frameEndDopeUI;
+            
+    symbolButton -e
+        -c "arp_FrameDopeSheet now"
+            $focusDopeUI;
+            
+    symbolButton -e
+        -c "arp_AnimRangeUpdateUI"
+            $refreshDopeUI;
+
+    symbolButton -e
+        -c "arp_ClearDopeMainList()"
+            $trashDopeUI;
+            
+    formLayout -e
+        -af     $frameDopeUI        "top"       0
+        -af     $frameDopeUI        "left"      0
+
+        -ac     $frameStartDopeUI   "left"      2       $frameDopeUI
+
+        -ac     $frameEndDopeUI     "left"      2       $frameStartDopeUI
+        
+        -ac     $focusDopeUI        "left"      2       $frameEndDopeUI
+        
+        -ac     $refreshDopeUI      "left"      2       $focusDopeUI
+
+        -af     $trashDopeUI        "right"     2
+        
+            $dopeToolsForm;
+            
+    formLayout -e
+//        -af $arpOutliner       "top"       0
+//        -af $arpOutliner       "left"       0
+//        -ap $arpOutliner       "right"       2 33
+//        -af $arpOutliner       "bottom"       0
+
+        -af $dopeToolsForm      "top"       0
+        -af $dopeToolsForm      "left"      0
+        -af $dopeToolsForm      "right"     0
+        
+        -ac $arpDopeSheet       "top"       0       $dopeToolsForm
+        -af $arpDopeSheet       "left"       0
+        -af $arpDopeSheet       "right"       0
+        -af $arpDopeSheet       "bottom"       0
+            $dopeForm;
+
+    formLayout -e
+        -af $dopeForm           "left"      2
+        -af $dopeForm           "right"     2
+        -af $dopeForm           "bottom"    2
+        
+        -af $animRangePanel_DefaultRangeUI      "top"       2
+        -af $animRangePanel_DefaultRangeUI      "left"      2
+        
+        -ac $addRangeUI          "top"       2       $animRangePanel_DefaultRangeUI
+        -af $addRangeUI          "left"      2
+        
+        -ac $scrollUI           "top"       2   $addRangeUI
+        -af $scrollUI           "left"      2
+        -af $scrollUI           "right"     2
+        -ac $scrollUI           "bottom"    2   $dopeForm
+            $paneUI;
+
+//    scriptJob -p $dopeForm -e "NewSceneOpened" "arp_TrashDopeUI()";
+    
+    arp_AnimRangeUpdateUI();
+}
+
+global proc arp_buildPanelPopupMenu( string $panelName )
+{
+    string $arpDopeSheet = "arp_DopeSheet";
+
+    // Build the default menus
+    buildPanelPopupMenu( $panelName );
+
+    // Add the "Configure" menu
+    string $panelControl = `panel -q -control $panelName`;
+
+    if ( `menuBarLayout -exists $panelControl` )
+    {
+        setParent $panelControl;
+        string $ma[] = `menuBarLayout -q -menuArray $panelControl`;
+        int $found = 0;
+        int $i;
+
+        //   Check for existing Configure Menu (ie. don't add it more than once)
+        for ( $i=0; $i<size($ma) && $found == 0; $i++ )
+        {
+            if ( $ma[$i] == "Version" )
+            {
+                $found = 1;
+                break;
+            }
+        }
+        if ( $found == 0 )
+        {
+            string $menu = `menu -label ( "version " + version() ) -enable false Version`;
+        }
+    }
+}
+
+// *** AMD LOCATOR PANEL CALLBACKS **
+
+//===========================================================================
+// arp_Save
+//===========================================================================
+// Description: DEFINITION FUNCTION for the scriptedPanelType.
+//
+//===========================================================================
+global proc string arp_Save( string $parent )
+{
+    return "";
+}
+
+//===========================================================================
+// arp_Init
+//===========================================================================
+// Description: DEFINITION FUNCTION for the scriptedPanelType.
+//
+// Constraints: Note: Maya is _supposed_ to call this on a "file new" and
+//              "file open".  In fact it is only called on "file open" and
+//              thus the panel is prone to being left in a state which may
+//              crash Maya.
+//
+//              In one case where I encountered a fatal Maya error because
+//              of this I was able to avert it by resetting my user prefs.
+//              Weird.
+//
+//  Parameters: 
+//
+//      Return: 
+//
+//===========================================================================
+global proc arp_Init( string $panel )
+{
+    string $animRangePanel_ScrollUI = "animRangePanel_ScrollUI";
+    clearAnimRangeUI( $animRangePanel_ScrollUI );
+    arp_ClearDopeMainList();
+}
+
+//===========================================================================
+// arp_Create
+//===========================================================================
+// Description: DEFINITION FUNCTION for the scriptedPanelType.
+//
+//              Creates the DopeSheet, the Outliner and selectionConnections
+//              used within this scriptedPanel.
+//
+// Constraints: 
+//
+//  Parameters: 
+//
+//      Return: 
+//
+//===========================================================================
+global proc arp_Create( string $panel )
+{
+    string $arpDopeSheet = "arp_DopeSheet";
+    string $arpOutliner = "arp_Outliner";
+    
+    // Create SelectionConnection for Editor
+    string $mlcDope = `selectionConnection -connectionList arp_dopeMainList`;
+    string $slcDope = `selectionConnection arp_dopeSelection`;
+    string $sloDope = "arp_dopeConnection";
+
+    // Create unparented Editor
+    // Note: MUST provide -mainListConnection if Editor is to display any contents.
+    // -selectionConnection is OPTIONAL -- set to "modelList" to interact with scene.
+    // ** Since Editor does not offer drag'n'drop callbacks, tie in to scene's "modelList" to track
+
+    // Create OUTLINER first, and create/parent selectionConnections.
+    
+    $arpOutliner = `outlinerEditor -unParent -mlc $mlcDope $arpOutliner`;
+
+    outlinerEditor -e
+        -mlc                        $mlcDope
+        -hlc                        keyframeList
+        -slc                        $slcDope
+        -showShapes                 true
+        -showAttributes             true
+        -showConnected              true
+        -showAnimCurvesOnly         true
+        -doNotSelectNewObjects      true
+        -expandConnections          true
+        -showNumericAttrsOnly       true
+        -highlightActive            false
+        -showUnitlessCurves         false
+        -showDagOnly                false
+        -showSetMembers             false
+        -autoExpand                 false
+            $arpOutliner;
+
+    selectionConnection -editor $arpOutliner -parent $arpOutliner $sloDope;
+    selectionConnection -e -parent $arpOutliner $slcDope;
+    
+    // Then create DOPESHEET and assign selectionConnections from Outliner.
+    
+    $arpDopeSheet = `dopeSheetEditor -unParent arp_DopeSheet`;
+//    $arpDopeSheet = `dopeSheetEditor -unParent -mlc $mlcDope -slc $slcDope arp_DopeSheet`;
+
+    dopeSheetEditor -e
+        -mlc                        $sloDope
+        -hlc                        $slcDope
+        -outliner                   $arpOutliner
+        -panel                      $panel
+        -autoFit                    true
+        -snapTime                   true
+        -snapValue                  true 
+        -showScene                  false
+        -showSummary                false
+        -hierarchyBelow             false
+            $arpDopeSheet;
+            
+}
+
+//===========================================================================
+// arp_Remove
+//===========================================================================
+// Description: DEFINITION FUNCTION for the scriptedPanelType.
+//
+//              Unparents the Outliner and DopeSheet editors from this panel.
+//
+// Constraints: 
+//
+//  Parameters: 
+//
+//      Return: 
+//
+//===========================================================================
+global proc arp_Remove( string $panel )
+{
+    // Remove Editor from panel.
+    string $arpOutliner = "arp_Outliner";
+    string $arpDopeSheet = "arp_DopeSheet";
+
+    dopeSheetEditor -e -unParent $arpDopeSheet;
+    outlinerEditor -e -unParent $arpOutliner;
+}
+
+//===========================================================================
+// arp_Delete
+//===========================================================================
+// Description: DEFINITION FUNCTION for the scriptedPanelType.
+//
+//              Deletes the Outliner, DopeSheet and selectionConnections
+//              used by this scriptedPanel.
+//
+// Constraints: 
+//
+//  Parameters: 
+//
+//      Return: 
+//
+//===========================================================================
+global proc arp_Delete( string $panel )
+{
+    // Delete Editor and SelectionConnections
+    string $arpDopeSheet = "arp_DopeSheet";
+    string $mlcDope = "arp_dopeMainList";
+    string $slcDope = "arp_dopeSelection";
+    string $sloDope = "arp_dopeConnection";
+
+    if ( `dopeSheetEditor -q -exists arp_DopeSheet` )
+    {
+        deleteUI $arpDopeSheet;
+    }
+    
+    if ( `selectionConnection -q -exists $mlcDope` )
+    {
+        deleteUI $mlcDope;
+    }
+    if ( `selectionConnection -q -exists $slcDope` )
+    {
+        deleteUI $slcDope;
+    }
+    if ( `selectionConnection -q -exists $sloDope` )
+    {
+        deleteUI $sloDope;
+    }
+}
+
+//===========================================================================
+// animRangePanel
+//===========================================================================
+// Description: Defines the scriptedPanelType for the "animRangePanel".
+//              Creates a new unparented scriptedPanel control.
+//              Opens the scriptedPanel in a window by simply commanding a
+//              "tearOff" instance of the scriptedPanel.
+//
+// Constraints: There can be only one animRangePanel.
+//
+//  Parameters: (none)
+//
+//      Return: (none)
+//
+//===========================================================================
+global proc animRangePanel()
+{
+    string $panelType = "animRangePanelType";
+    string $panelInstance = "animRangePanel";
+    
+    if ( ! `scriptedPanelType -q -exists $panelType` )
+    {
+        scriptedPanelType
+            -acb arp_Add
+            -icb arp_Init
+            -ccb arp_Create
+            -rcb arp_Remove
+            -dcb arp_Delete
+            -scb arp_Save
+            -unique true    
+                $panelType;
+    }
+
+    // ***    Delete existing scripted panel if exists
+    while ( `scriptedPanel -q -exists $panelInstance` )
+    {
+        string $ctl = `scriptedPanel -q -ctl $panelInstance`;
+        scriptedPanel -e -unParent $panelInstance;
+        fillEmptyPanes;
+        deleteUI $panelInstance;
+
+        if ( $ctl != "" )
+        {
+            string $tokens[];
+            tokenize $ctl "|" $tokens;
+
+            if ( $tokens[0] != "MayaWindow" && `window -exists $tokens[0]` )
+                deleteUI $tokens[0];
+        }
+    }
+
+    // ***    Create unparented scripted panel
+    scriptedPanel 
+        -unParent 
+        -type $panelType 
+        -pmp "arp_buildPanelPopupMenu" 
+        -label "Anim Range Panel" 
+            $panelInstance;
+
+    scriptedPanel -e -tearOff $panelInstance;
+    fillEmptyPanes;
+}
+

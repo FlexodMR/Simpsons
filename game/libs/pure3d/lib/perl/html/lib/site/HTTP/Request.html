@@ -1,0 +1,153 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>HTTP::Request - Class encapsulating HTTP Requests
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+	<UL>
+
+		<LI><A HREF="#_r_new_HTTP_Request_method_">$r = new HTTP::Request $method, $url, [$header, [$content]]</A>
+		<LI><A HREF="#_r_method_val_">$r->method([$val])</A>
+		<LI><A HREF="#_r_url_val_">$r->url([$val])</A>
+		<LI><A HREF="#_r_as_string_">$r->as_string()</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+HTTP::Request - Class encapsulating 
+<FONT SIZE=-1>HTTP</FONT> Requests
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require <A HREF="HTTP::Request">HTTP::Request</A>;
+ $request = new <A HREF="HTTP::Request">HTTP::Request</A> 'GET', '<A HREF="http://www.oslonett.no/">http://www.oslonett.no/</A>';
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<CODE>HTTP::Request</CODE> is a class encapsulating 
+<FONT SIZE=-1>HTTP</FONT> style requests, consisting of a request line, a 
+<FONT SIZE=-1>MIME</FONT> header, and optional content. Note that the 
+<FONT SIZE=-1>LWP</FONT> library also uses this 
+<FONT SIZE=-1>HTTP</FONT> style requests for non-HTTP protocols.
+
+
+
+<P>
+
+Instances of this class are usually passed to the <CODE>request()</CODE> method of an <CODE>LWP::UserAgent</CODE> object:
+
+
+<P>
+
+<PRE> $ua = new LWP::UserAgent;
+ $request = new <A HREF="HTTP::Request">HTTP::Request</A> '<A HREF="http://www.oslonett.no/">http://www.oslonett.no/</A>';
+ $response = $ua-&gt;request($request);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<CODE>HTTP::Request</CODE> is a subclass of <CODE>HTTP::Message</CODE> and therefore inherits its methods. The inherited methods are
+<CODE>header(),</CODE> <CODE>push_header(),</CODE>
+<CODE>remove_header(),</CODE> <CODE>headers_as_string()</CODE> and
+<CODE>content().</CODE> See <A HREF="/n|/perl/html/./lib/site/HTTP/Message.html">Message</A> for details.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_new_HTTP_Request_method_">$r = new HTTP::Request $method, $url, [$header, [$content]]
+
+</A></H2>
+Constructs a new <CODE>HTTP::Request</CODE> object describing a request on the object <CODE>$url</CODE> using method <CODE>$method</CODE>. The <CODE>$url</CODE> argument can be either a string, or a reference to a <CODE>URI::URL</CODE> object. The <CODE>$header</CODE> argument should be a reference to a
+HTTP::Headers object.
+
+
+<P>
+
+<PRE> $request = new <A HREF="HTTP::Request">HTTP::Request</A> 'GET', '<A HREF="http://www.oslonett.no/">http://www.oslonett.no/</A>';
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_method_val_">$r->method([$val])
+
+</A></H2>
+<P>
+<HR>
+<H2><A NAME="_r_url_val_">$r->url([$val])
+
+</A></H2>
+These methods provide public access to the member variables containing respectively the method of the request and the 
+<FONT SIZE=-1>URL</FONT> object of the request.
+
+
+
+<P>
+
+If an argument is given the member variable is given that as its new value.
+If no argument is given the value is not touched. In either case the
+previous value is returned.
+
+
+<P>
+
+The <CODE>url()</CODE> method accept both a reference to a 
+<FONT SIZE=-1>URI::URL</FONT> object and a string as its argument. If a string is given, then it should be parseable as an absolute 
+<FONT SIZE=-1>URL.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="_r_as_string_">$r->as_string()
+
+</A></H2>
+Method returning a textual representation of the request. Mainly useful for
+debugging purposes. It takes no arguments.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,1021 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk2portableTk - how to make your B<Tk> source portable to other
+interpreted languages.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#Author">Author</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#Structure_of_B_pTk_porting_you">Structure of <STRONG>pTk</STRONG>, porting your code</A>
+	<LI><A HREF="#B_PortableTk_API"><STRONG>PortableTk</STRONG> API</A>
+	<UL>
+
+		<LI><A HREF="#Checking_what_you_are_running_un">Checking what you are running under</A>
+		<LI><A HREF="#New_types_of_configuration_optio">New types of configuration options</A>
+		<LI><A HREF="#Language_data">Language data</A>
+		<LI><A HREF="#Conversion">Conversion</A>
+		<LI><A HREF="#Callbacks">Callbacks</A>
+		<LI><A HREF="#Setting_variables">Setting variables</A>
+		<LI><A HREF="#Language_functions">Language functions</A>
+		<LI><A HREF="#Translation_of_some_TCL_function">Translation of some TCL functions</A>
+	</UL>
+
+	<LI><A HREF="#Translation_back_to_TCL">Translation back to TCL</A>
+	<UL>
+
+		<LI><A HREF="#New_types_of_events_">New types of events ????</A>
+	</UL>
+
+	<LI><A HREF="#Checking_for_trouble">Checking for trouble</A>
+	<LI><A HREF="#Additional_API">Additional API</A>
+	<UL>
+
+		<LI><A HREF="#C_ListFactory_"><CODE>ListFactory</CODE></A>
+		<LI><A HREF="#DStrings">DStrings </A>
+		<LI><A HREF="#Accessing_C_Arg_s">Accessing <A HREF="#item_Arg">Arg</A>s</A>
+		<LI><A HREF="#Assigning_numbers_to_C_Arg_s">Assigning numbers to <A HREF="#item_Arg">Arg</A>s</A>
+		<LI><A HREF="#Creating_new_C_Arg_s">Creating new <A HREF="#item_Arg">Arg</A>s</A>
+		<LI><A HREF="#Evaluating_a_list">Evaluating a list</A>
+		<LI><A HREF="#Getting_result_as_C_Arg_">Getting result as <A HREF="#item_Arg">Arg</A></A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk2portableTk - how to make your <STRONG>Tk</STRONG> source portable to other interpreted languages.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Author">Author
+
+</A></H1>
+Ilya Zakharevich <A
+HREF="MAILTO:<ilya@math.ohio-state.edu>"><ilya@math.ohio-state.edu></A> has
+contributed most of this document. Many thanks.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<STRONG>PortableTk</STRONG> is an attempt to make <STRONG>Tk</STRONG> useful from other languages. Currently tk4.0 runs under Perl using this
+approach. Below, <EM>Lang</EM> is the notation for an external language to which <STRONG>PortableTk</STRONG> glues <STRONG>Tk</STRONG> code.
+
+
+<P>
+
+The main problem with using the code developed for <STRONG>TCL</STRONG> with different languages is the absence of data types: almost anything is
+<A HREF="#item_char_">char*</A>. It makes automatic translation hopeless. However, if you
+<CODE>typedef</CODE> several new symbols to be <A HREF="#item_char_">char*</A>, you can still use your code in <STRONG>TCL</STRONG>, <EM>and</EM> it will make the automatic translation possible.
+
+
+<P>
+
+Another problem with the approach that ``everything is a string'' is
+impossibility to have a result that says ``NotApplicable'' without setting
+an error. Thus different <STRONG>Tk</STRONG> command return different string values that mean ``error happened'', like <CODE>""</CODE>, <CODE>" "</CODE> or
+<CODE>"??"</CODE>. Other languages can be more flexible, so in <STRONG>portableTk</STRONG> you should inform the compiler that what you want to return means ``error''
+(see <A HREF="#Setting_variables">Setting variables</A>).
+
+
+<P>
+
+Currently <STRONG>PortableTk</STRONG> uses several different approachs to simplify translation: several <STRONG>TCL</STRONG> functions that are especially dangerous to use are undefined, so you can
+easily find places that need to be updated to use Language-independent
+functions based on compiler warnings. Eventually a way to use these
+Language-independent functions under proper <STRONG>TCL</STRONG> will be also provided. The end of this document provides a starting point
+for such a project.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Structure_of_B_pTk_porting_you">Structure of <STRONG>pTk</STRONG>, porting your code
+
+</A></H1>
+<STRONG>pTk</STRONG>, that is a port of <STRONG>Tk</STRONG>, is very special with respect to porting of other code to <STRONG>portableTk</STRONG>. The problem is that currently there is very little hope to merge the
+modifications back into <STRONG>Tk</STRONG>, so a special strategy is needed to maintain this port. Do not use this
+strategy to port your own code.
+
+
+<P>
+
+<STRONG>pTk</STRONG> is produced from <STRONG>Tk</STRONG> via a two-step process: first, some manual editing (the result is in the
+subdirectory <CODE>mTk</CODE>), and second, automatic conversion by the <CODE>munge</CODE> script (written in Perl). Thus the subdirectory <CODE>pTk/mTk</CODE> contains code with minimal possible difference from the virgin <STRONG>Tk</STRONG> code, so it is easier to <CODE>merge(1)</CODE> the differences between <STRONG>Tk</STRONG> versions into modified code.
+
+
+<P>
+
+It looks like the strategy for a portable code should be exactly opposite:
+starting from <STRONG>TCL</STRONG>-based code, apply <CODE>munge</CODE>, and then hand-edit the resulting code. Probably it is also possible to
+target your code to <STRONG>portableTk</STRONG> from scratch, since this will make it possible to run it under a lot of <EM>Lang</EM>uages.
+
+
+<P>
+
+The only reason anyone would like to look into contents of <CODE>pTk/mTk</CODE>
+directory is to find out which constructs are not supported by
+<CODE>munge</CODE>. On the other hand, <CODE>pTk</CODE> directory contains code that is conformant to <STRONG>portableTk</STRONG>, so you can look there to find example code.
+
+
+<P>
+
+<CODE>munge</CODE> is the script that converts most common <STRONG>Tk</STRONG> constructs to their <CODE>portableTk</CODE> equivalent. For your code to qualify, you should follow <STRONG>Tk</STRONG> conventions on indentation and names of variables, in particular, the array
+of arguments for the <CODE>...CmdProc</CODE> should be called <CODE>argv</CODE>.
+
+
+<P>
+
+For details on what <CODE>munge</CODE> can do, see 
+<A HREF="#Translation_of_some_TCL_function">Translation of some TCL functions</A>. 
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="B_PortableTk_API"><STRONG>PortableTk</STRONG> API
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Checking_what_you_are_running_un">Checking what you are running under
+
+</A></H2>
+<STRONG>PortableTk</STRONG> provides a symbol <CODE>????</CODE>. If this symbol is defined, your source is compiled with it.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="New_types_of_configuration_optio">New types of configuration options
+
+</A></H2>
+<STRONG>PortableTk</STRONG> defines several new types of configuration options:
+
+
+<P>
+
+<PRE> TK_CONFIG_CALLBACK
+ TK_CONFIG_LANGARG
+ TK_CONFIG_SCALARVAR
+ TK_CONFIG_HASHVAR
+ TK_CONFIG_ARRAYVAR
+ TK_CONFIG_IMAGE
+</PRE>
+
+<P>
+
+You should use them instead of 
+<FONT SIZE=-1>TK_CONFIG_STRING</FONT> whenever appropriate. This allows
+your application to receive a direct representation of the corresponding
+resource instead of the string representation, if this is possible under
+given language.
+
+
+<P>
+
+???? It looks like <CODE>TK_CONFIG_IMAGE</CODE> and <CODE>TK_CONFIG_SCALARVAR</CODE> set variables of type <A HREF="#item_char_">char*</A>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Language_data">Language data
+
+</A></H2>
+The following data types are defined:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Arg">Arg
+
+</A></STRONG><DD>
+is the main datatype of the language. This is a type that your 
+<FONT SIZE=-1>C</FONT> function gets pointers to for arguments when the
+corresponding <EM>Lang</EM>
+function is called. The corresponding config type is
+<CODE>TK_CONFIG_LANGARG</CODE>.
+
+
+<P>
+
+This is also a type that keeps information about contents of <EM>Lang</EM>
+variable. 
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Var">Var
+
+</A></STRONG><DD>
+Is a substitute for a <A HREF="#item_char_">char *</A> that contains name of variable. In
+<EM>Lang</EM> it is an object that contains reference to another <EM>Lang</EM>
+variable.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_LangResultSave">LangResultSave
+
+</A></STRONG><DD>
+????
+
+
+<P>
+
+<DT><STRONG><A NAME="item_LangCallback">LangCallback
+
+</A></STRONG><DD>
+<A HREF="#item_LangCallback_">LangCallback*</A> a substitute for a <A HREF="#item_char_">char *</A> that contains command to call. The corresponding config type is <CODE>TK_CONFIG_CALLBACK</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_LangFreeProc">LangFreeProc
+
+</A></STRONG><DD>
+It is the type that the <CODE>Lang_SplitList</CODE> sets. Before you call it, declare 
+
+
+<P>
+
+<PRE>    Args *args;
+    LangFreeProc *freeProc = NULL;
+    ...
+    code = Lang_SplitList(interp, value, 
+        &amp;argc, &amp;args, &amp;freeProc);
+</PRE>
+
+<P>
+
+After you use the split values, call 
+
+
+<P>
+
+<PRE>    if (args != NULL &amp;&amp; freeProc) (*freeProc)(argc,args);
+</PRE>
+
+<P>
+
+It is not guaranteed that the <CODE>args</CODE> can survive deletion of <CODE>value</CODE>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Conversion">Conversion
+
+</A></H2>
+The following macros and functions are used for conversion between strings
+and the additional types:
+
+
+<P>
+
+<PRE> LangCallback * LangMakeCallback(Arg)
+ Arg LangCallbackArg(LangCallback *)
+ char * LangString(Arg)
+</PRE>
+
+<P>
+
+After you use the result of <CODE>LangCallbackArg(),</CODE> you should free
+it with
+<CODE>freeProc</CODE>  <CODE>LANG_DYNAMIC</CODE> (it is not guaranteed that any change of
+<A HREF="#item_Arg">Arg</A> will not be reflected in &lt;LangCallback&gt;, so you cannot do LangSet...() in between, and you should
+reset it to <A HREF="#item_NULL">NULL</A> if you want to do any further assignments to this <A HREF="#item_Arg">Arg</A>).
+
+
+<P>
+
+The following function returns the <A HREF="#item_Arg">Arg</A> that is a reference to <A HREF="#item_Var">Var</A>:
+
+
+<P>
+
+<PRE> Arg LangVarArg(Var)
+</PRE>
+
+<P>
+
+???? It is very anti-intuitive, 
+<FONT SIZE=-1>I</FONT> hope the name is changed.
+
+
+<P>
+
+<PRE> int LangCmpCallback(LangCallback *a,Arg b)
+</PRE>
+
+<P>
+
+(currently only a stub), and, at last,
+
+
+<P>
+
+<PRE> LangCallback * LangCopyCallback(LangCallback *)
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Callbacks">Callbacks
+
+</A></H2>
+Above we have seen the new datatype <A HREF="#item_LangCallback">LangCallback</A> and the corresponding <EM>Config option</EM>    <CODE>TK_CONFIG_CALLBACK</CODE>. The following functions are provided for manipulation of <A HREF="#item_LangCallback">LangCallback</A>s:
+
+
+<P>
+
+<PRE> void LangFreeCallback(LangCallback *)
+ int LangDoCallback(Tcl_Interp *,LangCallback *,
+        int result,int argc, char *format,...)
+</PRE>
+
+<P>
+
+The argument <A HREF="#item_format">format</A> of <CODE>LangDoCallback</CODE> should contain a string that is suitable for <A HREF="#item_sprintf">sprintf</A> with optional arguments of <CODE>LangDoCallback</CODE>.
+<CODE>result</CODE> should be false if result of callback is not needed.
+
+
+<P>
+
+<PRE> int LangMethodCall(Tcl_Interp *,Arg,char *method,
+        int result,int argc,...)
+</PRE>
+
+<P>
+
+????
+
+
+<P>
+
+Conceptually, <A HREF="#item_LangCallback_">LangCallback*</A> is a substitute for ubiquitous <A HREF="#item_char_">char *</A>
+in <STRONG>TCL</STRONG>. So you should use <CODE>LangFreeCallback</CODE> instead of <CODE>ckfree</CODE>
+or <CODE>free</CODE> if appropriate.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Setting_variables">Setting variables
+
+</A></H2>
+<PRE> void LangFreeArg (Arg, Tcl_FreeProc *freeProc)
+ Arg  LangCopyArg (Arg);
+ void Tcl_AppendArg (Tcl_Interp *interp, Arg)
+ void LangSetString(Arg *, char *s)
+ void LangSetDefault(Arg *, char *s)
+</PRE>
+
+<P>
+
+These two are equivalent unless s is an empty string. In this case
+<CODE>LangSetDefault</CODE> behaves like <CODE>LangSetString</CODE> with <CODE>s==NULL</CODE>, i.e., it sets the current value of the <EM>Lang</EM> variable to be false.
+
+
+<P>
+
+<PRE> void LangSetInt(Arg *,int)
+ void LangSetDouble(Arg *,double)
+</PRE>
+
+<P>
+
+The <EM>Lang</EM> functions separate uninitialized and initialized data comparing data with <A HREF="#item_NULL">NULL</A>. So the declaration for an <A HREF="#item_Arg">Arg</A> should look like
+
+
+<P>
+
+<PRE> Arg arg = NULL;
+</PRE>
+
+<P>
+
+if you want to use this <CODE>arg</CODE> with the above functions. After you are done, you should use <CODE>LangFreeArg</CODE> with <CODE>TCL_DYNAMIC</CODE> as <CODE>freeProc</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Language_functions">Language functions
+
+</A></H2>
+Use
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_int">int  LangNull(Arg)
+
+</A></STRONG><DD>
+to check that an object is false;
+
+
+<P>
+
+<DT><STRONG>int  LangStringMatch(char *string, Arg match)
+
+</A></STRONG><DD>
+????
+
+
+<P>
+
+<DT><STRONG><A NAME="item_void">void LangExit(int)
+
+</A></STRONG><DD>
+to make a proper shutdown;
+
+
+<P>
+
+<DT><STRONG>int LangEval(Tcl_Interp *interp, char *cmd, int global)
+
+</A></STRONG><DD>
+to call <EM>Lang</EM>  <A HREF="#item_eval">eval</A>;
+
+
+<P>
+
+<DT><STRONG>void Lang_SetErrorCode(Tcl_Interp *interp,char *code)
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_char">char *Lang_GetErrorCode(Tcl_Interp *interp)
+
+</A></STRONG><DD>
+<DT><STRONG>char *Lang_GetErrorInfo(Tcl_Interp *interp)
+
+</A></STRONG><DD>
+<DT><STRONG>void LangCloseHandler(Tcl_Interp *interp,Arg arg,FILE *f,Lang_FileCloseProc *proc)
+
+</A></STRONG><DD>
+currently stubs only;
+
+
+<P>
+
+<DT><STRONG>int LangSaveVar(Tcl_Interp *,Arg arg,Var *varPtr,int type)
+
+</A></STRONG><DD>
+to save the structure <CODE>arg</CODE> into <EM>Lang</EM> variable <CODE>*varPtr</CODE>;
+
+
+<P>
+
+<DT><STRONG>void LangFreeVar(Var var)
+
+</A></STRONG><DD>
+to free the result;
+
+
+<P>
+
+<DT><STRONG>int LangEventCallback(Tcl_Interp *,LangCallback *,XEvent *,KeySym)
+
+</A></STRONG><DD>
+????
+
+
+<P>
+
+<DT><STRONG>int LangEventHook(int flags)
+
+</A></STRONG><DD>
+<DT><STRONG>void LangBadFile(int fd)
+
+</A></STRONG><DD>
+<DT><STRONG>int LangCmpConfig(char *spec, char *arg, size_t length)
+
+</A></STRONG><DD>
+unsupported????;
+
+
+<P>
+
+<DT><STRONG>void Tcl_AppendArg (Tcl_Interp *interp, Arg)
+
+</A></STRONG><DD>
+</DL>
+Another useful construction is
+
+
+<P>
+
+<PRE> Arg variable = LangFindVar(interp, Tk_Window tkwin, char *name);
+</PRE>
+
+<P>
+
+After using the above function, you should call
+
+
+<P>
+
+<PRE> LangFreeVar(Var variable);
+</PRE>
+
+<P>
+
+???? Note discrepancy in types!
+
+
+<P>
+
+If you want to find the value of a variable (of type <A HREF="#item_Arg">Arg</A>) given the variable name, use <CODE>Tcl_GetVar(interp, varName, flags)</CODE>. If you are interested in the string value of this variable, use
+<CODE>LangString(Tcl_GetVar(...))</CODE>.
+
+
+<P>
+
+To get a <STRONG>C</STRONG> array of <A HREF="#item_Arg">Arg</A> of length <A HREF="#item_n">n</A>, use 
+
+
+<P>
+
+<PRE>    Arg *args = LangAllocVec(n);
+    ...
+    LangFreeVec(n,args);
+</PRE>
+
+<P>
+
+You can set the values of the <A HREF="#item_Arg">Arg</A>s using <CODE>LangSet...</CODE> functions, and get string value using <CODE>LangString</CODE>.
+
+
+<P>
+
+If you want to merge an array of <A HREF="#item_Arg">Arg</A>s into one <A HREF="#item_Arg">Arg</A> (that will be an array variable), use
+
+
+<P>
+
+<PRE>    result = Tcl_Merge(listLength, list);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Translation_of_some_TCL_function">Translation of some TCL functions
+
+</A></H2>
+We mark items that can be dealt with by <CODE>munge</CODE> by <EM>Autoconverted</EM>.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Tcl_AppendResult">Tcl_AppendResult 
+
+</A></STRONG><DD>
+does not take <A HREF="#item_NULL">(char*)NULL</A>, but <A HREF="#item_NULL">NULL</A> as delimiter. <EM>Autoconverted</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Tcl_CreateCommand">Tcl_CreateCommand, Tcl_DeleteCommand 
+
+</A></STRONG><DD>
+<CODE>Tk_CreateWidget</CODE>, <CODE>Tk_DeleteWidget</CODE>, the second argument is the window itself, not the pathname. <EM>Autoconverted</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_sprintf">sprintf(interp-gtresult, "%d %d %d %d",...) 
+
+</A></STRONG><DD>
+<CODE>Tcl_IntResults(interp,4,0,...)</CODE>. <EM>Autoconverted</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_interp">interp-gtresult = "1";
+
+</A></STRONG><DD>
+<CODE>Tcl_SetResult(interp,"1", TCL_STATIC)</CODE>. <EM>Autoconverted</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Reading">Reading interp-gtresult 
+
+</A></STRONG><DD>
+<CODE>Tcl_GetResult(interp)</CODE>. <EM>Autoconverted</EM>.
+
+
+<P>
+
+<DT><STRONG>interp-gtresult = Tk_PathName(textPtr-gttkwin);
+
+</A></STRONG><DD>
+<CODE>Tk_WidgetResult(interp,textPtr-&gt;tkwin)</CODE>. <EM>Autoconverted</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Sequence">Sequence Tcl_PrintDouble, Tcl_PrintDouble, ..., Tcl_AppendResult 
+
+</A></STRONG><DD>
+Use a single command 
+
+
+<P>
+
+<PRE> void Tcl_DoubleResults(Tcl_Interp *interp, int append,
+        int argc,...);
+</PRE>
+
+<P>
+
+<A HREF="#item_append">append</A> governs whether it is required to clear the result first.
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> similar command for <A HREF="#item_int">int</A> arguments is <CODE>Tcl_IntResults</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Tcl_SplitList">Tcl_SplitList 
+
+</A></STRONG><DD>
+Use <CODE>Lang_SplitList</CODE> (see the description above).
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="Translation_back_to_TCL">Translation back to TCL
+
+</A></H1>
+To use your <STRONG>portableTk</STRONG> program with <STRONG>TCL</STRONG>, put
+
+
+<P>
+
+<PRE> #include &quot;ptcl.h&quot;
+</PRE>
+
+<P>
+
+<EM>before</EM> inclusion of <CODE>tk.h</CODE>, and link the resulting code with
+<CODE>ptclGlue.c</CODE>.
+
+
+<P>
+
+These files currently implement the following:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_Additional">Additional config types:
+
+</A></STRONG><DD>
+<PRE> TK_CONFIG_CALLBACK
+ TK_CONFIG_LANGARG
+ TK_CONFIG_SCALARVAR
+ TK_CONFIG_HASHVAR
+ TK_CONFIG_ARRAYVAR
+ TK_CONFIG_IMAGE
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Types">Types:
+
+</A></STRONG><DD>
+<PRE> Var, Arg, LangCallback, LangFreeProc.
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item_Functions">Functions and macros:
+
+</A></STRONG><DD>
+<PRE> Lang_SplitList, LangString, LangSetString, LangSetDefault,
+ LangSetInt, LangSetDouble Tcl_ArgResult, LangCallbackArg,
+ LangSaveVar, LangFreeVar,
+ LangFreeSplitProc, LangFreeArg, Tcl_DoubleResults, Tcl_IntResults,
+ LangDoCallback, Tk_WidgetResult, Tcl_CreateCommand,
+ Tcl_DeleteCommand, Tcl_GetResult.
+</PRE>
+
+<P>
+
+</DL>
+Current implementation contains enough to make it possible to compile
+<CODE>mTk/tkText*.[ch]</CODE> with the virgin <STRONG>Tk</STRONG>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="New_types_of_events_">New types of events ????
+
+</A></H2>
+PortableTk defines following new types of events:
+
+
+<P>
+
+<PRE> TK_EVENTTYPE_NONE
+ TK_EVENTTYPE_STRING
+ TK_EVENTTYPE_NUMBER
+ TK_EVENTTYPE_WINDOW
+ TK_EVENTTYPE_ATOM
+ TK_EVENTTYPE_DISPLAY
+ TK_EVENTTYPE_DATA
+</PRE>
+
+<P>
+
+and a function
+
+
+<P>
+
+<PRE> char * Tk_EventInfo(int letter, 
+            Tk_Window tkwin, XEvent *eventPtr, 
+            KeySym keySym, int *numPtr, int *isNum, int *type, 
+            int num_size, char *numStorage)
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Checking_for_trouble">Checking for trouble
+
+</A></H1>
+If you start with working 
+<FONT SIZE=-1>TCL</FONT> code, you can start convertion using the above hints. Good indication that you are doing is 
+<FONT SIZE=-1>OK</FONT> is absence of
+ <A HREF="#item_sprintf">sprintf</A> and <CODE>sscanf</CODE> in your code (at least in the part that is working with interpreter).
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Additional_API">Additional API
+
+</A></H1>
+What is described here is not included into base <STRONG>portableTk</STRONG>
+distribution. Currently it is coded in <STRONG>TCL</STRONG> and as Perl macros (core is coded as functions, so theoretically you can
+use the same object files with different interpreted languages).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="C_ListFactory_"><CODE>ListFactory</CODE>
+
+</A></H2>
+Dynamic arrays in <STRONG>TCL</STRONG> are used for two different purposes: to construct strings, and to construct
+lists. These two usages will have separate interfaces in other languages
+(since list is a different type from a string), so you should use a
+different interface in your code.
+
+
+<P>
+
+The type for construction of dynamic lists is <CODE>ListFactory</CODE>. The 
+<FONT SIZE=-1>API</FONT> below is a counterpart of the 
+<FONT SIZE=-1>API</FONT> for construction of dynamic lists in
+ <STRONG>TCL</STRONG>:
+
+
+<P>
+
+<PRE> void ListFactoryInit(ListFactory *)
+ void ListFactoryFinish(ListFactory *)
+ void ListFactoryFree(ListFactory *)
+ Arg * ListFactoryArg(ListFactory *)
+ void ListFactoryAppend(ListFactory *, Arg *arg)
+ void ListFactoryAppendCopy(ListFactory *, Arg *arg)
+ ListFactory * ListFactoryNewLevel(ListFactory *)
+ ListFactory * ListFactoryEndLevel(ListFactory *)
+ void ListFactoryResult(Tcl_Interp *, ListFactory *)
+</PRE>
+
+<P>
+
+The difference is that a call to <CODE>ListFactoryFinish</CODE> should precede the actual usage of the value of <CODE>ListFactory</CODE>, and there are two different ways to append an <A HREF="#item_Arg">Arg</A> to a <CODE>ListFactory</CODE>: <CODE>ListFactoryAppendCopy()</CODE> guarantees that the value of <CODE>arg</CODE> is copied to the list, but <CODE>ListFactoryAppend()</CODE> may append to
+the list a reference to the current value of <CODE>arg</CODE>. If you are not going to change the value of <CODE>arg</CODE> after appending, the call to ListFactoryAppend may be quicker.
+
+
+<P>
+
+As in <STRONG>TCL</STRONG>, the call to <CODE>ListFactoryFree()</CODE> does not free the
+<CODE>ListFactory</CODE>, only the objects it references.
+
+
+<P>
+
+The functions <CODE>ListFactoryNewLevel()</CODE> and
+<CODE>ListFactoryEndLevel()</CODE> return a pointer to a <CODE>ListFactory</CODE> to fill. The argument of <CODE>ListFactoryEndLevel()</CODE> cannot be used
+after a call to this function.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="DStrings">DStrings 
+
+</A></H2>
+Production of strings are still supported in <STRONG>portableTk</STRONG>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Accessing_C_Arg_s">Accessing <A HREF="#item_Arg">Arg</A>s
+
+</A></H2>
+The following functions for getting a value of an <A HREF="#item_Arg">Arg</A>  <EM>may</EM> be provided:
+
+
+<P>
+
+<PRE> double LangDouble(Arg)
+ int LangInt(Arg)
+ long LangLong(Arg)
+ int LangIsList(Arg arg) 
+</PRE>
+
+<P>
+
+The function <CODE>LangIsList()</CODE> is supported only partially under <STRONG>TCL</STRONG>, since there is no data types. It checks whether there is a space inside
+the string <CODE>arg</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Assigning_numbers_to_C_Arg_s">Assigning numbers to <A HREF="#item_Arg">Arg</A>s
+
+</A></H2>
+While <CODE>LangSetDouble()</CODE> and <CODE>LangSetInt()</CODE> are
+supported ways to assign numbers to assign an integer value to a variable,
+for the sake of efficiency under <STRONG>TCL</STRONG> it is supposed that the destination of these commands was massaged before
+the call so it contains a long enough string to <CODE>sprintf()</CODE> the
+numbers inside it. If you are going to immediately use the resulting <A HREF="#item_Arg">Arg</A>, the best way to do this is to declare a buffer in the beginning of a
+block by
+
+
+<P>
+
+<PRE>   dArgBuffer;
+</PRE>
+
+<P>
+
+and assign this buffer to the <A HREF="#item_Arg">Arg</A> by
+
+
+<P>
+
+<PRE>   void LangSetDefaultBuffer(Arg *)
+</PRE>
+
+<P>
+
+You can also create the <CODE>buffer(s)</CODE> manually and assign them
+using
+
+
+<P>
+
+<PRE>   void LangSetBuffer(Arg *, char *)
+</PRE>
+
+<P>
+
+This is the only choice if you need to assign numeric values to several <A HREF="#item_Arg">Arg</A>s simultaneously. The advantage of the first approach is that the above
+declarations can be made <CODE>nop</CODE>s in different languages.
+
+
+<P>
+
+Note that if you apply <CODE>LangSetDefaultBuffer</CODE> to an <A HREF="#item_Arg">Arg</A> that contains some value, you can create a leak if you do not free that
+<A HREF="#item_Arg">Arg</A> first. This is a non-problem in real languages, but can be a trouble in <CODE>TCL</CODE>, unless you use only the above 
+<FONT SIZE=-1>API.</FONT>
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Creating_new_C_Arg_s">Creating new <A HREF="#item_Arg">Arg</A>s
+
+</A></H2>
+The 
+<FONT SIZE=-1>API</FONT> for creating a new <A HREF="#item_Arg">Arg</A> is
+
+
+<P>
+
+<PRE> void LangNewArg(Arg *, LangFreeProc *)
+</PRE>
+
+<P>
+
+The 
+<FONT SIZE=-1>API</FONT> for creating a new <A HREF="#item_Arg">Arg</A> is absent. Just initialize <A HREF="#item_Arg">Arg</A> to be <A HREF="#item_NULL">NULL</A>, and apply one of <CODE>LangSet...</CODE> methods.
+
+
+<P>
+
+After you use this <A HREF="#item_Arg">Arg</A>, it should be freed thusly:
+
+
+<P>
+
+<CODE>LangFreeArg(arg, freeProc)</CODE>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Evaluating_a_list">Evaluating a list
+
+</A></H2>
+Use
+
+
+<P>
+
+<PRE> int LangArgEval(Tcl_Interp *, Arg arg)
+</PRE>
+
+<P>
+
+Here <CODE>arg</CODE> should be a list to evaluate, in particular, the first element should be a <A HREF="#item_LangCallback">LangCallback</A> massaged to be an <A HREF="#item_Arg">Arg</A>. The arguments can be send to the subroutine by reference or by value in
+different languages.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Getting_result_as_C_Arg_">Getting result as <A HREF="#item_Arg">Arg</A>
+
+</A></H2>
+Use <CODE>Tcl_ArgResult</CODE>. It is not guaranteed that result survives this operation, so the <A HREF="#item_Arg">Arg</A> you get should be the only mean to access the data from this moment on.
+After you use this <A HREF="#item_Arg">Arg</A>, you should free it with <CODE>freeProc</CODE>  <CODE>LANG_DYNAMIC</CODE> (you can do LangSet...() in between).
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

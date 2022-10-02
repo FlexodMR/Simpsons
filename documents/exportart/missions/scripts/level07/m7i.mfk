@@ -1,0 +1,157 @@
+SelectMission("m7");
+
+SetMissionResetPlayerInCar("m7_grampa_carstart");
+SetDynaLoadData("l7z3.p3d;l7r2.p3d;l7r3.p3d;");
+InitLevelPlayerVehicle("gramR_v","m7_grampa_carstart","OTHER");
+
+AddCollectibleStateProp("bombbarrel","m7_barrel", 2);
+
+//This is a forced car mission
+SetForcedCar();
+
+AddStage(0); 
+	RESET_TO_HERE();
+	SetStageMessageIndex(235);
+	SetHUDIcon( "pwrplant" );
+	AddObjective( "goto" );
+//		RemoveNPC( "grandpa" );
+		AddNPC( "grandpa", "m7_grampa_hide" );
+		AddStageVehicle("cBlbart","m7_blacksedan","NULL","Missions\level07\M7race.con");
+		SetDestination( "m7_race_start" );//<<- this should be m7_race_start
+	CloseObjective();
+	SetStageTime(90);//<<- this should be 90
+	AddCondition( "timeout" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "gramR_v" );
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(249);
+	SetHUDIcon( "sports_v" );
+	AddStageWaypoint( "m7_waypoint1" );
+	AddStageWaypoint( "m7_waypoint2" );
+	AddStageWaypoint( "m7_race_finish" );
+	ActivateVehicle( "cBlbart","NULL","race" );
+	AddObjective( "race" );
+		AddCollectible( "m7_race_finish", "finish_line");
+		SetCollectibleEffect("finish_line_col");
+	CloseObjective();
+	AddCondition( "position" );
+		SetConditionPosition(1);
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "gramR_v" );
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(221);
+	SetHUDIcon( "barrel" );
+	SetStageTime(60);
+	AddCondition( "timeout" );
+	AddObjective( "pickupitem" );
+		SetPickupTarget("bombbarrel");
+	CloseObjective();
+//	ShowStageComplete();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "gramR_v" );
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(202);
+	SetHUDIcon( "playgrou" );
+	AddStageVehicle("cBlbart","m7_blacksedan2","NULL","Missions\level07\M7race.con");
+	AddObjective( "goto" );
+		SetDestination( "m7_blacksedan2_trigger", "carsphere");
+	SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(60);
+	AddCondition( "timeout" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 1000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "gramR_v" );
+	CloseCondition();
+	AddCondition("keepbarrel", 1);
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(265);
+	SetHUDIcon( "sports_v" );
+	ActivateVehicle( "cBlbart","NULL","chase" );
+	AddObjective( "losetail" );
+		SetObjTargetVehicle( "cBlbart" );
+		SetObjDistance(150);
+	CloseObjective();
+	AddStageTime(40);// <<--- Adding stage time so not too make is so hard
+	AddCondition( "timeout" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 10000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "gramR_v" );
+	CloseCondition();
+	StageStartMusicEvent("L7_drama");
+	AddCondition("keepbarrel", 2);
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(202);
+	SetHUDIcon( "playgrou" );
+	AddObjective( "goto" );
+		SetDestination( "m2_playground", "carsphere");
+	SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(30); // setting stage time to make it hard
+	AddCondition( "timeout" );
+	CloseCondition();
+	AddCondition("outofvehicle");
+		SetCondTime( 1000 );
+	CloseCondition();
+	AddCondition( "damage" );
+		SetCondMinHealth( 0.0 );
+		SetCondTargetVehicle( "gramR_v" );
+	CloseCondition();
+	AddCondition("keepbarrel", 3);
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage("final");
+	SetStageMessageIndex(219);
+	SetHUDIcon( "ufo" );
+	AddObjective("destroyboss");
+		AddCondition("damage");
+		SetObjTargetBoss("Planet Express Ship");
+	CloseObjective();
+	AddCondition("keepbarrel", 4);
+	CloseCondition();
+	AddStageTime(10);
+	AddCondition( "timeout" );
+	CloseCondition();
+CloseStage();
+
+CloseMission();

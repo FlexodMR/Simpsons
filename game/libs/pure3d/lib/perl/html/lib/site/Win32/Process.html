@@ -1,0 +1,154 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Win32::Process - Create and manipulate processes.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#METHODS">METHODS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Win32::Process - Create and manipulate processes.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS_use_Win32_Process_use">SYNOPSIS
+	use Win32::Process;
+	use Win32;        
+	
+	sub ErrorReport{
+		print Win32::FormatMessage( Win32::GetLastError() );
+	}
+	
+	Win32::Process::Create($ProcessObj,
+				"D:\\winnt35\\system32\\notepad.exe",
+				"notepad temp.txt",
+				0,
+				NORMAL_PRIORITY_CLASS,
+				".")|| die ErrorReport();
+	
+	$ProcessObj->Suspend();
+	$ProcessObj->Resume();
+	$ProcessObj->Wait(INFINITE);
+
+</A></H1>
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module allows for control of processes in Perl.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="METHODS">METHODS
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_Win32">Win32::Process::Create($obj,$appname,$cmdline,$iflags,$cflags,$curdir)
+
+</A></STRONG><DD>
+Creates a new process.
+
+
+<P>
+
+<PRE>    Args:
+</PRE>
+
+<P>
+
+<PRE>        $obj            container for process object
+        $appname        full path name of executable module
+        $cmdline        command line args
+        $iflags         flag: inherit calling processes handles or not
+        $cflags         flags for creation (see exported vars below)
+        $curdir         working dir of new process
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__ProcessObj_Suspend_">$ProcessObj->Suspend()
+
+</A></STRONG><DD>
+Suspend the process associated with the $ProcessObj.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__ProcessObj_Resume_">$ProcessObj->Resume()
+
+</A></STRONG><DD>
+Resume a suspended process.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__ProcessObj_Kill_">$ProcessObj->Kill( $ExitCode )
+
+</A></STRONG><DD>
+Kill the associated process, have it die with exit code $ExitCode.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__ProcessObj_GetPriorityClass_c">$ProcessObj->GetPriorityClass($class)
+
+</A></STRONG><DD>
+Get the priority class of the process.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__ProcessObj_SetPriorityClass_">$ProcessObj->SetPriorityClass( $class )
+
+</A></STRONG><DD>
+Set the priority class of the process (see exported values below for
+options).
+
+
+<P>
+
+<DT><STRONG><A NAME="item__ProcessObj_GetExitCode_">$ProcessObj->GetExitCode( $ExitCode )
+
+</A></STRONG><DD>
+Retrieve the exitcode of the process.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__ProcessObj_Wait_Timeout_">$ProcessObj->Wait($Timeout)
+
+</A></STRONG><DD>
+Wait for the process to die. forever = 
+<FONT SIZE=-1>INFINITE</FONT>
+
+
+<P>
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

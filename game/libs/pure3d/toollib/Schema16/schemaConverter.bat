@@ -1,0 +1,1 @@
+for %%f in (*.sc) do perl ..\chunks16\jeeves\jeeves -I ..\chunks16\jeeves -t chunk_converter.tpl -s Chunk_Schema %%f -o ..\newSchema\%%f

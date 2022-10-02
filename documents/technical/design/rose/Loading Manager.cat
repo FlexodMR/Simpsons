@@ -1,0 +1,599 @@
+
+(object Petal
+    version    	44
+    _written   	"Rose 7.0.9420.17"
+    charSet    	0)
+
+(object Class_Category "Loading Manager"
+    is_unit    	TRUE
+    is_loaded  	TRUE
+    attributes 	(list Attribute_Set
+	(object Attribute
+	    tool       	"sc"
+	    name       	"SourceControlSpec"
+	    value      	"-- using Perforce --"))
+    quid       	"3C893055005E"
+    exportControl 	"Public"
+    logical_models 	(list unit_reference_list
+	(object Class "LoadingManager"
+	    quid       	"3D0E9BAE0112"
+	    documentation 	"Interface for components interested in loading stuff (not streamed data, though)."
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3D0E9BD5021C"
+		    supplier   	"Logical View::Model::Loading Manager::LoadFileCallback"
+		    quidu      	"3D0E9BC90345"))
+	    operations 	(list Operations
+		(object Operation "AddRequest"
+		    quid       	"3D0E9E2A00F3"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "ProcessRequests"
+		    quid       	"3D0E9E2E00E3"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)
+		(object Operation "LoadSync"
+		    quid       	"3D0E9E390335"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "LoadFileCallback"
+	    quid       	"3D0E9BC90345"
+	    operations 	(list Operations
+		(object Operation "OnLoadFileComplete"
+		    quid       	"3D0E9BF30394"
+		    parameters 	(list Parameters
+			(object Parameter "pUserData"
+			    quid       	"3D0E9C250105"
+			    type       	"void*"))
+		    result     	"void"
+		    concurrency 	"Sequential"
+		    opExportControl 	"Public"
+		    uid        	0)))
+	(object Class "FileHandler"
+	    quid       	"3D0E9C61002C")
+	(object Class "FileHandlerFactory"
+	    quid       	"3D0E9CA300F9")
+	(object Class "ChoreoFileHandler"
+	    quid       	"3D0E9CE00158"
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3D0E9D410189"
+		    supplier   	"Logical View::Model::Loading Manager::FileHandler"
+		    quidu      	"3D0E9C61002C")
+		(object Inheritance_Relationship
+		    quid       	"3D0E9D7003CD"
+		    supplier   	"Logical View::Model::Loading Manager::IRadFileCompletionCallback"
+		    quidu      	"3D0E9D4E0090")))
+	(object Class "ConsoleFileHandler"
+	    quid       	"3D0E9CEB010A"
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3D0E9D450189"
+		    supplier   	"Logical View::Model::Loading Manager::FileHandler"
+		    quidu      	"3D0E9C61002C")
+		(object Inheritance_Relationship
+		    quid       	"3D0E9D720350"
+		    supplier   	"Logical View::Model::Loading Manager::IRadFileCompletionCallback"
+		    quidu      	"3D0E9D4E0090")))
+	(object Class "LocatorLoader"
+	    quid       	"3D0E9CFB011A")
+	(object Class "P3DFileHandler"
+	    quid       	"3D0E9D2D03BB"
+	    superclasses 	(list inheritance_relationship_list
+		(object Inheritance_Relationship
+		    quid       	"3D0E9D43012C"
+		    supplier   	"Logical View::Model::Loading Manager::FileHandler"
+		    quidu      	"3D0E9C61002C")
+		(object Inheritance_Relationship
+		    quid       	"3D0E9DC00286"
+		    supplier   	"Logical View::Model::Loading Manager::IRadFileCompletionCallback"
+		    quidu      	"3D0E9D4E0090")))
+	(object Class "IRadFileCompletionCallback"
+	    quid       	"3D0E9D4E0090")
+	(object Association "$UNNAMED$0"
+	    quid       	"3D0E9C6A028D"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$1"
+		    quid       	"3D0E9C6B004B"
+		    supplier   	"Logical View::Model::Loading Manager::FileHandler"
+		    quidu      	"3D0E9C61002C"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$2"
+		    quid       	"3D0E9C6B005B"
+		    supplier   	"Logical View::Model::Loading Manager::LoadingManager"
+		    quidu      	"3D0E9BAE0112"
+		    is_aggregate 	TRUE)))
+	(object Association "$UNNAMED$3"
+	    quid       	"3D0E9CAB007C"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$4"
+		    quid       	"3D0E9CAB0185"
+		    supplier   	"Logical View::Model::Loading Manager::FileHandlerFactory"
+		    quidu      	"3D0E9CA300F9"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$5"
+		    quid       	"3D0E9CAB0186"
+		    supplier   	"Logical View::Model::Loading Manager::LoadingManager"
+		    quidu      	"3D0E9BAE0112")))
+	(object Association "$UNNAMED$6"
+	    quid       	"3D0E9CB50109"
+	    roles      	(list role_list
+		(object Role "$UNNAMED$7"
+		    quid       	"3D0E9CB50280"
+		    supplier   	"Logical View::Model::Loading Manager::FileHandler"
+		    quidu      	"3D0E9C61002C"
+		    is_navigable 	TRUE)
+		(object Role "$UNNAMED$8"
+		    quid       	"3D0E9CB5028F"
+		    supplier   	"Logical View::Model::Loading Manager::FileHandlerFactory"
+		    quidu      	"3D0E9CA300F9"))))
+    logical_presentations 	(list unit_reference_list
+	(object ClassDiagram "Main"
+	    quid       	"3D0E9BAB00E3"
+	    title      	"Main"
+	    zoom       	100
+	    max_height 	28350
+	    max_width  	21600
+	    origin_x   	0
+	    origin_y   	0
+	    items      	(list diagram_item_list
+		(object ClassView "Class" "Logical View::Model::Loading Manager::LoadFileCallback" @1
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1136, 288)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@1
+			location   	(908, 182)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	456
+			justify    	0
+			label      	"LoadFileCallback")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D0E9BC90345"
+		    compartment 	(object Compartment
+			Parent_View 	@1
+			location   	(908, 243)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			icon_style 	"Icon"
+			fill_color 	13434879
+			anchor     	2
+			nlines     	2
+			max_width  	453)
+		    width      	474
+		    height     	236
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Loading Manager::LoadingManager" @2
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1136, 656)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@2
+			location   	(936, 500)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	400
+			justify    	0
+			label      	"LoadingManager")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D0E9BAE0112"
+		    compartment 	(object Compartment
+			Parent_View 	@2
+			location   	(936, 561)
+			font       	(object Font
+			    size       	10
+			    face       	"Arial"
+			    bold       	FALSE
+			    italics    	FALSE
+			    underline  	FALSE
+			    strike     	FALSE
+			    color      	0
+			    default_color 	TRUE)
+			icon_style 	"Icon"
+			fill_color 	13434879
+			anchor     	2
+			nlines     	4
+			max_width  	397)
+		    width      	418
+		    height     	336
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @3
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9BD5021C"
+		    client     	@2
+		    supplier   	@1
+		    line_style 	0)
+		(object ClassView "Class" "Logical View::Model::Loading Manager::FileHandlerFactory" @4
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1680, 656)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@4
+			location   	(1576, 580)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	208
+			justify    	0
+			label      	"FileHandlerFactory")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D0E9CA300F9"
+		    width      	226
+		    height     	176
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$3" @5
+		    location   	(1455, 656)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9CAB007C"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$4" @6
+			    Parent_View 	@5
+			    location   	(319, 0)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3D0E9CAB0185"
+			    client     	@5
+			    supplier   	@4
+			    line_style 	0)
+			(object RoleView "$UNNAMED$5" @7
+			    Parent_View 	@5
+			    location   	(319, 0)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3D0E9CAB0186"
+			    client     	@5
+			    supplier   	@2
+			    line_style 	0)))
+		(object ClassView "Class" "Logical View::Model::Loading Manager::FileHandler" @8
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1136, 1072)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@8
+			location   	(1015, 1021)
+			fill_color 	13434879
+			nlines     	1
+			max_width  	242
+			justify    	0
+			label      	"FileHandler")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D0E9C61002C"
+		    width      	260
+		    height     	126
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object AssociationViewNew "$UNNAMED$0" @9
+		    location   	(1136, 916)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9C6A028D"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$1" @10
+			    Parent_View 	@9
+			    location   	(0, 260)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3D0E9C6B004B"
+			    client     	@9
+			    supplier   	@8
+			    line_style 	0)
+			(object RoleView "$UNNAMED$2" @11
+			    Parent_View 	@9
+			    location   	(0, 260)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3D0E9C6B005B"
+			    client     	@9
+			    supplier   	@2
+			    line_style 	0)))
+		(object AssociationViewNew "$UNNAMED$6" @12
+		    location   	(1392, 875)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9CB50109"
+		    roleview_list 	(list RoleViews
+			(object RoleView "$UNNAMED$7" @13
+			    Parent_View 	@12
+			    location   	(-288, 219)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3D0E9CB50280"
+			    client     	@12
+			    supplier   	@8
+			    line_style 	0)
+			(object RoleView "$UNNAMED$8" @14
+			    Parent_View 	@12
+			    location   	(-288, 219)
+			    stereotype 	TRUE
+			    line_color 	3342489
+			    quidu      	"3D0E9CB5028F"
+			    client     	@12
+			    supplier   	@4
+			    line_style 	0)))
+		(object ClassView "Class" "Logical View::Model::Loading Manager::ChoreoFileHandler" @15
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(688, 1376)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@15
+			location   	(581, 1300)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	214
+			justify    	0
+			label      	"ChoreoFileHandler")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D0E9CE00158"
+		    width      	232
+		    height     	176
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Loading Manager::ConsoleFileHandler" @16
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1520, 1392)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@16
+			location   	(1411, 1316)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	218
+			justify    	0
+			label      	"ConsoleFileHandler")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D0E9CEB010A"
+		    width      	236
+		    height     	176
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Loading Manager::LocatorLoader" @17
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(256, 672)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@17
+			location   	(118, 594)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	276
+			justify    	0
+			label      	"LocatorLoader")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D0E9CFB011A"
+		    width      	294
+		    height     	181
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object ClassView "Class" "Logical View::Model::Loading Manager::P3DFileHandler" @18
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1136, 1728)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@18
+			location   	(986, 1653)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	301
+			justify    	0
+			label      	"P3DFileHandler")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D0E9D2D03BB"
+		    width      	319
+		    height     	175
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @19
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9D410189"
+		    client     	@15
+		    supplier   	@8
+		    line_style 	0)
+		(object InheritView "" @20
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9D450189"
+		    client     	@16
+		    supplier   	@8
+		    line_style 	0)
+		(object ClassView "Class" "Logical View::Model::Loading Manager::IRadFileCompletionCallback" @21
+		    ShowCompartmentStereotypes 	TRUE
+		    IncludeAttribute 	TRUE
+		    IncludeOperation 	TRUE
+		    location   	(1136, 1376)
+		    font       	(object Font
+			size       	10
+			face       	"Arial"
+			bold       	FALSE
+			italics    	FALSE
+			underline  	FALSE
+			strike     	FALSE
+			color      	0
+			default_color 	TRUE)
+		    label      	(object ItemLabel
+			Parent_View 	@21
+			location   	(992, 1300)
+			fill_color 	13434879
+			nlines     	2
+			max_width  	288
+			justify    	0
+			label      	"IRadFileCompletionCallback")
+		    icon_style 	"Icon"
+		    line_color 	3342489
+		    fill_color 	13434879
+		    quidu      	"3D0E9D4E0090"
+		    width      	306
+		    height     	176
+		    annotation 	8
+		    autoResize 	TRUE)
+		(object InheritView "" @22
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9D7003CD"
+		    client     	@15
+		    supplier   	@21
+		    line_style 	0)
+		(object InheritView "" @23
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9D720350"
+		    client     	@16
+		    supplier   	@21
+		    line_style 	0)
+		(object InheritView "" @24
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9D43012C"
+		    client     	@18
+		    supplier   	@8
+		    vertices   	(list Points
+			(1295, 1727)
+			(1744, 1727)
+			(1744, 1071)
+			(1266, 1071))
+		    line_style 	0)
+		(object InheritView "" @25
+		    stereotype 	TRUE
+		    line_color 	3342489
+		    quidu      	"3D0E9DC00286"
+		    client     	@18
+		    supplier   	@21
+		    line_style 	0)))))

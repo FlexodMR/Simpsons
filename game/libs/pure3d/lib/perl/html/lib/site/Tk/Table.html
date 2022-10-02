@@ -1,0 +1,167 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tk::Table - Scrollable 2 dimensional table of Tk widgets
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION </A>
+	<LI><A HREF="#BUGS_Snags_Possible_enhancem">BUGS / Snags / Possible enhancements</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tk::Table - Scrollable 2 dimensional table of Tk widgets
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>  use Tk::Table;
+</PRE>
+
+<P>
+
+<PRE>  $table = $parent-&gt;Table(-rows =&gt; number,
+                          -columns =&gt; number,
+                          -scrollbars =&gt; anchor,
+                          -fixedrows =&gt; number,
+                          -fixedcolumns =&gt; number,
+                          -takefocus =&gt; boolean);
+</PRE>
+
+<P>
+
+<PRE>  $widget = $table-&gt;Button(...);
+</PRE>
+
+<P>
+
+<PRE>  $old = $table-&gt;put($row,$col,$widget);
+  $old = $table-&gt;put($row,$col,&quot;Text&quot;);  # simple Label 
+  $widget = $table-&gt;get($row,$col);
+</PRE>
+
+<P>
+
+<PRE>  $cols = $table-&gt;totalColumns;
+  $rows = $table-&gt;totalRows;
+</PRE>
+
+<P>
+
+<PRE>  $table-&gt;see($widget);
+  $table-&gt;see($row,$col);
+</PRE>
+
+<P>
+
+<PRE>  ($row,$col) = $table-&gt;Posn($widget);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION 
+
+</A></H1>
+Tk::Table is an all-perl widget/geometry manager which allows a two
+dimensional table of arbitary perl/Tk widgets to be displayed.
+
+
+<P>
+
+Entries in the Table are simply ordinary perl/Tk widgets. They should be
+created with the Table as their parent. Widgets are positioned in the table
+using:
+
+
+<P>
+
+<PRE> $table-&gt;put($row,$col,$widget)
+</PRE>
+
+<P>
+
+All the widgets in each column are set to the same width - the requested
+width of the widest widget in the column. Likewise, all the widgets in each
+row are set to the same height - the requested height of the tallest widget
+in the column.             
+
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> number of rows and/or columns can be marked as
+'fixed' - and so can serve as 'headings' for the remainder the rows which
+are scrollable.
+
+
+<P>
+
+The requested size of the table as a whole is such that the number of rows
+specified by -rows (default 10), and number of columns specified by
+-columns (default 10) can be displayed.
+
+
+<P>
+
+If the Table is told it can take the keyboard focus then cursor and scroll
+keys scroll the displayed widgets.
+
+
+<P>
+
+The Table will create and manage its own scrollbars if requested via
+-scrollbars.
+
+
+<P>
+
+The Tk::Table widget is derived from a Tk::Frame, so inherits all its
+configure options.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS_Snags_Possible_enhancem">BUGS / Snags / Possible enhancements
+
+</A></H1>
+<UL>
+<LI><STRONG></STRONG>
+Very large Tables consume a lot of 
+<FONT SIZE=-1>X</FONT> windows
+
+
+<P>
+
+<LI><STRONG></STRONG>
+No equivalent of pack's -anchor/-pad etc. options 
+
+
+<P>
+
+</UL>
+</DL>
+    </BODY>
+
+    </HTML>

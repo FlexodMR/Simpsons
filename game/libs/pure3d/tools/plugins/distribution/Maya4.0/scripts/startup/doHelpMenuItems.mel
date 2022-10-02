@@ -1,0 +1,133 @@
+// Copyright (C) 1997-2000 Alias|Wavefront,
+// a division of Silicon Graphics Limited.
+//
+// The information in this file is provided for the exclusive use of the
+// licensees of Alias|Wavefront.  Such users have the right to use, modify,
+// and incorporate this code into other products for purposes authorized
+// by the Alias|Wavefront license agreement, without fee.
+//
+// ALIAS|WAVEFRONT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+// INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+// EVENT SHALL ALIAS|WAVEFRONT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+// DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+// TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+//
+//  Alias|Wavefront Script File
+//  MODIFY THIS AT YOUR OWN RISK
+//
+//  Creation Date:  Nov 25 1998
+// 
+//  Description:
+//      This procedure creates the help menu items.
+//
+//	Arguments:
+//		$object - is the name of the panel or window.
+//		$menuParent - is the parent window.
+//
+
+
+global proc setPopUpHelpMode ( int $newMode)
+//
+//	Description:
+//		Simply set the state of the pop up help mode and
+// 		store in an optionVar for preference persistancy.
+//
+{
+	help -popupMode $newMode;
+	optionVar -iv popUpHelpMode $newMode;
+}
+
+global proc setHelpMenuState ( string $menu )
+//
+//	Description simply set the state of this popup menu
+//
+{
+	int $state = `help -q -popupMode`;
+	menuItem -e -checkBox $state ($menu + "|popUpHelpState");
+}
+
+global proc doHelpMenuItems (string $object, string $menuParent) 
+{
+	global string $gMainHelpMenu;
+
+	int $numOfMenuItemsBefore;
+	int $numOfMenuItemsAfter;
+
+	menuItem -label "Product Information..."
+		-annotation "Product Information: Displays version number and other product information for Maya"
+		-enableCommandRepeat false
+		-command "ProductInformation";
+
+//	Not written yet
+//	menuItem -label "System Information..." ;
+
+// Pure3D Artist Guide
+	menuItem -divider true; 
+      menuItem -label "Pure3D Help..." 
+		-annotation "Radical Artist Guide: Install instructions and help for all Radical artists tools."
+		-command "doBrowserHelp { \"UserAbsolute\" , \"T:/Pure3d/Guides/Artist/index_art.htm\" };";
+
+	menuItem -divider true; 
+	menuItem -label "Library..." 
+		-annotation "Library: Opens online table of contents in HTML browser"
+		-enableCommandRepeat false
+		-command "Help";
+	menuItem -label "Global Index..." 
+		-annotation "Global Index: Opens online index in HTML browser"
+		-enableCommandRepeat false
+		-command "doBrowserHelp { \"UserRelative\" , \"GlobalIndex.html\" };";
+	menuItem -label "Search..." 
+		-annotation "Search: Opens online search in HTML browser"
+		-enableCommandRepeat false
+		-command "doBrowserHelp { \"UserRelative\" , \"jobjects/srchapp.htm\" };";
+
+	// Only add this one to the main window
+	if ($menuParent == "MayaWindow") {
+		menuItem -divider true; 
+		menuItem -label "Find Menu..." 
+			-annotation "Find Menu: Searches for words in the main menus"
+			-enableCommandRepeat false
+			-command "findMenuItem";
+	}
+
+	menuItem -divider true; 
+	menuItem -label "Popup Help" 
+		-annotation "Popup Help: Toggles the captioned \"tips\" that display in Maya"
+		-enable true
+		-checkBox (`optionVar -q popUpHelpMode`)
+		-enableCommandRepeat false
+		-command "setPopUpHelpMode #1"
+		popUpHelpState;
+
+//	Not implemented yet
+//	menuItem -label "Click Help";
+
+	//	Context sensitive menu Items relative to each window.
+	//
+	menuItem -divider true; 
+	$numOfMenuItemsBefore = `menu -query -numberOfItems HelpMenu`;
+	doContextHelpProc $object $menuParent;
+	$numOfMenuItemsAfter = `menu -query -numberOfItems HelpMenu`;
+
+	if ($numOfMenuItemsBefore != $numOfMenuItemsAfter)
+	{
+		menuItem -divider true; 
+	}
+
+//	Not written yet
+//	menuItem -label "Help on Help...";
+
+	menuItem -label "MEL Command Reference..."
+		-annotation "MEL Command Reference: Opens MEL command listing in HTML browser"
+		-enableCommandRepeat false
+		-command "doBrowserHelp { \"UserRelative\" , \"Commands/index.html\" };";
+
+	menuItem -label "DG Node Reference..."
+		-annotation "DG Node Reference: Opens DG node listing in HTML browser"
+		-enableCommandRepeat false
+		-command "doBrowserHelp { \"UserRelative\" , \"Nodes/index.html\" };";
+
+}	

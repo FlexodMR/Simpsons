@@ -1,0 +1,300 @@
+SelectMission("m5");
+
+SetMissionResetPlayerInCar("m5_carstart");
+SetDynaLoadData("l4z2.p3d;l4r1.p3d;l4r2.p3d;");
+
+UsePedGroup(1);
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	RESET_TO_HERE();
+	SetStageMessageIndex(30);
+	SetHUDIcon( "playgrou" );
+	AddObjective( "goto" );
+		AddNPC("nelson", "m5_bullies_place");
+		//AddNPC("kearney", "m5_kearney" );
+		//AddNPC("jimbo", m5_jimbo" );
+		SetDestination( "m5_school", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(30);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	//ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(228);
+	SetHUDIcon( "nelson" );
+	AddObjective("talkto");
+		AddNPC("nelson", "m5_bullies_place");
+		SetTalkToTarget("nelson", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shaking_fist" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		SetConversationCam( 3, "pc_far" );
+		SetCamBestSide("m5_jimbo");
+		SetDialogueInfo("marge","nelson","hooligan",0);
+		SetDialoguePositions("m5_bullies_place","m5_kearney","m5_blacksedan_carstart");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(12);
+	AddObjective("getin");
+		SetObjTargetVehicle("current");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(232);
+	SetHUDIcon( "bsedan_v" );
+	AddObjective("goto", "neither");
+		AddStageVehicle("cSedan","m5_blacksedan_carstart","NULL","Missions\level04\M5chase.con");
+		SetDestination( "m5_sedan_spawn", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	//ShowStageComplete();
+CloseStage();
+
+AddStage(1);
+	SetStageMessageIndex(135);
+	SetHUDIcon( "pills" );
+	ActivateVehicle("cSedan","NULL","evade");
+	AddStageWaypoint( "m5_blacksedan_path7" );
+	AddStageWaypoint( "m5_blacksedan_path9" );
+	AddStageWaypoint( "m5_blacksedan_path2" );
+	AddStageWaypoint( "m5_blacksedan_path9a" );
+	AddStageWaypoint( "m5_blacksedan_path11" );
+	AddStageWaypoint( "m5_blacksedan_path11a" );
+	AddStageWaypoint( "m5_blacksedan_path11b" );
+	AddStageWaypoint( "m5_blacksedan_path3" );
+	AddStageWaypoint( "m5_blacksedan_path10" );
+	AddStageWaypoint( "m5_blacksedan_path1" );
+//	AddStageWaypoint( "m5_blacksedan_path9" );
+//	AddStageWaypoint( "m5_blacksedan_path4" );
+//	AddStageWaypoint( "m5_blacksedan_path14" );
+//	AddStageWaypoint( "m5_blacksedan_path15" );
+//	AddStageWaypoint( "m5_blacksedan_path18" );
+//	AddStageWaypoint( "m5_blacksedan_path19" );
+	AddObjective("dump");
+		SetObjTargetVehicle("cSedan");
+		AddCollectible("m5_collectible1","pills");
+		AddCollectible("m5_collectible2","pills");
+		AddCollectible("m5_collectible3","pills");
+		AddCollectible("m5_collectible4","pills");
+		AddCollectible("m5_collectible5","pills");
+		AddCollectible("m5_collectible6","pills");
+		AddCollectible("m5_collectible7","pills");
+		AddCollectible("m5_collectible8","pills");
+		AddCollectible("m5_collectible9","pills");
+		AddCollectible("m5_collectible10","pills");
+		BindCollectibleTo(0, 0);
+		BindCollectibleTo(1, 1);
+		BindCollectibleTo(2, 2);
+		BindCollectibleTo(3, 3);
+		BindCollectibleTo(4, 4);
+		BindCollectibleTo(5, 5);
+		BindCollectibleTo(6, 6);
+		BindCollectibleTo(7, 7);
+		BindCollectibleTo(8, 8);
+		BindCollectibleTo(9, 9);
+	CloseObjective();
+	AddCondition("followdistance");
+		SetFollowDistances(0, 275);
+		SetCondTargetVehicle("cSedan");
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(229);
+	SetHUDIcon( "retire" );
+	AddObjective( "goto" );
+		AddStageVehicle("cSedan","m5_blacksedan2_carstart","NULL","Missions\level04\M5chase.con");
+		SetDestination( "m5_castle_fake", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(90);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(178);
+	SetHUDIcon( "bsedan_v" );
+	ActivateVehicle( "cSedan","NULL","chase" );
+	AddObjective( "losetail" );
+		SetObjTargetVehicle( "cSedan" );
+		SetObjDistance(150);
+	CloseObjective();
+	SetStageTime(90);
+	AddCondition( "timeout" );
+	CloseCondition();
+	StageStartMusicEvent("L4_drama");
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(229);
+	SetHUDIcon( "retire" );
+	AddObjective( "goto" );
+		AddNPC("grandpa", "m5_grampa_sd");
+		SetDestination( "m5_castle", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	SetStageTime(150);
+	AddCondition("timeout");
+		//SetHitNRun();
+	CloseCondition();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(25);
+	SetStageMessageIndex(230);
+	SetHUDIcon( "grampa" );
+	AddObjective("talkto");
+		AddNPC("grandpa", "m5_grampa_sd"); 
+		SetTalkToTarget("grandpa", 0, 0); 
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_far" );
+		SetConversationCam( 2, "pc_far" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_scratch_head" );
+		SetConversationCam( 3, "pc_far" );
+		SetCamBestSide("m5_bestside2");
+		SetDialogueInfo("marge","grandpa","medicine",0);
+		SetDialoguePositions("m5_marge_start","m5_grampa_sd","m5_carstart");
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(131);
+	SetHUDIcon( "kwike" );
+	//SetStageTime(30);
+	//AddCondition("timeout");
+		//SetHitNRun();
+	//CloseCondition();
+	AddObjective( "goto" );
+		SetDestination( "m5_kwik", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	//ShowStageComplete();
+CloseStage();
+
+AddStage(1);
+	SetStageMessageIndex(102);
+	SetHUDIcon( "kwike" );
+	AddObjective("interior");
+		SetDestination("KwikEMart", "kwik_mission_doorstar"); // use name of interiors entry locator
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(231);
+	SetHUDIcon( "caffeine" );
+	AddObjective( "goto" );
+		TurnGotoDialogOff();
+		AddNPC( "apu", "m5_apu", "KwikEMart" );
+		SetDestination( "m5_caffeine", "i_cpill" );
+	CloseObjective();
+	ShowStageComplete();
+CloseStage();
+
+AddStage(0);
+	SetStageMessageIndex(229);
+	SetHUDIcon( "retire" );
+	//SetStageTime(30);
+	//AddCondition("timeout");
+		//SetHitNRun();
+	//CloseCondition();
+	AddObjective( "goto" );
+		AddNPC("grandpa", "m5_grampa_sd");
+		SetDestination( "m5_castle", "carsphere");
+		SetCollectibleEffect("wrench_collect");
+	CloseObjective();
+	//ShowStageComplete();
+CloseStage();
+
+AddStage(25);
+	SetStageMessageIndex(254);
+	SetHUDIcon( "grampa" );
+	AddObjective("talkto");
+		AddNPC("grandpa", "m5_grampa_sd"); 
+		SetTalkToTarget("grandpa", 0, 0); 
+	CloseObjective();
+CloseStage();
+
+//AddStage(0);
+	//AddObjective("dialogue");
+		//AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		//AmbientAnimationRandomize( 0, 0 );
+		//AddAmbientNpcAnimation( "none" );
+		//AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		//AddAmbientNpcAnimation( "none" );
+		//AddAmbientPcAnimation( "none" );
+		//AddAmbientPcAnimation( "none" );
+		//AddAmbientPcAnimation( "dialogue_scratch_head" );
+		//SetConversationCam( 3, "pc_far" );
+		////SetCamBestSide("bestside_m1");
+		//SetDialogueInfo("marge","grandpa","medicine",0);
+		//SetDialoguePositions("m5_marge_start","m5_grampa_sd","m5_carstart");
+	//CloseObjective();
+//CloseStage();
+
+AddStage(1);
+	AddObjective("fmv");
+		SetFMVInfo("fmv4.rmv");
+	CloseObjective();
+CloseStage();
+
+AddStage(final);
+	AddObjective("timer");
+		AddNPC("grandpa", "m5_bullies_place");
+		SetDurationTime(1);
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

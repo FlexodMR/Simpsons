@@ -1,0 +1,180 @@
+// Copyright (C) 2001 Radical Entertainment
+// 
+// Name:   p3dDeformDebug.mel
+// Author: Pamela Chow
+//
+// Description: Collection of print procedures used for debugging melscripts
+// These procedures are enabled when the "Debug 1" is added to the end of
+// the settings in the p3dDeformerSettingsv16.txt file and loading
+// the p3dDeformer.mll or by calling p3dDeformDebug()
+//
+// Note: the MAYA API counterpart of these debugging functions are defined in
+// utility.hpp.
+//
+// Contents:
+// global proc p3dDeformDebug()
+// global proc p3dDeformDebugOff()
+// global proc p3dDeformDebugTrace(string $description)
+// global proc p3dDeformDebugStr(string $description, string $Var)
+// global proc p3dDeformDebugFloat(string $description, float $Var)
+// global proc p3dDeformDebugInt(string $description, int $Var)
+// global proc p3dDeformDebugIntArray(string $description, int $integerList[])
+// global proc p3dDeformDebugFloatArray(string $description, float $floatList[])
+// global proc p3dDeformDebugStrArray(string $description, string $strList[])
+// global proc p3dDebugPrintNameCommands()
+// global proc p3dDebugDeleteNameCommands(int $first, int $last)
+
+global int $globalDebugState = 0;
+
+
+global proc p3dDeformDebug()
+{
+	global int $globalDebugState;
+	$globalDebugState = 1;
+	p3dDeformDebugTrace ("DEBUG MODE ENABLED\n");
+}
+
+global proc p3dDeformDebugOff()
+{
+	global int $globalDebugState;
+	p3dDeformDebugTrace ("DEBUG MODE DISABLED\n");
+	$globalDebugState = 0;	
+}
+
+global proc p3dDeformDebugTrace(string $description)
+{
+	global int $globalDebugState;
+	if($globalDebugState) print ("\n" + $description + "\n");
+}
+
+global proc p3dDeformDebugStr(string $description, string $Var)
+{
+	global int $globalDebugState;
+	if($globalDebugState)
+	{
+		print ($description + ": ");
+		print ($Var + "\n");
+	}
+}
+
+
+global proc p3dDeformDebugFloat(string $description, float $Var)
+{
+	global int $globalDebugState;
+	if($globalDebugState)
+	{
+		print ($description + ": ");
+		string $varstr;
+		$varstr = $Var;
+		print ($Var + "\n");
+	}
+}
+
+global proc p3dDeformDebugInt(string $description, int $Var)
+{
+	global int $globalDebugState;
+	if($globalDebugState)
+	{
+		print ($description + ": ");
+		string $varstr;
+		$varstr = $Var;
+		print ($Var + "\n");
+	}
+}
+
+global proc p3dDeformDebugIntArray(string $description, int $integerList[])
+{
+	global int $globalDebugState;
+	if($globalDebugState)
+	{
+		print ($description + ": ");
+		for($integer in $integerList)
+		{
+			string $varstr;
+			$varstr = $integer;
+			print ($integer + ",\n");
+		}
+	}
+}
+
+global proc p3dDeformDebugFloatArray(string $description, float $floatList[])
+{
+	global int $globalDebugState;
+	if($globalDebugState)
+	{
+		print ($description + ": ");
+		for($float in $floatList)
+		{
+			string $varstr;
+			$varstr = $float;
+			print ($float + ",\n");
+		}
+	}
+}
+
+
+
+global proc p3dDeformDebugStrArray(string $description, string $strList[])
+{
+	global int $globalDebugState;
+	if($globalDebugState)
+	{
+		print ($description + ": ");
+		for($str in $strList)
+			print ($str + ",\n");
+	}
+}
+
+/*************************************************************************
+// Description:	Prints a list of nameCommands and the hotkeys they are mapped
+// to
+//
+// Parameters:
+//
+// Returns:
+//
+***************************************************************************/
+global proc p3dDebugPrintNameCommands()
+{
+    //	Print out all the names of the named command objects and the
+    //	hotkey attached to them.
+    //
+    int $index, $count = `assignCommand -query -numElements`;
+    string $keyString[];
+    print ("There are " + $count + " named command objects.\n");
+    for ($index = 1; $index <= $count; $index++) {
+    	print (`assignCommand -query -name $index` + " (");
+    	$keyString = `assignCommand -query -keyString $index`;
+    	if (0 < size($keyString)) {
+    		if ("1" == $keyString[2]) {
+    			print ("Ctrl+");
+    		}
+    		if ("1" == $keyString[1]) {
+    			print ("Alt+");
+    		}
+    		print ($keyString[0]);
+    		if ("1" == $keyString[3]) {
+    			print (" Release");
+    		}
+    	}
+    	print (")\n");
+    }
+}
+
+
+/*************************************************************************
+// Description:	Use to delete selected name commands. Name commands are
+// 1-based indexed.
+//
+// Parameters: $first, $last indexes of specifying a range of name commands to delete
+//
+// Returns:
+//
+***************************************************************************/
+
+global proc p3dDebugDeleteNameCommands(int $first, int $last)
+{
+   int $i = $first;
+   for($i; $i <= $last; $i++)
+    assignCommand -e -delete $i;
+}

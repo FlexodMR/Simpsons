@@ -1,0 +1,67 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>FileCache - keep more files open than the system permits
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+FileCache - keep more files open than the system permits
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    cacheout $path;
+    print $path @data;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <CODE>cacheout</CODE> function will make sure that there's a filehandle open for writing
+available as the pathname you give it. It automatically closes and re-opens
+files if you exceed your system file descriptor maximum.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+<EM>sys/param.h</EM> lies with its <CODE>NOFILE</CODE> define on some systems, so you may have to set $cacheout::maxopen yourself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,794 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>String::Approx - match and substitute approximately (aka fuzzy matching)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#The_default_approximateness">The default approximateness</A>
+		<LI><A HREF="#amatch">amatch</A>
+		<LI><A HREF="#asubstitute">asubstitute</A>
+		<LI><A HREF="#Modifiers">Modifiers</A>
+	</UL>
+
+	<LI><A HREF="#EXAMPLES">EXAMPLES</A>
+	<UL>
+
+		<LI><A HREF="#Matching_from_the_C_">Matching from the <CODE>$_</CODE></A>
+		<LI><A HREF="#Matching_from_a_list">Matching from a list</A>
+	</UL>
+
+	<LI><A HREF="#ERROR_MESSAGES">ERROR MESSAGES</A>
+	<LI><A HREF="#VERSION">VERSION</A>
+	<LI><A HREF="#LIMITATIONS">LIMITATIONS</A>
+	<UL>
+
+		<LI><A HREF="#Fixed_pattern">Fixed pattern</A>
+		<LI><A HREF="#Pattern_length">Pattern length</A>
+		<LI><A HREF="#Speed">Speed</A>
+		<LI><A HREF="#Incompatibilities_with_C_String_">Incompatibilities with <CODE>String::Approx</CODE> <EM>v1.*</EM></A>
+	</UL>
+
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#ACKNOWLEDGEMENTS">ACKNOWLEDGEMENTS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+String::Approx - match and substitute approximately (aka fuzzy matching)
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>        use String::Approx qw(amatch asubstitute);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<STRONG>Approximate</STRONG> is defined here as <EM>k-differences</EM>. One <EM>difference</EM>
+is an insertion, a deletion, or a substitution of one character. The <EM>k</EM> in the <EM>k-differences</EM> is the maximum number of differences.
+
+
+<P>
+
+For example <EM>1-difference</EM> means that a match is found if there is one character too many (insertion)
+or one character missing (deletion) or one character changed
+(substitution). Those are <EM>exclusive or</EM>s: that is, <EM>not</EM> one of each type of modification but <EM>exactly one</EM>.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="The_default_approximateness">The default approximateness
+
+</A></H2>
+The default approximateness is <EM>10 %</EM> of the length of the approximate pattern or <EM>at least 1</EM>: <EM>0-differences</EM> being the exact matching which can be done very effectively using the usual
+Perl function <A HREF="#item_index">index()</A> or normal regular expression matching.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="amatch">amatch
+
+</A></H2>
+<PRE>        use String::Approx qw(amatch);
+</PRE>
+
+<P>
+
+<PRE>        amatch(&quot;PATTERN&quot;);
+        amatch(&quot;PATTERN&quot;, @LIST);
+        amatch(&quot;PATTERN&quot;, [ @MODS ]);
+        amatch(&quot;PATTERN&quot;, [ @MODS ], @LIST);
+</PRE>
+
+<P>
+
+The 
+<FONT SIZE=-1>PATTERN</FONT> is <STRONG>a string</STRONG>, not a regular expression. The regular expression metanotation (<A HREF="#item__w_">. ? * + {...,...} ( ) | [ ] ^ $ \w ...</A>) will be understood as literal characters, that is, a <CODE>*</CODE> means in regex terms <CODE>\*</CODE>, not <EM>"match 0 or more times"</EM>.
+
+
+<P>
+
+The 
+<FONT SIZE=-1>LIST</FONT> is the list of strings to match against the pattern. If no 
+<FONT SIZE=-1>LIST</FONT> is given matches against
+ <CODE>$_</CODE>.
+
+
+<P>
+
+The 
+<FONT SIZE=-1>MODS</FONT> are the modifiers that tell how approximately to
+match. See below for more detailed explanation.
+<STRONG>NOTE</STRONG>: The syntax really is <CODE>[ @MODS ]</CODE>, the square brackets <CODE>[ ]</CODE> must be in there. See below for examples.
+
+
+<P>
+
+In scalar context <A HREF="#item_amatch">amatch()</A> returns the number of successful matches. In list context <A HREF="#item_amatch">amatch()</A> returns the strings that had matches.
+
+
+<P>
+
+Example:
+
+
+<P>
+
+<PRE>        use String::Approx qw(amatch);
+</PRE>
+
+<P>
+
+<PRE>        open(WORDS, '/usr/dict/words') or die;
+</PRE>
+
+<P>
+
+<PRE>        while (&lt;WORDS&gt;) {
+            print if amatch('perl');
+        }
+</PRE>
+
+<P>
+
+or the same ignoring case:
+
+
+<P>
+
+<PRE>        use String::Approx qw(amatch);
+</PRE>
+
+<P>
+
+<PRE>        open(WORDS, '/usr/dict/words') or die;
+</PRE>
+
+<P>
+
+<PRE>        while (&lt;WORDS&gt;) {
+            print if amatch('perl', ['i']);
+        }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="asubstitute">asubstitute
+
+</A></H2>
+<PRE>        use String::Approx qw(asubstitute);
+</PRE>
+
+<P>
+
+<PRE>        asubstitute(&quot;PATTERN&quot;, &quot;SUBSTITUTION&quot;);
+        asubstitute(&quot;PATTERN&quot;, &quot;SUBSTITUTION&quot;, @LIST);
+        asubstitute(&quot;PATTERN&quot;, &quot;SUBSTITUTION&quot;, [ @MODS ]);
+        asubstitute(&quot;PATTERN&quot;, &quot;SUBSTITUTION&quot;, [ @MODS ], @LIST);
+</PRE>
+
+<P>
+
+The 
+<FONT SIZE=-1>PATTERN</FONT> is <STRONG>a string</STRONG>, not a regular expression. The regular expression metanotation (<A HREF="#item__w_">. ? * + {...,...} ( ) | [ ] ^ $ \w ...</A>) will be understood as literal characters, that is, a <CODE>*</CODE> means in regex terms <CODE>\*</CODE>, not <EM>"match 0 or more times"</EM>.
+
+
+<P>
+
+Also the 
+<FONT SIZE=-1>SUBSTITUTION</FONT> is <STRONG>a string</STRONG>, not a regular expression. Well, mostly.  <EM>Most of the</EM> regular expression metanotation (<CODE>.</CODE>, <CODE>?</CODE>,
+<CODE>*</CODE>, <CODE>+</CODE>, ...) will be not understood as literal characters, that is, a <CODE>*</CODE> means in regex terms <CODE>\*</CODE>, not <EM>"match 0 or more times"</EM>. The understood notations are
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__">$`
+
+</A></STRONG><DD>
+the part <EM>before</EM> the approximate match
+
+
+<P>
+
+<DT><STRONG><A NAME="item__amp_">$&amp;
+
+</A></STRONG><DD>
+the approximately matched part
+
+
+<P>
+
+<DT><STRONG><A NAME="item__">$'
+
+</A></STRONG><DD>
+the part <EM>after</EM> the approximate match
+
+
+<P>
+
+</DL>
+The 
+<FONT SIZE=-1>MODS</FONT> are the modifiers that tell how approximately to
+match. See below for more detailed explanation.
+<STRONG>NOTE</STRONG>: Yes, the syntax is really <CODE>[ @MODS ]</CODE>, the square brackets <CODE>[ ]</CODE> must be in there. See below for examples.
+
+
+<P>
+
+The 
+<FONT SIZE=-1>LIST</FONT> is the list of strings to substitute against the pattern. If no 
+<FONT SIZE=-1>LIST</FONT> is given substitutes against
+ <CODE>$_</CODE>.
+
+
+<P>
+
+In scalar context <A HREF="#item_asubstitute">asubstitute()</A> returns the number of successful substitutions. In list context <A HREF="#item_asubstitute">asubstitute()</A> returns the strings that had substitutions.
+
+
+<P>
+
+Examples:
+
+
+<P>
+
+<PRE>        use String::Approx qw(asubstitute);
+</PRE>
+
+<P>
+
+<PRE>        open(WORDS, '/usr/dict/words') or die;
+        while (&lt;WORDS&gt;) {
+            print if asubstitute('perl', '($&amp;)');
+        }
+</PRE>
+
+<P>
+
+or the same ignoring case:
+
+
+<P>
+
+<PRE>        use String::Approx qw(asubstitute);
+</PRE>
+
+<P>
+
+<PRE>        open(WORDS, '/usr/dict/words') or die;
+        while (&lt;WORDS&gt;) {
+            print if asubstitute('perl', '($&amp;)', [ 'i' ]);
+        }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Modifiers">Modifiers
+
+</A></H2>
+The 
+<FONT SIZE=-1>MODS</FONT> argument both in <CODE>amatch()</CODE> and <CODE>asubstitute()</CODE> is a list of strings that control the matching of 
+<FONT SIZE=-1>PATTERN.</FONT> The first two,
+ <STRONG>i</STRONG> and
+<STRONG>g</STRONG>, are the usual regular expression match/substitute modifiers, the rest are
+special for approximate matching/substitution.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_i">i
+
+</A></STRONG><DD>
+Match/Substitute ignoring case, case-insensitively.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_g">g
+
+</A></STRONG><DD>
+Substitute <EM>globally</EM>, that is, all the approximate matches, not just the first one.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_k">k
+
+</A></STRONG><DD>
+The maximum number of differences. For example 2.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Ik">Ik
+
+</A></STRONG><DD>
+The maximum number of insertions. For example 
+<FONT SIZE=-1>'I2'.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Dk">Dk
+
+</A></STRONG><DD>
+The maximum number of deletions. For example 
+<FONT SIZE=-1>'D2'.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Sk">Sk
+
+</A></STRONG><DD>
+The maximum number of substitutions. For example 
+<FONT SIZE=-1>'S2'.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_k">k%
+
+</A></STRONG><DD>
+The maximum relative number of differences. For example '10%'.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Ik">Ik%
+
+</A></STRONG><DD>
+The maximum relative number of insertions. For example 
+<FONT SIZE=-1>'I5%'.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Dk">Dk%
+
+</A></STRONG><DD>
+The maximum relative number of deletions. For example 
+<FONT SIZE=-1>'D5%'.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Sk">Sk%
+
+</A></STRONG><DD>
+The maximum relative number of substitutions. For example 
+<FONT SIZE=-1>'S5%'.</FONT>
+
+
+<P>
+
+</DL>
+<EM>The regular expression modifiers</EM>  <CODE>o m s x</CODE>  <EM>are</EM>  <STRONG>not supported</STRONG>
+because their definitions for approximate matching are less than clear.
+
+
+<P>
+
+The relative number of differences is relative to the length of the 
+<FONT SIZE=-1>PATTERN,</FONT> rounded up: if, for example, the 
+<FONT SIZE=-1>PATTERN</FONT> is
+ <CODE>'bouillabaise'</CODE>
+and the 
+<FONT SIZE=-1>MODS</FONT> is <CODE>['20%']</CODE> the <EM>k</EM> becomes <EM>3</EM>.
+
+
+<P>
+
+If you want to <STRONG>disable</STRONG> a particular kind of difference you need to explicitly set it to zero: for
+example <CODE>'D0'</CODE> allows no deletions.
+
+
+<P>
+
+In case of conflicting definitions the later ones silently override, for
+example:
+
+
+<P>
+
+<PRE>        [2, 'I3', 'I1']
+</PRE>
+
+<P>
+
+equals
+
+
+<P>
+
+<PRE>        ['I1', 'D2', 'S2']
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLES">EXAMPLES
+
+</A></H1>
+The following examples assume the following template:
+
+
+<P>
+
+<PRE>        use String::Approx qw(amatch asubstitute);
+</PRE>
+
+<P>
+
+<PRE>        open(WORDS, &quot;/usr/dict/words&quot;) or die;
+        while (&lt;WORDS&gt;) {
+                # &lt;---
+        }
+</PRE>
+
+<P>
+
+and the following examples just replace the above '<A HREF="#item__lt_"># &lt;---</A>' line.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Matching_from_the_C_">Matching from the <CODE>$_</CODE>
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_Match">Match 'perl' with one difference
+
+</A></STRONG><DD>
+<PRE>        print if amatch('perl');
+</PRE>
+
+<P>
+
+The <EM>one difference</EM> is automatically the result in this case because first the rule of the <EM>10 %</EM> of the length of the pattern ('<CODE>perl</CODE>') is used and then the <EM>at least 1</EM> rule.
+
+
+<P>
+
+<DT><STRONG>Match 'perl' with case ignored
+
+</A></STRONG><DD>
+<PRE>        print if amatch('perl', [ 'i' ]);
+</PRE>
+
+<P>
+
+The case is ignored in matching (<A HREF="#item_i">i</A>).
+
+
+<P>
+
+<DT><STRONG>Match 'perl' with one insertion
+
+</A></STRONG><DD>
+<PRE>        print if amatch('perl', [ '0', 'I1' ]);
+</PRE>
+
+<P>
+
+The <EM>one insertion</EM> is easiest achieved with first disabling any approximateness (<CODE></CODE>) and then enabling one insertion (<CODE>I1</CODE>).
+
+
+<P>
+
+<DT><STRONG>Match 'perl' with zero deletions
+
+</A></STRONG><DD>
+<PRE>        print if amatch('perl', [ 'D0' ]);
+</PRE>
+
+<P>
+
+The <EM>zero deletion</EM> is easily achieved with simply disabling any deletions (<CODE>D0</CODE>), the other types of differences, the insertions and substitutions, are
+still enabled.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Substitute">Substitute 'perl' approximately with HTML emboldening
+
+</A></STRONG><DD>
+<PRE>        print if amatch('perl', '&lt;B&gt;$&amp;&lt;/B&gt;', [ 'g' ]);
+</PRE>
+
+<P>
+
+All (<A HREF="#item_g">g</A>) of the approximately matching parts of the input are surrounded by the <CODE>HTML</CODE> emboldening markup.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Matching_from_a_list">Matching from a list
+
+</A></H2>
+The above examples match against the default variable <STRONG>$_</STRONG>. The rest of the examples show how the match from a list. The template is
+now:
+
+
+<P>
+
+<PRE>        use String::Approx qw(amatch asubstitute);
+</PRE>
+
+<P>
+
+<PRE>        open(WORDS, &quot;/usr/dict/words&quot;) or die;
+        @words = &lt;words&gt;;
+        # &lt;---
+</PRE>
+
+<P>
+
+and the examples still go where the '<A HREF="#item__lt_"># &lt;---</A>' line is.
+
+
+<P>
+
+<DL>
+<DT><STRONG>Match 'perl' with one difference from a list
+
+</A></STRONG><DD>
+<PRE>        @matched = amatch('perl', @words);
+</PRE>
+
+<P>
+
+The <CODE>@matched</CODE> contains the elements of the <CODE>@words</CODE> that matched approximately.
+
+
+<P>
+
+<DT><STRONG>Substitute 'perl' approximately with HTML emphasizing from a list
+
+</A></STRONG><DD>
+<PRE>        @substituted = asubstitute('perl', '&lt;EM&gt;$&amp;&lt;/EM&gt;', [ 'g' ], @words);
+</PRE>
+
+<P>
+
+The <CODE>@substituted</CODE> contains <STRONG>with all</STRONG> (<A HREF="#item_g">g</A>) <STRONG>the substitutions</STRONG>
+the elements of the <CODE>@words</CODE> that matched approximately.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="ERROR_MESSAGES">ERROR MESSAGES
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_amatch">amatch: $_ is undefined: what are you matching against?
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_asubstitute">asubstitute: $_ is undefined: what are you matching against?
+
+</A></STRONG><DD>
+These happen when you have nothing in <CODE>$_</CODE> and try to <A HREF="#item_amatch">amatch()</A> or
+<A HREF="#item_asubstitute">asubstitute()</A>. Perhaps you are using the Perl option <A HREF="#item__e">-e</A> but you did forget the Perl option <A HREF="#item__n">-n</A>?
+
+
+<P>
+
+<DT><STRONG>amatch: too long pattern.
+
+</A></STRONG><DD>
+This happens when the pattern is too long for matching.
+
+
+<P>
+
+When matching long patterns, <CODE>String::Approx</CODE> attempts to partition the match. In other words, it tries to do the
+matching incrementally in smaller parts.
+
+
+<P>
+
+If this fails the above message is shown. Please try using shorter match
+patterns.
+
+
+<P>
+
+See below for <A HREF="#LIMITATIONS">LIMITATIONS</A> for more detailed explanation why this happens.
+
+
+<P>
+
+<DT><STRONG>asubstitute: too long pattern.
+
+</A></STRONG><DD>
+This happens when the pattern is too long for substituting.
+
+
+<P>
+
+The partitioning scheme explained above that is used for matching long
+patterns cannot, sadly enough, be used substituting.
+
+
+<P>
+
+Please try using shorter substitution patterns.
+
+
+<P>
+
+See below for <A HREF="#LIMITATIONS">LIMITATIONS</A> for more detailed explanation why this happens.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="VERSION">VERSION
+
+</A></H1>
+Version 2.1.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="LIMITATIONS">LIMITATIONS
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Fixed_pattern">Fixed pattern
+
+</A></H2>
+The PATTERNs of <A HREF="#item_amatch">amatch()</A> and <A HREF="#item_asubstitute">asubstitute()</A> are fixed strings, they are not regular expressions. The <EM>SUBSTITUTION</EM> of
+<A HREF="#item_asubstitute">asubstitute()</A> is a bit more flexible than that but not by much.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Pattern_length">Pattern length
+
+</A></H2>
+The approximate matching algorithm is <STRONG>very aggressive</STRONG>. In mathematical terms it is <EM>O(exp(n) * x**2)</EM>. This means that when the pattern length and/or the approximateness grows
+the matching or substitution take much longer time and memory.
+
+
+<P>
+
+For <A HREF="#item_amatch">amatch()</A> this can be avoided by <EM>partitioning</EM> the pattern, matching it in shorter subpatterns. This makes matching a bit
+slower and a bit more fuzzier, more approximate. For <A HREF="#item_asubstitute">asubstitute()</A> this partitioning cannot be done, the absolute maximum for the substitution
+pattern length is <STRONG>19</STRONG> but sometimes, for example it the approximateness is increased, even
+shorter patterns are too much. When this happens, you must use shorter
+patterns.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Speed">Speed
+
+</A></H2>
+<EM>Despite the about 20-fold speed increase</EM> from the <CODE>String::Approx</CODE>
+
+<EM>version 1</EM>  <STRONG>agrep is still faster</STRONG>. If you do not know what
+<CODE>agrep</CODE> is: it is a program like the 
+<FONT SIZE=-1>UNIX</FONT> grep but it knows, among other things, how to do
+approximate matching.  <CODE>agrep</CODE> is still about 30 times faster than <EM>Perl</EM> + <CODE>String::Approx</CODE>.  <STRONG>NOTE</STRONG>: all these speeds were measured in one particular system using one
+particular set of tests: your mileage will vary.
+
+
+<P>
+
+For long patterns, more than about <STRONG>40</STRONG>, the first 
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Incompatibilities_with_C_String_">Incompatibilities with <CODE>String::Approx</CODE> <EM>v1.*</EM>
+
+</A></H2>
+If you have been using regular expression modifiers (<STRONG>i</STRONG>, <STRONG>g</STRONG>) you lose. Sorry about that. The syntax simply is not compatible. 
+<FONT SIZE=-1>I</FONT> had to choose between having <A HREF="#item_amatch">amatch()</A> match and <A HREF="#item_asubstitute">asubstitute()</A>
+substitute elsewhere than just in <CODE>$_</CODE> <EM>and</EM> the old messy way of having an unlimited number of modifiers. The first
+need won.
+
+
+<P>
+
+<STRONG>There is a backward compability mode</STRONG>, though, if you do not want to change your <A HREF="#item_amatch">amatch()</A> and <A HREF="#item_asubstitute">asubstitute()</A> calls. You <STRONG>have</STRONG> to change your <A HREF="#item_use">use</A> line, however:
+
+
+<P>
+
+<PRE>        use String::Approx qw(amatch compat1);
+</PRE>
+
+<P>
+
+That is, you must add the <CODE>compat1</CODE> symbol if you want to be compatible with the <CODE>String::Approx</CODE> version 1 call syntax.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Jarkko Hietaniemi <CODE>&lt;jhi@iki.fi&gt;</CODE>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ACKNOWLEDGEMENTS">ACKNOWLEDGEMENTS
+
+</A></H1>
+Nathan Torkington <CODE>&lt;gnat@frii.com&gt;</CODE>
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

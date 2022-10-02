@@ -1,0 +1,282 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>CGI::Push - Simple Interface to Server Push
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#USING_CGI_Push">USING CGI::Push</A>
+	<LI><A HREF="#INSTALLING_CGI_Push_SCRIPTS">INSTALLING CGI::Push SCRIPTS</A>
+	<LI><A HREF="#CAVEATS">CAVEATS</A>
+	<LI><A HREF="#AUTHOR_INFORMATION">AUTHOR INFORMATION</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+CGI::Push - Simple Interface to Server Push
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use CGI::Push qw(:standard);
+</PRE>
+
+<P>
+
+<PRE>    do_push(-next_page=&gt;\&amp;next_page,
+            -last_page=&gt;\&amp;last_page,
+            -delay=&gt;0.5);
+</PRE>
+
+<P>
+
+<PRE>    sub next_page {
+        my($q,$counter) = @_;
+        return undef if $counter &gt;= 10;
+        return start_html('Test'),
+               h1('Visible'),&quot;\n&quot;,
+               &quot;This page has been called &quot;, strong($counter),&quot; times&quot;,
+               end_html();
+      }
+</PRE>
+
+<P>
+
+<PRE>     sub last_page {
+         my($q,$counter) = @_;
+         return start_html('Done'),
+                h1('Finished'),
+                strong($counter),' iterations.',
+                end_html;
+     }
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+CGI::Push is a subclass of the 
+<FONT SIZE=-1>CGI</FONT> object created by CGI.pm. It is specialized for
+server push operations, which allow you to create animated pages whose
+content changes at regular intervals.
+
+
+<P>
+
+You provide CGI::Push with a pointer to a subroutine that will draw one page. Every time your subroutine is called, it generates a new page. The contents of the page will be transmitted to the browser in such a way that it will replace what was there beforehand. The technique will work with 
+<FONT SIZE=-1>HTML</FONT> pages as well as with graphics files, allowing you to create animated GIFs.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="USING_CGI_Push">USING CGI::Push
+
+</A></H1>
+CGI::Push adds one new method to the standard 
+<FONT SIZE=-1>CGI</FONT> suite, <CODE>do_push().</CODE> When you call this method, you pass it a reference to a subroutine that is responsible for drawing each new page, an interval delay, and an optional subroutine for drawing the last page. Other optional parameters include most of those recognized by the 
+<FONT SIZE=-1>CGI</FONT> <CODE>header()</CODE> method.
+
+
+
+<P>
+
+You may call <CODE>do_push()</CODE> in the object oriented manner or not,
+as you prefer:
+
+
+<P>
+
+<PRE>    use CGI::Push;
+    $q = new CGI::Push;
+    $q-&gt;do_push(-next_page=&gt;\&amp;draw_a_page);
+</PRE>
+
+<P>
+
+<PRE>        -or-
+</PRE>
+
+<P>
+
+<PRE>    use CGI::Push qw(:standard);
+    do_push(-next_page=&gt;\&amp;draw_a_page);
+</PRE>
+
+<P>
+
+Parameters are as follows:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__next_page">-next_page
+
+</A></STRONG><DD>
+<PRE>    do_push(-next_page=&gt;\&amp;my_draw_routine);
+</PRE>
+
+<P>
+
+This required parameter points to a reference to a subroutine responsible for drawing each new page. The subroutine should expect two parameters consisting of the 
+<FONT SIZE=-1>CGI</FONT> object and a counter indicating the number of times the subroutine has been called. It should return the contents of the page as an
+ <STRONG>array</STRONG> of one or more items to print. It can return a false value (or an empty
+array) in order to abort the redrawing loop and print out the final page
+(if any)
+
+
+<P>
+
+<PRE>    sub my_draw_routine {
+        my($q,$counter) = @_;
+        return undef if $counter &gt; 100;
+        return start_html('testing'),
+               h1('testing'),
+               &quot;This page called $counter times&quot;;
+    }
+</PRE>
+
+<P>
+
+<DT><STRONG><A NAME="item__last_page">-last_page
+
+</A></STRONG><DD>
+This optional parameter points to a reference to the subroutine responsible
+for drawing the last page of the series. It is called after the -next_page
+routine returns a false value. The subroutine itself should have exactly
+the same calling conventions as the -next_page routine.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__type">-type
+
+</A></STRONG><DD>
+This optional parameter indicates the content type of each page. It
+defaults to ``text/html''. Currently, server push of heterogeneous document
+types is not supported.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__delay">-delay
+
+</A></STRONG><DD>
+This indicates the delay, in seconds, between frames. Smaller delays
+refresh the page faster. Fractional values are allowed.
+
+
+<P>
+
+<STRONG>If not specified, -delay will default to 1 second</STRONG>
+
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item__cookie_">-cookie, -target, -expires
+
+</A></STRONG><DD>
+These have the same meaning as the like-named parameters in CGI::header().
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="INSTALLING_CGI_Push_SCRIPTS">INSTALLING CGI::Push SCRIPTS
+
+</A></H1>
+Server push scripts <STRONG>must</STRONG> be installed as no-parsed-header 
+<FONT SIZE=-1>(NPH)</FONT> scripts in order to work correctly. On Unix systems, this is most often accomplished by prefixing the script's name with ``nph-''. Recognition of 
+<FONT SIZE=-1>NPH</FONT> scripts happens automatically with WebSTAR and Microsoft 
+<FONT SIZE=-1>IIS.</FONT> Users of other servers should see their documentation for help.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="CAVEATS">CAVEATS
+
+</A></H1>
+This is a new module. It hasn't been extensively tested.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR_INFORMATION">AUTHOR INFORMATION
+
+</A></H1>
+be used and modified freely, but 
+<FONT SIZE=-1>I</FONT> do request that this copyright notice remain
+attached to the file. You may modify this module as you wish, but if you
+redistribute a modified version, please attach a note listing the
+modifications you have made.
+
+
+<P>
+
+Address bug reports and comments to: <A
+HREF="MAILTO:lstein@genome.wi.mit.edu">lstein@genome.wi.mit.edu</A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+This section intentionally left blank.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/CGI/Carp.html">Carp</A>, <A HREF="/n|/perl/html/./lib/CGI.html#">the CGI manpage</A>
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,50 @@
+SelectMission("d1");
+
+SetMissionResetPlayerInCar("demo_carstart");
+SetDynaLoadData("l3z1.p3d;l3r1.p3d;l3r5.p3d;l3r5_dam.p3d;");
+
+PlacePlayerCar("current", "demo_carstart");
+
+AddStage(0);
+RESET_TO_HERE();
+SetMaxTraffic(4); //for this race, reduce traffic to prevent overwhelming the user
+AddStageVehicle("cletu_v","d1_cletus_carstart","waypoint","HardRace\AI_2nd.con");
+
+AddStageWaypoint( "d1_path1" );
+AddStageWaypoint( "d1_path2" );
+AddStageWaypoint( "d1_path3" );
+AddStageWaypoint( "d1_path4" );
+AddStageWaypoint( "d1_path5" );
+AddStageWaypoint( "d1_path6" );
+AddStageWaypoint( "d1_path6a" );
+AddStageWaypoint( "d1_path7" );
+AddStageWaypoint( "d1_path8" );
+AddStageWaypoint( "d1_path9" );
+AddStageWaypoint( "d1_path10" );
+AddStageWaypoint( "d1_path11" );
+AddStageWaypoint( "d1_path12" );
+AddStageWaypoint( "d1_path13" );
+
+AddObjective( "race" );
+AddCollectible("d1_path1");
+AddCollectible("d1_path2");
+AddCollectible("d1_path3");
+AddCollectible("d1_path4");
+AddCollectible("d1_path5");
+AddCollectible("d1_path6");
+AddCollectible("d1_path6a");
+AddCollectible("d1_path7");
+AddCollectible("d1_path8");
+AddCollectible("d1_path9");
+AddCollectible("d1_path10");
+AddCollectible("d1_path11");
+AddCollectible("d1_path12");
+AddCollectible("d1_path13");
+SetRaceLaps(2000);
+CloseObjective();
+
+SetDemoLoopTime(400000000);
+
+CloseStage();
+
+CloseMission();

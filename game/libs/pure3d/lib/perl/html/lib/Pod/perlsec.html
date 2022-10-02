@@ -1,0 +1,498 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlsec - Perl security
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Laundering_and_Detecting_Tainted">Laundering and Detecting Tainted Data</A>
+		<LI><A HREF="#Switches_On_the_Line">Switches On the "#!" Line</A>
+		<LI><A HREF="#Cleaning_Up_Your_Path">Cleaning Up Your Path</A>
+		<LI><A HREF="#Security_Bugs">Security Bugs</A>
+		<LI><A HREF="#Protecting_Your_Programs">Protecting Your Programs</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlsec - Perl security
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+Perl is designed to make it easy to program securely even when running with
+extra privileges, like setuid or setgid programs. Unlike most command line
+shells, which are based on multiple substitution passes on each line of the
+script, Perl uses a more conventional evaluation scheme with fewer hidden
+snags. Additionally, because the language has more builtin functionality,
+it can rely less upon external (and possibly untrustworthy) programs to
+accomplish its purposes.
+
+
+<P>
+
+Perl automatically enables a set of special security checks, called <EM>taint
+mode</EM>, when it detects its program running with differing real and effective
+user or group IDs. The setuid bit in Unix permissions is mode 04000, the
+setgid bit mode 02000; either or both may be set. You can also enable taint
+mode explicitly by using the <STRONG>-T</STRONG> command line flag. This flag is
+<EM>strongly</EM> suggested for server programs and any program run on behalf of someone else, such as a 
+<FONT SIZE=-1>CGI</FONT> script.
+
+
+
+<P>
+
+While in this mode, Perl takes special precautions called <EM>taint
+checks</EM> to prevent both obvious and subtle traps. Some of these checks are reasonably simple, such as verifying that path directories aren't writable by others; careful programmers have always used checks like these. Other checks, however, are best supported by the language itself, and it is these checks especially that contribute to making a setuid Perl program more secure than the corresponding 
+<FONT SIZE=-1>C</FONT> program.
+
+
+
+<P>
+
+You may not use data derived from outside your program to affect something
+else outside your program--at least, not by accident. All command line
+arguments, environment variables, locale information (see <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#">the perllocale manpage</A>), and file input are marked as ``tainted''. Tainted data may not be used
+directly or indirectly in any command that invokes a sub-shell, nor in any
+command that modifies files, directories, or processes. Any variable set
+within an expression that has previously referenced a tainted value itself
+becomes tainted, even if it is logically impossible for the tainted value
+to influence the variable. Because taintedness is associated with each
+scalar value, some elements of an array can be tainted and others not.
+
+
+<P>
+
+For example:
+
+
+<P>
+
+<PRE>    $arg = shift;               # $arg is tainted
+    $hid = $arg, 'bar';         # $hid is also tainted
+    $line = &lt;&gt;;                 # Tainted
+    $line = &lt;STDIN&gt;;            # Also tainted
+    open FOO, &quot;/home/me/bar&quot; or die $!;
+    $line = &lt;FOO&gt;;              # Still tainted
+    $path = $ENV{'PATH'};       # Tainted, but see below
+    $data = 'abc';              # Not tainted
+</PRE>
+
+<P>
+
+<PRE>    system &quot;echo $arg&quot;;         # Insecure
+    system &quot;/bin/echo&quot;, $arg;   # Secure (doesn't use sh)
+    system &quot;echo $hid&quot;;         # Insecure
+    system &quot;echo $data&quot;;        # Insecure until PATH set
+</PRE>
+
+<P>
+
+<PRE>    $path = $ENV{'PATH'};       # $path now tainted
+</PRE>
+
+<P>
+
+<PRE>    $ENV{'PATH'} = '/bin:/usr/bin';
+    delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
+</PRE>
+
+<P>
+
+<PRE>    $path = $ENV{'PATH'};       # $path now NOT tainted
+    system &quot;echo $data&quot;;        # Is secure now!
+</PRE>
+
+<P>
+
+<PRE>    open(FOO, &quot;&lt; $arg&quot;);        # OK - read-only file
+    open(FOO, &quot;&gt; $arg&quot;);        # Not OK - trying to write
+</PRE>
+
+<P>
+
+<PRE>    open(FOO,&quot;echo $arg|&quot;);     # Not OK, but...
+    open(FOO,&quot;-|&quot;)
+        or exec 'echo', $arg;   # OK
+</PRE>
+
+<P>
+
+<PRE>    $shout = `echo $arg`;       # Insecure, $shout now tainted
+</PRE>
+
+<P>
+
+<PRE>    unlink $data, $arg;         # Insecure
+    umask $arg;                 # Insecure
+</PRE>
+
+<P>
+
+<PRE>    exec &quot;echo $arg&quot;;           # Insecure
+    exec &quot;echo&quot;, $arg;          # Secure (doesn't use the shell)
+    exec &quot;sh&quot;, '-c', $arg;      # Considered secure, alas!
+</PRE>
+
+<P>
+
+<PRE>    @files = &lt;*.c&gt;;             # Always insecure (uses csh)
+    @files = glob('*.c');       # Always insecure (uses csh)
+</PRE>
+
+<P>
+
+If you try to do something insecure, you will get a fatal error saying something like ``Insecure dependency'' or ``Insecure 
+<FONT SIZE=-1>PATH''.</FONT> Note that you can still write an insecure
+ <STRONG>system</STRONG> or <STRONG>exec</STRONG>, but only by explicitly doing something like the last example above.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Laundering_and_Detecting_Tainted">Laundering and Detecting Tainted Data
+
+</A></H2>
+To test whether a variable contains tainted data, and whose use would thus
+trigger an ``Insecure dependency'' message, you can use the following
+<EM>is_tainted()</EM> function.
+
+
+<P>
+
+<PRE>    sub is_tainted {
+        return ! eval {
+            join('',@_), kill 0;
+            1;
+        };
+    }
+</PRE>
+
+<P>
+
+This function makes use of the fact that the presence of tainted data
+anywhere within an expression renders the entire expression tainted. It
+would be inefficient for every operator to test every argument for
+taintedness. Instead, the slightly more efficient and conservative approach
+is used that if any tainted value has been accessed within the same
+expression, the whole expression is considered tainted.
+
+
+<P>
+
+But testing for taintedness gets you only so far. Sometimes you have just
+to clear your data's taintedness. The only way to bypass the tainting
+mechanism is by referencing subpatterns from a regular expression match.
+Perl presumes that if you reference a substring using $1, $2, etc., that
+you knew what you were doing when you wrote the pattern. That means using a
+bit of thought--don't just blindly untaint anything, or you defeat the
+entire mechanism. It's better to verify that the variable has only good
+characters (for certain values of ``good'') rather than checking whether it
+has any bad characters. That's because it's far too easy to miss bad
+characters that you never thought of.
+
+
+<P>
+
+Here's a test to make sure that the data contains nothing but ``word''
+characters (alphabetics, numerics, and underscores), a hyphen, an at sign,
+or a dot.
+
+
+<P>
+
+<PRE>    if ($data =~ /^([-\@\w.]+)$/) {
+        $data = $1;                     # $data now untainted
+    } else {
+        die &quot;Bad data in $data&quot;;        # log this somewhere
+    }
+</PRE>
+
+<P>
+
+This is fairly secure because <A HREF="#item__w_">/\w+/</A> doesn't normally match shell metacharacters, nor are dot, dash, or at going
+to mean something special to the shell. Use of <CODE>/.+/</CODE> would have been insecure in theory because it lets everything through, but
+Perl doesn't check for that. The lesson is that when untainting, you must
+be exceedingly careful with your patterns. Laundering data using regular
+expression is the <EM>ONLY</EM> mechanism for untainting dirty data, unless you use the strategy detailed
+below to fork a child of lesser privilege.
+
+
+<P>
+
+The example does not untaint <CODE>$data</CODE> if <CODE>use locale</CODE> is in effect, because the characters matched by <A HREF="#item__w">\w</A> are determined by the locale. Perl considers that locale definitions are
+untrustworthy because they contain data from outside the program. If you
+are writing a locale-aware program, and want to launder data with a regular
+expression containing <A HREF="#item__w">\w</A>, put <CODE>no locale</CODE> ahead of the expression in the same block. See <A HREF="/n|/perl/html/./lib/Pod/perllocale.html#SECURITY">SECURITY</A> for further discussion and examples.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Switches_On_the_Line">Switches On the "#!" Line
+
+</A></H2>
+When you make a script executable, in order to make it usable as a command,
+the system will pass switches to perl from the script's #! line. Perl
+checks that any command line switches given to a setuid (or setgid) script
+actually match the ones set on the #! line. Some Unix and Unix-like
+environments impose a one-switch limit on the #! line, so you may need to
+use something like <CODE>-wU</CODE> instead of <CODE>-w -U</CODE>
+under such systems. (This issue should arise only in Unix or Unix-like
+environments that support #! and setuid or setgid scripts.)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Cleaning_Up_Your_Path">Cleaning Up Your Path
+
+</A></H2>
+For ``Insecure <CODE>$ENV{PATH}</CODE>'' messages, you need to set <CODE>$ENV{'PATH'}</CODE> to a known value, and each directory in the path must be non-writable by
+others than its owner and group. You may be surprised to get this message
+even if the pathname to your executable is fully qualified. This is <EM>not</EM>
+generated because you didn't supply a full path to the program; instead, it's generated because you never set your 
+<FONT SIZE=-1>PATH</FONT> environment variable, or you didn't set it to something that was safe. Because Perl can't guarantee that the executable in question isn't itself going to turn around and execute some other program that is dependent on your 
+<FONT SIZE=-1>PATH,</FONT> it makes sure you set the 
+<FONT SIZE=-1>PATH.</FONT>
+
+
+
+<P>
+
+It's also possible to get into trouble with other operations that don't
+care whether they use tainted values. Make judicious use of the file tests
+in dealing with any user-supplied filenames. When possible, do opens and
+such after setting <CODE>$&gt; = $&lt;</CODE>. (Remember group IDs, too!) Perl doesn't prevent you from opening tainted
+filenames for reading, so be careful what you print out. The tainting
+mechanism is intended to prevent stupid mistakes, not to remove the need
+for thought.
+
+
+<P>
+
+Perl does not call the shell to expand wild cards when you pass <STRONG>system</STRONG>
+and <STRONG>exec</STRONG> explicit parameter lists instead of strings with possible shell wildcards
+in them. Unfortunately, the <STRONG>open</STRONG>, <STRONG>glob</STRONG>, and backtick functions provide no such alternate calling convention, so
+more subterfuge will be required.
+
+
+<P>
+
+Perl provides a reasonably safe way to open a file or pipe from a setuid or
+setgid program: just create a child process with reduced privilege who does
+the dirty work for you. First, fork a child using the special
+<STRONG>open</STRONG> syntax that connects the parent and child by a pipe. Now the child resets its 
+<FONT SIZE=-1>ID</FONT> set and any other per-process attributes, like environment variables, umasks, current working directories, back to the originals or known safe values. Then the child process, which no longer has any special permissions, does the
+ <STRONG>open</STRONG> or other system call. Finally, the child passes the data it managed to
+access back to the parent. Because the file or pipe was opened in the child
+while running under less privilege than the parent, it's not apt to be
+tricked into doing something it shouldn't.
+
+
+<P>
+
+Here's a way to do backticks reasonably safely. Notice how the <STRONG>exec</STRONG> is not called with a string that the shell could expand. This is by far the
+best way to call something that might be subjected to shell escapes: just
+never call the shell at all. By the time we get to the <STRONG>exec</STRONG>, tainting is turned off, however, so be careful what you call and what you
+pass it.
+
+
+<P>
+
+<PRE>    use English;
+    die unless defined $pid = open(KID, &quot;-|&quot;);
+    if ($pid) {           # parent
+        while (&lt;KID&gt;) {
+            # do something
+        }
+        close KID;
+    } else {
+        $EUID = $UID;
+        $EGID = $GID;    # XXX: initgroups() not called
+        $ENV{PATH} = &quot;/bin:/usr/bin&quot;;
+        exec 'myprog', 'arg1', 'arg2';
+        die &quot;can't exec myprog: $!&quot;;
+    }
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> similar strategy would work for wildcard expansion
+via <A HREF="#item_glob">glob</A>.
+
+
+<P>
+
+Taint checking is most useful when although you trust yourself not to have written a program to give away the farm, you don't necessarily trust those who end up using it not to try to trick it into doing something bad. This is the kind of security checking that's useful for setuid programs and programs launched on someone else's behalf, like 
+<FONT SIZE=-1>CGI</FONT> programs.
+
+
+
+<P>
+
+This is quite different, however, from not even trusting the writer of the
+code not to try to do something evil. That's the kind of trust needed when
+someone hands you a program you've never seen before and says, ``Here, run
+this.'' For that kind of safety, check out the Safe module, included
+standard in the Perl distribution. This module allows the programmer to set
+up special compartments in which all system operations are trapped and
+namespace access is carefully controlled.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Security_Bugs">Security Bugs
+
+</A></H2>
+Beyond the obvious problems that stem from giving special privileges to
+systems as flexible as scripts, on many versions of Unix, setuid scripts
+are inherently insecure right from the start. The problem is a race
+condition in the kernel. Between the time the kernel opens the file to see
+which interpreter to run and when the (now-setuid) interpreter turns around
+and reopens the file to interpret it, the file in question may have
+changed, especially if you have symbolic links on your system.
+
+
+<P>
+
+Fortunately, sometimes this kernel ``feature'' can be disabled.
+Unfortunately, there are two ways to disable it. The system can simply
+outlaw scripts with the setuid bit set, which doesn't help much.
+Alternately, it can simply ignore the setuid bit on scripts. If the latter
+is true, Perl can emulate the setuid and setgid mechanism when it notices
+the otherwise useless setuid/gid bits on Perl scripts. It does this via a
+special executable called <STRONG>suidperl</STRONG> that is automatically invoked for you if it's needed.
+
+
+<P>
+
+However, if the kernel setuid script feature isn't disabled, Perl will complain loudly that your setuid script is insecure. You'll need to either disable the kernel setuid script feature, or put a 
+<FONT SIZE=-1>C</FONT> wrapper around the script. 
+<FONT SIZE=-1>A</FONT> 
+<FONT SIZE=-1>C</FONT> wrapper is just a compiled program that does nothing except call your Perl program. Compiled programs are not subject to the kernel bug that plagues setuid scripts. Here's a simple wrapper, written in 
+<FONT SIZE=-1>C:</FONT>
+
+
+
+<P>
+
+<PRE>    #define REAL_PATH &quot;/path/to/script&quot;
+    main(ac, av)
+        char **av;
+    {
+        execv(REAL_PATH, av);
+    }
+</PRE>
+
+<P>
+
+Compile this wrapper into a binary executable and then make <EM>it</EM> rather than your script setuid or setgid.
+
+
+<P>
+
+See the program <STRONG>wrapsuid</STRONG> in the <EM>eg</EM> directory of your Perl distribution for a convenient way to do this
+automatically for all your setuid Perl programs. It moves setuid scripts
+into files with the same name plus a leading dot, and then compiles a
+wrapper like the one above for each of them.
+
+
+<P>
+
+In recent years, vendors have begun to supply systems free of this inherent
+security bug. On such systems, when the kernel passes the name of the
+setuid script to open to the interpreter, rather than using a pathname
+subject to meddling, it instead passes <EM>/dev/fd/3</EM>. This is a special file already opened on the script, so that there can be
+no race condition for evil scripts to exploit. On these systems, Perl
+should be compiled with <CODE>-DSETUID_SCRIPTS_ARE_SECURE_NOW</CODE>. The <STRONG>Configure</STRONG>
+program that builds Perl tries to figure this out for itself, so you should never have to specify this yourself. Most modern releases of SysVr4 and 
+<FONT SIZE=-1>BSD</FONT> 4.4 use this approach to avoid the kernel race condition.
+
+
+
+<P>
+
+Prior to release 5.003 of Perl, a bug in the code of <STRONG>suidperl</STRONG> could introduce a security hole in systems compiled with strict 
+<FONT SIZE=-1>POSIX</FONT> compliance.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Protecting_Your_Programs">Protecting Your Programs
+
+</A></H2>
+There are a number of ways to hide the source to your Perl programs, with
+varying levels of ``security''.
+
+
+<P>
+
+First of all, however, you <EM>can't</EM> take away read permission, because the source code has to be readable in order to be compiled and interpreted. (That doesn't mean that a 
+<FONT SIZE=-1>CGI</FONT> script's source is readable by people on the web, though.) So you have to leave the permissions at the socially friendly 0755 level.
+
+
+
+<P>
+
+Some people regard this as a security problem. If your program does
+insecure things, and relies on people not knowing how to exploit those
+insecurities, it is not secure. It is often possible for someone to
+determine the insecure things and exploit them without viewing the source.
+Security through obscurity, the name for hiding your bugs instead of fixing
+them, is little security indeed.
+
+
+<P>
+
+You can try using encryption via source filters (Filter::* from 
+<FONT SIZE=-1>CPAN).</FONT> But crackers might be able to decrypt it. You
+can try using the byte code compiler and interpreter described below, but
+crackers might be able to de-compile it. You can try using the native-code
+compiler described below, but crackers might be able to disassemble it.
+These pose varying degrees of difficulty to people wanting to get at your
+code, but none can definitively conceal it (this is true of every language,
+not just Perl).
+
+
+<P>
+
+If you're concerned about people profiting from your code, then the bottom line is that nothing but a restrictive licence will give you legal security. License your software and pepper it with threatening statements like ``This is unpublished proprietary software of 
+<FONT SIZE=-1>XYZ</FONT> Corp. Your access to it does not give you permission to use it blah blah blah.'' You should see a lawyer to be sure your licence's wording will stand up in court.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,345 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Font::AFM - Interface to Adobe Font Metrics files
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#ENVIRONMENT">ENVIRONMENT</A>
+	<LI><A HREF="#BUGS">BUGS</A>
+	<LI><A HREF="#COPYRIGHT">COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Font::AFM - Interface to Adobe Font Metrics files
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> use Font::AFM;
+ $h = new Font::AFM &quot;Helvetica&quot;;
+ $copyright = $h-&gt;Notice;
+ $w = $h-&gt;Wx-&gt;{&quot;aring&quot;};
+ $w = $h-&gt;stringwidth(&quot;Gisle&quot;, 10);
+ $h-&gt;dump;  # for debugging
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module implements the Font::AFM class. Objects of this class are
+initialised from an AFM-file and allows you to obtain information about the
+font and the metrics of the various glyphs in the font.
+
+
+<P>
+
+All measurements in 
+<FONT SIZE=-1>AFM</FONT> files are given in terms of units equal to 1/1000
+of the scale factor of the font being used. To compute actual sizes in a
+document, these amounts should be multiplied by (scale factor of
+font)/1000.
+
+
+<P>
+
+The following methods are available:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_new">new($fontname)
+
+</A></STRONG><DD>
+Object constructor. Takes the name of the font as argument. It will croak
+if the font can not be found.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_latin1_wx_table">latin1_wx_table()
+
+</A></STRONG><DD>
+Returns a 256 element array, where each element contains the width of the
+corresponding character in the iso-8859-1 character set.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_stringwidth">stringwidth($string, [$fontsize])
+
+</A></STRONG><DD>
+Returns the width of the string passed as argument. The string is assumed to be encoded in the iso-8859-1 character set. 
+<FONT SIZE=-1>A</FONT> second argument can be used to scale the width according to the font size.
+
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FontName">FontName
+
+</A></STRONG><DD>
+The name of the font as presented to the PostScript language
+<CODE>findfont</CODE> operator, for instance ``Times-Roman''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FullName">FullName
+
+</A></STRONG><DD>
+Unique, human-readable name for an individual font, for instance ``Times
+Roman''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FamilyName">FamilyName
+
+</A></STRONG><DD>
+Human-readable name for a group of fonts that are stylistic variants of a
+single design. All fonts that are member of such a group should have
+exactly the same <A HREF="#item_FamilyName">FamilyName</A>. Example of a family name is ``Times''.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Weight">Weight
+
+</A></STRONG><DD>
+Human-readable name for the weight, or ``boldness'', attribute of a font.
+Exampes are <CODE>Roman</CODE>, <CODE>Bold</CODE>, <CODE>Light</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_ItalicAngle">ItalicAngle
+
+</A></STRONG><DD>
+Angle in degrees counterclockwise from the vertical of the dominant
+vertical strokes of the font.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IsFixedPitch">IsFixedPitch
+
+</A></STRONG><DD>
+If the value is <CODE>true</CODE>, it indicated that the font is a fixed-pitch (monospaced) font.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FontBBox">FontBBox
+
+</A></STRONG><DD>
+
+<FONT SIZE=-1>A</FONT> string of four numbers giving the lower-left x,
+lower-left y, upper-right x, and upper-right y of the font bounding box.
+The font bounding box is the smallest rectangle enclosing the shape that
+would result if all the characters of the font were placed with their
+origins coincident, and then painted.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_UnderlinePosition">UnderlinePosition
+
+</A></STRONG><DD>
+Recommended distance from the baseline for positioning underline stokes.
+This number is the y coordinate of the center of the stroke.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_UnderlineThickness">UnderlineThickness
+
+</A></STRONG><DD>
+Recommended stroke width for underlining.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Version">Version
+
+</A></STRONG><DD>
+Version number of the font.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Notice">Notice
+
+</A></STRONG><DD>
+Trademark or copyright notice, if applicable.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Comment">Comment
+
+</A></STRONG><DD>
+Comments found in the 
+<FONT SIZE=-1>AFM</FONT> file.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_EncodingScheme">EncodingScheme
+
+</A></STRONG><DD>
+The name of the standard encoding scheme for the font. Most Adobe fonts use
+the <CODE>AdobeStandardEncoding</CODE>. Special fonts might state
+<CODE>FontSpecific</CODE>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_CapHeight">CapHeight
+
+</A></STRONG><DD>
+Usually the y-value of the top of the capital 
+<FONT SIZE=-1>H.</FONT>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_XHeight">XHeight
+
+</A></STRONG><DD>
+Typically the y-value of the top of the lowercase x.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Ascender">Ascender
+
+</A></STRONG><DD>
+Typically the y-value of the top of the lowercase d.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Descender">Descender
+
+</A></STRONG><DD>
+Typically the y-value of the bottom of the lowercase p.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_Wx">Wx
+
+</A></STRONG><DD>
+Returns a hash table that maps from glyph names to the width of that glyph.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_BBox">BBox
+
+</A></STRONG><DD>
+Returns a hash table that maps from glyph names to bounding box
+information. The bounding box consist of 4 numbers: llx, lly, urx, ury.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_dump">dump
+
+</A></STRONG><DD>
+Dumps the content of the Font::AFM object to 
+<FONT SIZE=-1>STDOUT.</FONT> Might sometimes be useful for debugging.
+
+
+<P>
+
+</DL>
+The 
+<FONT SIZE=-1>AFM</FONT> specification can be found at:
+
+
+<P>
+
+<PRE>   <A HREF="ftp://ftp.adobe.com/pub/adobe/DeveloperSupport/TechNotes/PSfiles/5004.AFM_Spec.ps">ftp://ftp.adobe.com/pub/adobe/DeveloperSupport/TechNotes/PSfiles/5004.AFM_Spec.ps</A>
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="ENVIRONMENT">ENVIRONMENT
+
+</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_METRICS">METRICS
+
+</A></STRONG><DD>
+Contains the path to seach for AFM-files. Format is as for the 
+<FONT SIZE=-1>PATH</FONT> environment variable. The default path built into
+this library is:
+
+
+<P>
+
+<PRE> /usr/lib/afm:/usr/local/lib/afm:/usr/openwin/lib/fonts/afm/:.
+</PRE>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="BUGS">BUGS
+
+</A></H1>
+Kerning data and composite character data is not yet parsed. Ligature data
+is not parsed.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="COPYRIGHT">COPYRIGHT
+
+</A></H1>
+Copyright 1995 Gisle Aas. All rights reserved.
+
+
+<P>
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

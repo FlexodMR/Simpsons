@@ -1,0 +1,642 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>perlfaq9 - Networking ($Revision: 1.17 $, $Date: 1997/04/24 22:44:29 $)
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#My_CGI_script_runs_from_the_comm">My CGI script runs from the command line but not the browser.  Can you help me fix it?</A>
+		<LI><A HREF="#How_do_I_remove_HTML_from_a_stri">How do I remove HTML from a string?</A>
+		<LI><A HREF="#How_do_I_extract_URLs_">How do I extract URLs?</A>
+		<LI><A HREF="#How_do_I_download_a_file_from_th">How do I download a file from the user's machine?  How do I open a file on another machine?</A>
+		<LI><A HREF="#How_do_I_make_a_pop_up_menu_in_H">How do I make a pop-up menu in HTML?</A>
+		<LI><A HREF="#How_do_I_fetch_an_HTML_file_">How do I fetch an HTML file?</A>
+		<LI><A HREF="#how_do_I_decode_or_create_those_">how do I decode or create those %-encodings on the web?</A>
+		<LI><A HREF="#How_do_I_redirect_to_another_pag">How do I redirect to another page?</A>
+		<LI><A HREF="#How_do_I_put_a_password_on_my_we">How do I put a password on my web pages?</A>
+		<LI><A HREF="#How_do_I_edit_my_htpasswd_and_">How do I edit my .htpasswd and .htgroup files with Perl?</A>
+		<LI><A HREF="#How_do_I_make_sure_users_can_t_e">How do I make sure users can't enter values into a form that cause my CGI script to do bad things?</A>
+		<LI><A HREF="#How_do_I_parse_an_email_header_">How do I parse an email header?</A>
+		<LI><A HREF="#How_do_I_decode_a_CGI_form_">How do I decode a CGI form?</A>
+		<LI><A HREF="#How_do_I_check_a_valid_email_add">How do I check a valid email address?</A>
+		<LI><A HREF="#How_do_I_decode_a_MIME_BASE64_st">How do I decode a MIME/BASE64 string?</A>
+		<LI><A HREF="#How_do_I_return_the_user_s_email">How do I return the user's email address?</A>
+		<LI><A HREF="#How_do_I_send_read_mail_">How do I send/read mail?</A>
+		<LI><A HREF="#How_do_I_find_out_my_hostname_do">How do I find out my hostname/domainname/IP address?</A>
+		<LI><A HREF="#How_do_I_fetch_a_news_article_or">How do I fetch a news article or the active newsgroups?</A>
+		<LI><A HREF="#How_do_I_fetch_put_an_FTP_file_">How do I fetch/put an FTP file?</A>
+		<LI><A HREF="#How_can_I_do_RPC_in_Perl_">How can I do RPC in Perl?</A>
+	</UL>
+
+	<LI><A HREF="#AUTHOR_AND_COPYRIGHT">AUTHOR AND COPYRIGHT</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+perlfaq9 - Networking ($Revision: 1.17 $, $Date: 1997/04/24 22:44:29 $)
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This section deals with questions related to networking, the internet, and
+a few on the web.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="My_CGI_script_runs_from_the_comm">My CGI script runs from the command line but not the browser.  Can you help me fix it?
+
+</A></H2>
+Sure, but you probably can't afford our contracting rates :-)
+
+
+<P>
+
+Seriously, if you can demonstrate that you've read the following FAQs and that your problem isn't something simple that can be easily answered, you'll probably receive a courteous and useful reply to your question if you post it on comp.infosystems.www.authoring.cgi (if it's something to do with 
+<FONT SIZE=-1>HTTP,</FONT> 
+<FONT SIZE=-1>HTML,</FONT> or the 
+<FONT SIZE=-1>CGI</FONT> protocols). Questions that appear to be Perl questions but are really 
+<FONT SIZE=-1>CGI</FONT> ones that are posted to comp.lang.perl.misc may not be so well received.
+
+
+
+<P>
+
+The useful FAQs are:
+
+
+<P>
+
+<PRE>    <A HREF="http://www.perl.com/perl/faq/idiots-guide.html">http://www.perl.com/perl/faq/idiots-guide.html</A>
+    <A HREF="http://www3.pair.com/webthing/docs/cgi/faqs/cgifaq.shtml">http://www3.pair.com/webthing/docs/cgi/faqs/cgifaq.shtml</A>
+    <A HREF="http://www.perl.com/perl/faq/perl-cgi-faq.html">http://www.perl.com/perl/faq/perl-cgi-faq.html</A>
+    <A HREF="http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html">http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html</A>
+    <A HREF="http://www.boutell.com/faq/">http://www.boutell.com/faq/</A>
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_remove_HTML_from_a_stri">How do I remove HTML from a string?
+
+</A></H2>
+The most correct way (albeit not the fastest) is to use HTML::Parse from 
+<FONT SIZE=-1>CPAN</FONT> (part of the libwww-perl distribution, which is a
+must-have module for all web hackers).
+
+
+<P>
+
+Many folks attempt a simple-minded regular expression approach, like
+<CODE>s/&lt;.*?&gt;//g</CODE>, but that fails in many cases because the tags may continue over line breaks, they may contain quoted angle-brackets, or 
+<FONT SIZE=-1>HTML</FONT> comment may be present. Plus folks forget to convert entities, like
+ <A HREF="#item__lt_">&lt;</A> for example.
+
+
+<P>
+
+Here's one ``simple-minded'' approach, that works for most files:
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl -p0777
+    s/&lt;(?:[^&gt;'&quot;]*|(['&quot;]).*?\1)*&gt;//gs
+</PRE>
+
+<P>
+
+If you want a more complete solution, see the 3-stage striphtml program in
+<A
+HREF="http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/striphtml.gz">http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/striphtml.gz</A>
+.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_extract_URLs_">How do I extract URLs?
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> quick but imperfect approach is
+
+
+<P>
+
+<PRE>    #!/usr/bin/perl -n00
+    # qxurl - tchrist@perl.com
+    print &quot;$2\n&quot; while m{
+        &lt; \s*
+          A \s+ HREF \s* = \s* ([&quot;']) (.*?) \1
+        \s* &gt;
+    }gsix;
+</PRE>
+
+<P>
+
+This version does not adjust relative URLs, understand alternate bases, deal with 
+<FONT SIZE=-1>HTML</FONT> comments, deal with 
+<FONT SIZE=-1>HREF</FONT> and 
+<FONT SIZE=-1>NAME</FONT> attributes in the same tag, or accept URLs themselves as arguments. It also runs about 100x faster than a more ``complete'' solution using the 
+<FONT SIZE=-1>LWP</FONT> suite of modules, such as the <A HREF="http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/xurl.gz">http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/xurl.gz</A> program.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_download_a_file_from_th">How do I download a file from the user's machine?  How do I open a file on another machine?
+
+</A></H2>
+In the context of an 
+<FONT SIZE=-1>HTML</FONT> form, you can use what's known as
+<STRONG>multipart/form-data</STRONG> encoding. The CGI.pm module (available from 
+<FONT SIZE=-1>CPAN)</FONT> supports this in the
+<CODE>start_multipart_form()</CODE> method, which isn't the same as the
+<CODE>startform()</CODE> method.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_make_a_pop_up_menu_in_H">How do I make a pop-up menu in HTML?
+
+</A></H2>
+Use the <STRONG>&lt;SELECT&gt;</STRONG> and <STRONG>&lt;OPTION&gt;</STRONG> tags. The CGI.pm module (available from 
+<FONT SIZE=-1>CPAN)</FONT> supports this widget, as well as many others,
+including some that it cleverly synthesizes on its own.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_fetch_an_HTML_file_">How do I fetch an HTML file?
+
+</A></H2>
+One approach, if you have the lynx text-based 
+<FONT SIZE=-1>HTML</FONT> browser installed on your system, is this:
+
+
+<P>
+
+<PRE>    $html_code = `lynx -source $url`;
+    $text_data = `lynx -dump $url`;
+</PRE>
+
+<P>
+
+The libwww-perl 
+<FONT SIZE=-1>(LWP)</FONT> modules from 
+<FONT SIZE=-1>CPAN</FONT> provide a more powerful way to do this. They work through proxies, and don't require lynx:
+
+
+
+<P>
+
+<PRE>    # print HTML from a URL
+    use LWP::Simple;
+    getprint &quot;<A HREF="http://www.sn.no/libwww-perl/&quot">http://www.sn.no/libwww-perl/&quot</A>;;
+</PRE>
+
+<P>
+
+<PRE>    # print ASCII from HTML from a URL
+    use LWP::Simple;
+    use HTML::Parse;
+    use HTML::FormatText;
+    my ($html, $ascii);
+    $html = get(&quot;<A HREF="http://www.perl.com/&quot">http://www.perl.com/&quot</A>;);
+    defined $html
+        or die &quot;Can't fetch HTML from <A HREF="http://www.perl.com/&quot">http://www.perl.com/&quot</A>;;
+    $ascii = HTML::FormatText-&gt;new-&gt;format(parse_html($html));
+    print $ascii;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="how_do_I_decode_or_create_those_">how do I decode or create those %-encodings on the web?
+
+</A></H2>
+Here's an example of decoding:
+
+
+<P>
+
+<PRE>    $string = &quot;<A HREF="http://altavista.digital.com/cgi-bin/query?pg=q&amp">http://altavista.digital.com/cgi-bin/query?pg=q&amp</A>;what=news&amp;fmt=.&amp;q=%2Bcgi-bin+%2Bperl.exe&quot;;
+    $string =~ s/%([a-fA-F0-9]{2})/chr(hex($1))/ge;
+</PRE>
+
+<P>
+
+Encoding is a bit harder, because you can't just blindly change all the
+non-alphanumunder character (<CODE>\W</CODE>) into their hex escapes. It's important that characters with special
+meaning like <CODE>/</CODE> and <CODE>?</CODE>
+
+<EM>not</EM> be translated. Probably the easiest way to get this right is to avoid reinventing the wheel and just use the URI::Escape module, which is part of the libwww-perl package 
+<FONT SIZE=-1>(LWP)</FONT> available from 
+<FONT SIZE=-1>CPAN.</FONT>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_redirect_to_another_pag">How do I redirect to another page?
+
+</A></H2>
+Instead of sending back a <CODE>Content-Type</CODE> as the headers of your reply, send back a <CODE>Location:</CODE> header. Officially this should be a
+<CODE>URI:</CODE> header, so the CGI.pm module (available from 
+<FONT SIZE=-1>CPAN)</FONT> sends back both:
+
+
+<P>
+
+<PRE>    Location: <A HREF="http://www.domain.com/newpage">http://www.domain.com/newpage</A>
+    URI: <A HREF="http://www.domain.com/newpage">http://www.domain.com/newpage</A>
+</PRE>
+
+<P>
+
+Note that relative URLs in these headers can cause strange effects because
+of ``optimizations'' that servers do.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_put_a_password_on_my_we">How do I put a password on my web pages?
+
+</A></H2>
+That depends. You'll need to read the documentation for your web server, or
+perhaps check some of the other FAQs referenced above.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_edit_my_htpasswd_and_">How do I edit my .htpasswd and .htgroup files with Perl?
+
+</A></H2>
+The HTTPD::UserAdmin and HTTPD::GroupAdmin modules provide a consistent 
+<FONT SIZE=-1>OO</FONT> interface to these files, regardless of how they're stored. Databases may be text, dbm, Berkley 
+<FONT SIZE=-1>DB</FONT> or any database with a 
+<FONT SIZE=-1>DBI</FONT> compatible driver. HTTPD::UserAdmin supports files used by the `Basic' and `Digest' authentication schemes. Here's an example:
+
+
+
+<P>
+
+<PRE>    use HTTPD::UserAdmin ();
+    HTTPD::UserAdmin
+          -&gt;new(DB =&gt; &quot;/foo/.htpasswd&quot;)
+          -&gt;add($username =&gt; $password);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_make_sure_users_can_t_e">How do I make sure users can't enter values into a form that cause my CGI script to do bad things?
+
+</A></H2>
+Read the 
+<FONT SIZE=-1>CGI</FONT> security 
+<FONT SIZE=-1>FAQ,</FONT> at <A HREF="http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html,">http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html,</A> and the Perl/CGI 
+<FONT SIZE=-1>FAQ</FONT> at <A HREF="http://www.perl.com/CPAN/doc/FAQs/cgi/perl-cgi-faq.html.">http://www.perl.com/CPAN/doc/FAQs/cgi/perl-cgi-faq.html.</A>
+
+
+
+<P>
+
+In brief: use tainting (see <A HREF="/n|/perl/html/./lib/Pod/perlsec.html#">the perlsec manpage</A>), which makes sure that data from outside your script (eg, 
+<FONT SIZE=-1>CGI</FONT> parameters) are never used in
+<A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_eval">eval</A> or <A HREF="/n|/perl/html/./lib/Pod/perlfunc.html#item_system">system</A> calls. In addition to tainting, never use the single-argument form of
+<CODE>system()</CODE> or <CODE>exec().</CODE> Instead, supply the command
+and arguments as a list, which prevents shell globbing.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_parse_an_email_header_">How do I parse an email header?
+
+</A></H2>
+For a quick-and-dirty solution, try this solution derived from page 222 of
+the 2nd edition of ``Programming Perl'':
+
+
+<P>
+
+<PRE>    $/ = '';
+    $header = &lt;MSG&gt;;
+    $header =~ s/\n\s+/ /g;      # merge continuation lines
+    %head = ( UNIX_FROM_LINE, split /^([-\w]+):\s*/m, $header );
+</PRE>
+
+<P>
+
+That solution doesn't do well if, for example, you're trying to maintain all the Received lines. 
+<FONT SIZE=-1>A</FONT> more complete approach is to use the Mail::Header module from 
+<FONT SIZE=-1>CPAN</FONT> (part of the MailTools package).
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_decode_a_CGI_form_">How do I decode a CGI form?
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> lot of people are tempted to code this up
+themselves, so you've probably all seen a lot of code involving <CODE>$ENV{CONTENT_LENGTH}</CODE> and
+<CODE>$ENV{QUERY_STRING}</CODE>. It's true that this can work, but there are also a lot of versions of
+this floating around that are quite simply broken!
+
+
+<P>
+
+Please do not be tempted to reinvent the wheel. Instead, use the CGI.pm or CGI_Lite.pm (available from 
+<FONT SIZE=-1>CPAN),</FONT> or if you're trapped in the module-free land of perl1 .. perl4, you might look into cgi-lib.pl (available from <A HREF="http://www.bio.cam.ac.uk/web/form.html).">http://www.bio.cam.ac.uk/web/form.html).</A>
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_check_a_valid_email_add">How do I check a valid email address?
+
+</A></H2>
+You can't.
+
+
+<P>
+
+Without sending mail to the address and seeing whether it bounces (and even then you face the halting problem), you cannot determine whether an email address is valid. Even if you apply the email header standard, you can have problems, because there are deliverable addresses that aren't 
+<FONT SIZE=-1>RFC-822</FONT> (the mail header standard) compliant, and addresses that aren't deliverable which are compliant.
+
+
+
+<P>
+
+Many are tempted to try to eliminate many frequently-invalid email
+addresses with a simple regexp, such as
+<CODE>/^[\w.-]+\@([\w.-]\.)+\w+$/</CODE>. However, this also throws out many valid ones, and says nothing about potential deliverability, so is not suggested. Instead, see <A HREF="http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/ckaddr.gz">http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/ckaddr.gz</A> , which actually checks against the full 
+<FONT SIZE=-1>RFC</FONT> spec (except for nested comments), looks for addresses you may not wish to accept email to (say, Bill Clinton or your postmaster), and then makes sure that the hostname given can be looked up in 
+<FONT SIZE=-1>DNS.</FONT> It's not fast, but it works.
+
+
+
+<P>
+
+Here's an alternative strategy used by many 
+<FONT SIZE=-1>CGI</FONT> script authors: Check the email address with a
+simple regexp (such as the one above). If the regexp matched the address,
+accept the address. If the regexp didn't match the address, request
+confirmation from the user that the email address they entered was correct.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_decode_a_MIME_BASE64_st">How do I decode a MIME/BASE64 string?
+
+</A></H2>
+The MIME-tools package (available from 
+<FONT SIZE=-1>CPAN)</FONT> handles this and a lot more. Decoding 
+<FONT SIZE=-1>BASE64</FONT> becomes as simple as:
+
+
+
+<P>
+
+<PRE>    use MIME::base64;
+    $decoded = decode_base64($encoded);
+</PRE>
+
+<P>
+
+
+<FONT SIZE=-1>A</FONT> more direct approach is to use the
+<CODE>unpack()</CODE> function's ``u'' format after minor transliterations:
+
+
+<P>
+
+<PRE>    tr#A-Za-z0-9+/##cd;                   # remove non-base64 chars
+    tr#A-Za-z0-9+/# -_#;                  # convert to uuencoded format
+    $len = pack(&quot;c&quot;, 32 + 0.75*length);   # compute length byte
+    print unpack(&quot;u&quot;, $len . $_);         # uudecode and print
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_return_the_user_s_email">How do I return the user's email address?
+
+</A></H2>
+On systems that support getpwuid, the $&lt; variable and the Sys::Hostname module (which is part of the standard perl
+distribution), you can probably try using something like this:
+
+
+<P>
+
+<PRE>    use Sys::Hostname;
+    $address = sprintf('%s@%s', getpwuid($&lt;), hostname);
+</PRE>
+
+<P>
+
+Company policies on email address can mean that this generates addresses
+that the company's email system will not accept, so you should ask for
+users' email addresses when this matters. Furthermore, not all systems on
+which Perl runs are so forthcoming with this information as is Unix.
+
+
+<P>
+
+The Mail::Util module from 
+<FONT SIZE=-1>CPAN</FONT> (part of the MailTools package) provides a
+<CODE>mailaddress()</CODE> function that tries to guess the mail address of
+the user. It makes a more intelligent guess than the code above, using
+information given when the module was installed, but it could still be
+incorrect. Again, the best way is often just to ask the user.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_send_read_mail_">How do I send/read mail?
+
+</A></H2>
+Sending mail: the Mail::Mailer module from 
+<FONT SIZE=-1>CPAN</FONT> (part of the MailTools package) is UNIX-centric, while Mail::Internet uses Net::SMTP which is not UNIX-centric. Reading mail: use the Mail::Folder module from 
+<FONT SIZE=-1>CPAN</FONT> (part of the MailFolder package) or the Mail::Internet module from 
+<FONT SIZE=-1>CPAN</FONT> (also part of the MailTools package).
+
+
+
+<P>
+
+<PRE>   # sending mail
+    use Mail::Internet;
+    use Mail::Header;
+    # say which mail host to use
+    $ENV{SMTPHOSTS} = 'mail.frii.com';
+    # create headers
+    $header = new Mail::Header;
+    $header-&gt;add('From', 'gnat@frii.com');
+    $header-&gt;add('Subject', 'Testing');
+    $header-&gt;add('To', 'gnat@frii.com');
+    # create body
+    $body = 'This is a test, ignore';
+    # create mail object
+    $mail = new Mail::Internet(undef, Header =&gt; $header, Body =&gt; \[$body]);
+    # send it
+    $mail-&gt;smtpsend or die;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_find_out_my_hostname_do">How do I find out my hostname/domainname/IP address?
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> lot of code has historically cavalierly called the <CODE>`hostname`</CODE>
+program. While sometimes expedient, this isn't very portable. It's one of
+those tradeoffs of convenience versus portability.
+
+
+<P>
+
+The Sys::Hostname module (part of the standard perl distribution) will give you the hostname after which you can find out the 
+<FONT SIZE=-1>IP</FONT> address (assuming you have working 
+<FONT SIZE=-1>DNS)</FONT> with a <CODE>gethostbyname()</CODE> call.
+
+
+
+<P>
+
+<PRE>    use Socket;
+    use Sys::Hostname;
+    my $host = hostname();
+    my $addr = inet_ntoa(scalar(gethostbyname($name)) || 'localhost');
+</PRE>
+
+<P>
+
+Probably the simplest way to learn your 
+<FONT SIZE=-1>DNS</FONT> domain name is to grok it out of /etc/resolv.conf,
+at least under Unix. Of course, this assumes several things about your
+resolv.conf configuration, including that it exists.
+
+
+<P>
+
+(We still need a good 
+<FONT SIZE=-1>DNS</FONT> domain name-learning method for non-Unix systems.)
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_fetch_a_news_article_or">How do I fetch a news article or the active newsgroups?
+
+</A></H2>
+Use the Net::NNTP or News::NNTPClient modules, both available from 
+<FONT SIZE=-1>CPAN.</FONT> This can make tasks like fetching the newsgroup
+list as simple as:
+
+
+<P>
+
+<PRE>    perl -MNews::NNTPClient
+      -e 'print <A HREF="News::NNTPClient-&gt">News::NNTPClient-&gt</A>;new-&gt;list(&quot;newsgroups&quot;)'
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_do_I_fetch_put_an_FTP_file_">How do I fetch/put an FTP file?
+
+</A></H2>
+LWP::Simple (available from 
+<FONT SIZE=-1>CPAN)</FONT> can fetch but not put. Net::FTP (also available from 
+<FONT SIZE=-1>CPAN)</FONT> is more complex but can put as well as fetch.
+
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="How_can_I_do_RPC_in_Perl_">How can I do RPC in Perl?
+
+</A></H2>
+
+<FONT SIZE=-1>A</FONT> 
+<FONT SIZE=-1>DCE::RPC</FONT> module is being developed (but is not yet available), and will be released as part of the DCE-Perl package (available from 
+<FONT SIZE=-1>CPAN).</FONT> No 
+<FONT SIZE=-1>ONC::RPC</FONT> module is known.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR_AND_COPYRIGHT">AUTHOR AND COPYRIGHT
+
+</A></H1>
+Copyright (c) 1997 Tom Christiansen and Nathan Torkington. All rights
+reserved. See <A HREF="/n|/perl/html/./lib/Pod/perlfaq.html#">the perlfaq manpage</A> for distribution information.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

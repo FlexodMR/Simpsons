@@ -1,0 +1,90 @@
+
+eventanim
+{
+   name      foottapevent
+   count     1
+   framerate 30.0
+   length    10
+   cyclic    1
+
+   event
+   {
+      name foottap   // name of the event
+      address sound  // who should get the event
+      param 1        // a generic value for the recipient
+      time  5        // which frame of the animation
+      data           // Data is optional
+      {
+         count 3
+         int 10     // data item 1
+         int 2      // data item 2
+         float 3.14 // data item 3
+      }
+   }
+}
+
+
+sequencer 
+{
+   name DemoSequencer
+   animtarget DemoPose
+   speed   1
+
+   states 
+   {
+      count 2
+
+      state
+      {
+         name idle
+         anim  foottap
+         event foottapevent
+         minframe 0          // frame limits are optional                                
+         maxframe 12
+         subpart  0          // subparts are optional
+         loop  loopforever
+         
+         transitions
+         {
+            count 1  /// odes not include default
+
+            transition 
+            {
+               from     idle02  // idle02 defined elsewhere
+               command  blendin
+               time     5       // number of frames
+            }
+            transition 
+            {
+               default        // mark this tranisition as 
+                              // the default transition
+                              // to this state 
+               command  start
+            }
+
+         }
+      }
+
+      state
+      {
+         name  idle02
+         anim  nosepick
+         loop  loopforever
+
+         transitions
+         {
+            count 0
+
+            transition
+            {
+               default
+               command start
+            }
+         }
+      }
+   }
+}
+
+            
+
+

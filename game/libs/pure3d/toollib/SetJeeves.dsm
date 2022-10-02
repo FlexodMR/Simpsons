@@ -1,0 +1,46 @@
+'------------------------------------------------------------------------------
+'FILE DESCRIPTION: Adds the custom build steps to build a .sc file
+'------------------------------------------------------------------------------
+Option Explicit
+
+Sub SetJeeves()
+'Description: Adds the custom build steps to build a .sc file
+
+	Dim Name
+   Name = InputBox("Schema file name", "Set Jeeves","tlX")
+
+ 	Dim Toollib
+   Dim myProject
+   For Each myProject in Application.Projects
+      if myProject.Name = "toollib" then
+         set Toollib = myProject
+      end if
+   Next
+
+   Dim SCName
+   Dim HPPName
+   Dim CPPName
+   SCName = ".\Schema16\" + Name + ".sc"
+   'HPPName = ".\chunks16\inc\" + Name + ".hpp"
+   'CPPName = ".\chunks16\src\" + Name + ".cpp"
+   'Add the file to the Project
+   If Toollib.Type = "Build" Then
+      Toollib.AddFile SCName
+      'Toollib.AddFile HPPName
+      'Toollib.AddFile CPPName
+   End If
+   
+   Dim cfg
+	For Each cfg in Toollib.Configurations
+      cfg.AddCustomBuildStepToFile SCName,_
+      "perl chunks16/jeeves/jeeves -I chunks16/jeeves -S Schema16 -t chunks16/jeeves/chunk_hpp.tpl -s Chunk_Schema $(InputPath) -o chunks16/inc/$(InputName).hpp"_
+      + Chr(10) + _
+      "perl chunks16/jeeves/jeeves -I chunks16/jeeves -S Schema16 -t chunks16/jeeves/chunk_cpp.tpl -s Chunk_Schema $(InputPath) -o chunks16/src/$(InputName).cpp",_
+      "$(ProjDir)/chunks16/src/$(InputName).cpp"_ 
+      + Chr(10) +_
+      "$(ProjDir)/chunks16/inc/$(InputName).hpp",_
+      "Jeeves - $(InputName)"
+	Next
+End Sub
+
+

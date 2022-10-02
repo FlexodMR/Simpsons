@@ -1,0 +1,99 @@
+################################################################################
+#
+#  Files specific: This files specified the location of the generated 
+#		   library/executable file and where to gather source & header 
+#		   files  for compilation.
+################################################################################
+
+####################
+# General defines
+####################
+
+PLATFORM=PS2EE
+
+ROOT = ../../../../..
+ROOTDIR = ../../../../..
+
+CONSTANTS = $(ROOTDIR)/pure3d/constants
+CORE = $(ROOTDIR)/pure3d/p3d
+ANIM = $(ROOTDIR)/pure3d/p3d/anim
+EFFECT = $(ROOTDIR)/pure3d/p3d/effects
+P3DLIBDIR = $(ROOTDIR)/pure3d/build/lib
+P3DDIR = $(ROOTDIR)/pure3d/build/ps2/Pure3D
+#PDDIPS2DIR = $(ROOTDIR)/pure3d/build/ps2/pddi
+RADMATHDIR = $(ROOTDIR)/radmath
+#PNGDIR = $(ROOTDIR)/pure3d/build/ps2/png
+#ZLIBDIR = $(ROOTDIR)/pure3d/build/ps2/zlib
+SIMDIR = $(ROOTDIR)/sim/lib
+RADCOREDIR = $(ROOTDIR)/radcore
+POSERDIR = $(ROOTDIR)/poser
+
+BINDIR          = ../../bin
+LIBRARYDIR	= ../../lib
+SOURCEDIR	= ../../Src
+INCLUDEDIR	+= ../../Inc \
+	$(ROOTDIR)/pure3d \
+	$(ROOTDIR)/sim \
+	$(RADMATHDIR) \
+	$(RADCOREDIR)/inc \
+	$(POSERDIR)/inc \
+	$(CONSTANTS) \
+	$(CORE) \
+	$(CORE)/platform/ps2 \
+	$(COVERDIR) \
+	$(INCDIR) \
+	$(ROOTDIR)
+
+TARGET		= $(BINDIR)/coverage
+#TARGET		= coverage
+
+TARGETTYPE	= EXECUTABLE
+
+#-DPS2EE -DP3D_PS2 -DP3D_NO_ASM -DPDDI_NO_ANON_UNION -DPDDI_IMPLICIT_LINK -DPDDI_PS2
+DEFINES +=	\
+	PS2EE \
+	P3D_PS2 \
+	P3D_NO_ASM \
+	PDDI_NO_ANON_UNION \
+	PDDI_IMPLICIT_LINK \
+	PDDI_PS2
+
+ifeq ($(CONFIG), DEBUG)
+LIBEXT = d
+endif
+
+ifeq ($(CONFIG), RELEASE)
+LIBEXT = r
+endif
+
+ifeq ($(CONFIG), TUNE)
+LIBEXT = t
+endif
+
+LIBS += \
+	$(P3DLIBDIR)/pure3dp$(LIBEXT).a \
+	$(P3DLIBDIR)/pddip$(LIBEXT).a \
+	$(P3DLIBDIR)/pngp$(LIBEXT).a \
+	$(P3DLIBDIR)/zlibp$(LIBEXT).a \
+	$(RADMATHDIR)/lib/radmathp$(LIBEXT).a \
+	$(RADCOREDIR)/lib/radcorep$(LIBEXT).a \
+	$(SIMDIR)/simp$(LIBEXT).a \
+	$(POSERDIR)/lib/poserp$(LIBEXT).a
+
+#####################################
+# source files included in project
+#####################################
+
+SOURCEFILES += \
+	ps2 \
+	coverapp \
+	coverage \
+	harness \
+	userobject \
+	benchmark \
+	benchmarkparameter \
+	benchmarkresults \
+	configparam \
+	grid \
+	viewercamera \
+	controlpad

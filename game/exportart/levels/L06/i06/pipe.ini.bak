@@ -1,0 +1,24 @@
+PRINT Interior 06 (Obv)
+PRINT =========================
+
+DEPEND gens.p3d track.p3d lights.p3d wb_data.p3d
+
+TEMPLATE statics gens.p3d I06_statics.p3d
+TEMPLATE terrain track.p3d I06_track.p3d
+TEMPLATE intersect track.p3d I06_intersect.p3d
+
+COMMAND p3djoin lights.p3d wb_data.p3d -o I06_env.p3d
+COMMAND p3djoin I06_track.p3d I06_statics.p3d -o I06_region.p3d
+COMMAND p3d2dsg I06_region.p3d -o I06_dsg.p3d
+COMMAND p3dsort -s I06_dsg.p3d -o I06_dsg.p3d
+COMMAND p3djoin I06_dsg.p3d I06_env.p3d -o I06.p3d 
+
+COMMAND p3djoin i06_statics.p3d i06_intersect.p3d -o i06_tree.p3d 
+
+COMMAND p3d2dsg -i I06_intersect.p3d -o I06_intersect.p3d
+
+STORE i06_tree.p3d i06_tree.p3d
+
+COMMAND p3djoin  I06_intersect.p3d I06.p3d -o I06.p3d
+
+STORE  I06.p3d I06.p3d

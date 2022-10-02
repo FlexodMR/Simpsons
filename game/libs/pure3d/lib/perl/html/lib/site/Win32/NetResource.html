@@ -1,0 +1,285 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Win32::NetResource - manage network resources in perl
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#DATA_TYPES">DATA TYPES</A>
+	<LI><A HREF="#FUNCTIONS">FUNCTIONS</A>
+	<UL>
+
+		<LI><A HREF="#NOTE">NOTE</A>
+		<LI><A HREF="#NOTE">NOTE</A>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Win32::NetResource - manage network resources in perl
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    use Win32::NetResource;
+</PRE>
+
+<P>
+
+<PRE>    $ShareInfo = {
+                    'path' =&gt; &quot;C:\\MyShareDir&quot;,
+                    'netname' =&gt; &quot;MyShare&quot;,
+                    'remark' =&gt; &quot;It is good to share&quot;,
+                    'passwd' =&gt; &quot;&quot;,
+                    'current-users' =&gt;0,
+                    'permissions' =&gt; 0,
+                    'maxusers' =&gt; -1,
+                    'type'  =&gt; 0,
+                    };
+    
+    Win32::NetResource::NetShareAdd( $ShareInfo,$parm )
+        or die &quot;unable to add share&quot;;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module offers control over the network resources of Win32.Disks,
+printers etc can be shared over a network.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DATA_TYPES">DATA TYPES
+
+</A></H1>
+There are two main data types required to control network resources. In
+Perl these are represented by hash types.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__NETRESOURCE">%NETRESOURCE
+
+</A></STRONG><DD>
+<PRE>        KEY                    VALUE
+        
+        'Scope'         =&gt;  Scope of an Enumeration
+                            RESOURCE_CONNECTED,
+                            RESOURCE_GLOBALNET,
+                            RESOURCE_REMEMBERED.
+        
+        'Type'          =&gt;  The type of resource to Enum
+                            RESOURCETYPE_ANY    All resources
+                            RESOURCETYPE_DISK    Disk resources
+                            RESOURCETYPE_PRINT    Print resources
+        
+        'DisplayType'   =&gt;  The way the resource should be displayed.
+                            RESOURCEDISPLAYTYPE_DOMAIN    
+                            The object should be displayed as a domain.
+                            RESOURCEDISPLAYTYPE_GENERIC    
+                            The method used to display the object does not matter.
+                            RESOURCEDISPLAYTYPE_SERVER    
+                            The object should be displayed as a server.
+                            RESOURCEDISPLAYTYPE_SHARE    
+                            The object should be displayed as a sharepoint.
+        
+        'Usage'         =&gt;  Specifies the Resources usage:
+                            RESOURCEUSAGE_CONNECTABLE
+                            RESOURCEUSAGE_CONTAINER.
+        
+        'LocalName'     =&gt;  Name of the local device the resource is 
+                            connected to.
+        
+        'RemoteName'    =&gt;  The network name of the resource.
+        
+        'Comment'       =&gt;  A string comment.
+        
+        'Provider'      =&gt;  Name of the provider of the resource.
+</PRE>
+
+<P>
+
+</DL>
+<DL>
+<DT><STRONG><A NAME="item__SHARE_INFO">%SHARE_INFO
+
+</A></STRONG><DD>
+This hash represents the 
+<FONT SIZE=-1>SHARE_INFO_502</FONT> struct.
+
+
+<P>
+
+<PRE>        KEY                    VALUE
+        'netname'        =&gt;    Name of the share.
+        'type'           =&gt;    type of share.
+        'remark'         =&gt;    A string comment.
+        'permissions'    =&gt;    Permissions value
+        'maxusers'       =&gt;    the max # of users.
+        'current-users'  =&gt;    the current # of users.
+        'path'           =&gt;    The path of the share.
+        'passwd'         =&gt;    A password if one is req'd
+</PRE>
+
+<P>
+
+
+<H1><A NAME="FUNCTIONS">FUNCTIONS
+
+</A></H1>
+<H2><A NAME="NOTE">NOTE
+
+</A></H2>
+All of the functions return 
+<FONT SIZE=-1>FALSE</FONT> (0) if they fail.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_GetSharedResources">GetSharedResources(\@Resources,dwType)
+
+</A></STRONG><DD>
+Creates a list in <CODE>@Resources</CODE> of <CODE>%NETRESOURCE</CODE> hash
+references.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_AddConnection">AddConnection(\%NETRESOURCE,$Password,$UserName,$Connection)
+
+</A></STRONG><DD>
+Makes a connection to a network resource specified by
+<CODE>%NETRESOURCE</CODE>
+
+
+<P>
+
+<DT><STRONG><A NAME="item_CancelConnection">CancelConnection($Name,$Connection,$Force)
+
+</A></STRONG><DD>
+Cancels a connection to a network resource connected to local device
+$name.$Connection is either 1 - persistent connection or 0, non-persistent.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_WNetGetLastError">WNetGetLastError($ErrorCode,$Description,$Name)
+
+</A></STRONG><DD>
+Gets the Extended Network Error.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_GetError">GetError( $ErrorCode )
+
+</A></STRONG><DD>
+Gets the last Error for a Win32::NetResource call.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_GetUNCName">GetUNCName( $UNCName, $LocalPath );
+
+</A></STRONG><DD>
+Returns the 
+<FONT SIZE=-1>UNC</FONT> name of the disk share connected to
+<CODE>$LocalPath</CODE> in $UNCName.
+
+
+<P>
+
+<H2><A NAME="NOTE">NOTE
+
+</A></H2>
+<CODE>$servername</CODE> is optional for all the calls below. (if not given
+the local machine is assumed.)
+
+
+<P>
+
+<DT><STRONG><A NAME="item_NetShareAdd">NetShareAdd(\%SHARE,$parm_err,$servername = NULL )
+
+</A></STRONG><DD>
+Add a share for sharing.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_NetShareCheck">NetShareCheck($device,$type,$servername = NULL )
+
+</A></STRONG><DD>
+Check if a share is available for connection.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_NetShareDel">NetShareDel( $netname, $servername = NULL )
+
+</A></STRONG><DD>
+Remove a share from a machines list of shares.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_NetShareGetInfo">NetShareGetInfo( $netname, \%SHARE,$servername=NULL )
+
+</A></STRONG><DD>
+Get the <CODE>%SHARE_INFO</CODE> information about the share
+<CODE>$netname</CODE> on the server $servername.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_NetShareSetInfo">NetShareSetInfo( $netname,\%SHARE,$parm_err,$servername=NULL)
+
+</A></STRONG><DD>
+Set the information for share $netname.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_AUTHOR">AUTHOR
+
+</A></STRONG><DD>
+Jesse Dougherty for Hip Communications. Gurusamy Sarathy <A
+HREF="MAILTO:<gsar@umich.edu>"><gsar@umich.edu></A> had to clean up the
+horrendous code and the bugs.
+
+
+<P>
+
+
+</DL>
+</DL>
+    </BODY>
+
+    </HTML>

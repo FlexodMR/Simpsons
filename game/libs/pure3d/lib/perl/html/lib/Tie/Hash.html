@@ -1,0 +1,177 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>Tie::StdHash - base class definitions for tied hashes
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#CAVEATS">CAVEATS</A>
+	<LI><A HREF="#MORE_INFORMATION">MORE INFORMATION</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+Tie::Hash, Tie::StdHash - base class definitions for tied hashes
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE>    package NewHash;
+    require Tie::Hash;
+    
+    @ISA = (Tie::Hash);
+    
+    sub DELETE { ... }          # Provides needed method
+    sub CLEAR { ... }           # Overrides inherited method
+    
+    
+    package NewStdHash;
+    require Tie::Hash;
+    
+    @ISA = (Tie::StdHash);
+    
+    # All methods provided by default, define only those needing overrides
+    sub DELETE { ... }
+    
+    
+    package main;
+    
+    tie %new_hash, 'NewHash';
+    tie %new_std_hash, 'NewStdHash';
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This module provides some skeletal methods for hash-tying classes. See
+<A HREF="/n|/perl/html/./lib/Pod/perltie.html#">the perltie manpage</A> for a list of the functions required in order to tie a hash to a package.
+The basic <STRONG>Tie::Hash</STRONG> package provides a <A HREF="#item_new">new</A> method, as well as methods <A HREF="#item_TIEHASH">TIEHASH</A>, <A HREF="#item_EXISTS">EXISTS</A> and <A HREF="#item_CLEAR">CLEAR</A>. The <STRONG>Tie::StdHash</STRONG> package provides most methods required for hashes in <A HREF="/n|/perl/html/./lib/Pod/perltie.html#">the perltie manpage</A>. It inherits from
+<STRONG>Tie::Hash</STRONG>, and causes tied hashes to behave exactly like standard hashes, allowing
+for selective overloading of methods. The <A HREF="#item_new">new</A> method is provided as grandfathering in the case a class forgets to include
+a <A HREF="#item_TIEHASH">TIEHASH</A> method.
+
+
+<P>
+
+For developers wishing to write their own tied hashes, the required methods
+are briefly defined below. See the <A HREF="/n|/perl/html/./lib/Pod/perltie.html#">the perltie manpage</A> section for more detailed descriptive, as well as example code:
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_TIEHASH">TIEHASH classname, LIST
+
+</A></STRONG><DD>
+The method invoked by the command <CODE>tie %hash, classname</CODE>. Associates a new hash instance with the specified class. <A HREF="#item_LIST">LIST</A> would represent additional arguments (along the lines of <A HREF="/n|/perl/html/./lib/AnyDBM_File.html#">the AnyDBM_File manpage</A> and compatriots) needed to complete the association.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_STORE">STORE this, key, value
+
+</A></STRONG><DD>
+Store datum <EM>value</EM> into <EM>key</EM> for the tied hash <EM>this</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FETCH">FETCH this, key
+
+</A></STRONG><DD>
+Retrieve the datum in <EM>key</EM> for the tied hash <EM>this</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_FIRSTKEY">FIRSTKEY this
+
+</A></STRONG><DD>
+Return the (key, value) pair for the first key in the hash.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_NEXTKEY">NEXTKEY this, lastkey
+
+</A></STRONG><DD>
+Return the next (key, value) pair for the hash.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_EXISTS">EXISTS this, key
+
+</A></STRONG><DD>
+Verify that <EM>key</EM> exists with the tied hash <EM>this</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DELETE">DELETE this, key
+
+</A></STRONG><DD>
+Delete the key <EM>key</EM> from the tied hash <EM>this</EM>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_CLEAR">CLEAR this
+
+</A></STRONG><DD>
+Clear all values from the tied hash <EM>this</EM>.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="CAVEATS">CAVEATS
+
+</A></H1>
+The <A HREF="/n|/perl/html/./lib/Pod/perltie.html#">the perltie manpage</A> documentation includes a method called <A HREF="#item_DESTROY">DESTROY</A> as a necessary method for tied hashes. Neither <STRONG>Tie::Hash</STRONG> nor <STRONG>Tie::StdHash</STRONG>
+define a default for this method. This is a standard for class packages,
+but may be omitted in favor of a simple default.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="MORE_INFORMATION">MORE INFORMATION
+
+</A></H1>
+The packages relating to various DBM-related implemetations (<EM>DB_File</EM>,
+<EM>NDBM_File</EM>, etc.) show examples of general tied hashes, as does the
+<A HREF="/n|/perl/html/./lib/Config.html#">the Config manpage</A> module. While these do not utilize <STRONG>Tie::Hash</STRONG>, they serve as good working examples.
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

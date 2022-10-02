@@ -1,0 +1,192 @@
+;-----------------------------------------------------------------------------------------
+; refraction program
+;-----------------------------------------------------------------------------------------
+VU_REFRACT:
+
+   nop                              bal vi15, VU_CHECKSKINNING_LOADPRIMGROUP
+   nop                              nop
+   ; LSPECULAT zw = width/height
+
+   addz.x vf02x,vf00x,_LSPECULAR    nop
+   addw.y vf02y,vf00y,_LSPECULAR    nop
+   add.xy vf05,vf00,vf02            loi 0.5
+
+   muli.xy vf02xy,vf02xy,i          nop           ; vf02 = width/2 , height/2
+   subw.xy vf05xy,vf05xy,vf00w      fcset 0       ; vf05 = width-1, height-1
+
+#if 0
+   ; HACKED! should use real screen width/height
+   nop[i]                           loi 320.0
+   addi.x vf02x,vf00x,i             nop
+   nop[i]                           loi 224.0
+   addi.y vf02y,vf00y,i             fcset 0
+
+   ; for clamping to screen coordinates
+   nop[i]                           loi 639.0
+   addi.x vf05x,vf00x,i             nop
+   nop[i]                           loi 447.0
+   addi.y vf05y,vf00y,i             fcset 0
+#endif
+
+   nop                              iaddiu vi01,vi00,0x5f3 ; wanna use UV + NOP + XYZF2
+   nop                              iswr.z vi01,(_GIFTAG)z ; ideally I'd use 0x43, but I can't reach NREG field in the tag!
+
+   nop                              iaddiu vi03,vi00,0
+
+
+   REFRACT_LOOP:
+
+   mulaw ACC,  _CTM3, vf00          lq vf01, 2(vi04)                 ; transform vertex, load vertex xyzw
+   maddaz ACC, _CTM2, vf01          lq vf04, 1(vi04)                 ; load normal
+   madday ACC, _CTM1, vf01          lq vf06, 0(vi04)                 ; load ST
+   maddx vf01, _CTM0, vf01          nop                              ; vf01 = transformed vertex
+
+   clipw.xyz vf01xyz, vf01w         div q, vf00w, vf01w
+
+   mulaw ACC,  _CTM3, vf00          nop
+   maddaz ACC, _CTM2, vf04          nop
+   madday ACC, _CTM1, vf04          nop
+   maddx vf04, _CTM0, vf04          fcand vi01,0x3ffff               ; transform normal
+
+
+   mul.xyz vf01,vf01,_VPS           iadd vi03,vi03,vi01
+   mul.xy vf04,vf04,_LSPECULAR      nop                              ; scale normal
+   mulq.xyz  vf01,vf01,q            nop
+   mulq.xyz  vf06,vf06,q            nop
+
+   add.xy  vf03, vf01,vf02          iaddiu vi01,vi01,0x7fff          ; vf03 = UV
+
+   add.xy  vf03, vf03,vf04          nop                              ; offset by normal
+   max.xy  vf03, vf03,vf00          nop
+   mini.xy vf03, vf03,vf05          nop
+   add.xyz vf01, vf01,_VPO          nop
+   ftoi4.xyz vf01,vf01              sq vf06,0(vi04)                  ; store perspective correct STs to original buffer!
+   ftoi4.xy  vf03,vf03              mfir.w vf01w, vi01   
+   nop                              iaddi  vi05,vi05,-1
+   nop                              iaddiu vi04,vi04,3
+   nop                              sq vf01,2(vi06)                  ; note, we dont need colours
+   nop                              sq vf03,0(vi06)      
+   nop                              ibgtz vi05,REFRACT_LOOP
+   nop                              iaddiu vi06,vi06,3
+
+   ;test_bfc_clip
+
+   nop                              xgkick _GIFTAG
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b VU_REFRACT
+   nop                              nop
+
+;-----------------------------------------------------------------------------------------
+
+#if 0
+
+VU_REFRACT_TEX:
+
+   nop                              bal vi15, VU_CHECKSKINNING_LOADPRIMGROUP
+   nop                              nop
+
+   nop                              iaddiu vi01,vi00,0x513 ; wanna use UV not ST
+   nop                              iswr.z vi01,(_GIFTAG)z
+  
+   mulaw ACC,  _CTM3, vf00          lq vf02, 2(vi04)                 ; transform vertex, load vertex xyzw
+   maddaz ACC, _CTM2, vf02          lq vf04, 1(vi04)                 ; load normal
+   madday ACC, _CTM1, vf02          fcset 0                          ; 
+   maddx vf03, _CTM0, vf02          nop                              ; vf03 = transformed vertex
+   nop[i]                           loi 255.0                        ; load 255.0 into i register for colour clamping
+   mulax ACC,  _LVX, vf04           nop                              ; multiply normal by light direction matrix
+   madday ACC, _LVY, vf04           nop                              ;
+   maddz vf06, _LVZ, vf04           div q, vf00w, vf03w              ; vf06 = dot products(002), q = 1/w (005)
+   clipw.xyz vf03xyz, vf03w         nop                              ; compute clipping code (003)
+   mul.xyz vf03, vf03, _VPS         iaddiu vi03,vi00,0               ; viewport scale (004), clip flag
+
+REFRACT_TEX_LOOP:
+   nop                              lq vf05, 0(vi04)                 ;001 load st
+   maxx.xyzw vf06, vf06, vf00x      nop                              ;002 clamp dot products to 0.0
+   nop                              fcand vi01, 0x3ffff              ;003 clip test
+   mulaw ACC, _LADDITIVE, vf00w     iaddiu vi01, vi01, 0x7fff        ;004 load additive term into acc, compute ADC bit
+   mulq.xyz vf03, vf03, Q           nop                              ;005 project (009), write ADC (prim kick) bit
+   maddax ACC,  _LRGB0, vf06        mfir.w vf03w, vi01               ;006 additive + color * dot-product
+   madday ACC, _LRGB1, vf06         iaddiu vi04, vi04, 3             ;007 advance vertex pointer
+   maddaz ACC, _LRGB2, vf06         nop                              ;008
+   maddw vf06, _LRGB3, vf06         fcand vi01,0x3ffff               ;009 vf06 = unclamped lighting colour (013)
+   add.xyz vf03, vf03, _VPO         iadd vi03,vi03,vi01              ;010 viewport offset (014), update clip flag
+   mulq.xyz vf05, vf05, Q           lq vf02, 2(vi04)                 ;011 vf05 = 0 q (s/q) (t/q)st*q (015), load next normal
+   mulaw ACC, _CTM3, vf00           lq vf04, 1(vi04)                 ;012 transform next vertex, load next vertex
+   minii.xyzw vf06, vf06, i         nop                              ;013 clamp colour to 255.0 (017)
+   ftoi4.xyz  vf03, vf03            nop                              ;014 convert to 12.4 for GS (018)
+   maddaz ACC, _CTM2, vf02          sq vf05, 0(vi06)                 ;015 store stq
+   madday ACC, _CTM1, vf02          nop                              ;016
+   ftoi0 vf06, vf06                 nop                              ;017 convert colour to int (021)
+   maddx vf03, _CTM0, vf02          sq vf03, 2(vi06)                 ;018 vf03 (022), store transformed vertex
+   mulax ACC,  _LVX, vf04           nop                              ;019 normal * light direction
+   madday ACC, _LVY, vf04           iaddi vi05, vi05, -1             ;020 decrement vertex count
+   nop                              sq vf06, 1(vi06)                 ;021 store colour
+   maddz vf06, _LVZ, vf04           div q, vf00w, vf03w              ;022 vf06 = dot producte (002), q = 1/w (005)
+   clipw.xyz vf03xyz, vf03w         ibgtz vi05, REFRACT_TEX_LOOP     ;023 compute clipping code (003), loop
+   mul.xyz vf03, vf03, _VPS         iaddiu vi06, vi06, 3             ;024 viewport scale (004), increment output pointer
+
+   ;test_bfc_clip                                                    ; test for bfcing and clipping
+   
+   ; I should really be doing this in the loop.
+   
+   nop                              bal vi15, VU_LOADPRIMGROUP
+   nop                              nop
+
+   nop                              move vf02,_VPS
+
+   ; HACKED! should use real screen width/height
+   nop[i]                           loi 320.0
+   addi.x vf02x,vf00x,i             nop
+   nop[i]                           loi 224.0
+   addi.y vf02y,vf00y,i             fcset 0
+
+   ; for clamping to screen coordinates
+   nop[i]                           loi 639.0
+   addi.x vf05x,vf00x,i             nop
+   nop[i]                           loi 447.0
+   addi.y vf05y,vf00y,i             fcset 0
+
+   nop                              iaddiu vi01,vi00,0x513 ; wanna use UV + NOP + XYZF2
+   nop                              iswr.z vi01,(_GIFTAG)z ; ideally I'd use 0x43, but I can't reach NREG field in the tag!
+
+   nop                              iaddiu vi03,vi00,0
+
+   REFRACT_TEX_LOOP_2:
+
+   mulaw ACC,  _CTM3, vf00          lq vf01, 2(vi04)                 ; transform vertex, load vertex xyzw
+   maddaz ACC, _CTM2, vf01          lq vf04, 1(vi04)                 ; load normal
+   madday ACC, _CTM1, vf01          nop                              ; 
+   maddx vf01, _CTM0, vf01          nop                              ; vf01 = transformed vertex
+   clipw.xyz vf01xyz, vf01w         div q, vf00w, vf01w
+   mul.xy vf04,vf04,_LSPECULAR      waitq                            ; scale normal
+   mulq.xyz  vf01,vf01,q            fcand vi01,0x3ffff
+   mul.xyz vf01,vf01,_VPS           iadd vi03,vi03,vi01
+   add.xy  vf03, vf01,vf02          iaddiu vi01,vi01,0x7fff          ; vf03 = UV
+   add.xy  vf03, vf03,vf04          nop                              ; offset by normal
+   max.xy  vf03, vf03,vf00          nop
+   mini.xy vf03, vf03,vf05          nop
+   add.xyz vf01, vf01,_VPO          nop
+   ftoi4.xyz vf01,vf01              nop
+   ftoi4.xy  vf03,vf03              mfir.w vf01w, vi01   
+   nop                              iaddi  vi05,vi05,-1
+   nop                              iaddiu vi04,vi04,3
+   nop                              sq vf03,0(vi06)      
+   nop                              ibgtz vi05,REFRACT_TEX_LOOP_2
+   nop                              iaddiu vi06,vi06,3
+
+   ;test_bfc_clip
+
+   nop                              xgkick _GIFTAG                   ; kick prims and go to sleep
+   nop                              nop
+
+   nop[e]                           nop
+   nop                              nop
+
+   nop                              b VU_REFRACT_TEX
+   nop                              nop
+
+#endif

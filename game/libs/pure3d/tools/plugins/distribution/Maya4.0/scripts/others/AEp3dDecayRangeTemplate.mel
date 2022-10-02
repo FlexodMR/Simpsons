@@ -1,0 +1,70 @@
+//===========================================================================
+// Copyright ©2002 Radical Entertainment Ltd.  All rights reserved.
+//
+// Created:     02 August, 2002
+//
+// Component:   p3dDecayRange
+//
+// Description: Maya Attribute Editor template for p3dDecayRange.
+//
+// Constraints: 
+//
+// Creator:     Bryan Ewert
+//
+//===========================================================================
+
+global proc AEp3dDecayRangeTemplate( string $node )
+{
+    editorTemplate -beginScrollLayout;
+
+    editorTemplate -beginLayout "Pure3D Decay Range" -collapse 0; 
+
+        editorTemplate -addControl "decayMode";
+        editorTemplate -addControl "innerRadius";
+        editorTemplate -addControl "outerRadius";
+        editorTemplate -label "Rotate" -addControl "rotateY";
+
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Object Display" -collapse 1; 
+
+        editorTemplate -addControl "visibility";
+        editorTemplate -addControl "template";
+        editorTemplate -addControl "ghosting";
+
+    editorTemplate -endLayout;
+
+    editorTemplate -suppress "intermediateObject";
+    editorTemplate -suppress "caching";
+    editorTemplate -suppress "nodeState";
+    editorTemplate -suppress "useObjectColor";
+    editorTemplate -suppress "objectColor";
+    editorTemplate -suppress "drawOverride";
+    editorTemplate -suppress "lodVisibility";
+    editorTemplate -suppress "renderInfo";
+    editorTemplate -suppress "motionBlur";
+    editorTemplate -suppress "visibleInReflections";
+    editorTemplate -suppress "visibleInRefractions";
+    editorTemplate -suppress "castsShadows";
+    editorTemplate -suppress "receiveShadows";
+    editorTemplate -suppress "maxVisibilitySamplesOverride";
+    editorTemplate -suppress "maxVisibilitySamples";
+    editorTemplate -suppress "geometryAntialiasingOverride";
+    editorTemplate -suppress "antialiasingLevel";
+    editorTemplate -suppress "shadingSamplesOverride";
+    editorTemplate -suppress "shadingSamples";
+    editorTemplate -suppress "maxShadingSamples";
+    editorTemplate -suppress "volumeSamplesOverride";
+    editorTemplate -suppress "volumeSamples";
+    editorTemplate -suppress "depthJitter";
+    editorTemplate -suppress "primaryVisibility";
+    editorTemplate -suppress "compInstObjGroups";
+    editorTemplate -suppress "instObjGroups";
+    editorTemplate -suppress "localPosition";
+    editorTemplate -suppress "inWorldMatrix";
+
+    editorTemplate -addExtraControls;
+
+    editorTemplate -endScrollLayout;
+    
+}

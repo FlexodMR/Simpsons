@@ -1,0 +1,27 @@
+// diffuse bump map shader
+
+#include "..\shaders\bumpmap_Constants.h"
+
+xps.1.1    // Xbox pixel shader
+
+def c0, 0.3, 0.3, 0.3, 1.0			//specular color
+def c1, 0.3, 0.3, 0.0, 1.0		//deffuse color
+
+
+tex  t0						// fetch base texture
+tex  t1						// fetch normal map
+							
+texcoord t2					// light vector in texture space
+texcoord t3					// half vector in texture space
+
+//diffuse color
+dp3 r1, t2, t1_bx2
+mul r1, r1, c[ CP_DIFFUSE ]
+mul r0, r1.xyz, t0.xyz			// Diffuse * base texture
+
+//specular
+dp3 r1, t3, t1_bx2
+mul r1, r1.a, r1.a
+mul r1, r1.a, r1.a
+mul r1, r1.a, r1.a
+mad r0, r1, c[ CP_SPECULAR ], r0		// spec * spec * spec * spec + diffuse

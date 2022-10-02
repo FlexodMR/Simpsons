@@ -1,0 +1,281 @@
+//This is all level initialization stuff..
+//Anything here is persistent across the entire level.
+EnableTutorialMode( false );
+InitLevelPlayerVehicle("homer_v","level7_carstart","DEFAULT");
+//SetPostLevelFMV("fmv7.rmv");
+
+PreallocateActors( "spaceship", "1" );
+AddFlyingActorByLocator("spaceship","Planet Express Ship","l7_spaceship","NEVER_DESPAWN");
+AddBehaviour( "Planet Express Ship", "UFO_BEAM_ALWAYS_ON", "UfoBeam" );
+
+CreateChaseManager("cHears","Pursuit\L7cop.con",1);
+SetHitAndRunDecay(1.0);
+SetNumChaseCars("2");
+
+AddCharacter("homer","homer");
+
+AddNPCCharacterBonusMission("zmale3", "npd", "sr1_mhouse_sd", "sr1", "checkered", "intro", 0, "checkeredfinish" ); //switch to zombie
+	SetBonusMissionDialoguePos( "sr1", "sr1_homer_sd", "sr1_mhouse_sd", "bm_carstart");
+
+AddNPCCharacterBonusMission("zfem1", "npd", "sr2_nelson_sd", "sr2", "checkered", "intro", 0, "checkeredfinish" );  //switch to zombie
+	SetBonusMissionDialoguePos( "sr2", "sr2_homer_sd", "sr2_nelson_sd", "bm_carstart");
+
+AddNPCCharacterBonusMission("zmale1", "npd", "sr3_ralph_sd", "sr3", "checkered", "intro", 0, "checkeredfinish" ); //switch to zombie
+	SetBonusMissionDialoguePos( "sr3", "sr3_homer_sd", "sr3_ralph_sd", "m4_carstart");
+
+AddNPCCharacterBonusMission("louie", "npd", "sr4_louie_sd", "gr1", "dice", "intro", 0 );
+
+ClearAmbientAnimations( "sr1" );
+ClearAmbientAnimations( "sr2" );
+ClearAmbientAnimations( "sr3" );
+ClearAmbientAnimations( "bm1" );
+
+//BONUS MISSION CHARACTER
+
+	AddNPCCharacterBonusMission("smithers", "npd", "bm1_smithers_sd", "bm1", "exclamation", "errands", 0, "exclamation_shadow" );
+	SetBonusMissionDialoguePos( "bm1", "bm_homer_loc", "bm1_smithers_sd", "bm_carstart");
+
+	SetConversationCam( 0, "pc_near",                        	"bm1" );	
+	SetConversationCam( 1, "npc_far",                        	"bm1" );
+	SetConversationCam( 2, "pc_far",                        	"bm1" );	
+	
+	AddAmbientNpcAnimation( "dialogue_no", 				"bm1" );
+	AddAmbientNpcAnimation( "dialogue_shake_hand_in_air",		"bm1" );
+	AddAmbientNpcAnimation( "dialogue_hands_on_hips",   		"bm1" );	
+
+	AddAmbientPcAnimation( "dialogue_open_arm_hand_gesture",	"bm1" );
+	AddAmbientPcAnimation( "dialogue_thinking",			"bm1" );
+	AddAmbientPcAnimation( "dialogue_shake_hand_in_air",		"bm1" );
+
+	SetCamBestSide("bm1_bestside",					"bm1" );
+	AddBonusMissionNPCWaypoint( "smithers", "bm1_smithers_walk1" );
+	AddBonusMissionNPCWaypoint( "smithers", "bm1_smithers_walk2" );
+	AddBonusMissionNPCWaypoint( "smithers", "bm1_smithers_walk1" );
+
+//ADDING PURCHASE POINTS FOR VEHICLES AND SKINS
+//
+AddPurchaseCarReward( "gil", "gil", "npd", "gil_loc", 1.3, "gil_car" );
+AddPurchaseCarNPCWaypoint("gil", "gil_walk1");
+AddPurchaseCarReward( "simpson", "zmale1", "npd", "zmale1_loc", 1.3, "zmale1_car" );
+AddPurchaseCarNPCWaypoint("zmale1", "zmale1_walk1");
+
+//ADDING TRAFFIC GROUP FOR LEVEL 07//
+//
+	CreateTrafficGroup( 0 );
+		AddTrafficModel( "coffin",2 );
+		AddTrafficModel( "hallo",1 );
+		AddTrafficModel( "ship",1,1 );
+		AddTrafficModel( "witchcar",1,1 );
+	CloseTrafficGroup( );
+
+
+//ADDING AMBIENT CHARACTERS
+//
+	AddAmbientCharacter("apu", "ambient_apu",  1.8);  //Kwik-E-Mart Interior
+
+	AddAmbientCharacter("wiggum", "ambient_wiggum",  0); //zone 1
+		AddAmbientNPCWaypoint( "wiggum", "ambient_wiggum" );
+		AddAmbientNPCWaypoint( "wiggum", "wiggum_walk1" );
+		AddAmbientNPCWaypoint( "wiggum", "wiggum_walk2" );
+		AddAmbientNPCWaypoint( "wiggum", "wiggum_walk1" );
+		AddAmbientNPCWaypoint( "wiggum", "ambient_wiggum" );
+
+	AddAmbientCharacter("beeman", "ambient_beeman",  0); //rail 1
+		AddAmbientNPCWaypoint( "beeman", "ambient_beeman" );
+		AddAmbientNPCWaypoint( "beeman", "beeman_walk1" );
+		AddAmbientNPCWaypoint( "beeman", "beeman_walk2" );
+		AddAmbientNPCWaypoint( "beeman", "beeman_walk3" );
+		AddAmbientNPCWaypoint( "beeman", "beeman_walk4" );
+		AddAmbientNPCWaypoint( "beeman", "beeman_walk3" );
+		AddAmbientNPCWaypoint( "beeman", "beeman_walk2" );
+		AddAmbientNPCWaypoint( "beeman", "beeman_walk1" );
+		AddAmbientNPCWaypoint( "beeman", "ambient_beeman" );
+	
+	AddAmbientCharacter("teen", "ambient_svt",  1.3); //rail 2
+		AddAmbientNPCWaypoint( "teen", "ambient_svt" );
+		AddAmbientNPCWaypoint( "teen", "svt_walk1" );
+		AddAmbientNPCWaypoint( "teen", "svt_walk2" );
+		AddAmbientNPCWaypoint( "teen", "svt_walk3" );
+		AddAmbientNPCWaypoint( "teen", "svt_walk2" );
+		AddAmbientNPCWaypoint( "teen", "svt_walk1" );
+		AddAmbientNPCWaypoint( "teen", "ambient_svt" );
+
+	AddAmbientCharacter("skinner", "ambient_skinner",  1.3); //zone 3
+		AddAmbientNPCWaypoint( "skinner", "ambient_skinner" );
+		AddAmbientNPCWaypoint( "skinner", "skinner_walk1" );
+		AddAmbientNPCWaypoint( "skinner", "skinner_walk2" );
+		AddAmbientNPCWaypoint( "skinner", "skinner_walk3" );
+		AddAmbientNPCWaypoint( "skinner", "skinner_walk2" );
+		AddAmbientNPCWaypoint( "skinner", "skinner_walk1" );
+		AddAmbientNPCWaypoint( "skinner", "ambient_skinner" );
+
+	AddAmbientCharacter("cletus", "ambient_cletus",  0); //rail 6
+		AddAmbientNPCWaypoint( "cletus", "ambient_cletus" );
+		AddAmbientNPCWaypoint( "cletus", "cletus_walk1" );
+		AddAmbientNPCWaypoint( "cletus", "ambient_cletus" );
+
+	AddAmbientCharacter("carl", "ambient_carl",  0); //rail 7
+		AddAmbientNPCWaypoint( "carl", "ambient_carl" );
+		AddAmbientNPCWaypoint( "carl", "carl_walk1" );
+		AddAmbientNPCWaypoint( "carl", "carl_walk2" );
+		AddAmbientNPCWaypoint( "carl", "carl_walk1" );
+		AddAmbientNPCWaypoint( "carl", "ambient_carl" );
+
+//ADDING OED GROUP FOR LEVEL 07//
+//
+//z1r1
+CreatePedGroup( 0 );
+AddPed( "zfem1", 3 );
+AddPed( "zmale1", 2 );
+AddPed( "zmale4", 2 );
+ClosePedGroup( );
+
+//z2
+CreatePedGroup( 1 );
+AddPed( "zfem1", 2 );
+AddPed( "zmale4", 3 );
+AddPed( "witch", 2 );
+ClosePedGroup( );
+
+//R2
+CreatePedGroup( 2 );
+AddPed( "zfem1", 2 );
+AddPed( "zmale1", 2 );
+AddPed( "witch", 3 );
+ClosePedGroup( );
+
+//Z3
+CreatePedGroup( 3 );
+AddPed( "zfem1", 3 );
+AddPed( "zmale1", 2 );
+AddPed( "witch", 2 );
+ClosePedGroup( );
+
+//R3Z4
+CreatePedGroup( 4 );
+AddPed( "zfem1", 2 );
+AddPed( "zmale1", 3 );
+AddPed( "witch", 2 );
+ClosePedGroup( );
+
+//R6Z7
+CreatePedGroup( 5 );
+AddPed( "zfem1", 2 );
+AddPed( "zmale3", 2 );
+AddPed( "zfem5", 3 );
+ClosePedGroup( );
+
+//R7
+CreatePedGroup( 6 );
+AddPed( "zfem5", 3 );
+AddPed( "zmale3", 2 );
+AddPed( "witch", 2 );
+ClosePedGroup( );
+
+
+//Bind the coin drawable and sparkle texture. The art is loaded in the missgen.p3d file.
+// Yes the name of the p3d tTexture is scratch2.bmp, thanks to p3dimage. No biggie.
+SetCoinDrawable( "coinShape_000" );
+SetParticleTexture( 0, "scratch2.bmp" ); // sparkles.
+SetParticleTexture( 1, "spark4.bmp" );	 // sparks when vehicle hits.
+SetParticleTexture( 2, "cloud.tga" );	 // dust cloud when running/jumping.
+SetParticleTexture( 3, "cloud.tga" );	 // leaves when hitting shrubs/trees.
+SetParticleTexture( 4, "star.tga" );	 // stars when hitting something static.
+SetParticleTexture( 5, "cloud.tga" );	 // paint chips when vehicle is damaged.
+SetParticleTexture( 6, "halo.bmp" );	 // Ring for shock wave fx.
+
+PreallocateActors( "beecamera", "2" );
+SetProjectileStats( "waspray", "90.0", "10" );
+
+
+//AddSpawnPoint( "SimpsonsHouse", "beecamera", "Shelly","222.041","4.5","-169.169","50.0","20" );
+
+AddSpawnPointByLocatorScript("w_lemon","beecamera","Shelley","w_lemon","15.0","20");
+
+AddSpawnPointByLocatorScript("w_krustyRC","beecamera","Shelley","w_krustyRC","15.0","20");
+AddSpawnPointByLocatorScript("w_lardlads","beecamera","Shelley","w_lardlads","15.0","20");
+
+AddSpawnPointByLocatorScript("w_playground","beecamera","Shelley","w_playground","15.0","20");
+AddSpawnPointByLocatorScript("w_schoolroof1","beecamera","Shelley","w_schoolroof1","15.0","20");
+AddSpawnPointByLocatorScript("w_schoolroof2","beecamera","Shelley","w_schoolroof2","15.0","20");
+AddSpawnPointByLocatorScript("w_schoolroof3","beecamera","Shelley","w_schoolroof3","15.0","20");
+
+AddSpawnPointByLocatorScript("w_blockade","beecamera","Shelley","w_blockade","15.0","20");
+
+AddSpawnPointByLocatorScript("w_barn","beecamera","Shelley","w_barn","5.0","20");
+
+
+AddSpawnPointByLocatorScript("w_plantlot2","beecamera","Shelley","w_plantlot2","30.0","20");
+
+// They will evade between a certain distance in the horizontal, specified by the 1st 2 numbers
+// and will keep a height above the ground somewhere the 3rd and 4th numbers 
+// The final number indicates the speed at which to evade (in KPH)
+AddBehaviour( "beecamera", "EVADE_PLAYER", "1.0", "3.5", "1.0", "2.0", "30" );
+
+//First param - min distance ( go closer and attraction mode disabled)
+//2nd param - max distance ( bee will attempt to move closer )
+//3rd param - speed in KPH
+AddBehaviour( "beecamera", "ATTRACTION", "2.0","10","10.0");
+
+// Tell the wasp to attack the player. First number indicates maximum firing range in meters
+// 2nd number indicates forward firing arc in degrees
+// Both conditions have to be satisfied before the actor will fire
+// 3rd number is the number of second between wasp evasion attempts
+AddBehaviour( "beecamera", "ATTACK_PLAYER", "15.0", "3.0" , "1.0");
+
+SetActorRotationSpeed( "beecamera", "160.0" );
+AddShield( "beecamera", "beeshield" );
+
+//STATIC wasps - these ones never move
+//AddBehaviour( "static_bee", "ATTRACTION", "2.0","20","10.0");
+
+//Zone 1
+
+AddSpawnPointByLocatorScript("w_simpsons","beecamera","Shelley","w_simpsons","20.0","60");
+AddSpawnPointByLocatorScript("w_simpsons2","beecamera","Shelley","w_simpsons2","15.0","20");
+AddSpawnPointByLocatorScript("w_flanders","beecamera","Shelley","w_flanders","8.0","60");
+AddSpawnPointByLocatorScript("w_wiggum","beecamera","Shelley","w_wiggum","20.0","60");
+
+//Zone 2
+
+AddSpawnPointByLocatorScript("w_kwickemart","beecamera","Shelley","w_kwickemart","5.0","60");
+AddSpawnPointByLocatorScript("w_gasroof","beecamera","Shelley","w_gasroof","5.0","20");
+
+//Zone 3
+
+//Zone 4
+
+//Zone 5
+AddSpawnPointByLocatorScript("w_bridge1","beecamera","Shelley","w_bridge1","30.0","20");
+//Zone 6
+
+AddSpawnPointByLocatorScript("w_plantlot","beecamera","Shelley","w_plantlot","30.0","20");
+
+//Zone 7
+
+AddSpawnPointByLocatorScript("w_trailor1","beecamera","Shelley","w_trailor1","50.0","20");
+AddSpawnPointByLocatorScript("w_trailor2","beecamera","Shelley","w_trailor2","50.0","20");
+
+AddBehaviour( "w_simpsons", "ATTACK_PLAYER", "10.0", "5.0" , "-1.0");
+AddBehaviour( "w_simpsons2", "ATTACK_PLAYER", "10.0", "5.0" , "-1.0");
+AddBehaviour( "w_flanders", "ATTACK_PLAYER", "10.0", "5.0" , "-1.0");
+AddBehaviour( "w_wiggum", "ATTACK_PLAYER", "20.0", "5.0" , "-1.0");
+AddBehaviour( "w_kwickemart", "ATTACK_PLAYER", "10.0", "5.0" , "-1.0");
+AddBehaviour( "w_gasroof", "ATTACK_PLAYER", "10.0", "5.0" , "-1.0");
+AddBehaviour( "w_bridge1", "ATTACK_PLAYER", "10.0", "5.0" , "-1.0");
+AddBehaviour( "w_trailor1", "ATTACK_PLAYER", "10.0", "5.0" , "-1.0");
+AddBehaviour( "w_trailor2", "ATTACK_PLAYER", "10.0", "5.0" , "-1.0");
+AddBehaviour( "w_plantlot", "ATTACK_PLAYER", "10.0", "5.0" , "-1.0");
+//AddBehaviour( "static_bee2", "ATTACK_PLAYER", "20.0", "5.0" , "-1.0");
+//AddBehaviour( "static_bee3", "ATTACK_PLAYER", "20.0", "5.0" , "-1.0");
+
+AddBehaviour( "w_simpsons", "ATTRACTION", "2.0","20","-1");
+AddBehaviour( "w_simpsons2", "ATTRACTION", "2.0","20","-1");
+AddBehaviour( "w_flanders", "ATTRACTION", "2.0","20","-1");
+AddBehaviour( "w_wiggum", "ATTRACTION", "2.0","20","-1");
+AddBehaviour( "w_kwickemart", "ATTRACTION", "2.0","20","-1");
+AddBehaviour( "w_gasroof", "ATTRACTION", "2.0","20","-1");
+AddBehaviour( "w_bridge1", "ATTRACTION", "2.0","20","-1");
+AddBehaviour( "w_trailor1", "ATTRACTION", "2.0","20","-1");
+AddBehaviour( "w_trailor2", "ATTRACTION", "2.0","20","-1");
+AddBehaviour( "w_plantlot", "ATTRACTION", "2.0","20","-1");

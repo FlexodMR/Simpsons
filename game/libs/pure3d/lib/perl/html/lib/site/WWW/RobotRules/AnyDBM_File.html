@@ -1,0 +1,101 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>WWW::RobotRules::AnyDBM_File - Persistent RobotRules
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#SE_ALSO">SE ALSO</A>
+	<LI><A HREF="#AUTHORS">AUTHORS</A>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+WWW::RobotRules::AnyDBM_File - Persistent RobotRules
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<PRE> require WWW::RobotRules::AnyDBM_File;
+ require LWP::RobotUA;
+</PRE>
+
+<P>
+
+<PRE> # Create a robot useragent that uses a diskcaching RobotRules
+ my $rules = new WWW::RobotRules::AnyDBM_File 'my-robot/1.0', 'cachefile';
+ my $ua = new WWW::RobotUA 'my-robot/1.0', 'me@foo.com', $rules;
+</PRE>
+
+<P>
+
+<PRE> # Then just use $ua as usual
+ $res = $ua-&gt;request($req);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+This is a subclass of <EM>WWW::RobotRules</EM> that uses the AnyDBM_File package to implement persistent diskcaching of <EM>robots.txt</EM> and host visit information.
+
+
+<P>
+
+The constructor (the <CODE>new()</CODE> method) takes an extra argument specifying the name of the 
+<FONT SIZE=-1>DBM</FONT> file to use. If the 
+<FONT SIZE=-1>DBM</FONT> file already exists, then you can specify undef as agent name as the name can be obtained from the 
+<FONT SIZE=-1>DBM</FONT> database.
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SE_ALSO">SE ALSO
+
+</A></H1>
+<A HREF="/n|/perl/html/./lib/site/WWW/RobotRules.html">RobotRules</A>, <A HREF="/n|/perl/html/./lib/site/LWP/RobotUA.html">RobotUA</A>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHORS">AUTHORS
+
+</A></H1>
+Hakan Ardo &lt;<A HREF="MAILTO:hakan@munin.ub2.lu.se>,">hakan@munin.ub2.lu.se>,</A> Gisle
+Aas &lt;<A HREF="MAILTO:aas@sn.no>">aas@sn.no></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -1,0 +1,113 @@
+SelectMission("m1sd");
+
+SetMissionResetPlayerOutCar("level6_bart_start","level6_carstart");
+SetDynaLoadData("l6z1.p3d;l6r1.p3d;l6r5.p3d;l6r5_dam.p3d;");
+
+UsePedGroup(0);
+
+SetMissionStartCameraName( "mission1camShape" );
+SetMissionStartMulticontName( "mission1cam" );
+SetAnimatedCameraName( "mission1camShape" );
+SetAnimCamMulticontName( "mission1cam" );
+
+SetInitialWalk("l6_bart_walkto");
+
+AddStage(5);
+	SetMaxTraffic(3);
+	SetStageMessageIndex(157);
+	SetHUDIcon("apu");
+	AddObjective("talkto");
+		AddStageVehicle("otto_v","m1_otto_carstart","NULL", "Missions\level06\M1otto_v.con", "none");
+		AddNPC("otto", "m1_otto_sd"); 
+		AddNPC("apu", "m1_apu_sd");
+		SetTalkToTarget("apu", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AllowMissionAbort( "false" );
+	AddObjective("dialogue");
+		SetCamBestSide( "bestside_m1" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_near" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_near" );
+		SetConversationCam( 4, "pc_far" );
+		SetConversationCam( 5, "npc_near" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_cross_arms" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_hands_on_hips" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide( "m1_bestside" );
+		SetDialogueInfo("bart","apu","scared",0);
+		SetDialoguePositions("l6_bart_walkto","m1_apu_sd","level6_carstart");
+	CloseObjective();
+CloseStage();
+
+AddStage(4);
+	SetStageMessageIndex(160);
+	SetHUDIcon("otto");
+	AddObjective("talkto");
+		SetPresentationBitmap( "art/frontend/dynaload/images/mis06_01.p3d" );
+		AddNPC("otto", "m1_otto_sd"); //
+		AddObjectiveNPCWaypoint( "otto", "m1_otto_walk1" );
+		AddObjectiveNPCWaypoint( "otto", "m1_otto_walk2" );
+		AddObjectiveNPCWaypoint( "otto", "m1_otto_walk3" );
+		AddObjectiveNPCWaypoint( "otto", "m1_otto_walk4" );
+		AddObjectiveNPCWaypoint( "otto", "m1_otto_walk5" );
+		AddObjectiveNPCWaypoint( "otto", "m1_otto_walk6" );
+		SetTalkToTarget("otto", 0, 0);
+	CloseObjective();
+CloseStage();
+
+AddStage(0);
+	AddObjective("dialogue");
+		SetCamBestSide( "m1_bestside" );
+		AmbientAnimationRandomize( 1, 0 );      // ( pc=0, npc=1) (nonrandom=0, random=1)
+		AmbientAnimationRandomize( 0, 0 );
+		SetConversationCam( 0, "pc_far" );
+		SetConversationCam( 1, "npc_near" );
+		SetConversationCam( 2, "pc_far" );
+		SetConversationCam( 3, "npc_near" );
+		SetConversationCam( 4, "pc_far" );
+		SetConversationCam( 5, "npc_near" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_no" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_scratch_head" );
+		AddAmbientNpcAnimation( "none" );
+		AddAmbientNpcAnimation( "dialogue_hands_in_air" );
+		AddAmbientPcAnimation( "dialogue_shake_hand_in_air" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_yes" );
+		AddAmbientPcAnimation( "none" );
+		AddAmbientPcAnimation( "dialogue_cross_arms" );
+		AddAmbientPcAnimation( "none" );
+		SetCamBestSide( "m1_bestside" );
+		SetDialogueInfo("bart","otto","krustylu",0);
+		SetDialoguePositions("bart_ottotalk","m1_otto_sd","level6_carstart");
+	CloseObjective();
+CloseStage();
+
+CloseMission();
+
+//dialogue_hands_in_air
+//dialogue_hands_on_hips
+//dialogue_scratch_head
+//dialogue_shaking_fist
+//dialogue_thinking
+//dialogue_yes
+//dialogue_no
+//dialogue_cross_arms
+//dialogue_open_arm_hand_gesture
+//dialogue_shake_hand_in_air

@@ -1,0 +1,30 @@
+;------------------------------------------------------------------------------
+; Depth of field by choosing a range of z values and using that to select
+; a blurred version of the original image.
+; 
+; Copyright (C) 2001 Microsoft Corporation
+; All rights reserved.
+;------------------------------------------------------------------------------
+xps.1.1
+
+; override with SetPixelShaderConstant
+def c0, 0.f, 0.f, 0.f, 0.f      ; focus near
+def c1, 0.f, 0.f, 1.f, 0.f      ; focus far
+def c2, 0.f, 0.f, 0.f, 0.f      ; slope x4
+def c3, 0.f, 0.f, 0.f, 1.f      ; slope x16
+def c4, 1.f, 1.f, 1.f, 0.498039215      ; 0x7f
+
+
+; source textures
+tex t0                  ; z-buffer texture
+tex t1                  ; pre-blurred texture
+
+; get the range of active z values
+sub    r0.a, t0.a, c0.a            ; minus focus near
+sub    r1.a, t0.a, c1.a			   ; minus focus far
+mul    r1.a, r0.a, r1.a			   ;
+add    r0.a, c4.a, r1.a
+cnd    r1.a, r0.a, c3.a, zero.a    ; if z falls into far and near, set r1.a as zero
+
+; modulate pre-blurred texture by depth range
+xfc r1.a, t1, zero, zero, zero, zero, r1.a
